@@ -1,0 +1,6 @@
+[arguments]
+file_source = ""
+block_size = 3
+audio_rate = 16000
+
+[meta]

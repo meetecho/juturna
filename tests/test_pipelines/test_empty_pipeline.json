@@ -1,0 +1,10 @@
+{
+  "version": "0.1.0",
+  "pipeline": {
+    "name": "test_basic_pipeline",
+    "id": "1234567890",
+    "folder": "./tests/running_pipelines/basic_pipeline",
+    "nodes": [ ],
+    "links": [ ]
+  }
+}

@@ -1,0 +1,8 @@
+[arguments]
+model = "yolo11n.pt"
+device = "cuda"
+targets = ["person"]
+confidence = 0.25
+half = true
+
+[meta]

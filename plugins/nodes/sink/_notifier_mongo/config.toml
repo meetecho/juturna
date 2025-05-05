@@ -1,0 +1,6 @@
+[arguments]
+endpoint = "mongodb://127.0.0.1:27017"
+database = "my_database"
+collection = "my_collection"
+
+[meta]

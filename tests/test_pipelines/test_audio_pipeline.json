@@ -1,0 +1,52 @@
+{
+  "version": "0.1.0",
+  "plugins": ["./plugins"],
+  "pipeline": {
+    "name": "test_audio_pipeline",
+    "id": "1234567890",
+    "folder": "./tests/running_pipelines/audio_pipeline",
+    "nodes": [
+      {
+        "name": "0_src",
+        "type": "source",
+        "mark": "audio_rtp",
+        "configuration": {
+          "rec_host": "127.0.0.1",
+          "trx_host": "127.0.0.1",
+          "audio_rate": 16000,
+          "block_size": 2,
+          "channels": 2,
+          "payload_type": 97
+        }
+      },
+      {
+        "name": "1_idx",
+        "type": "proc",
+        "mark": "passthrough_identity",
+        "configuration": {
+          "delay": 1
+        }
+      },
+      {
+        "name": "2_dst",
+        "type": "sink",
+        "mark": "notifier_http",
+        "configuration": {
+          "endpoint": "http://127.0.0.1:1237",
+          "timeout": 5,
+          "content_type": "application/json"
+        }
+      }
+    ],
+    "links": [
+      {
+        "from": "0_src",
+        "to": "1_idx"
+      },
+      {
+        "from": "1_idx",
+        "to": "2_dst"
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+[arguments]
+endpoint = "http://localhost:8080"
+timeout = 20
+content_type = "application/json"
+
+[meta]
