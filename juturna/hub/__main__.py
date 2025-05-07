@@ -1,6 +1,4 @@
-import sys
 import argparse
-import warnings
 
 from juturna import hub
 
@@ -10,8 +8,6 @@ _COMMANDS = {
     'download_node': hub.download_node,
     'download_pipeline': hub.download_pipeline
 }
-
-_command = sys.argv[1]
 
 parser = argparse.ArgumentParser(prog='hub')
 
