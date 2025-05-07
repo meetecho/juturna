@@ -25,7 +25,7 @@ A **pipeline** can simply be defined as a collection of **nodes**.
 
 Each **node** acquires a piece of data from its parent and, after performing a single task, provide its output to its children. In this sense, a Juturna pipeline is nothing else but a rooted tree, a particular kind of DAG where there is a single root node with in-degree of 0 (this is not technically the case, but we’ll skip it for now), and every other node has an in-degree of 1.
 
-![juturna entities](./assets/img/juturna_entities.png?raw=true)
+![juturna entities](./assets/img/juturna_entities.jpg?raw=true)
 
 A node is a pipeline component that should, ideally, do one and only one thing. Depending on the task they are programmed to perform, nodes can be:
 
