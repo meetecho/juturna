@@ -113,10 +113,10 @@ See the [`plugins/pipelines/`](./plugins/pipelines/) folder for end-to-end use c
 
 Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) for:
 
-* Branching & PR workflow
-* Code style & linting
-* Issue triage
-* Issue & PR templates and a Code of Conduct are provided.
+* Branching & PR workflow 
+* Code style & linting (TBD)
+* Issue triage (TBD)
+* Issue & PR templates and a Code of Conduct are provided (TBD)
 * Signing CRA
 
 ---
