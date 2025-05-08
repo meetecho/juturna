@@ -37,6 +37,6 @@ html_css_files = [
 ]
 
 html_theme_options = {
-    "github_url": "https://github.com/b3by/juturna",
+    "github_url": "https://github.com/meetecho/juturna",
     "collapse_navigation": True
 }
