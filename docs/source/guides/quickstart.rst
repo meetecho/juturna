@@ -203,7 +203,8 @@ Let's change the pipeline configuration file::
           "configuration": {
             "endpoint": "http://127.0.0.1:8080",
             "timeout": 20,
-            "content_type": "application/json"
+            "content_type": "application/json",
+            "exclude_payload": true
           }
         }
       ],
@@ -231,8 +232,43 @@ There's a lot to unpack there.
   context, a source node is different from a node of ``"type": "source"``, but
   we will see this later).
 
-Other guides
-============
+As it is, this pipeline will read a remote RTP audio stream, perform VAD on it,
+and deliver the VAD coordinates to a receiving HTTP server. The audio stream
+will be read from the ``0_src`` node, processed by the ``1_vad`` node, and
+delivered to the ``2_dst`` node.
 
-- :doc:`pipeline specs <./pipeline>`
-- :doc:`FAQs <./faq>`
+Assuming a ``ffmpeg`` stream is being sent to the ``0_src`` node, and a
+destination server is listening on port ``8080``, we can run the pipeline as
+follows::
+
+  import time
+  import juturna as jt
+
+  pipeline = jt.components.Pipeline.from_json('path/to/config.json')
+  pipeline.warmup()
+
+  pipeline.start()
+
+  # we will be running the pipeline for 10 seconds
+  time.sleep(10)
+
+  pipeline.stop()
+
+The listening HTTP server will then receive a number of POST requests
+containing the VAD coordinates, in the following format::
+
+  {
+    "silence": false,
+    "size": 2,
+    "rate": 16000,
+    "sequence_number": 0,
+    "start_abs": 0.0,
+    "end_abs": 2.0,
+    "duration_after_vad": 2.0,
+    "speech_timestamps": [
+      {
+        "start": 0.0,
+        "end": 2.0
+      }
+    ]
+  }

@@ -58,3 +58,16 @@ Pipeline execution
    Because of this reason, all plugin nodes downloadable from the Juturna
    repository are expected to be placed in a folder ``./plugin`` within your
    project folder.
+
+.. dropdown:: Plugin not found from hub
+  
+   Q: I want to use a plugin node that is available in the Juturna hub, but
+   once I try to download it the hub says it does not exist. Why?
+
+   A: When you download a plugin node from the hub, make sure to use the
+   correct name. Usually node names are in the form of
+   ``<node_type>/_<node_name>``, which represents the actual path of the node in
+   the Juturna hub folder. For example, if you want to download the node
+   ``my_awesome_node`` from the hub, you should use the following command::
+
+       jt.hub.download_node('proc/_my_awesome_node', destination_folder='./plugins')

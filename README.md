@@ -46,9 +46,10 @@ Whilst Juturna ships with a number of built-in nodes (mainly source and sink
 nodes), you can implement your own nodes with ease, and share them so others
 can use them too.
 
-To know more about the Juturna internals, please refer to the documentation.
+To know more about the Juturna internals, please refer to the full
+documentation.
 
-## 5. Installation
+## Installation
 
 The following dependencies are required to use Juturna:
 
@@ -107,7 +108,8 @@ Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) for:
 
 ## Changelog
 
-All notable changes are documented in [`CHANGELOG.md`](./CHANGELOG.md) following [Semantic Versioning](https://semver.org).
+All notable changes are documented in [`CHANGELOG.md`](./CHANGELOG.md)
+following [Semantic Versioning](https://semver.org).
 
 ## External Docs & Support
 
