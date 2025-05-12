@@ -1,4 +1,5 @@
 tests/running_pipelines/
+.idea/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
