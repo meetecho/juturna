@@ -1,0 +1,27 @@
+from juturna.components import BaseNode
+from juturna.components import Message
+
+
+class $_node_class_name(BaseNode):
+    def __init__(self):
+        super().__init__('$_node_type')
+
+    def configure(self):
+        ...
+
+    def warmup(self):
+        ...
+
+    def start(self):
+        # after custom start code, invoke base node start
+        super().start()
+
+    def stop(self):
+        # after custom stop code, invoke base node stop
+        super().stop()
+
+    def destroy(self):
+        ...
+
+    def update(self, message: Message):
+        ...
