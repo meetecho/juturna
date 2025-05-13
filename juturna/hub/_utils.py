@@ -115,6 +115,28 @@ def download_pipeline(pipe_name: str,
                       authenticate: bool = False,
                       repository_url: str = False,
                       force: bool = False):
+    """
+    Download a pipeline from the Juturna hub
+    Given a target pipeline, download it locally. This implies downloading all
+    the nodes and files that are part of the pipeline.
+
+    Parameters
+    ----------
+    pipe_name : str
+        The name of the remote pipeline to download.
+    destination_folder : str
+        The folder the pipeline will be downloaded to. Defaults to
+        JUTURNA_CACHE_DIR when not provided.
+    authenticate : bool
+        When true, the request to download the pipeline will be authenticated
+        using the access token defined in JUTURNA_HUB_TOKEN. Defaults to False.
+    repository_url : str
+        The repository from which download a pipeline. By default this is None,
+        so the pipeline will be downloaded from JUTURNA_HUB_URL.
+    force : bool
+        Will not download the pipeline if one with the same name already exists
+        in the destination folder. Defaults to True.
+    """
     pipe_url = urllib.parse.urljoin(
         repository_url or jt.meta.JUTURNA_HUB_URL, f'pipelines/{pipe_name}')
     pipe_content = _gh_utils._gh_node_content_list(pipe_url, authenticate)
