@@ -94,7 +94,7 @@ class AudioFile(BaseNode):
             payload=np.array(chunk),
             version=self._transmitted)
 
-        message.meta['session_id'] = self.session_id
+        message.meta['session_id'] = self.pipe_id
         message.meta['size'] = self._block_size
 
         self.transmit(message)

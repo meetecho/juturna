@@ -22,7 +22,7 @@ class NotifierWebsocket(BaseNode):
 
     def update(self, message: Message):
         message = message.to_dict()
-        message['session_id'] = self.session_id
+        message['session_id'] = self.pipe_id
 
         self._t = threading.Thread(
             name='_post_transcript',

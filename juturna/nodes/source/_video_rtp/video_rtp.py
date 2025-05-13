@@ -109,7 +109,7 @@ class VideoRTP(BaseNode):
             self.static_path, 'remote_source.sdp.template')
 
         session_sdp_file = pathlib.Path(
-            self.session_path, '_session.sdp')
+            self.pipe_path, '_session.sdp')
 
         sdp_content = {
             '_remote_rtp_host': self._rec_host,

@@ -76,7 +76,7 @@ class BaseNode:
     def configuration(self) -> dict:
         return {
             'name': self.name,
-            'session_id': self.session_id
+            'session_id': self.pipe_id
         }
 
     @status.setter
@@ -84,32 +84,71 @@ class BaseNode:
         self._status = ComponentStatus(new_status)
 
     @property
-    def session_id(self) -> str:
+    def pipe_id(self) -> str:
+        """
+        Id of the pipe the node belongs to. This will automatically be
+        assigned to the node when it is intantiated within a pipeline, but can
+        also be set manually. An isolated node not included within a pipeline
+        will have a ``None`` value for this field.
+        """
         return self._session_id
 
-    @session_id.setter
-    def session_id(self, session_id: str):
+    @pipe_id.setter
+    def pipe_id(self, session_id: str):
         self._session_id = session_id
 
     @property
-    def session_path(self) -> str:
+    def pipe_path(self) -> str:
+        """
+        Path to the pipeline session directory. The node has a dedicated folder
+        within the pipeline session directory where it stores its data. This
+        will automatically be assigned to the node when it is intantiated within
+        a pipeline, but can also be set manually. An isolated node not included
+        within a pipeline will have a ``None`` value for this field.
+        """
         return self._session_path
 
-    @session_path.setter
-    def session_path(self, session_path: str):
+    @pipe_path.setter
+    def pipe_path(self, session_path: str):
         self._session_path = session_path
 
     @property
     def static_path(self) -> pathlib.Path:
+        """
+        Path to the directory where the node is defined. This is useful for
+        storing static files (e.g. configuration files) that are needed by the
+        node.
+        """
         return pathlib.Path(inspect.getfile(self.__class__)).parent
 
     def dump_json(self, message: Message, file_name: str):
-        with open(pathlib.Path(self.session_path, file_name), 'w') as f:
+        with open(pathlib.Path(self.pipe_path, file_name), 'w') as f:
             f.write(message.to_json(encoder=lambda x: x.tolist()))
 
     def set_source(self, source: Union[Buffer, callable],
                    by: int = 0,
                    mode: str = 'post'):
+        """
+        Set the node source (to be used for ``source`` nodes). The source can be
+        either a callable or a buffer. However, source nodes are expected to be
+        provided with a callable that will be used to generate the data to be
+        transmitted.
+
+        Parameters
+        ----------
+        source : Union[Buffer, callable]
+            The source to be set. This can be either a buffer or a callable.
+        by : int, optional
+            The time interval (in seconds) between two consecutive calls to the
+            source. This parameter is only used if the source is a callable.
+            The default is 0.
+        mode : str, optional
+            Whether to apply the ``by`` timer before or after the source call.
+            The default is ``post``, indicating the source function will wait
+            for ``by`` seconds before being called. If set to ``pre``, the
+            source function will be called and then wait for ``by`` seconds
+            before being called again.
+        """
         if self._bridge.source is None:
             self._bridge.set_source(source, by, mode)
 
@@ -124,13 +163,37 @@ class BaseNode:
         self._bridge._destination_callbacks = list()
 
     def transmit(self, message: Message):
+        """
+        Transmit a message through the bridge. This method is used to send data
+        from the node to its destinations. When invoking this method, remember
+        that only messages with a newer version with respect to the versions
+        stored in their destination buffers will trigger an update in the
+        receiving nodes.
+
+        Parameters
+        ----------
+        message : Message
+            The message to be transmitted.
+        """
         self._bridge.transmit(message)
 
     def start(self):
+        """
+        Start the node and begin processing. This method is called automatically
+        when the parent pipeline is started. If you override this method in
+        your custom node class, make sure to call the parent method to ensure
+        the bridge is started correctly.
+        """
         self._bridge.start()
         self._status = ComponentStatus.RUNNING
 
     def stop(self):
+        """
+        Stop the node and begin processing. This method is called automatically
+        when the parent pipeline is stopped. If you override this method in
+        your custom node class, make sure to call the parent method to ensure
+        the bridge is stopped correctly.
+        """
         self._bridge.stop()
         self._status = ComponentStatus.STOPPED
 

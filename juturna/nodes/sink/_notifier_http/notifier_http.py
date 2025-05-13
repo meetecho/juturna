@@ -24,7 +24,7 @@ class NotifierHTTP(BaseNode):
         logging.info(f'[{self.name}] set to endpoint {self._endpoint}')
 
     def update(self, message: Message):
-        message.meta['session_id'] = self.session_id
+        message.meta['session_id'] = self.pipe_id
         message = NotifierHTTP._CNT_CB[self._content_type](message)
 
         t = threading.Thread(

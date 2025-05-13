@@ -118,7 +118,7 @@ class AudioRTP(BaseNode):
         self._abs_recv += 1
 
     def prepare_local_sdp(self,sdp_file_template: str | pathlib.Path):
-        session_sdp_file = str(pathlib.Path(self.session_path, '_session.sdp'))
+        session_sdp_file = str(pathlib.Path(self.pipe_path, '_session.sdp'))
 
         sdp_content = {
             '_remote_rtp_host': self._rec_host,

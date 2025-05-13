@@ -47,7 +47,7 @@ class VadSilero(BaseNode):
         block_size = self._data[-1].meta['size']
 
         to_send = Message.from_message(message, keep_meta=True)
-        to_send.created_by = self.name
+        to_send.creator = self.name
         to_send.version = message.version
 
         to_send.payload = { 'waveform': waveform }

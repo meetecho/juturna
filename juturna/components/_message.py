@@ -13,6 +13,19 @@ class Message:
                  creator: str = None,
                  version: int = -1,
                  payload: typing.Any = None):
+        """
+        Parameters
+        ----------
+        creator : str, optional
+            The creator of the message. This is the name of the node that
+            created the message. The default is None.
+        version : int, optional
+            The version of the message. This is an integer that indicates the
+            version of the data contained in the message. The default is -1.
+        payload : Any, optional
+            The payload of the message. This is the actual data contained in the
+            message. The default is None.
+        """
         self.created_at = time.time()
         self.meta = dict()
 
@@ -50,28 +63,55 @@ class Message:
         return msg
 
     def to_dict(self):
+        """
+        Convert the message to a dictionary representation.
+
+        Returns
+        -------
+        dict
+            A dictionary representation of the message.
+        """
         return {
             'created_at': self.created_at,
-            'creator': self.created_by,
+            'creator': self.creator,
             'version': self.version,
             'payload': self.payload,
             'meta': self.meta,
             'timers': self.timers
         }
 
-    def to_json(self, encoder = None) -> str:
+    def to_json(self, encoder: callable = None) -> str:
+        """
+        Convert the message to a JSON string.
+
+        Parameters
+        ----------
+        encoder : callable, optional
+            A custom JSON encoder. The default is None, which uses the default
+            JSON encoder.
+        Returns
+        -------
+        str
+            The JSON string representation of the message.
+        """
         return json.dumps(self.to_dict(), default=encoder, indent=2)
 
     @property
-    def created_by(self) -> str:
+    def creator(self) -> str:
+        """
+        Returns the creator of the message.
+        """
         return self._creator
 
-    @created_by.setter
-    def created_by(self, creator: str):
+    @creator.setter
+    def creator(self, creator: str):
         self._creator = creator
 
     @property
     def version(self) -> int:
+        """
+        Returns the version of the message.
+        """
         return self._version
 
     @version.setter
@@ -80,6 +120,9 @@ class Message:
 
     @property
     def payload(self) -> typing.Any:
+        """
+        Returns the payload of the message.
+        """
         return self._payload
 
     @payload.setter
@@ -88,14 +131,43 @@ class Message:
 
     @property
     def timers(self) -> dict:
+        """
+        Returns the timers of the message.
+        """
         return self._timers
 
     def timer(self, timer_name: str, timer_value: float = None):
+        """
+        Records a timer with the given name and value.
+        If no value is provided, the current time is used.
+
+        Parameters
+        ----------
+        timer_name : str
+            The name of the timer.
+        timer_value : float, optional
+            The value of the timer. If None, the current time is used.
+        """
         timer_value = timer_value or time.time()
 
         self._timers[timer_name] = timer_value
 
     def timeit(self, timer_name: str) -> typing.Self:
+        """
+        Start a timer with the given name.
+        This method is a context manager that will automatically stop the timer
+        when the context is exited.
+
+        Parameters
+        ----------
+        timer_name : str
+            The name of the timer.
+
+        Returns
+        -------
+        typing.Self
+            The current instance of the Message class.
+        """
         self._current_timer = timer_name
 
         return self

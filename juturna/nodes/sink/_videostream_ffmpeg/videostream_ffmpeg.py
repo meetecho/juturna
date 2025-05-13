@@ -28,7 +28,7 @@ class VideostreamFFMPEG(BaseNode):
 
     def warmup(self):
         session_sdp_file = pathlib.Path(
-            self.session_path, '_out.sdp')
+            self.pipe_path, '_out.sdp')
 
         self._ffmpeg_pipe = (
             ffmpeg
