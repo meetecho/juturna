@@ -21,6 +21,14 @@ class Pipeline:
     """
 
     def __init__(self, config: dict):
+        """
+        Parameters
+        ----------
+        config : dict
+            The pipeline configuration. This is a dictionary that contains the
+            pipeline configuration, including the pipeline name, ID, folder,
+            nodes, and links.
+        """
         self._raw_config = config
         self._name = self._raw_config['pipeline']['name']
         self._pipe_id = self._raw_config['pipeline']['id']
@@ -133,6 +141,14 @@ class Pipeline:
         return
 
     def start(self):
+        """
+        Start the pipeline and all its nodes.
+        This method starts all the nodes in the pipeline, allowing them to
+        process data. The nodes are started in reverse order of their
+        configuration, ensuring that the source node is the last one to be
+        started. This is important to ensure that the data flow is properly
+        established and that all nodes are ready to receive data.
+        """
         if self._status != PipelineStatus.READY:
             raise RuntimeError(f'pipeline {self.name} is not ready')
 
@@ -142,6 +158,14 @@ class Pipeline:
         self._status = PipelineStatus.RUNNING
 
     def stop(self):
+        """
+        Stop the pipeline and all its nodes.
+        This method stops all the nodes in the pipeline, preventing them from
+        processing any further data. The nodes are stopped in reverse order of
+        their configuration, ensuring that the source node is the last one to be
+        stopped. This is important to ensure that the data flow is properly
+        terminated and that all nodes are safely stopped.
+        """
         if self._status != PipelineStatus.RUNNING:
             raise RuntimeError(f'pipeline {self.name} is not running')
 
@@ -151,6 +175,15 @@ class Pipeline:
         self._status = PipelineStatus.READY
 
     def destroy(self):
+        """
+        Destroy the pipeline and all its nodes.
+        This method cleans up all the resources used by the pipeline and its
+        nodes. It clears the source and destination buffers for each node,
+        destroys the nodes, and removes them from the pipeline. This is
+        important to ensure that all resources are properly released and that
+        there are no memory leaks. The pipeline is set to None, and garbage
+        collection is triggered to free up any remaining resources.
+        """
         if self._status == PipelineStatus.RUNNING:
             self.stop()
 
