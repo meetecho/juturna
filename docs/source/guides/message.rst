@@ -7,7 +7,7 @@ A message is a data container used to exchange data across nodes.
 +---------------------+----------+----------------------------------+
 | property            | type     | description                      |
 +=====================+==========+==================================+
-| ``self.created_by`` | ``str``  | name or id of the creating node  |
+| ``self.creator``    | ``str``  | name or id of the creating node  |
 +---------------------+----------+----------------------------------+
 | ``self.version``    | ``int``  | message data version             |
 +---------------------+----------+----------------------------------+
