@@ -1,7 +1,9 @@
 [arguments]
 rec_host = "127.0.0.1"
 trx_host = "127.0.0.1"
-audio_rate = 16000
+rec_port = "auto"
+trx_port = "auto"
+audio_rate = 12345
 block_size = 3
 channels = 2
 payload_type = 97

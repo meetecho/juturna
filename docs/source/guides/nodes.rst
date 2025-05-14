@@ -30,6 +30,10 @@ This approach allows to demand all the decode-encode heavy lifting to
 | ``trx_host``     | ``str``  | the host of the local RTP client       |
 |                  |          | (usually ``127.0.0.1``)                |
 +------------------+----------+----------------------------------------+
+| ``rec_port``     | ``int``  | the port of the RTP client             |
++------------------+----------+----------------------------------------+
+| ``trx_port``     | ``int``  | the port of the local RTP stream       |
++------------------+----------+----------------------------------------+
 | ``audio_rate``   | ``int``  | rate of the receiving audio            |
 +------------------+----------+----------------------------------------+
 |  ``block_size``  | ``int``  | length (in seconds) of the audio chunks|
@@ -47,6 +51,9 @@ with all the relevant information about the local stream.
 
 Nodes:
 
+- the node automatically selects a receiving port if ``rec_port`` is set to
+  ``auto`` in the configuration, otherwise will use the provided port; the same
+  applies to the local transmitting port
 - this node accumulates audio samples until the temporal length of all the
   samples reach ``block_size``, computed in seconds; this length is computed
   using ``audio_rate``, so make sure it matches the sources'
