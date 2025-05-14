@@ -1,3 +1,5 @@
+import typing
+
 from struct import unpack
 
 
@@ -6,7 +8,7 @@ class RTPDatagram:
     RTP protocol datagram parser
     Based on github.com/plazmer/pyrtsp with minor cosmetic changes
     """
-    def __init__(self, datagram):
+    def __init__(self, datagram: typing.Self):
         self.version = 0
         self.padding = 0
         self.extension = 0
@@ -24,7 +26,7 @@ class RTPDatagram:
         self.datagram = datagram
 
     @property
-    def datagram(self):
+    def datagram(self) -> bytes:
         return self.__datagram
 
     @datagram.setter
@@ -42,6 +44,7 @@ class RTPDatagram:
         self.payload_type = m_pt & 0b01111111
 
         i = 0
+
         for i in range(0, self.csrc_count, 4):
             self.csrs.append(unpack('!I', data[12+i:16+i]))
 
