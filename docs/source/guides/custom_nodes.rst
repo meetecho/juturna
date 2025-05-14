@@ -73,9 +73,14 @@ Notes:
 +========================+=====================+=============================+
 | ``self.configuration`` | ``dict``            | node name and id            |
 +------------------------+---------------------+-----------------------------+
+| ``self.name``          | ``str``             | node name                   |
++------------------------+---------------------+-----------------------------+
+| ``self.pipe_id``       | ``str``             | unique identifier for the   |
+|                        |                     | pipeline containing the node|
++------------------------+---------------------+-----------------------------+
 | ``self.status``        | ``ComponentStatus`` | node status                 |
 +------------------------+---------------------+-----------------------------+
-| ``self.session_path``  | ``str``             | absolute path of the folder |
+| ``self.pipe_path``     | ``str``             | absolute path of the folder |
 |                        |                     | assigned to the node within |
 |                        |                     | the pipeline folder         |
 +------------------------+---------------------+-----------------------------+
