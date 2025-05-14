@@ -50,9 +50,10 @@ class RTPDatagram:
 
         if self.extension:
             i = self.csrc_count * 4
-            (self.extension_header_id,
-             self.extension_header_len) = unpack('!HH', data[12+i:16+i])
+            (self.extension_header_id, self.extension_header_len) = \
+                unpack('!HH', data[12+i:16+i])
             self.extension_header = data[16+i:16+i+self.extension_header_len]
+
             i += 4 + self.extension_header_len
 
         self.payload = data[12+i:]
