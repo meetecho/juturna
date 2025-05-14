@@ -17,12 +17,36 @@ class AudioRTP(BaseNode):
     """Source node for streaming audio
     """
     def __init__(self,
+                 rec_host: str,
+                 trx_host: str,
+                 rec_port: int | str,
+                 trx_port: int | str,
                  audio_rate: int,
                  block_size: int,
-                 payload_type: int,
                  channels: int,
-                 rec_host: str,
-                 trx_host: str):
+                 payload_type: int):
+        """
+        Parameters
+        ----------
+        rec_host : str
+            Hostname of the remote RTP server to receive audio from.
+        trx_host : str
+            Hostname of the local RTP server to transmit audio to.
+        rec_port : int | str
+            Port of the RTP server to receive audio from. If set to "auto",
+            the port will be assigned automatically by the resource broker.
+        trx_port : int | str
+            Port of the local RTP server to transmit audio to. If set to "auto",
+            the port will be assigned automatically by the resource broker.
+        audio_rate : int
+            Audio sample rate in Hz (samples per seconds).
+        block_size : int
+            Size of the audio block to sample, in seconds.
+        channels : int
+            Number of source audio channels.
+        payload_type : int
+            Payload type for the RTP stream.
+        """
         super().__init__('source')
 
         self._audio_rate = audio_rate
@@ -33,9 +57,9 @@ class AudioRTP(BaseNode):
         self._abs_recv = 0
 
         self._rec_host = rec_host
-        self._rec_port = None
+        self._rec_port = rec_port
         self._trx_host = trx_host
-        self._trx_port = None
+        self._trx_port = trx_port
 
         self._data = bytearray()
 
@@ -46,8 +70,11 @@ class AudioRTP(BaseNode):
         self._ffmpeg_proc = None
 
     def configure(self):
-        self._rec_port = rb.get('port')
-        self._trx_port = rb.get('port')
+        if self._rec_port == "auto":
+            self._rec_port = rb.get('port')
+
+        if self._trx_port == "auto":
+            self._trx_port = rb.get('port')
 
         self._client = RTPClient(self._trx_host, self._trx_port)
         self._local_stream_url = f'rtp://{self._trx_host}:{self._trx_port}'
@@ -102,7 +129,8 @@ class AudioRTP(BaseNode):
             return
 
         logging.info(f'{self.name} receive: {self._abs_recv}')
-        waveform = self._get_waveform(self._data[:self._rec_thresh])
+        waveform = AudioRTP._get_waveform(self._data[:self._rec_thresh],
+                                          self._channels)
         message = Message(
             creator=self.name,
             payload=waveform,
@@ -117,7 +145,8 @@ class AudioRTP(BaseNode):
         self._data = bytearray()
         self._abs_recv += 1
 
-    def prepare_local_sdp(self,sdp_file_template: str | pathlib.Path):
+    def prepare_local_sdp(
+        self, sdp_file_template: str | pathlib.Path) -> ffmpeg.input:
         session_sdp_file = str(pathlib.Path(self.pipe_path, '_session.sdp'))
 
         sdp_content = {
@@ -142,11 +171,12 @@ class AudioRTP(BaseNode):
 
         return ffmpeg_pipe
 
-    def _get_waveform(self, raw_data: bytearray) -> np.ndarray:
+    @staticmethod
+    def _get_waveform(raw_data: bytearray, channels: int) -> np.ndarray:
         waveform = np.frombuffer(
             raw_data, np.int16).flatten().astype(np.float32) / 32768.0
 
-        if self._channels == 2:
+        if channels == 2:
             waveform = np.reshape(waveform, (-1, 2)).sum(axis=1) / 2
 
         return waveform
