@@ -2,6 +2,16 @@ import socket
 
 
 def get_available_port() -> int:
+    """
+    Returns an available port number.
+    This function creates a socket, binds it to an available port, and then
+    closes the socket.
+
+    Returns
+    -------
+    int
+        An available port number.
+    """
     s = socket.socket()
     s.bind(('', 0))
 
