@@ -10,7 +10,7 @@ from juturna.components import BaseNode
 class NotifierHTTP(BaseNode):
     _CNT_CB = {
         'application/json': lambda m: m.to_dict(),
-        'application/text': lambda m: m.to_json()
+        'text/plain': lambda m: m.to_json()
     }
 
     def __init__(self, endpoint: str, timeout: int, content_type: str):
