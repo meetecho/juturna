@@ -15,15 +15,41 @@ from juturna.components import _resource_broker as rb
 class VideoRTP(BaseNode):
     def __init__(self,
                  rec_host: str,
+                 rec_port: int | str,
                  payload_type: str,
                  codec: str,
-                 fps: int,
                  mode: str,
+                 fps: int,
                  rate: int,
                  video_duration: float):
+        """
+        Parameters
+        ----------
+        rec_host : str
+            Hostname of the remote RTP server to receive video from.
+        rec_port : int | str
+            Port of the RTP server to receive video from. If set to "auto",
+            the port will be assigned automatically by the resource broker.
+        payload_type : str
+            Payload type for the RTP stream.
+        codec : str
+            Codec used for the RTP stream.
+        mode : str
+            Mode of the video stream. Can be "still" or "video".
+        fps : int
+            When working in "video" mode, the fps of the source video stream,
+            used to determine the duration of the buffered video.
+        rate : int
+            When working in "still" mode, the rate at which to sample frames
+            from the video stream, as number of frames per second.
+        video_duration : float
+            Duration of the video chunks to sample, in seconds. To be used
+            when working in "video" mode.
+        """
         super().__init__('source')
 
         self._rec_host = rec_host
+        self._rec_port = rec_port
         self._payload = payload_type
         self._codec = codec
 
@@ -45,7 +71,9 @@ class VideoRTP(BaseNode):
             self.read_frame if self._mode == 'still' else self.read_video)
 
     def configure(self):
-        self._rec_port = rb.get('port')
+        if self._rec_port == "auto":
+            self._rec_port = rb.get('port')
+
         logging.info(
             f'{self.name}: video source ready on port {self._rec_port}')
 

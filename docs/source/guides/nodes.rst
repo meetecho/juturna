@@ -21,30 +21,30 @@ client.
 This approach allows to demand all the decode-encode heavy lifting to
 ``ffmpeg``.
 
-+------------------+----------+----------------------------------------+
-| argument         | type     | description                            |
-+==================+==========+========================================+
-| ``rec_host``     | ``str``  | the host from which the stream will be |
-|                  |          | received                               |
-+------------------+----------+----------------------------------------+
-| ``trx_host``     | ``str``  | the host of the local RTP client       |
-|                  |          | (usually ``127.0.0.1``)                |
-+------------------+----------+----------------------------------------+
-| ``rec_port``     | ``int``  | the port of the RTP client             |
-+------------------+----------+----------------------------------------+
-| ``trx_port``     | ``int``  | the port of the local RTP stream       |
-+------------------+----------+----------------------------------------+
-| ``audio_rate``   | ``int``  | rate of the receiving audio            |
-+------------------+----------+----------------------------------------+
-|  ``block_size``  | ``int``  | length (in seconds) of the audio chunks|
-|                  |          | to generate                            |
-+------------------+----------+----------------------------------------+
-|  ``channels``    | ``int``  | number of channels of the receiving    |
-|                  |          | audio                                  |
-+------------------+----------+----------------------------------------+
-| ``payload_type`` | ``dict`` | payload type as specified in the       |
-|                  |          | incoming stream                        |
-+------------------+----------+----------------------------------------+
++------------------+---------------+----------------------------------------+
+| argument         | type          | description                            |
++==================+===============+========================================+
+| ``rec_host``     | ``str``       | the host from which the stream will be |
+|                  |               | received                               |
++------------------+---------------+----------------------------------------+
+| ``trx_host``     | ``str``       | the host of the local RTP client       |
+|                  |               | (usually ``127.0.0.1``)                |
++------------------+---------------+----------------------------------------+
+| ``rec_port``     | ``int | str`` | the port of the RTP client             |
++------------------+---------------+----------------------------------------+
+| ``trx_port``     | ``int``       | the port of the local RTP stream       |
++------------------+---------------+----------------------------------------+
+| ``audio_rate``   | ``int``       | rate of the receiving audio            |
++------------------+---------------+----------------------------------------+
+|  ``block_size``  | ``int``       | length (in seconds) of the audio chunks|
+|                  |               | to generate                            |
++------------------+---------------+----------------------------------------+
+|  ``channels``    | ``int``       | number of channels of the receiving    |
+|                  |               | audio                                  |
++------------------+---------------+----------------------------------------+
+| ``payload_type`` | ``dict``      | payload type as specified in the       |
+|                  |               | incoming stream                        |
++------------------+---------------+----------------------------------------+
 
 During the warmup phase, this node will write in its node folder the sdp file
 with all the relevant information about the local stream.
@@ -81,29 +81,34 @@ destinations as either individual frames or collections of frames, depending on
 its working mode. Internally, it uses ``opencv-python`` to open the generated
 sdp file.
 
-+--------------------+----------+----------------------------------------+
-| argument           | type     | description                            |
-+====================+==========+========================================+
-| ``rec_host``       | ``str``  | the host from which the stream will be |
-|                    |          | received                               |
-+--------------------+----------+----------------------------------------+
-| ``mode``           | ``str``  | node operating mode (``still`` or      |
-|                    |          | ``video``)                             |
-+--------------------+----------+----------------------------------------+
-| ``rate``           | ``int``  | number of frames to read every second  |
-+--------------------+----------+----------------------------------------+
-| ``fps``            | ``int``  | video source frames per second         |
-+--------------------+----------+----------------------------------------+
-| ``video_duration`` | ``int``  | video source frames per second         |
-+--------------------+----------+----------------------------------------+
-| ``codec``          | ``int``  | the codec of the source stream         |
-+--------------------+----------+----------------------------------------+
-| ``payload_type``   | ``dict`` | payload type as specified in the       |
-|                    |          | incoming stream                        |
-+--------------------+----------+----------------------------------------+
++--------------------+---------------+----------------------------------------+
+| argument           | type          | description                            |
++====================+===============+========================================+
+| ``rec_host``       | ``str``       | the host from which the stream will be |
+|                    |               | received                               |
++--------------------+---------------+----------------------------------------+
+| ``rec_port``       | ``int | str`` | the port on which the stream will be   |
+|                    |               | received                               |
++--------------------+---------------+----------------------------------------+
+| ``mode``           | ``str``       | node operating mode (``still`` or      |
+|                    |               | ``video``)                             |
++--------------------+---------------+----------------------------------------+
+| ``rate``           | ``int``       | number of frames to read every second  |
++--------------------+---------------+----------------------------------------+
+| ``fps``            | ``int``       | video source frames per second         |
++--------------------+---------------+----------------------------------------+
+| ``video_duration`` | ``int``       | video source frames per second         |
++--------------------+---------------+----------------------------------------+
+| ``codec``          | ``int``       | the codec of the source stream         |
++--------------------+---------------+----------------------------------------+
+| ``payload_type``   | ``dict``      | payload type as specified in the       |
+|                    |               | incoming stream                        |
++--------------------+---------------+----------------------------------------+
 
 Notes:
 
+- the node automatically selects a receiving port if ``rec_port`` is set to
+  ``auto`` in the configuration, otherwise will use the provided port
 - when ``mode == 'still'`` the node reads a number of frame every second, thus
   ``rate`` is required in the configuration and ``fps`` will be ignored
 - when ``mode == 'video'`` the node uses ``fps`` to determine the length of the
