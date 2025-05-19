@@ -2,51 +2,99 @@
 Juturna APIs
 ############
 
-Components
-==========
 
-This package contains the basic entities to be used when creating pipelines and
-nodes. Namely, those are:
+.. toctree::
+   :maxdepth: 2
+   :glob:
+   :caption: APIs
+   
+   ../apis/juturna
 
-- ``BaseNode``: the node base class to be used when creating a custom node
-- ``Pipeline``: the pipeline container
-- ``Message``: the data container to be passed across a pipeline nodes
+.. ``juturna.components``
+.. ======================
 
-``juturna.components.BaseNode``
--------------------------------
+.. ``juturna.components.BaseNode``
+.. -------------------------------
 
-.. autoclass:: juturna.components.BaseNode
-   :private-members: __init__
+.. .. autoclass:: juturna.components.BaseNode
+..    :private-members: __init__
 
-.. autoproperty:: juturna.components.BaseNode.name
+.. Properties
+.. ----------
 
+.. ..   autoproperty:: juturna.components.BaseNode.name
+.. ..   autoproperty:: juturna.components.BaseNode.status
+.. ..   autoproperty:: juturna.components.BaseNode.pipe_id
+.. ..   autoproperty:: juturna.components.BaseNode.pipe_path
+.. ..   autoproperty:: juturna.components.BaseNode.static_path
 
-``juturna.components.Pipeline``
--------------------------------
+.. Methods
+.. -------
 
-.. autoclass:: juturna.components.Pipeline
+.. .. automethod:: juturna.components.BaseNode.set_source
+.. .. automethod:: juturna.components.BaseNode.transmit
+.. .. automethod:: juturna.components.BaseNode.start
+.. .. automethod:: juturna.components.BaseNode.stop
 
-Names
-=====
+.. ------------
 
-Juturna names are static values that are used to share statuses across
-different components.
+.. ``juturna.components.Pipeline``
+.. -------------------------------
 
-.. autoclass:: juturna.names.ComponentStatus
+.. Constructor
+.. -----------
 
-Meta
-========
+.. .. autoclass:: juturna.components.Pipeline
+..    :private-members: __init__
 
-This package contains environment variables useful to configure the hub.
+.. Properties
+.. ----------
+.. .. autoproperty:: juturna.components.Pipeline.pipe_id
+.. .. autoproperty:: juturna.components.Pipeline.pipe_folder
+.. .. autoproperty:: juturna.components.Pipeline.name
+.. .. autoproperty:: juturna.components.Pipeline.status
 
-Hub
-=======
+.. Methods
+.. -------
+.. .. automethod:: juturna.components.Pipeline.from_json
+.. .. automethod:: juturna.components.Pipeline.warmup
+.. .. automethod:: juturna.components.Pipeline.start
+.. .. automethod:: juturna.components.Pipeline.stop
+.. .. automethod:: juturna.components.Pipeline.destroy
 
-This package contains the utility functions that can be used to download remote
-plugins.
+.. ------------
 
-.. autofunction:: juturna.hub.list_plugins
+.. ``juturna.components.Message``
+.. -----------------------------
 
-.. autofunction:: juturna.hub.download_node
+.. Constructor
+.. -----------
+.. .. autoclass:: juturna.components.Message
+..    :private-members: __init__
 
-.. autofunction:: juturna.hub.download_pipeline
+.. Properties
+.. ----------
+.. .. autoproperty:: juturna.components.Message.creator
+.. .. autoproperty:: juturna.components.Message.version
+.. .. autoproperty:: juturna.components.Message.payload
+.. .. autoproperty:: juturna.components.Message.meta
+.. .. autoproperty:: juturna.components.Message.timers
+
+.. Methods
+.. -------
+.. .. automethod:: juturna.components.Message.from_message
+.. .. automethod:: juturna.components.Message.to_dict
+.. .. automethod:: juturna.components.Message.to_json
+.. .. automethod:: juturna.components.Message.timer
+.. .. automethod:: juturna.components.Message.timeit
+
+.. ``juturna.utils``
+.. =================
+
+.. Juturna utils is a collection of utility functions that can be used perform a
+.. number of tasks.
+
+.. .. automethod:: juturna.utils.node_utils.node_stub
+
+.. ``juturna.hub``
+.. ===============
