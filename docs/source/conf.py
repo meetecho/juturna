@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, os.path.abspath('../../juturna'))
 
 project = 'juturna'
-copyright = '2025, Antonio Bevilacqua'
+copyright = '2025, Meetecho'
 author = 'Antonio Bevilacqua'
 release = '0.1.0'
 

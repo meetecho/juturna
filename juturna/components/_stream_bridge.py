@@ -1,5 +1,6 @@
 import copy
 import time
+import typing
 import logging
 
 from juturna.components._bridge import Bridge
@@ -10,6 +11,10 @@ class StreamBridge(Bridge):
         super().__init__(bridge_id)
 
     def _worker(self):
+        if not isinstance(self.source, typing.Callable):
+            raise TypeError(
+                f'streaming source must be a Callable, not {type(self.source)}')
+
         while not self._stop_event.is_set():
             if self._mode == 'pre':
                 time.sleep(self._sleep)

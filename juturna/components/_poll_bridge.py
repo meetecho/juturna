@@ -3,6 +3,7 @@ import time
 import logging
 
 from juturna.components._bridge import Bridge
+from juturna.components._buffer import Buffer
 
 
 class PollBridge(Bridge):
@@ -12,6 +13,10 @@ class PollBridge(Bridge):
         self._polling_version = None
 
     def _worker(self):
+        if not isinstance(self.source, Buffer):
+            raise TypeError(
+                f'polling source must be a Buffer, not {type(self.source)}')
+
         if self.source:
             self._polling_version = self.source.version()
 

@@ -31,7 +31,7 @@ def test_pipeline_base():
 
     assert test_pipeline.name == 'test_basic_pipeline'
     assert test_pipeline.pipe_id == '1234567890'
-    assert test_pipeline.pipe_folder == './tests/running_pipelines/basic_pipeline'
+    assert test_pipeline.pipe_path == './tests/running_pipelines/basic_pipeline'
 
 
 def test_pipeline_from_path():
@@ -40,7 +40,7 @@ def test_pipeline_from_path():
 
     assert test_pipeline.name == 'test_basic_pipeline'
     assert test_pipeline.pipe_id == '1234567890'
-    assert test_pipeline.pipe_folder == './tests/running_pipelines/basic_pipeline'
+    assert test_pipeline.pipe_path == './tests/running_pipelines/basic_pipeline'
 
 
 def test_pipeline_new_status():

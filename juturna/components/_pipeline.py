@@ -3,7 +3,6 @@ import copy
 import json
 import pathlib
 import gc
-import typing
 import logging
 
 from juturna.components import _component_builder
@@ -29,10 +28,10 @@ class Pipeline:
             pipeline configuration, including the pipeline name, ID, folder,
             nodes, and links.
         """
-        self._raw_config = config
+        self._raw_config = copy.deepcopy(config)
         self._name = self._raw_config['pipeline']['name']
         self._pipe_id = self._raw_config['pipeline']['id']
-        self._pipe_folder = self._raw_config['pipeline']['folder']
+        self._pipe_path = self._raw_config['pipeline']['folder']
 
         self._pipe = dict()
 
@@ -40,7 +39,7 @@ class Pipeline:
         self.created_at = time.time()
 
     @staticmethod
-    def from_json(json_path: str) -> typing.Self:
+    def from_json(json_path: str) -> 'Pipeline':
         """
         Create a pipeline starting from the path of the configuration file
         rather than from the actual configuration content.
@@ -65,8 +64,8 @@ class Pipeline:
         return self._pipe_id
 
     @property
-    def pipe_folder(self) -> str:
-        return self._pipe_folder
+    def pipe_path(self) -> str:
+        return self._pipe_path
 
     @property
     def name(self) -> str:
@@ -76,13 +75,13 @@ class Pipeline:
     def status(self) -> dict:
         return {
             'pipe_id': self.pipe_id,
-            'folder': self.pipe_folder,
+            'folder': self.pipe_path,
             'self': self._status,
             'nodes': {
                 n['node'].name: {
                     'status': n['node'].status,
                     'config': n['node'].configuration
-                } for n in self._pipe.values()}
+                } for n in self._pipe.values()} if self._pipe else dict()
         }
 
     def warmup(self):
@@ -94,10 +93,13 @@ class Pipeline:
         """
         if self._status != PipelineStatus.NEW:
             raise RuntimeError(f'pipeline {self.name} cannot be warmed up')
+        
+        if self._pipe is None:
+            self._pipe = dict()
 
-        pathlib.Path(self.pipe_folder).mkdir(parents=True, exist_ok=True)
+        pathlib.Path(self.pipe_path).mkdir(parents=True, exist_ok=True)
 
-        with open(pathlib.Path(self.pipe_folder, 'config.json'), 'w') as f:
+        with open(pathlib.Path(self.pipe_path, 'config.json'), 'w') as f:
             json.dump(self._raw_config, f, indent=2)
 
         nodes = self._raw_config['pipeline']['nodes']
@@ -105,7 +107,7 @@ class Pipeline:
 
         for node in nodes:
             name = node['name']
-            node_folder = pathlib.Path(self.pipe_folder, name)
+            node_folder = pathlib.Path(self.pipe_path, name)
             node_folder.mkdir(exist_ok=True)
 
             _node, _register = _component_builder.build_component(
@@ -115,7 +117,7 @@ class Pipeline:
             logging.info(f'SESS: calling configure for node {name}')
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)
-            _node.session_path = node_folder
+            _node.pipe_path = node_folder
             _node.status = ComponentStatus.NEW
 
             if _register:
@@ -151,6 +153,9 @@ class Pipeline:
         """
         if self._status != PipelineStatus.READY:
             raise RuntimeError(f'pipeline {self.name} is not ready')
+        
+        if self._pipe is None:
+            raise RuntimeError(f'pipeline {self.name} is not configured')
 
         for node_name in list(self._pipe.keys())[::-1]:
             self._pipe[node_name]['node'].start()
@@ -168,6 +173,9 @@ class Pipeline:
         """
         if self._status != PipelineStatus.RUNNING:
             raise RuntimeError(f'pipeline {self.name} is not running')
+        
+        if self._pipe is None:
+            raise RuntimeError(f'pipeline {self.name} is not configured')
 
         for node_name in list(self._pipe.keys())[::-1]:
             self._pipe[node_name]['node'].stop()
@@ -186,6 +194,9 @@ class Pipeline:
         """
         if self._status == PipelineStatus.RUNNING:
             self.stop()
+
+        if self._pipe is None:
+            return
 
         for node_name in list(self._pipe.keys())[::-1]:
             logging.info('clearing source...')

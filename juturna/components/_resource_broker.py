@@ -10,7 +10,7 @@ def resources() -> list:
     return list(_RESOURCES.keys())
 
 
-def get(resource: str, args: dict = None):
+def get(resource: str, args: dict | None = None):
     if args is None:
         args = dict()
 

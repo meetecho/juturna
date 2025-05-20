@@ -78,7 +78,7 @@ class Buffer:
         """
         return self._received
 
-    def data(self) -> Message:
+    def data(self) -> Message | None:
         """
         Return a copy of the datum currently stored in the buffer.
 
@@ -108,7 +108,8 @@ class Buffer:
             than the buffer version.
         """
         with self._lock:
-            if last_version >= self.version():
-                return None
+            if (curr_version := self.version()) and \
+                (last_version >= curr_version):
+                    return None
 
             return copy.deepcopy(self._this_message)

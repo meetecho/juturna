@@ -10,7 +10,7 @@ class Message:
     A message is an object that all nodes produce and read to and from buffers.
     """
     def __init__(self,
-                 creator: str = None,
+                 creator: str | None = None,
                  version: int = -1,
                  payload: typing.Any = None):
         """
@@ -50,10 +50,9 @@ class Message:
 
         self._current_timer = None
 
-    @classmethod
-    def from_message(cls,
-                     message: typing.Self,
-                     keep_meta: bool = False) -> typing.Self:
+    @staticmethod
+    def from_message(message: 'Message',
+                     keep_meta: bool = False) -> 'Message':
         msg = Message()
         msg._timers = copy.deepcopy(message.timers)
 
@@ -80,7 +79,7 @@ class Message:
             'timers': self.timers
         }
 
-    def to_json(self, encoder: callable = None) -> str:
+    def to_json(self, encoder: typing.Callable | None = None) -> str:
         """
         Convert the message to a JSON string.
 
@@ -97,7 +96,7 @@ class Message:
         return json.dumps(self.to_dict(), default=encoder, indent=2)
 
     @property
-    def creator(self) -> str:
+    def creator(self) -> str | None:
         """
         Returns the creator of the message.
         """
@@ -136,7 +135,7 @@ class Message:
         """
         return self._timers
 
-    def timer(self, timer_name: str, timer_value: float = None):
+    def timer(self, timer_name: str, timer_value: float | None = None):
         """
         Records a timer with the given name and value.
         If no value is provided, the current time is used.
