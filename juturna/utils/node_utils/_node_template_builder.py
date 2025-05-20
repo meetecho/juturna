@@ -4,7 +4,7 @@ import warnings
 
 def node_stub(node_name: str,
               node_type: str,
-              node_class_name: str = None,
+              node_class_name: str | None = None,
               destination: str = './plugins'):
     """
     Create a basic node template with a config file and a README file.

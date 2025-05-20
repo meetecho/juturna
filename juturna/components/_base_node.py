@@ -1,7 +1,7 @@
 import pathlib
 import inspect
 
-from typing import Union
+from typing import Callable, Union
 
 from juturna.components._buffer import Buffer
 from juturna.components._bridge import Bridge
@@ -31,7 +31,7 @@ class BaseNode:
         self._name = None
         self._status = None
         self._session_id = None
-        self._session_path = None
+        self._pipe_path = None
 
         self._bridge = StreamBridge('') \
             if node_type == 'source' else PollBridge('')
@@ -45,7 +45,7 @@ class BaseNode:
             self.clear_source()
 
     @property
-    def name(self) -> str:
+    def name(self) -> str | None:
         """
         The node symbolic name. This name will also be assigned to the node
         bridge component.
@@ -69,7 +69,7 @@ class BaseNode:
         self._bridge = bridge
 
     @property
-    def status(self) -> ComponentStatus:
+    def status(self) -> ComponentStatus | None:
         return self._status
 
     @property
@@ -84,7 +84,7 @@ class BaseNode:
         self._status = ComponentStatus(new_status)
 
     @property
-    def pipe_id(self) -> str:
+    def pipe_id(self) -> str | None:
         """
         Id of the pipe the node belongs to. This will automatically be
         assigned to the node when it is intantiated within a pipeline, but can
@@ -98,7 +98,7 @@ class BaseNode:
         self._session_id = session_id
 
     @property
-    def pipe_path(self) -> str:
+    def pipe_path(self) -> str | None:
         """
         Path to the pipeline session directory. The node has a dedicated folder
         within the pipeline session directory where it stores its data. This
@@ -106,11 +106,11 @@ class BaseNode:
         a pipeline, but can also be set manually. An isolated node not included
         within a pipeline will have a ``None`` value for this field.
         """
-        return self._session_path
+        return self._pipe_path
 
     @pipe_path.setter
     def pipe_path(self, session_path: str):
-        self._session_path = session_path
+        self._pipe_path = session_path
 
     @property
     def static_path(self) -> pathlib.Path:
@@ -121,11 +121,18 @@ class BaseNode:
         """
         return pathlib.Path(inspect.getfile(self.__class__)).parent
 
-    def dump_json(self, message: Message, file_name: str):
-        with open(pathlib.Path(self.pipe_path, file_name), 'w') as f:
-            f.write(message.to_json(encoder=lambda x: x.tolist()))
+    def dump_json(self, message: Message, file_name: str) -> str | None:
+        if self.pipe_path is None:
+            return None
 
-    def set_source(self, source: Union[Buffer, callable],
+        dump_path = pathlib.Path(self.pipe_path, file_name)
+
+        with open(dump_path, 'w') as f:
+            f.write(message.to_json(encoder=lambda x: x.tolist()))
+        
+        return str(dump_path)
+
+    def set_source(self, source: Union[Buffer, Callable],
                    by: int = 0,
                    mode: str = 'post'):
         """
@@ -152,7 +159,7 @@ class BaseNode:
         if self._bridge.source is None:
             self._bridge.set_source(source, by, mode)
 
-    def add_destination(self, destination: Union[Buffer, callable]):
+    def add_destination(self, destination: Union[Buffer, Callable]):
         self._bridge.add_destination(destination)
 
     def clear_source(self):

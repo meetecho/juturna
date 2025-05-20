@@ -18,7 +18,7 @@ _REGISTER_IMPORT_MASK = '{}.{}'
 
 def node(node_type: str,
          node_name: str,
-         import_prefix: str = _NODE_IMPORT_PATH) -> Tuple[type, dict]:
+         import_prefix: str = _NODE_IMPORT_PATH) -> Tuple[type | None, dict]:
     """Constructs a node module based on the given node type and name.
 
     This function is responsible for dynamically constructing a node module
@@ -83,7 +83,7 @@ def buffer(buf_type: str, import_prefix: str = _REGISTER_IMPORT_PATH):
     return _build(_reg_module_path, buf_type)
 
 
-def _build(_item_path: str, _item_type: str) -> Tuple[type, dict]:
+def _build(_item_path: str, _item_type: str) -> Tuple[type | None, dict]:
     """Build a module by discovering its classes and configuration.
 
     This helper function combines several steps to build a module: discovering
@@ -167,7 +167,7 @@ def _get_module_launcher(_classes: Iterable, _item_type: str) -> Type | None:
         return None
 
 
-def _get_module_conf(_module_launcher: str | None) -> dict:
+def _get_module_conf(_module_launcher: Type | None) -> dict:
     """Loads the configuration for a module if a config.toml file is found.
 
     This function attempts to load a TOML configuration file located in the
@@ -199,7 +199,7 @@ def _get_module_conf(_module_launcher: str | None) -> dict:
     return dict()
 
 
-def discover_components(import_prefix: str = None) -> dict:
+def discover_components(import_prefix: str | None = None) -> dict:
     _prefix_paths = _get_full_prefix(import_prefix)
     components = {
         'nodes': {
@@ -215,7 +215,7 @@ def discover_components(import_prefix: str = None) -> dict:
     return components
 
 
-def _get_full_prefix(prefix: str = None) -> dict:
+def _get_full_prefix(prefix: str | None = None) -> dict:
     node_path = pathlib.Path(
         prefix or _NODE_IMPORT_PATH.replace('.', os.sep),
         'nodes' if prefix else '')

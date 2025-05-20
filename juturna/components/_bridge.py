@@ -1,5 +1,5 @@
 import threading
-import time
+import weakref
 import logging
 
 from typing import Callable
@@ -35,7 +35,7 @@ class Bridge:
         self._source_f = None
 
     @property
-    def source(self) -> Union[Callable, Buffer]:
+    def source(self) -> Union[Callable, Buffer, None]:
         return self._source_f
 
     @source.setter
@@ -45,9 +45,11 @@ class Bridge:
 
     def add_destination(self, destination: Union[Callable, Buffer]):
         if isinstance(destination, Buffer):
-            self._destination_containers.append(destination)
+            # self._destination_containers.append(destination)
+            self._destination_containers.append(weakref.ref(destination))
         elif isinstance(destination, Callable):
-            self._destination_callbacks.append(destination)
+            # self._destination_callbacks.append(destination)
+            self._destination_callbacks.append(weakref.ref(destination))
         else:
             raise TypeError('Destination must be Buffer or Callable')
 
@@ -56,10 +58,10 @@ class Bridge:
 
     def transmit(self, message: Message):
         for _destination_container in self._destination_containers:
-            _destination_container.update(message)
+            _destination_container().update(message)
 
         for _destination_callback in self._destination_callbacks:
-            _destination_callback(message)
+            _destination_callback()(message)
 
     def start(self):
         if self._thread is None:

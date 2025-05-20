@@ -1,5 +1,5 @@
 import pathlib
-import logging
+import typing
 
 import juturna as jt
 
@@ -72,15 +72,15 @@ def _build_buf(buffer_remote_config: dict) -> Buffer | None:
     return concrete_buffer
 
 
-def fetch_node(fetch_args: list):
+def fetch_node(fetch_args: list) -> tuple:
     return _fetch_component(fetch_args, mapper.node)
 
 
-def fetch_buffer(fetch_args: list):
+def fetch_buffer(fetch_args: list) -> tuple:
     return _fetch_component(fetch_args, mapper.buffer)
 
 
-def _fetch_component(fetch_args: list, fetch_fun: callable):
+def _fetch_component(fetch_args: list, fetch_fun: typing.Callable) -> tuple:
     _component, _config = None, None
 
     for args in fetch_args:
@@ -94,8 +94,8 @@ def _fetch_component(fetch_args: list, fetch_fun: callable):
 
 def component_lookup_args(
         component_type: str,
-        component_mark: str = None,
-        plugin_dirs: list = None):
+        component_mark: str | None = None,
+        plugin_dirs: list | None = None):
     sub = 'nodes' if component_mark else 'buffers'
     plugin_dirs = plugin_dirs or list()
     plugin_dirs = ['.'.join(pathlib.Path(p, sub).parts) for p in plugin_dirs]
