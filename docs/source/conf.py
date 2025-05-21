@@ -1,7 +1,6 @@
 import os
 import sys
 
-
 sys.path.insert(0, os.path.abspath('../../juturna'))
 
 project = 'juturna'
@@ -37,6 +36,15 @@ html_css_files = [
 ]
 
 html_theme_options = {
+    "show_nav_level": 2,
+    "collapse_navigation": True,
+    "navbar_align": "content",
+    "secondary_sidebar_items": ["page-toc"],
     "github_url": "https://github.com/meetecho/juturna",
-    "collapse_navigation": True
+}
+
+html_sidebars = {
+    "**": [
+        "sidebar-nav-bs",
+    ]
 }

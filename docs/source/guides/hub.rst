@@ -14,7 +14,7 @@ pipelines that can be downloaded and used in your own projects.
 Hub APIs
 ========
 The hub APIs are available in the :code:`juturnat.hub` module. For a more
-detailed description of the APIs, refer to the :doc:`API doc page <./apis>`.
+detailed description of the APIs, refer to the :doc:`API doc page <../apis/index>`.
 
 You can list all the available plugins as follows::
     
