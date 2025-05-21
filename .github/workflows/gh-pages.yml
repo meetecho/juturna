@@ -1,0 +1,48 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Setup Python and Sphinx
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          pip install "./[dev]"
+
+      # Run autodoc
+      - name: Generate documentation
+        run: |
+          sphinx-apidoc -f -o docs/source/apis --no-toc juturna/
+          cp docs/source/static-index/apis.rst docs/source/apis/index.rst
+
+      # Build docs
+      - name: Build Sphinx
+        run: |
+          sphinx-build -b html docs/source/ docs/build/html
+
+      # copy static files and assets
+      - name: Prepare site
+        run: |
+          mkdir -p site
+          touch docs/build/html/.nojekyll
+          cp -r docs/build/html site/docs
+
+      # Deploy on gh-pages
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
+          keep_files: false  # Keep previous version of the site

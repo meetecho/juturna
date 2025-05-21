@@ -147,7 +147,7 @@ within::
 
 These nodes only require their configuration arguments and nothing else. For a
 full description of built-in nodes, refer to the :doc:`built-in nodes doc page
-<./nodes>`.
+<../concepts/nodes>`.
 
 Plugin nodes
 ------------
