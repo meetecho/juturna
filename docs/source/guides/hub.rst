@@ -2,10 +2,16 @@
 Juturna Hub
 ###########
 
-:bdg-warning:`warning`  **Hub features are still in development, so you should
-expect breaking changes and bugs. If you find any of the latter, please report
-them on GitHub. We are working hard to make the hub a reality, and we are
-looking for your feedback to make it better.**
+----
+
+:bdg-warning:`warning`
+
+**Hub features are still in development, so you should expect breaking changes
+and bugs. If you find any of the latter, please report them on GitHub. We are
+working hard to make the hub a reality, and we are looking for your feedback to
+make it better.**
+
+----
 
 Custom nodes and pipelines can be shared with the community and accesed through
 the Juturna Hub. The hub is a repository of community-contributed nodes and
