@@ -36,7 +36,6 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p site
-          touch docs/build/html/.nojekyll
           cp -r docs/build/html site/docs
 
       # Deploy on gh-pages
@@ -45,4 +44,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site
+          enable_jekyll: false
           keep_files: false  # Keep previous version of the site
