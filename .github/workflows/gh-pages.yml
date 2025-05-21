@@ -36,7 +36,7 @@ jobs:
       - name: Prepare site
         run: |
           mkdir -p site
-          touch .nojekyll docs/build/html/
+          touch docs/build/html/.nojekyll
           cp -r docs/build/html site/docs
 
       # Deploy on gh-pages
