@@ -1,8 +1,3 @@
-import os
-import sys
-
-sys.path.insert(0, os.path.abspath('../../juturna'))
-
 project = 'juturna'
 copyright = '2025, Meetecho'
 author = 'Antonio Bevilacqua'
@@ -31,9 +26,13 @@ html_static_path = ['_static']
 
 # custom css content (relative to _static path)
 html_css_files = [
-    './css/style.css',
-    './css/overrides.css',
-    './css/fa-6.7.2.all.min.css'
+#    'css/custom.css',
+    'css/style.css',
+    'css/fa-6.7.2.all.min.css'
+]
+
+html_js_files = [
+    'js/meetecho-icon.js',
 ]
 
 html_theme_options = {
@@ -42,6 +41,14 @@ html_theme_options = {
     "navbar_align": "content",
     "secondary_sidebar_items": ["page-toc"],
     "github_url": "https://github.com/meetecho/juturna",
+    "icon_links": [
+        {
+            "name": "Meetecho",
+            "url": "https://meetecho.com",
+            "icon": "fa-custom fa-meetecho",
+            "type": "fontawesome",
+        }
+    ],
 }
 
 html_sidebars = {
