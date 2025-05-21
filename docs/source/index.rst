@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-juturna documentation
+Juturna documentation
 =====================
 
 **Juturna** is a data pipeline library written in Python. It is particularly
@@ -40,7 +40,7 @@ exploring and testing AI models, in a modular and flexible fashion.
 
         +++
 
-        .. button-ref:: guides/nodes
+        .. button-ref:: concepts/nodes
             :expand:
             :color: primary
             :click-parent:
@@ -75,23 +75,31 @@ exploring and testing AI models, in a modular and flexible fashion.
 
         +++
 
-        .. button-ref:: guides/apis
+        .. button-ref:: apis/index
             :expand:
             :color: primary
             :click-parent:
 
             To the reference guide
 
+================
+Explore the docs
+================
+
 .. toctree::
-   :maxdepth: 1
-   :caption: Explore the docs
+    :maxdepth: 2
+    :titlesonly:
+    
+    guides/index
 
-   guides/install
-   guides/pipeline
-   guides/custom_nodes
-   guides/message
-   guides/nodes
-   guides/hub
-   guides/apis
-   guides/faq
+.. toctree::
+    :maxdepth: 2
+    :titlesonly:
+    
+    concepts/index
 
+.. toctree::
+    :maxdepth: 1
+    :titlesonly:
+
+    apis/index
