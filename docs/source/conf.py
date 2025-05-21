@@ -31,10 +31,9 @@ html_static_path = ['_static']
 
 # custom css content (relative to _static path)
 html_css_files = [
-    './css/custom.css',
-    './css/style.css',
-    './css/overrides.css',
-    './css/fa-6.7.2.all.min.css'
+    'css/custom.css',
+    'css/style.css',
+    'css/fa-6.7.2.all.min.css'
 ]
 
 html_theme_options = {
