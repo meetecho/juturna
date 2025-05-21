@@ -1,6 +1,11 @@
 # Juturna – Real-time AI Pipeline Framework
 
-[![License](https://img.shields.io/github/license/meetecho/juturna)](LICENSE)
+[![License](https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge)](LICENSE)
+![Python Version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fmeetecho%2Fjuturna%2Frefs%2Fheads%2Fmain%2Fpyproject.toml&style=for-the-badge&color=green)
+
+[![Stars](https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge)](STARS)
+[![Forks](https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge)](FORKS)
+[![issues](https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge)](ISSUES)
 
 ## :rotating_light: Disclaimer
 Juturna is still under **heavy development**, so there might be breaking changes
