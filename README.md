@@ -31,6 +31,7 @@ Among its many features, there are a few keypoints to highligh about Juturna:
   throughput
 * 📊 **Observability:** built-in logging and metrics support
 
+[documentation](https://meetecho.github.io/juturna/index.html) | [contribute](./CONTRIBUTING.md) | [meetecho](https://www.meetecho.com/en/)
 
 ## Overview
 

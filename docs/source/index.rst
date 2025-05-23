@@ -29,6 +29,8 @@ Juturna documentation
 useful for fast prototyping multimedia, real-time data applications, as well as
 exploring and testing AI models, in a modular and flexible fashion.
 
+`github repository <https://github.com/meetecho/juturna>`_ | `contribute <https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md>`_ | `meetecho <https://www.meetecho.com/en/>`_
+
 .. grid:: 1 1 2 2
     :gutter: 2 3 4 4
 
@@ -104,9 +106,6 @@ exploring and testing AI models, in a modular and flexible fashion.
 ================
 Explore the docs
 ================
-
-.. ref:: guides/index
-Ciao!
 
 .. toctree::
     :maxdepth: 2
