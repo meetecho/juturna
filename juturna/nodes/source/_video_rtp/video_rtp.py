@@ -60,7 +60,6 @@ class VideoRTP(BaseNode):
         self._buffered_frames = list()
 
         self._sdp_file_path = None
-        self._rec_port = None
         self._capture = None
         self._preframe_tm = -1
 
@@ -91,7 +90,8 @@ class VideoRTP(BaseNode):
         super().start()
 
     def stop(self):
-        self._capture.release()
+        if self._capture:
+            self._capture.release()
 
         super().stop()
 
