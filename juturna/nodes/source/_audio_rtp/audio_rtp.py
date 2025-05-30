@@ -70,10 +70,10 @@ class AudioRTP(BaseNode):
         self._ffmpeg_proc = None
 
     def configure(self):
-        if self._rec_port == "auto":
+        if self._rec_port == 'auto':
             self._rec_port = rb.get('port')
 
-        if self._trx_port == "auto":
+        if self._trx_port == 'auto':
             self._trx_port = rb.get('port')
 
         self._client = RTPClient(self._trx_host, self._trx_port)
