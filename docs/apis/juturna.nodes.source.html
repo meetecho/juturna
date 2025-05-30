@@ -507,21 +507,17 @@ the bridge is started correctly.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.nodes.source.</span></span><span class="sig-name descname"><span class="pre">VideoRTP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rec_host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rec_port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">video_duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.nodes.source.</span></span><span class="sig-name descname"><span class="pre">VideoRTP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rec_host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rec_port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="juturna.components.html#juturna.components.BaseNode" title="juturna.components._base_node.BaseNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseNode</span></code></a></p>
+<p>Source node for video streaming</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.configure">
 <span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.configure" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.read_frame">
-<span class="sig-name descname"><span class="pre">read_frame</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.read_frame" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.read_video">
-<span class="sig-name descname"><span class="pre">read_video</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.read_video" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.destroy">
+<span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.destroy" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -549,7 +545,7 @@ the bridge is stopped correctly.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.update">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_frame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.update" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">frame</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.update" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -630,8 +626,7 @@ the bridge is stopped correctly.</p>
 </li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.VideoRTP"><code class="docutils literal notranslate"><span class="pre">VideoRTP</span></code></a><ul class="nav section-nav flex-column">
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.VideoRTP.configure"><code class="docutils literal notranslate"><span class="pre">VideoRTP.configure()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.VideoRTP.read_frame"><code class="docutils literal notranslate"><span class="pre">VideoRTP.read_frame()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.VideoRTP.read_video"><code class="docutils literal notranslate"><span class="pre">VideoRTP.read_video()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.VideoRTP.destroy"><code class="docutils literal notranslate"><span class="pre">VideoRTP.destroy()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.VideoRTP.sdp_descriptor"><code class="docutils literal notranslate"><span class="pre">VideoRTP.sdp_descriptor</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.VideoRTP.start"><code class="docutils literal notranslate"><span class="pre">VideoRTP.start()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.VideoRTP.stop"><code class="docutils literal notranslate"><span class="pre">VideoRTP.stop()</span></code></a></li>
