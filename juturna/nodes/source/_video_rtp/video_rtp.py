@@ -1,132 +1,109 @@
-import os
-import time
+import signal
 import string
 import pathlib
-import logging
+import time
 
-import cv2
+import ffmpeg
+import numpy as np
 
 from juturna.components import Message
 from juturna.components import BaseNode
-
 from juturna.components import _resource_broker as rb
 
 
 class VideoRTP(BaseNode):
+    """Source node for video streaming
+    """
     def __init__(self,
                  rec_host: str,
                  rec_port: int | str,
-                 payload_type: str,
+                 payload_type: int,
                  codec: str,
-                 mode: str,
-                 fps: int,
-                 rate: int,
-                 video_duration: float):
+                 width: int,
+                 height: int):
         """
         Parameters
         ----------
         rec_host : str
-            Hostname of the remote RTP server to receive video from.
+            Hostname of the remote RTP stream to receive video from.
         rec_port : int | str
-            Port of the RTP server to receive video from. If set to "auto",
+            Port of the RTP stream to receive video from. If set to "auto",
             the port will be assigned automatically by the resource broker.
-        payload_type : str
+        payload_type : int
             Payload type for the RTP stream.
         codec : str
-            Codec used for the RTP stream.
-        mode : str
-            Mode of the video stream. Can be "still" or "video".
-        fps : int
-            When working in "video" mode, the fps of the source video stream,
-            used to determine the duration of the buffered video.
-        rate : int
-            When working in "still" mode, the rate at which to sample frames
-            from the video stream, as number of frames per second.
-        video_duration : float
-            Duration of the video chunks to sample, in seconds. To be used
-            when working in "video" mode.
+            The codec used from the remote video source.
+        width : int
+            Width of the received RTP video stream.
+        height : int
+            Height of the received RTP video stream.
         """
         super().__init__('source')
 
         self._rec_host = rec_host
         self._rec_port = rec_port
-        self._payload = payload_type
+
+        self._payload_type = payload_type
         self._codec = codec
 
-        self._mode = mode
-        self._fps = fps
-        self._rate = 1 / rate
-        self._video_duration = video_duration
-        self._buffered_frames = list()
+        self._width = width
+        self._height = height
 
+        self._ffmpeg_pipe = None
+        self._ffmpeg_proc = None
         self._sdp_file_path = None
-        self._capture = None
-        self._preframe_tm = -1
-
-        self.frame_width = -1
-        self.frame_height = -1
-
-        self.set_source(
-            self.read_frame if self._mode == 'still' else self.read_video)
+        self._sent = 0
 
     def configure(self):
-        if self._rec_port == "auto":
+        if self._rec_port == 'auto':
             self._rec_port = rb.get('port')
 
-        logging.info(
-            f'{self.name}: video source ready on port {self._rec_port}')
-
     def warmup(self):
-        os.environ['OPENCV_FFMPEG_CAPTURE_OPTIONS'] = \
-            'protocol_whitelist;file,rtp,udp'
+        self._ffmpeg_pipe = (
+            ffmpeg
+            .input(self.sdp_descriptor, protocol_whitelist='file,rtp,udp')
+            .output('pipe:',
+                    s=f'{self._width}x{self._height}',
+                    format='rawvideo',
+                    pix_fmt='rgb24',
+                    loglevel='quiet'))
 
     def start(self):
-        self._capture = cv2.VideoCapture(str(self.sdp_descriptor))
-        self.frame_width = int(self._capture.get(3))
-        self.frame_height = int(self._capture.get(4))
+        self._ffmpeg_proc = self._ffmpeg_pipe.run_async(
+            pipe_stdin=True, pipe_stdout=True)
 
-        self._preframe_tm = time.time()
+        self.set_source(lambda: self._ffmpeg_proc.stdout.read(
+            self._width * self._height * 3))
 
         super().start()
 
     def stop(self):
-        if self._capture:
-            self._capture.release()
+        try:
+            self._ffmpeg_proc.terminate()
+            time.sleep(2)
+            self._ffmpeg_proc.send_signal(signal.SIGINT)
+
+            self._ffmpeg_pipe = None
+            self._ffmpeg_proc = None
+        except Exception:
+            ...
 
         super().stop()
 
-    def read_frame(self):
-        _, frame = self._capture.read()
-        elapsed_time = time.time() - self._preframe_tm
+    def destroy(self):
+        self.stop()
 
-        if elapsed_time < self._rate:
-            return None
+    def update(self, frame):
+        try:
+            full_frame = np.frombuffer(frame, np.uint8).reshape(
+                (self._height, self._width, 3))
+            to_send = Message(creator=self.name, version=self._sent)
+            to_send.payload = full_frame
 
-        self._preframe_tm = time.time()
-
-        return frame
-
-    def read_video(self):
-        while len(self._buffered_frames) <= self._video_duration * self._fps:
-            frame, _ = self._capture.read()
-            self._buffered_frames.append(frame)
-
-        frames = self._buffered_frames[:]
-        self._buffered_frames = list()
-
-        return frames
-
-    def update(self, new_frame):
-        if new_frame is None:
-            return
-
-        to_send = Message(creator=self.name)
-        to_send.payload = new_frame
-        to_send.meta = {
-            'mode': self._mode
-        }
-
-        self.transmit(to_send)
+            self.transmit(to_send)
+            self._sent += 1
+        except Exception as _:
+            ...
 
     @property
     def sdp_descriptor(self) -> pathlib.Path:
@@ -137,13 +114,13 @@ class VideoRTP(BaseNode):
             self.static_path, 'remote_source.sdp.template')
 
         session_sdp_file = pathlib.Path(
-            self.pipe_path, '_session.sdp')
+            self.pipe_path, '_session_in.sdp')
 
         sdp_content = {
             '_remote_rtp_host': self._rec_host,
             '_remote_rtp_port': self._rec_port,
             '_remote_codec': self._codec,
-            '_remote_payload_type': self._payload
+            '_remote_payload_type': self._payload_type
         }
 
         with open(sdp_file_template, 'r') as f:

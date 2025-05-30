@@ -3,7 +3,9 @@ rec_host = "127.0.0.1"
 rec_port = "auto"
 payload_type = 96
 codec = "vp8"
-width = 640
-height = 480
+fps = 20
+mode = "still"
+rate = 10
+video_duration = 3
 
 [meta]
