@@ -492,6 +492,29 @@ within a pipeline will have a <code class="docutils literal notranslate"><span c
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.BaseNode.prepare_template">
+<span class="sig-name descname"><span class="pre">prepare_template</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">template_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_destination_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arguments</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="headerlink" href="#juturna.components.BaseNode.prepare_template" title="Link to this definition">#</a></dt>
+<dd><p>Fetch a template file from the node folder, compile it, and save the
+produced file to the node pipeline folder. The template will be compiled
+with basic substitution of the passed arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>template_name</strong> (<em>str</em>) – The name of the template file to retrieve in the node folder.</p></li>
+<li><p><strong>file_destination_name</strong> (<em>str</em>) – The name of the destination file in the node pipeline folder.</p></li>
+<li><p><strong>arguments</strong> (<em>dict</em>) – The argument values to substitute in the template file.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The path of the filed compiled and saved from the template.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pathlib.Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.BaseNode.set_source">
 <span class="sig-name descname"><span class="pre">set_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Buffer</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'post'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.BaseNode.set_source" title="Link to this definition">#</a></dt>
 <dd><p>Set the node source (to be used for <code class="docutils literal notranslate"><span class="pre">source</span></code> nodes). The source can be
@@ -828,6 +851,7 @@ their required resources.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.name"><code class="docutils literal notranslate"><span class="pre">BaseNode.name</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.pipe_id"><code class="docutils literal notranslate"><span class="pre">BaseNode.pipe_id</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.pipe_path"><code class="docutils literal notranslate"><span class="pre">BaseNode.pipe_path</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.prepare_template"><code class="docutils literal notranslate"><span class="pre">BaseNode.prepare_template()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.set_source"><code class="docutils literal notranslate"><span class="pre">BaseNode.set_source()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.start"><code class="docutils literal notranslate"><span class="pre">BaseNode.start()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.static_path"><code class="docutils literal notranslate"><span class="pre">BaseNode.static_path</span></code></a></li>

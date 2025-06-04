@@ -90,31 +90,36 @@ Notes:
 |                        |                     | resources)                  |
 +------------------------+---------------------+-----------------------------+
 
-+-----------------------+----------------+-----------------------------+
-| method                | arguments      | description                 |
-+=======================+================+=============================+
-| ``self.configure()``  | ``()``         | configure the node (request |
-|                       |                | resources and perform other |
-|                       |                | system-dependent            |
-|                       |                | intialisations)             |
-+-----------------------+----------------+-----------------------------+
-| ``self.warmup()``     | ``()``         | implement node warmup       |
-|                       |                | operations                  |
-+-----------------------+----------------+-----------------------------+
-| ``self.set_source()`` | ``(callable)`` | set the data source for the |
-|                       |                | node (to be called only for |
-|                       |                | source nodes)               |
-+-----------------------+----------------+-----------------------------+
-| ``self.start()``      | ``()``         | start the node bridge       |
-+-----------------------+----------------+-----------------------------+
-| ``self.stop()``       | ``()``         | stop the node bridge        |
-+-----------------------+----------------+-----------------------------+
-| ``self.update()``     | ``(Message)``  | receive and process the     |
-|                       |                | latest message from source  |
-+-----------------------+----------------+-----------------------------+
-| ``self.transmit()``   | ``(Message)``  | send a message forward in   |
-|                       |                | the pipeline                |
-+-----------------------+----------------+-----------------------------+
++-----------------------------+----------------------+-----------------------------+
+| method                      | arguments            | description                 |
++=============================+======================+=============================+
+| ``self.configure()``        | ``()``               | configure the node (request |
+|                             |                      | resources and perform other |
+|                             |                      | system-dependent            |
+|                             |                      | intialisations)             |
++-----------------------------+----------------------+-----------------------------+
+| ``self.warmup()``           | ``()``               | implement node warmup       |
+|                             |                      | operations                  |
++-----------------------------+----------------------+-----------------------------+
+| ``self.set_source()``       | ``(callable)``       | set the data source for the |
+|                             |                      | node (to be called only for |
+|                             |                      | source nodes)               |
++-----------------------------+----------------------+-----------------------------+
+| ``self.prepare_template()`` | ``(str, str, dict)`` | compile a template file     |
+|                             |                      | in the node folder and      |
+|                             |                      | save it in the pipeline     |
+|                             |                      | folder                      |
++-----------------------------+----------------------+-----------------------------+
+| ``self.start()``            | ``()``               | start the node bridge       |
++-----------------------------+----------------------+-----------------------------+
+| ``self.stop()``             | ``()``               | stop the node bridge        |
++-----------------------------+----------------------+-----------------------------+
+| ``self.update()``           | ``(Message)``        | receive and process the     |
+|                             |                      | latest message from source  |
++-----------------------------+----------------------+-----------------------------+
+| ``self.transmit()``         | ``(Message)``        | send a message forward in   |
+|                             |                      | the pipeline                |
++-----------------------------+----------------------+-----------------------------+
 
 Notes:
 
@@ -135,6 +140,51 @@ Notes:
 - the ``transmit()`` method should ideally be invoked within the ``update()``
   method; always remember to update the version of the data you are sending,
   otherwise no ``update()`` will be triggered in the destination node
+- a node needs to exist within a pipeline so that templates can be compiled and
+  saved (if the node does not belong to a pipeline, then its ``pipe_path`` will
+  not be specified, hence the compiled template will have no destination
+  folder); at any rate, a ``pipe_path`` should be defined for the node
+
+Node templates
+==============
+
+A node can carry template files, so that they can be dynamically compiled when
+needed and stored in the node pipeline folder. The ``prepare_template()`` node
+method can be used to do so. Assuming a node contains the following files::
+
+    ./plugins
+    └── nodes
+        └── <NODE_TYPE>
+            └── _<NODE_NAME>
+                ├── <NODE_NAME>.py
+                ├── config.toml
+                ├── requirements.txt
+                ├── content.json.template
+                └── readme.md
+
+In this case, ``content.json.template`` is a simple template file where a number
+of fields are defined::
+
+  # content of the template file
+  { "arg_1": "$param_1", "arg_2": "$param_2" }
+
+Then within the node code, the template file can be compiled and saved as
+follows::
+
+  ...
+  
+  self.prepare_template(
+      'content.json.template',
+      'content.json',
+      { 'param_1': 'value_1', 'param_2': 'value_2' })
+  
+  ...
+
+This will result in a file called ``content.json`` to be created in the node
+pipeline folder, ready to be used by the node::
+
+  # compiled template stored in the node pipeline folder
+  { "arg_1": "value_1", "arg_2": "value_2" }
 
 Full node example
 -----------------
