@@ -1,0 +1,8 @@
+ffmpeg \
+    -protocol_whitelist file,rtp,udp \
+    -i $_sdp_location \
+    -f rawvideo \
+    -loglevel quiet \
+    -pix_fmt rgb24 \
+    -s $_frame_shape \
+    pipe:
