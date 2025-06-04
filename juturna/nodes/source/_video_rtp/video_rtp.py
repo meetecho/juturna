@@ -1,9 +1,8 @@
-import signal
 import string
 import pathlib
 import time
+import subprocess
 
-import ffmpeg
 import numpy as np
 
 from juturna.components import Message
@@ -49,9 +48,9 @@ class VideoRTP(BaseNode):
         self._width = width
         self._height = height
 
-        self._ffmpeg_pipe = None
-        self._ffmpeg_proc = None
         self._sdp_file_path = None
+        self._ffmpeg_launcher_path = None
+        self._ffmpeg_proc = None
         self._sent = 0
 
     def configure(self):
@@ -59,18 +58,15 @@ class VideoRTP(BaseNode):
             self._rec_port = rb.get('port')
 
     def warmup(self):
-        self._ffmpeg_pipe = (
-            ffmpeg
-            .input(self.sdp_descriptor, protocol_whitelist='file,rtp,udp')
-            .output('pipe:',
-                    s=f'{self._width}x{self._height}',
-                    format='rawvideo',
-                    pix_fmt='rgb24',
-                    loglevel='quiet'))
+        self._sdp_file_path = self.sdp_descriptor
+        self._ffmpeg_launcher_path = self.ffmpeg_launcher
 
     def start(self):
-        self._ffmpeg_proc = self._ffmpeg_pipe.run_async(
-            pipe_stdin=True, pipe_stdout=True)
+        self._ffmpeg_proc = subprocess.Popen(
+            ['sh', self.ffmpeg_launcher],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            bufsize=10**8)
 
         self.set_source(lambda: self._ffmpeg_proc.stdout.read(
             self._width * self._height * 3))
@@ -79,11 +75,14 @@ class VideoRTP(BaseNode):
 
     def stop(self):
         try:
-            self._ffmpeg_proc.terminate()
-            time.sleep(2)
-            self._ffmpeg_proc.send_signal(signal.SIGINT)
+            self._ffmpeg_proc.stdin.write('q\n')
+            self._ffmpeg_proc.stdin.flush()
+            self._ffmpeg_proc.stdin.close()
 
-            self._ffmpeg_pipe = None
+            time.sleep(2)
+
+            self._ffmpeg_proc.terminate()
+            self._ffmpeg_proc.wait()
             self._ffmpeg_proc = None
         except Exception:
             ...
@@ -107,30 +106,18 @@ class VideoRTP(BaseNode):
 
     @property
     def sdp_descriptor(self) -> pathlib.Path:
-        if self._sdp_file_path:
-            return self._sdp_file_path
+        return self._sdp_file_path or \
+            self.prepare_template(
+                'remote_source.sdp.template', '_session_in.sdp', {
+                    '_remote_rtp_host': self._rec_host,
+                    '_remote_rtp_port': self._rec_port,
+                    '_remote_codec': self._codec,
+                    '_remote_payload_type': self._payload_type })
 
-        sdp_file_template = pathlib.Path(
-            self.static_path, 'remote_source.sdp.template')
-
-        session_sdp_file = pathlib.Path(
-            self.pipe_path, '_session_in.sdp')
-
-        sdp_content = {
-            '_remote_rtp_host': self._rec_host,
-            '_remote_rtp_port': self._rec_port,
-            '_remote_codec': self._codec,
-            '_remote_payload_type': self._payload_type
-        }
-
-        with open(sdp_file_template, 'r') as f:
-            _sdp_template = f.read()
-
-        _local_sdp = string.Template(_sdp_template).substitute(sdp_content)
-
-        with open(session_sdp_file, 'w') as f:
-            f.write(_local_sdp)
-
-        self._sdp_file_path = session_sdp_file.resolve()
-
-        return self._sdp_file_path
+    @property
+    def ffmpeg_launcher(self) -> pathlib.Path:
+        return self._ffmpeg_launcher_path or \
+            self.prepare_template(
+                'ffmpeg_launcher.sh.template', '_ffmpeg_launcher.sh', {
+                    '_sdp_location': self.sdp_descriptor,
+                    '_frame_shape': f'{self._width}x{self._height}' })
