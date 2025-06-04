@@ -1,5 +1,6 @@
 import pathlib
 import inspect
+import string
 
 from typing import Callable, Union
 
@@ -120,6 +121,42 @@ class BaseNode:
         node.
         """
         return pathlib.Path(inspect.getfile(self.__class__)).parent
+
+    def prepare_template(self,
+                         template_name: str,
+                         file_destination_name: str,
+                         arguments: dict) -> pathlib.Path:
+        """
+        Fetch a template file from the node folder, compile it, and save the
+        produced file to the node pipeline folder. The template will be compiled
+        with basic substitution of the passed arguments.
+
+        Parameters
+        ----------
+        template_name : str
+            The name of the template file to retrieve in the node folder.
+        file_destination_name : str
+            The name of the destination file in the node pipeline folder.
+        arguments : dict
+            The argument values to substitute in the template file.
+
+        Returns
+        -------
+        pathlib.Path
+            The path of the filed compiled and saved from the template.
+        """
+        _template_path = pathlib.Path(self.static_path, template_name)
+        _destination_path = pathlib.Path(self.pipe_path, file_destination_name)
+
+        with open(_template_path, 'r') as f:
+            _template_string = f.read()
+
+        _content = string.Template(_template_string).substitute(arguments)
+
+        with open(_destination_path, 'w') as f:
+            f.write(_content)
+
+        return _destination_path.resolve()
 
     def dump_json(self, message: Message, file_name: str) -> str | None:
         if self.pipe_path is None:
