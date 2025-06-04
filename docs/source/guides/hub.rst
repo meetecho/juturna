@@ -2,8 +2,6 @@
 Juturna Hub
 ###########
 
-----
-
 :bdg-warning:`warning`
 
 **Hub features are still in development, so you should expect breaking changes
@@ -63,7 +61,8 @@ module to list and download plugins as follows::
     $ python -m juturna.hub download --pipe pipe_name --destionation ./plugins
 
 Custom plugin repository and authentication tokens
-=================================================
+==================================================
+
 By default, the hub will download plugins from the Juturna Hub repository. That
 means, it will look into the Juturna GitHub repository and scan the ``plugins``
 folder for any available plugins. If you want to use your own custom plugin
