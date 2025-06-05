@@ -1,0 +1,18 @@
+ffmpeg \
+    -f rawvideo \
+    -pix_fmt rgb24 \
+    -s $_in_frame_shape \
+    -i pipe: \
+    -f rtp \
+    -framerate 30 \
+    -g $_gop \
+    -level 3.1 \
+    -loglevel quiet \
+    -pix_fmt yuv420p \
+    -preset ultrafast \
+    -sdp_file $_sdp_file_path \
+    -tune zerolatency \
+    -vcodec libx264 \
+    -vprofile baseline \
+    rtp://$_dst_host:$_dst_port \
+    -y
