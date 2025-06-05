@@ -3,6 +3,8 @@ dst_host = "127.0.0.1"
 dst_port = 8888
 in_width = 640
 in_height = 480
+out_width = 640
+out_height = 480
 framerate = 30
 gop = 90
 
