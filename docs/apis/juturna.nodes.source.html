@@ -456,7 +456,7 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.nodes.source.</span></span><span class="sig-name descname"><span class="pre">AudioRTP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rec_host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trx_host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rec_port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trx_port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP" title="Link to this definition">#</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.nodes.source.</span></span><span class="sig-name descname"><span class="pre">AudioRTP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rec_host</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rec_port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">block_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="juturna.components.html#juturna.components.BaseNode" title="juturna.components._base_node.BaseNode"><code class="xref py py-class docutils literal notranslate"><span class="pre">BaseNode</span></code></a></p>
 <p>Source node for streaming audio</p>
 <dl class="py property">
@@ -474,14 +474,14 @@
 <span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.destroy" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.prepare_local_sdp">
-<span class="sig-name descname"><span class="pre">prepare_local_sdp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sdp_file_template</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">input</span></span></span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.prepare_local_sdp" title="Link to this definition">#</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.ffmpeg_launcher">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ffmpeg_launcher</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#juturna.nodes.source.AudioRTP.ffmpeg_launcher" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.prepare_sdp">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">prepare_sdp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sdp_content</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">template_location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.prepare_sdp" title="Link to this definition">#</a></dt>
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.sdp_descriptor">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sdp_descriptor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#juturna.nodes.source.AudioRTP.sdp_descriptor" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -494,8 +494,17 @@ the bridge is started correctly.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.stop">
+<span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.stop" title="Link to this definition">#</a></dt>
+<dd><p>Stop the node and begin processing. This method is called automatically
+when the parent pipeline is stopped. If you override this method in
+your custom node class, make sure to call the parent method to ensure
+the bridge is stopped correctly.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.update">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.update" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.update" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -622,9 +631,10 @@ the bridge is stopped correctly.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.configuration"><code class="docutils literal notranslate"><span class="pre">AudioRTP.configuration</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.configure"><code class="docutils literal notranslate"><span class="pre">AudioRTP.configure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.destroy"><code class="docutils literal notranslate"><span class="pre">AudioRTP.destroy()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.prepare_local_sdp"><code class="docutils literal notranslate"><span class="pre">AudioRTP.prepare_local_sdp()</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.prepare_sdp"><code class="docutils literal notranslate"><span class="pre">AudioRTP.prepare_sdp()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.ffmpeg_launcher"><code class="docutils literal notranslate"><span class="pre">AudioRTP.ffmpeg_launcher</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.sdp_descriptor"><code class="docutils literal notranslate"><span class="pre">AudioRTP.sdp_descriptor</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.start"><code class="docutils literal notranslate"><span class="pre">AudioRTP.start()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.stop"><code class="docutils literal notranslate"><span class="pre">AudioRTP.stop()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.update"><code class="docutils literal notranslate"><span class="pre">AudioRTP.update()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.nodes.source.AudioRTP.warmup"><code class="docutils literal notranslate"><span class="pre">AudioRTP.warmup()</span></code></a></li>
 </ul>
