@@ -244,7 +244,7 @@ class BaseNode:
     def configure(self):
         ...
 
-    def update(self, message: Message):
+    def update(self, message: Message | bytes):
         ...
 
     def warmup(self):
