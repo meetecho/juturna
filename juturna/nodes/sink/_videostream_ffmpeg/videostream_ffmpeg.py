@@ -18,7 +18,8 @@ class VideostreamFFMPEG(BaseNode):
                  out_width: int,
                  out_height: int,
                  framerate: int,
-                 gop: int):
+                 gop: int,
+                 ffmpeg_proc_path: str):
         """
         Parameters
         ----------
@@ -46,6 +47,7 @@ class VideostreamFFMPEG(BaseNode):
         self._out_height = out_height
         self._framerate = framerate
         self._gop = gop
+        self._ffmpeg_proc_path = ffmpeg_proc_path
 
         self._ffmpeg_pipe = None
         self._ffmpeg_proc = None
@@ -90,7 +92,7 @@ class VideostreamFFMPEG(BaseNode):
     def ffmpeg_launcher(self) -> pathlib.Path:
         return self._ffmpeg_launcher_path or \
             self.prepare_template(
-                'ffmpeg_launcher.sh.template', '_ffmpeg_launcher.sh', {
+                self._ffmpeg_proc_path, '_ffmpeg_launcher.sh', {
                     '_in_frame_shape': f'{self._in_width}x{self._in_height}',
                     '_out_frame_shape': f'{self._out_width}x{self._out_height}',
                     '_dst_host': self._dst_host,

@@ -7,5 +7,6 @@ out_width = 640
 out_height = 480
 framerate = 30
 gop = 90
+ffmpeg_proc_path = "ffmpeg_launcher_vp8.sh.template" 
 
 [meta]
