@@ -8,8 +8,6 @@ ffmpeg \
     -g $_gop \
     -loglevel quiet \
     -pix_fmt yuv420p \
-    -cpu-used 0 \ 
-    -quality realtime \
     -sdp_file $_sdp_file_path \
     -vcodec libvpx \
     -b:v 1M \
