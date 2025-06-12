@@ -9,8 +9,9 @@ ffmpeg \
     -loglevel quiet \
     -pix_fmt yuv420p \
     -cpu-used 0 \ 
-    -deadline realtime \
+    -quality realtime \
     -sdp_file $_sdp_file_path \
     -vcodec libvpx \
+    -b:v 1M \
     rtp://$_dst_host:$_dst_port \
     -y
