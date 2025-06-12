@@ -1,0 +1,16 @@
+ffmpeg \
+    -f rawvideo \
+    -pix_fmt rgb24 \
+    -s $_in_frame_shape \
+    -i pipe: \
+    -f rtp \
+    -framerate 30 \
+    -g $_gop \
+    -loglevel quiet \
+    -pix_fmt yuv420p \
+    -cpu-used 0 \ 
+    -deadline realtime \
+    -sdp_file $_sdp_file_path \
+    -vcodec libvpx \
+    rtp://$_dst_host:$_dst_port \
+    -y
