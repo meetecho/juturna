@@ -1,0 +1,10 @@
+ffmpeg \
+    -re \
+    -i $_video_path \
+    -loglevel quiet \
+    -f rawvideo \
+    -pix_fmt rgb24 \
+    -s $_frame_shape \
+    -an \
+    -sn \
+    pipe:
