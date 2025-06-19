@@ -17,7 +17,6 @@ class VideostreamFFMPEG(BaseNode):
                  in_height: int,
                  out_width: int,
                  out_height: int,
-                 framerate: int,
                  gop: int,
                  ffmpeg_proc_path: str):
         """
@@ -31,8 +30,6 @@ class VideostreamFFMPEG(BaseNode):
             Width of the video stream to send to the endpoint.
         in_height : int
             Height of the video stream to send to the endpoint.
-        framerate : int
-            Frames per second of the output video stream.
         gop : int
             Interval at which send keyframes in the output stream.
         """
@@ -45,7 +42,6 @@ class VideostreamFFMPEG(BaseNode):
         self._in_height = in_height
         self._out_width = out_width
         self._out_height = out_height
-        self._framerate = framerate
         self._gop = gop
         self._ffmpeg_proc_path = ffmpeg_proc_path
 
@@ -87,6 +83,7 @@ class VideostreamFFMPEG(BaseNode):
         frame_bytes = frame.tobytes()
 
         self._ffmpeg_proc.stdin.write(frame_bytes)
+        self._ffmpeg_proc.stdin.flush()
 
     @property
     def ffmpeg_launcher(self) -> pathlib.Path:
