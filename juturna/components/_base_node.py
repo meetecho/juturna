@@ -144,7 +144,16 @@ class BaseNode:
         -------
         pathlib.Path
             The path of the filed compiled and saved from the template.
+
+        Raises
+        ------
+        ValueError
+            If the node is not part of a pipeline, and pipe_path is not set.
         """
+        if self.pipe_path is None:
+            raise ValueError('pipe_path is not set. '
+                             'Make sure the node is part of a pipeline.')
+
         _template_path = pathlib.Path(self.static_path, template_name)
         _destination_path = pathlib.Path(self.pipe_path, file_destination_name)
 

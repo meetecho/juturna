@@ -6,6 +6,9 @@ import juturna.hub as hub
 import juturna.meta as meta
 
 
+__app_name__ = 'juturna'
+__version__ = '0.1.0'
+
 __all__ = [
     'names',
     'components',
