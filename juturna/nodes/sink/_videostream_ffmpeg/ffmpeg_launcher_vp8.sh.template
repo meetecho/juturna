@@ -5,11 +5,14 @@ ffmpeg \
     -s $_in_frame_shape \
     -i pipe: \
     -f rtp \
-    -g $_gop \
     -loglevel quiet \
     -pix_fmt yuv420p \
     -sdp_file $_sdp_file_path \
     -vcodec libvpx \
+    -auto-alt-ref 1 \
+    -lag-in-frames 16 \
+    -keyint_min 15 \
+    -g $_gop \
     -b:v 1M \
     rtp://$_dst_host:$_dst_port \
     -y
