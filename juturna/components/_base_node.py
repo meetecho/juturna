@@ -2,7 +2,9 @@ import pathlib
 import inspect
 import string
 
-from typing import Callable, Union
+from typing import Callable
+from typing import TypeVar
+from typing import Generic
 
 from juturna.components._buffer import Buffer
 from juturna.components._bridge import Bridge
@@ -13,7 +15,11 @@ from juturna.components import Message
 from juturna.names import ComponentStatus
 
 
-class BaseNode:
+UpdateContent = TypeVar('UpdateContent', Message, bytes)
+Connected = TypeVar('Connected', Buffer, Callable)
+
+
+class BaseNode(Generic[UpdateContent, Connected]):
     """
     Use this class to design custom nodes. BaseNode comes with a number of
     utility methods and fields that can be either used as they are or extended
@@ -178,9 +184,7 @@ class BaseNode:
         
         return str(dump_path)
 
-    def set_source(self, source: Union[Buffer, Callable],
-                   by: int = 0,
-                   mode: str = 'post'):
+    def set_source(self, source: Connected, by: int = 0, mode: str = 'post'):
         """
         Set the node source (to be used for ``source`` nodes). The source can be
         either a callable or a buffer. However, source nodes are expected to be
@@ -205,7 +209,7 @@ class BaseNode:
         if self._bridge.source is None:
             self._bridge.set_source(source, by, mode)
 
-    def add_destination(self, destination: Union[Buffer, Callable]):
+    def add_destination(self, destination: Connected):
         self._bridge.add_destination(destination)
 
     def clear_source(self):
@@ -253,7 +257,7 @@ class BaseNode:
     def configure(self):
         ...
 
-    def update(self, message: Message | bytes):
+    def update(self, message: UpdateContent):
         ...
 
     def warmup(self):
