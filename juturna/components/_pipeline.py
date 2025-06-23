@@ -3,6 +3,7 @@ import copy
 import json
 import pathlib
 import gc
+import typing
 import logging
 
 from juturna.components import _component_builder
@@ -141,6 +142,16 @@ class Pipeline:
         logging.info('warmed up!')
 
         return
+
+    def update_node(self,
+                    node_name: str,
+                    property_name: str,
+                    property_value: typing.Any):
+        assert self._pipe is not None
+        assert self._pipe.get(node_name, None) is not None
+
+        self._pipe[node_name]['node'].set_on_config(
+            property_name, property_value)
 
     def start(self):
         """

@@ -5,6 +5,7 @@ import string
 from typing import Callable
 from typing import TypeVar
 from typing import Generic
+from typing import Any
 
 from juturna.components._buffer import Buffer
 from juturna.components._bridge import Bridge
@@ -258,6 +259,9 @@ class BaseNode(Generic[UpdateContent, Connected]):
         ...
 
     def update(self, message: UpdateContent):
+        ...
+
+    def set_on_config(self, property: str, value: Any):
         ...
 
     def warmup(self):

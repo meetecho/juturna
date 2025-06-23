@@ -12,7 +12,7 @@
         "mark": "audio_rtp",
         "configuration": {
           "rec_host": "127.0.0.1",
-          "trx_host": "127.0.0.1",
+          "rec_port": 123456,
           "audio_rate": 16000,
           "block_size": 2,
           "channels": 2,
