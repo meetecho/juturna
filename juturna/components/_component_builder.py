@@ -19,7 +19,7 @@ def build_component(node: dict, plugin_dirs: list):
         buffer_remote_config = node_remote_config['buffer']
         del node_remote_config['buffer']
 
-    plugin_dirs.insert(0, jt.meta.JUTURNA_CACHE_DIR)
+    # plugin_dirs.insert(0, jt.meta.JUTURNA_CACHE_DIR)
 
     # nodes should be built starting from the default built-in folder, then all
     # the plugin folders specified in the configuration file should be tested

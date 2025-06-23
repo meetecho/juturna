@@ -20,8 +20,21 @@ class NotifierHTTP(BaseNode):
         self._timeout = timeout
         self._content_type = content_type
 
+    @property
+    def configuration(self) -> dict:
+        base_config = super().configuration
+        base_config['endpoint'] = self._endpoint
+
+        return base_config
+
     def warmup(self):
         logging.info(f'[{self.name}] set to endpoint {self._endpoint}')
+
+    def set_on_config(self, property: str, value: str):
+        if property == 'endpoint':
+            logging.info(f'{self.name}: updating endpoint to {value}')
+
+            self._endpoint = value
 
     def update(self, message: Message):
         message.meta['session_id'] = self.pipe_id
@@ -44,6 +57,7 @@ class NotifierHTTP(BaseNode):
                 headers=headers,
                 timeout=self._timeout)
 
-            logging.info(f'message sent - result: {response.status_code} - {response.text}')
+            logging.info('message sent')
+            logging.info(f'  --> {response.status_code} - {response.text}')
         except Exception as e:
             logging.info(e)

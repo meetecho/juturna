@@ -13,6 +13,9 @@ test_pipeline_folder = './tests/running_pipelines'
 with open(pathlib.Path(test_pipelines, 'test_empty_pipeline.json'), 'r') as f:
     empty_config = json.load(f)
 
+with open(pathlib.Path(test_pipelines, 'test_audio_pipeline.json'), 'r') as f:
+    audio_config = json.load(f)
+
 
 @pytest.fixture(autouse=True)
 def run_around_tests():
@@ -115,3 +118,20 @@ def test_pipeline_base_stop_not_running():
         test_pipeline.stop()
 
     assert str(exc_info.value) == 'pipeline test_basic_pipeline is not running'
+
+
+def test_pipeline_node_config_change():
+    test_pipeline = jt.components.Pipeline.from_json(
+        str(pathlib.Path(test_pipelines, 'test_audio_pipeline.json')))
+
+    test_pipeline.warmup()
+
+    assert test_pipeline._pipe is not None
+
+    assert test_pipeline._pipe['2_dst']['node'].configuration['endpoint'] == \
+        'http://127.0.0.1:1237'
+    
+    test_pipeline.update_node('2_dst', 'endpoint', 'http://127.0.0.1:1238')
+
+    assert test_pipeline._pipe['2_dst']['node'].configuration['endpoint'] == \
+        'http://127.0.0.1:1238'

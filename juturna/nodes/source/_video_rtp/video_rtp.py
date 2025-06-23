@@ -101,7 +101,6 @@ class VideoRTP(BaseNode):
 
         return base_config
 
-
     def update(self, message: bytes):
         try:
             full_frame = np.frombuffer(message, np.uint8).reshape(
