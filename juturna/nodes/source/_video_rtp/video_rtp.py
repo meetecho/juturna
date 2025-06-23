@@ -74,7 +74,10 @@ class VideoRTP(BaseNode):
 
     def stop(self):
         try:
-            self._ffmpeg_proc.stdin.write('q\n')
+            assert self._ffmpeg_proc is not None
+            assert self._ffmpeg_proc.stdin is not None
+
+            self._ffmpeg_proc.stdin.write(b'q\n')
             self._ffmpeg_proc.stdin.flush()
             self._ffmpeg_proc.stdin.close()
 
@@ -91,9 +94,17 @@ class VideoRTP(BaseNode):
     def destroy(self):
         self.stop()
 
-    def update(self, frame):
+    @property
+    def configuration(self) -> dict:
+        base_config = super().configuration
+        base_config['port'] = self._rec_port
+
+        return base_config
+
+
+    def update(self, message: bytes):
         try:
-            full_frame = np.frombuffer(frame, np.uint8).reshape(
+            full_frame = np.frombuffer(message, np.uint8).reshape(
                 (self._height, self._width, 3))
             to_send = Message(creator=self.name, version=self._sent)
             to_send.payload = full_frame

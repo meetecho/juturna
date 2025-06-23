@@ -80,7 +80,10 @@ class AudioRTP(BaseNode):
 
     def stop(self):
         try:
-            self._ffmpeg_proc.stdin.write('q\n')
+            assert self._ffmpeg_proc is not None
+            assert self._ffmpeg_proc.stdin is not None
+
+            self._ffmpeg_proc.stdin.write(b'q\n')
             self._ffmpeg_proc.stdin.flush()
             self._ffmpeg_proc.stdin.close()
 
@@ -99,23 +102,23 @@ class AudioRTP(BaseNode):
 
     @property
     def configuration(self) -> dict:
-        base_config = BaseNode.configuration.fget(self)
+        base_config = super().configuration
         base_config['port'] = self._rec_port
 
         return base_config
 
-    def update(self, message):
+    def update(self, message: bytes):
         waveform = AudioRTP._get_waveform(message, self._channels)
 
-        message = Message(
+        to_send = Message(
             creator=self.name,
             payload=waveform,
             version=self._abs_recv)
 
-        message.meta['size'] = self._block_size
-        message.meta['source_recv'] = self._abs_recv
+        to_send.meta['size'] = self._block_size
+        to_send.meta['source_recv'] = self._abs_recv
 
-        self.transmit(message)
+        self.transmit(to_send)
 
         self._abs_recv += 1
 
