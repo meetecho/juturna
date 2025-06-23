@@ -518,6 +518,11 @@ with basic substitution of the passed arguments.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.BaseNode.set_on_config">
+<span class="sig-name descname"><span class="pre">set_on_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">property</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.BaseNode.set_on_config" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.BaseNode.set_source">
 <span class="sig-name descname"><span class="pre">set_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Connected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'post'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.BaseNode.set_source" title="Link to this definition">#</a></dt>
 <dd><p>Set the node source (to be used for <code class="docutils literal notranslate"><span class="pre">source</span></code> nodes). The source can be
@@ -782,6 +787,11 @@ terminated and that all nodes are safely stopped.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.Pipeline.update_node">
+<span class="sig-name descname"><span class="pre">update_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline.update_node" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Pipeline.warmup">
 <span class="sig-name descname"><span class="pre">warmup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline.warmup" title="Link to this definition">#</a></dt>
 <dd><p>Prepare the pipeline and all its nodes.</p>
@@ -855,6 +865,7 @@ their required resources.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.pipe_id"><code class="docutils literal notranslate"><span class="pre">BaseNode.pipe_id</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.pipe_path"><code class="docutils literal notranslate"><span class="pre">BaseNode.pipe_path</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.prepare_template"><code class="docutils literal notranslate"><span class="pre">BaseNode.prepare_template()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.set_on_config"><code class="docutils literal notranslate"><span class="pre">BaseNode.set_on_config()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.set_source"><code class="docutils literal notranslate"><span class="pre">BaseNode.set_source()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.start"><code class="docutils literal notranslate"><span class="pre">BaseNode.start()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.static_path"><code class="docutils literal notranslate"><span class="pre">BaseNode.static_path</span></code></a></li>
@@ -886,6 +897,7 @@ their required resources.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.Pipeline.start"><code class="docutils literal notranslate"><span class="pre">Pipeline.start()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.Pipeline.status"><code class="docutils literal notranslate"><span class="pre">Pipeline.status</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.Pipeline.stop"><code class="docutils literal notranslate"><span class="pre">Pipeline.stop()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.Pipeline.update_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.update_node()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.Pipeline.warmup"><code class="docutils literal notranslate"><span class="pre">Pipeline.warmup()</span></code></a></li>
 </ul>
 </li>
