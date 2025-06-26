@@ -520,7 +520,7 @@ Juturna hub facility;</p></li>
 <p>Built-in nodes are shipped with the Juturna library itself. Whilst there is
 usually no need to instantiate built-in nodes directly, they can be accessed
 within:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jt</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">source</span> <span class="o">--&gt;</span> <span class="p">[</span> <span class="n">AudioFile</span><span class="p">,</span> <span class="n">AudioRTP</span><span class="p">,</span> <span class="n">VideoRTP</span> <span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jt</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">source</span> <span class="o">--&gt;</span> <span class="p">[</span> <span class="n">AudioFile</span><span class="p">,</span> <span class="n">AudioRTP</span><span class="p">,</span> <span class="n">VideoFile</span><span class="p">,</span> <span class="n">VideoRTP</span> <span class="p">]</span>
 <span class="n">jt</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">sink</span>   <span class="o">--&gt;</span> <span class="p">[</span> <span class="n">NotifierHTTP</span><span class="p">,</span> <span class="n">NotifierWebsocket</span><span class="p">,</span> <span class="n">VideostreamFFMPEG</span> <span class="p">]</span>
 </pre></div>
 </div>
@@ -529,7 +529,10 @@ full description of built-in nodes, refer to the <a class="reference internal" h
 </section>
 <section id="plugin-nodes">
 <h4>Plugin nodes<a class="headerlink" href="#plugin-nodes" title="Link to this heading">#</a></h4>
-<p>Description of plugin nodes.</p>
+<p>Juturna allows users to design and implement custom nodes of any kind. Custom
+nodes can be seamelessly plugged into any pipeline, and used just like built-in
+nodes. To get a better look at how to implement your own nodes, take a look at
+the <a class="reference internal" href="../concepts/custom_nodes.html"><span class="doc">custom nodes doc page</span></a>.</p>
 </section>
 <section id="custom-nodes">
 <h4>Custom nodes<a class="headerlink" href="#custom-nodes" title="Link to this heading">#</a></h4>
@@ -552,7 +555,7 @@ nodes.</p>
         <span class="s2">&quot;mark&quot;</span><span class="p">:</span> <span class="s2">&quot;audio_rtp&quot;</span><span class="p">,</span>
         <span class="s2">&quot;configuration&quot;</span><span class="p">:</span> <span class="p">{</span>
           <span class="s2">&quot;rec_host&quot;</span><span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
-          <span class="s2">&quot;trx_host&quot;</span><span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;rec_port&quot;</span><span class="p">:</span> <span class="mi">123456</span><span class="p">,</span>
           <span class="s2">&quot;audio_rate&quot;</span><span class="p">:</span> <span class="mi">16000</span><span class="p">,</span>
           <span class="s2">&quot;block_size&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
           <span class="s2">&quot;channels&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>

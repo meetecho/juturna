@@ -536,12 +536,17 @@ folder</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">()</span></code></p></td>
 <td><p>stop the node bridge</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.update()</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.set_on_config()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(str,</span> <span class="pre">typing.Any)</span></code></p></td>
+<td><p>update node property while
+the node is running</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.update()</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">(Message)</span></code></p></td>
 <td><p>receive and process the
 latest message from source</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.transmit()</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.transmit()</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">(Message)</span></code></p></td>
 <td><p>send a message forward in
 the pipeline</p></td>
@@ -568,6 +573,9 @@ message you receive is arranged by the source node</p></li>
 <li><p>the <code class="docutils literal notranslate"><span class="pre">transmit()</span></code> method should ideally be invoked within the <code class="docutils literal notranslate"><span class="pre">update()</span></code>
 method; always remember to update the version of the data you are sending,
 otherwise no <code class="docutils literal notranslate"><span class="pre">update()</span></code> will be triggered in the destination node</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">set_on_config()</span></code> method should be invoked through the pipeline that
+holds the node. When you design a custom node, make sure this method contains
+all the essential checks before updating a configuration item.</p></li>
 <li><p>a node needs to exist within a pipeline so that templates can be compiled and
 saved (if the node does not belong to a pipeline, then its <code class="docutils literal notranslate"><span class="pre">pipe_path</span></code> will
 not be specified, hence the compiled template will have no destination
@@ -634,29 +642,33 @@ pipeline folder, ready to be used by the node:</p>
         <span class="c1"># here</span>
         <span class="o">...</span>
 
-     <span class="k">def</span><span class="w"> </span><span class="nf">warmup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-         <span class="c1"># perform warmup operations</span>
-         <span class="c1"># if this is a source node, you can invoke the set_source function</span>
-         <span class="c1"># here</span>
-         <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_on_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">property</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="c1"># update a node property while the node is in execution</span>
+        <span class="o">...</span>
 
-     <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-         <span class="c1"># perform operations required when node starts</span>
-         <span class="c1"># if this method is implemented here, remember to call the parent</span>
-         <span class="c1"># start() method</span>
-         <span class="o">...</span>
-         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">warmup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># perform warmup operations</span>
+        <span class="c1"># if this is a source node, you can invoke the set_source function</span>
+        <span class="c1"># here</span>
+        <span class="o">...</span>
 
-     <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-         <span class="c1"># perform operations required when node stops</span>
-         <span class="c1"># if this method is implemented here, remember to call the parent</span>
-         <span class="c1"># stop() method</span>
-         <span class="o">...</span>
-         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># perform operations required when node starts</span>
+        <span class="c1"># if this method is implemented here, remember to call the parent</span>
+        <span class="c1"># start() method</span>
+        <span class="o">...</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
-     <span class="k">def</span><span class="w"> </span><span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-         <span class="c1"># perform cleanup operations for the node, if needed</span>
-         <span class="o">...</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># perform operations required when node stops</span>
+        <span class="c1"># if this method is implemented here, remember to call the parent</span>
+        <span class="c1"># stop() method</span>
+        <span class="o">...</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># perform cleanup operations for the node, if needed</span>
+        <span class="o">...</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
         <span class="c1"># receive data from the source node, process them, and generate</span>

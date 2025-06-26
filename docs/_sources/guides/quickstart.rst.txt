@@ -142,7 +142,7 @@ Built-in nodes are shipped with the Juturna library itself. Whilst there is
 usually no need to instantiate built-in nodes directly, they can be accessed
 within::
 
-  jt.nodes.source --> [ AudioFile, AudioRTP, VideoRTP ]
+  jt.nodes.source --> [ AudioFile, AudioRTP, VideoFile, VideoRTP ]
   jt.nodes.sink   --> [ NotifierHTTP, NotifierWebsocket, VideostreamFFMPEG ]
 
 These nodes only require their configuration arguments and nothing else. For a
@@ -152,7 +152,10 @@ full description of built-in nodes, refer to the :doc:`built-in nodes doc page
 Plugin nodes
 ------------
 
-Description of plugin nodes.
+Juturna allows users to design and implement custom nodes of any kind. Custom
+nodes can be seamelessly plugged into any pipeline, and used just like built-in
+nodes. To get a better look at how to implement your own nodes, take a look at
+the :doc:`custom nodes doc page<../concepts/custom_nodes>`.
 
 
 Custom nodes
@@ -179,7 +182,7 @@ Let's change the pipeline configuration file::
           "mark": "audio_rtp",
           "configuration": {
             "rec_host": "127.0.0.1",
-            "trx_host": "127.0.0.1",
+            "rec_port": 123456,
             "audio_rate": 16000,
             "block_size": 2,
             "channels": 2,
