@@ -11,12 +11,8 @@ This node consumes a remote RTP audio stream, and makes it available to its
 destinations as chunks of a configurable length.
 
 Internally, ``audio_rtp`` spawns a local ``ffmpeg`` thread that will receive
-the stream on a port picked at runtime and make it available to a local RTP
-client.
-
-.. image:: ../_static/img/rtp_node.svg
-   :alt: RTP audio node
-   :align: center
+the stream on a port picked at runtime and make it available to the standard
+output. Received samples will be collected and transmitted
 
 This approach allows to demand all the decode-encode heavy lifting to
 ``ffmpeg``.
@@ -27,12 +23,7 @@ This approach allows to demand all the decode-encode heavy lifting to
 | ``rec_host``     | ``str``       | the host from which the stream will be |
 |                  |               | received                               |
 +------------------+---------------+----------------------------------------+
-| ``trx_host``     | ``str``       | the host of the local RTP client       |
-|                  |               | (usually ``127.0.0.1``)                |
-+------------------+---------------+----------------------------------------+
-| ``rec_port``     | ``int | str`` | the port of the RTP client             |
-+------------------+---------------+----------------------------------------+
-| ``trx_port``     | ``int``       | the port of the local RTP stream       |
+| ``rec_port``     | ``int | str`` | the port the stream will be received on|
 +------------------+---------------+----------------------------------------+
 | ``audio_rate``   | ``int``       | rate of the receiving audio            |
 +------------------+---------------+----------------------------------------+
@@ -78,8 +69,8 @@ in chunks of a coinfigurable length.
 -------------
 This node consumes a remote RTP video stream, and makes it available to its
 destinations as either individual frames or collections of frames, depending on
-its working mode. Internally, it uses ``opencv-python`` to open the generated
-sdp file.
+its working mode. Internally, it works in a similar fashion to the `audio_rtp`
+node.
 
 +--------------------+---------------+----------------------------------------+
 | argument           | type          | description                            |
@@ -90,14 +81,9 @@ sdp file.
 | ``rec_port``       | ``int | str`` | the port on which the stream will be   |
 |                    |               | received                               |
 +--------------------+---------------+----------------------------------------+
-| ``mode``           | ``str``       | node operating mode (``still`` or      |
-|                    |               | ``video``)                             |
+| ``width``          | ``int``       | width of the received video stream     |
 +--------------------+---------------+----------------------------------------+
-| ``rate``           | ``int``       | number of frames to read every second  |
-+--------------------+---------------+----------------------------------------+
-| ``fps``            | ``int``       | video source frames per second         |
-+--------------------+---------------+----------------------------------------+
-| ``video_duration`` | ``int``       | video source frames per second         |
+| ``height``         | ``int``       | height of the received video stream    |
 +--------------------+---------------+----------------------------------------+
 | ``codec``          | ``int``       | the codec of the source stream         |
 +--------------------+---------------+----------------------------------------+
@@ -109,38 +95,6 @@ Notes:
 
 - the node automatically selects a receiving port if ``rec_port`` is set to
   ``auto`` in the configuration, otherwise will use the provided port
-- when ``mode == 'still'`` the node reads a number of frame every second, thus
-  ``rate`` is required in the configuration and ``fps`` will be ignored
-- when ``mode == 'video'`` the node uses ``fps`` to determine the length of the
-  buffered video, sending it once it reaches ``video_duration``, thus ``rate``
-  will be ignored
-
-``video_device``
-----------------
-This node reads the video source from a local capturing device, and makes it
-available to its destination in the form of either individual frames, sampled
-at a configurable rate, or chunks of frames of a configurable temporal
-length. Its working principle is the same as ``video_rtp``.
-
-+-----------------------+----------+----------------------------------------+
-| argument              | type     | description                            |
-+=======================+==========+========================================+
-| ``capture_device_id`` | ``str``  | the host from which the stream will be |
-|                       |          | received                               |
-+-----------------------+----------+----------------------------------------+
-| ``mode``              | ``str``  | node operating mode (``still`` or      |
-|                       |          | ``video``)                             |
-+-----------------------+----------+----------------------------------------+
-| ``rate``              | ``int``  | number of frames to read every second  |
-+-----------------------+----------+----------------------------------------+
-| ``fps``               | ``int``  | video source frames per second         |
-+-----------------------+----------+----------------------------------------+
-| ``video_duration``    | ``int``  | video source frames per second         |
-+-----------------------+----------+----------------------------------------+
-| ``width``             | ``int``  | width of the produced frames           |
-+-----------------------+----------+----------------------------------------+
-| ``height``            | ``int``  | height of the produced frames          |
-+-----------------------+----------+----------------------------------------+
 
 Sink
 ====
@@ -189,7 +143,7 @@ Notes:
 A transmission node that receives update messages containing frames, and
 transmits them over a destination endpoint. Internally, the node creates a
 ``ffmpeg`` process and whenever an update message is available, writes its
-content to the process standard input.
+content to the process standard output.
 
 +------------------+----------+---------------------------------+
 | argument         | type     | description                     |

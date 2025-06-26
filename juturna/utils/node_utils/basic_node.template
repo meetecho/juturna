@@ -12,6 +12,9 @@ class $_node_class_name(BaseNode):
     def warmup(self):
         ...
 
+    def set_on_config(self, property: str, value: Any):
+        ...
+
     def start(self):
         # after custom start code, invoke base node start
         super().start()
