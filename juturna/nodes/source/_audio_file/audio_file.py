@@ -4,14 +4,17 @@ import itertools
 
 import av
 
+import av.audio
+import av.audio.resampler
 import numpy as np
 
 from juturna.names import ComponentStatus
 from juturna.components import BaseNode
 from juturna.components import Message
+from juturna.payloads import AudioPayload
 
 
-class AudioFile(BaseNode):
+class AudioFile(BaseNode[AudioPayload, AudioPayload]):
     def __init__(self,
                  file_source: str,
                  block_size: int,
@@ -62,12 +65,17 @@ class AudioFile(BaseNode):
     def generate_chunks(self):
         logging.info('source generating chunk...')
         try:
-            return self._audio_chunks[self._transmitted]
+            return AudioPayload(
+                audio=self._audio_chunks[self._transmitted],
+                sampling_rate=self._rate,
+                channels=1,
+                start=self._block_size * self._transmitted,
+                end=self._block_size * self._transmitted + self._block_size)
         except IndexError:
             logging.info(f'{self.name} sending None')
             return None
 
-    def _get_audio_chunks(self):
+    def _get_audio_chunks(self) -> list:
         chunks = list()
         wave_len = self._block_size * self._rate
 
@@ -81,23 +89,23 @@ class AudioFile(BaseNode):
 
         return chunks
 
-    def update(self, chunk):
-        if chunk is None:
+    def update(self, message: AudioPayload):
+        if message is None:
             logging.info('audio file done, stopping...')
             self.stop()
             self.status = ComponentStatus.STOPPED
 
             return
 
-        message = Message(
+        to_send = Message[AudioPayload](
             creator=self.name,
-            payload=np.array(chunk),
+            payload=message,
             version=self._transmitted)
 
-        message.meta['session_id'] = self.pipe_id
-        message.meta['size'] = self._block_size
+        to_send.meta['session_id'] = self.pipe_id
+        to_send.meta['size'] = self._block_size
 
-        self.transmit(message)
+        self.transmit(to_send)
         self._transmitted += 1
 
 

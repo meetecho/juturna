@@ -3,7 +3,6 @@ import inspect
 import string
 
 from typing import Callable
-from typing import TypeVar
 from typing import Generic
 from typing import Any
 
@@ -12,15 +11,13 @@ from juturna.components._bridge import Bridge
 from juturna.components._poll_bridge import PollBridge
 from juturna.components._stream_bridge import StreamBridge
 
+from juturna.payloads import T_Input, T_Output
+
 from juturna.components import Message
 from juturna.names import ComponentStatus
 
 
-UpdateContent = TypeVar('UpdateContent', Message, bytes)
-Connected = TypeVar('Connected', Buffer, Callable)
-
-
-class BaseNode(Generic[UpdateContent, Connected]):
+class BaseNode(Generic[T_Input, T_Output]):
     """
     Use this class to design custom nodes. BaseNode comes with a number of
     utility methods and fields that can be either used as they are or extended
@@ -185,7 +182,10 @@ class BaseNode(Generic[UpdateContent, Connected]):
         
         return str(dump_path)
 
-    def set_source(self, source: Connected, by: int = 0, mode: str = 'post'):
+    def set_source(self,
+                   source: Buffer | Callable,
+                   by: int = 0,
+                   mode: str = 'post'):
         """
         Set the node source (to be used for ``source`` nodes). The source can be
         either a callable or a buffer. However, source nodes are expected to be
@@ -210,7 +210,7 @@ class BaseNode(Generic[UpdateContent, Connected]):
         if self._bridge.source is None:
             self._bridge.set_source(source, by, mode)
 
-    def add_destination(self, destination: Connected):
+    def add_destination(self, destination: Buffer | Callable):
         self._bridge.add_destination(destination)
 
     def clear_source(self):
@@ -220,7 +220,7 @@ class BaseNode(Generic[UpdateContent, Connected]):
         self._bridge._destination_containers = list()
         self._bridge._destination_callbacks = list()
 
-    def transmit(self, message: Message):
+    def transmit(self, message: Message[T_Output]):
         """
         Transmit a message through the bridge. This method is used to send data
         from the node to its destinations. When invoking this method, remember
@@ -258,7 +258,7 @@ class BaseNode(Generic[UpdateContent, Connected]):
     def configure(self):
         ...
 
-    def update(self, message: UpdateContent):
+    def update(self, message: T_Input):
         ...
 
     def set_on_config(self, property: str, value: Any):

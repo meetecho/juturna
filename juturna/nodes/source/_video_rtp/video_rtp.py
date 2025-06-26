@@ -8,8 +8,10 @@ from juturna.components import Message
 from juturna.components import BaseNode
 from juturna.components import _resource_broker as rb
 
+from juturna.payloads import BytesPayload, ImagePayload
 
-class VideoRTP(BaseNode):
+
+class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
     """Source node for video streaming
     """
     def __init__(self,
@@ -67,8 +69,9 @@ class VideoRTP(BaseNode):
             stdout=subprocess.PIPE,
             bufsize=10**8)
 
-        self.set_source(lambda: self._ffmpeg_proc.stdout.read(
-            self._width * self._height * 3))
+        self.set_source(lambda: BytesPayload(
+                cnt=self._ffmpeg_proc.stdout.read( # type: ignore
+                    self._width * self._height * 3)))
 
         super().start()
 
@@ -101,12 +104,21 @@ class VideoRTP(BaseNode):
 
         return base_config
 
-    def update(self, message: bytes):
+    def update(self, message: BytesPayload):
         try:
-            full_frame = np.frombuffer(message, np.uint8).reshape(
+            full_frame = np.frombuffer(message.cnt, np.uint8).reshape(
                 (self._height, self._width, 3))
-            to_send = Message(creator=self.name, version=self._sent)
-            to_send.payload = full_frame
+            
+            to_send = Message[ImagePayload](
+                creator=self.name,
+                version=self._sent,
+                payload=ImagePayload(
+                    image=full_frame,
+                    width=full_frame.shape[0],
+                    height=full_frame.shape[1],
+                    pixel_format='rgb24',
+                    timestamp=time.time()
+                ))
 
             self.transmit(to_send)
             self._sent += 1
