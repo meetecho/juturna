@@ -90,36 +90,39 @@ Notes:
 |                        |                     | resources)                  |
 +------------------------+---------------------+-----------------------------+
 
-+-----------------------------+----------------------+-----------------------------+
-| method                      | arguments            | description                 |
-+=============================+======================+=============================+
-| ``self.configure()``        | ``()``               | configure the node (request |
-|                             |                      | resources and perform other |
-|                             |                      | system-dependent            |
-|                             |                      | intialisations)             |
-+-----------------------------+----------------------+-----------------------------+
-| ``self.warmup()``           | ``()``               | implement node warmup       |
-|                             |                      | operations                  |
-+-----------------------------+----------------------+-----------------------------+
-| ``self.set_source()``       | ``(callable)``       | set the data source for the |
-|                             |                      | node (to be called only for |
-|                             |                      | source nodes)               |
-+-----------------------------+----------------------+-----------------------------+
-| ``self.prepare_template()`` | ``(str, str, dict)`` | compile a template file     |
-|                             |                      | in the node folder and      |
-|                             |                      | save it in the pipeline     |
-|                             |                      | folder                      |
-+-----------------------------+----------------------+-----------------------------+
-| ``self.start()``            | ``()``               | start the node bridge       |
-+-----------------------------+----------------------+-----------------------------+
-| ``self.stop()``             | ``()``               | stop the node bridge        |
-+-----------------------------+----------------------+-----------------------------+
-| ``self.update()``           | ``(Message)``        | receive and process the     |
-|                             |                      | latest message from source  |
-+-----------------------------+----------------------+-----------------------------+
-| ``self.transmit()``         | ``(Message)``        | send a message forward in   |
-|                             |                      | the pipeline                |
-+-----------------------------+----------------------+-----------------------------+
++-----------------------------+-----------------------+-----------------------------+
+| method                      | arguments             | description                 |
++=============================+=======================+=============================+
+| ``self.configure()``        | ``()``                | configure the node (request |
+|                             |                       | resources and perform other |
+|                             |                       | system-dependent            |
+|                             |                       | intialisations)             |
++-----------------------------+-----------------------+-----------------------------+
+| ``self.warmup()``           | ``()``                | implement node warmup       |
+|                             |                       | operations                  |
++-----------------------------+-----------------------+-----------------------------+
+| ``self.set_source()``       | ``(callable)``        | set the data source for the |
+|                             |                       | node (to be called only for |
+|                             |                       | source nodes)               |
++-----------------------------+-----------------------+-----------------------------+
+| ``self.prepare_template()`` | ``(str, str, dict)``  | compile a template file     |
+|                             |                       | in the node folder and      |
+|                             |                       | save it in the pipeline     |
+|                             |                       | folder                      |
++-----------------------------+-----------------------+-----------------------------+
+| ``self.start()``            | ``()``                | start the node bridge       |
++-----------------------------+-----------------------+-----------------------------+
+| ``self.stop()``             | ``()``                | stop the node bridge        |
++-----------------------------+-----------------------+-----------------------------+
+| ``self.set_on_config()``    | ``(str, typing.Any)`` | update node property while  |
+|                             |                       | the node is running         |
++-----------------------------+-----------------------+-----------------------------+
+| ``self.update()``           | ``(Message)``         | receive and process the     |
+|                             |                       | latest message from source  |
++-----------------------------+-----------------------+-----------------------------+
+| ``self.transmit()``         | ``(Message)``         | send a message forward in   |
+|                             |                       | the pipeline                |
++-----------------------------+-----------------------+-----------------------------+
 
 Notes:
 
@@ -140,6 +143,9 @@ Notes:
 - the ``transmit()`` method should ideally be invoked within the ``update()``
   method; always remember to update the version of the data you are sending,
   otherwise no ``update()`` will be triggered in the destination node
+- the ``set_on_config()`` method should be invoked through the pipeline that
+  holds the node. When you design a custom node, make sure this method contains
+  all the essential checks before updating a configuration item.
 - a node needs to exist within a pipeline so that templates can be compiled and
   saved (if the node does not belong to a pipeline, then its ``pipe_path`` will
   not be specified, hence the compiled template will have no destination
@@ -209,29 +215,33 @@ Full node example
            # here
            ...
 
-        def warmup(self):
-            # perform warmup operations
-            # if this is a source node, you can invoke the set_source function
-            # here
-            ...
+       def set_on_config(self, property: str, value: Any):
+           # update a node property while the node is in execution
+           ...
 
-        def start(self):
-            # perform operations required when node starts
-            # if this method is implemented here, remember to call the parent
-            # start() method
-            ...
-            super().start()
+       def warmup(self):
+           # perform warmup operations
+           # if this is a source node, you can invoke the set_source function
+           # here
+           ...
 
-        def stop(self):
-            # perform operations required when node stops
-            # if this method is implemented here, remember to call the parent
-            # stop() method
-            ...
-            super().stop()
+       def start(self):
+           # perform operations required when node starts
+           # if this method is implemented here, remember to call the parent
+           # start() method
+           ...
+           super().start()
 
-        def destroy(self):
-            # perform cleanup operations for the node, if needed
-            ...
+       def stop(self):
+           # perform operations required when node stops
+           # if this method is implemented here, remember to call the parent
+           # stop() method
+           ...
+           super().stop()
+
+       def destroy(self):
+           # perform cleanup operations for the node, if needed
+           ...
 
        def update(self, message: Message):
            # receive data from the source node, process them, and generate
