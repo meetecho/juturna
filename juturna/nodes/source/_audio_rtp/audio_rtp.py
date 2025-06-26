@@ -74,8 +74,10 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             stdout=subprocess.PIPE,
             bufsize=10**8)
 
-        self.set_source(lambda: BytesPayload(
-                cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes))) # type: ignore
+        self.set_source(lambda: Message[BytesPayload](
+            creator=self.name,
+            payload=BytesPayload(
+                cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes)))) # type: ignore
 
         super().start()
 
@@ -108,19 +110,19 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
 
         return base_config
 
-    def update(self, message: BytesPayload):
-        waveform = AudioRTP._get_waveform(message.cnt, self._channels)
+    def update(self, message: Message[BytesPayload]):
+        waveform = AudioRTP._get_waveform(message.payload.cnt, self._channels)
 
         to_send = Message[AudioPayload](
             creator=self.name,
+            version=self._abs_recv,
             payload=AudioPayload(
                 audio=waveform,
                 sampling_rate=self._audio_rate,
                 channels=self._channels,
                 start=self._block_size * self._abs_recv,
                 end=self._block_size * self._abs_recv + self._block_size
-            ),
-            version=self._abs_recv)
+            ))
 
         to_send.meta['size'] = self._block_size
         to_send.meta['source_recv'] = self._abs_recv

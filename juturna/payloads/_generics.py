@@ -6,10 +6,8 @@ from juturna.payloads._payloads import VideoPayload
 from juturna.payloads._payloads import BytesPayload
 from juturna.payloads._payloads import ObjectPayload
 
-from juturna.components import Message
-
 
 T_Input = TypeVar('T_Input', AudioPayload, ImagePayload, VideoPayload,
-                  BytesPayload, ObjectPayload, Message, None)
+                  BytesPayload, ObjectPayload, None)
 T_Output = TypeVar('T_Output', AudioPayload, ImagePayload, VideoPayload,
-                   BytesPayload, ObjectPayload, Message, None)
+                   BytesPayload, ObjectPayload, None)

@@ -62,15 +62,17 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
         logging.info('audio loaded')
         logging.info(f'duration: {len(audio) / self._rate}')
 
-    def generate_chunks(self):
+    def generate_chunks(self) -> Message[AudioPayload] | None:
         logging.info('source generating chunk...')
         try:
-            return AudioPayload(
-                audio=self._audio_chunks[self._transmitted],
-                sampling_rate=self._rate,
-                channels=1,
-                start=self._block_size * self._transmitted,
-                end=self._block_size * self._transmitted + self._block_size)
+            return Message[AudioPayload](
+                creator=self.name,
+                payload=AudioPayload(
+                    audio=self._audio_chunks[self._transmitted],
+                    sampling_rate=self._rate,
+                    channels=1,
+                    start=self._block_size * self._transmitted,
+                    end=self._block_size * self._transmitted + self._block_size))
         except IndexError:
             logging.info(f'{self.name} sending None')
             return None
@@ -89,7 +91,7 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
 
         return chunks
 
-    def update(self, message: AudioPayload):
+    def update(self, message: Message[AudioPayload]):
         if message is None:
             logging.info('audio file done, stopping...')
             self.stop()
@@ -97,15 +99,18 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
 
             return
 
-        to_send = Message[AudioPayload](
-            creator=self.name,
-            payload=message,
-            version=self._transmitted)
+        # to_send = Message[AudioPayload](
+        #     creator=self.name,
+        #     payload=message,
+        #     version=self._transmitted)
+        message.version = self._transmitted
+        message.meta['session_id'] = self.pipe_id
+        message.meta['size'] = self._block_size
 
-        to_send.meta['session_id'] = self.pipe_id
-        to_send.meta['size'] = self._block_size
+        # to_send.meta['session_id'] = self.pipe_id
+        # to_send.meta['size'] = self._block_size
 
-        self.transmit(to_send)
+        self.transmit(message)
         self._transmitted += 1
 
 

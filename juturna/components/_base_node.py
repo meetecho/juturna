@@ -258,7 +258,7 @@ class BaseNode(Generic[T_Input, T_Output]):
     def configure(self):
         ...
 
-    def update(self, message: T_Input):
+    def update(self, message: Message[T_Input]):
         ...
 
     def set_on_config(self, property: str, value: Any):
