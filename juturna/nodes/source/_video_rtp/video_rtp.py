@@ -69,9 +69,11 @@ class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
             stdout=subprocess.PIPE,
             bufsize=10**8)
 
-        self.set_source(lambda: BytesPayload(
+        self.set_source(lambda: Message[BytesPayload](
+            creator=self.name,
+            payload=BytesPayload(
                 cnt=self._ffmpeg_proc.stdout.read( # type: ignore
-                    self._width * self._height * 3)))
+                    self._width * self._height * 3))))
 
         super().start()
 
@@ -104,11 +106,11 @@ class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
 
         return base_config
 
-    def update(self, message: BytesPayload):
+    def update(self, message: Message[BytesPayload]):
         try:
-            full_frame = np.frombuffer(message.cnt, np.uint8).reshape(
+            full_frame = np.frombuffer(message.payload.cnt, np.uint8).reshape(
                 (self._height, self._width, 3))
-            
+
             to_send = Message[ImagePayload](
                 creator=self.name,
                 version=self._sent,
