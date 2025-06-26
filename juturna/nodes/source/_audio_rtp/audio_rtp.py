@@ -1,16 +1,16 @@
 import pathlib
 import subprocess
 import time
-import logging
 
 import numpy as np
 
 from juturna.components import _resource_broker as rb
 from juturna.components import Message
 from juturna.components import BaseNode
+from juturna.payloads import BytesPayload, AudioPayload
 
 
-class AudioRTP(BaseNode):
+class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
     """Source node for streaming audio
     """
     _SDP_TEMPLATE_NAME : str = 'remote_source.sdp.template'
@@ -74,7 +74,8 @@ class AudioRTP(BaseNode):
             stdout=subprocess.PIPE,
             bufsize=10**8)
 
-        self.set_source(lambda: self._ffmpeg_proc.stdout.read(self._rec_bytes))
+        self.set_source(lambda: BytesPayload(
+                cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes))) # type: ignore
 
         super().start()
 
@@ -107,12 +108,18 @@ class AudioRTP(BaseNode):
 
         return base_config
 
-    def update(self, message: bytes):
-        waveform = AudioRTP._get_waveform(message, self._channels)
+    def update(self, message: BytesPayload):
+        waveform = AudioRTP._get_waveform(message.cnt, self._channels)
 
-        to_send = Message(
+        to_send = Message[AudioPayload](
             creator=self.name,
-            payload=waveform,
+            payload=AudioPayload(
+                audio=waveform,
+                sampling_rate=self._audio_rate,
+                channels=self._channels,
+                start=self._block_size * self._abs_recv,
+                end=self._block_size * self._abs_recv + self._block_size
+            ),
             version=self._abs_recv)
 
         to_send.meta['size'] = self._block_size

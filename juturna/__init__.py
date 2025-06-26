@@ -4,6 +4,7 @@ import juturna.nodes as nodes
 import juturna.utils as utils
 import juturna.hub as hub
 import juturna.meta as meta
+import juturna.payloads as payloads
 
 
 __app_name__ = 'juturna'
@@ -15,5 +16,6 @@ __all__ = [
     'nodes',
     'utils',
     'meta',
-    'hub'
+    'hub',
+    'payloads'
 ]
