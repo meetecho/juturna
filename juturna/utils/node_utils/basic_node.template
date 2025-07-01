@@ -1,3 +1,5 @@
+import typing
+
 from juturna.components import BaseNode
 from juturna.components import Message
 
@@ -12,7 +14,7 @@ class $_node_class_name(BaseNode):
     def warmup(self):
         ...
 
-    def set_on_config(self, property: str, value: Any):
+    def set_on_config(self, property: str, value: typing.Any):
         ...
 
     def start(self):
