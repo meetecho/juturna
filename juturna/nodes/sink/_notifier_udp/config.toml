@@ -1,0 +1,9 @@
+[arguments]
+endpoint = "127.0.0.1"
+port = 12345
+payload_size = 1024
+max_chunks = 1000
+encoding = "utf8"
+encode_b64 = true
+
+[meta]
