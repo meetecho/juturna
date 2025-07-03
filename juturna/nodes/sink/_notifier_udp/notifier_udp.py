@@ -12,6 +12,7 @@ class NotifierUDP(BaseNode):
                  endpoint: str,
                  port: int,
                  payload_size: int,
+                 max_sequence: int,
                  max_chunks: int,
                  encoding: str,
                  encode_b64: bool):
@@ -19,14 +20,16 @@ class NotifierUDP(BaseNode):
 
         self._address = [endpoint, port]
         self._payload_size = payload_size
+        self._max_sequence = max_sequence
         self._max_chunks = max_chunks
         self._encoding = encoding
         self._encode_b64 = encode_b64
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._meta_overhead = len(json.dumps({
-            'seq': self._max_chunks -1,
-            'total': self._max_chunks -1,
+            'seq': self._max_sequence,
+            'frag': self._max_chunks -1,
+            'tot': self._max_chunks -1,
             'data': ''
         }))
 
@@ -46,12 +49,12 @@ class NotifierUDP(BaseNode):
         ...
 
     def update(self, message: Message):
-        chunks = self.prepare_chunks(message.payload)
+        chunks = self.prepare_chunks(message.payload, message.version)
 
         for chunk in chunks:
             self._socket.sendto(chunk, tuple(self._address))
 
-    def prepare_chunks(self, data: dict) -> typing.List[bytes]:
+    def prepare_chunks(self, data: dict, version: int) -> typing.List[bytes]:
         chunks = list()
         json_bytes = json.dumps(data).encode(self._encoding)
 
@@ -67,8 +70,9 @@ class NotifierUDP(BaseNode):
             payload_chunk = json_bytes[start_idx:end_idx]
 
             chunk_obj = {
-                'seq': i % self._max_chunks,
-                'total': total_chunks,
+                'seq': version % self._max_sequence,
+                'frag': i % self._max_chunks,
+                'tot': total_chunks,
                 'data': payload_chunk
             }
 
