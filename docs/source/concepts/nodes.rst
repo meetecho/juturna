@@ -161,3 +161,44 @@ Notes:
 
 - this node is still experimental, as many of the options provided to the
   underlying ``ffmpeg`` process are still not included in the configuration
+
+``notifier_udp``
+----------------
+A transmission node that receives messages containing dictionaries, and
+sends them on a simple UDP endpoint. The node fragments the data to send into
+smaller chunks, calculating the number of required chunks based on the
+maximum payload size available. The sent chunks are encoded using the
+encoding specified in the configuration file. If `encode_b64` is set to
+true, the data chunks will be encoded in base64.
+
++------------------+----------+--------------------------------------------+
+| argument         | type     | description                                |
++==================+==========+============================================+
+| ``endpoint``     | ``str``  | destination host                           |
++------------------+----------+--------------------------------------------+
+| ``port``         | ``int``  | destination port                           |
++------------------+----------+--------------------------------------------+
+| ``payload_size`` | ``int``  | size in bytes of the message payload       |
++------------------+----------+--------------------------------------------+
+| ``max_sequence`` | ``int``  | maximum message sequence number            |
++------------------+----------+--------------------------------------------+
+| ``max_chunks``   | ``int``  | maximum frame sequence number              |
++------------------+----------+--------------------------------------------+
+| ``encoding``     | ``int``  | data encoding format                       |
++------------------+----------+--------------------------------------------+
+| ``encode_b64``   | ``int``  | whether to encode the payload in base64    |
++------------------+----------+--------------------------------------------+
+
+Each transmitted chunk will have the following format::
+
+  {
+    "seq": 1,
+    "frag": 1,
+    "tot": 99,
+    "data": ...,
+  }
+
+- `seq` is the sequence number of the message being transmitted
+- `frag` is the fragment number of the transmitted chunk
+- `tot` is the total number of expected chunks for the message
+- `data` is the chunk data content
