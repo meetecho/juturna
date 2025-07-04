@@ -636,6 +636,69 @@ content to the process standard output.</p>
 underlying <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code> process are still not included in the configuration</p></li>
 </ul>
 </section>
+<section id="notifier-udp">
+<h3><code class="docutils literal notranslate"><span class="pre">notifier_udp</span></code><a class="headerlink" href="#notifier-udp" title="Link to this heading">#</a></h3>
+<p>A transmission node that receives messages containing dictionaries, and
+sends them on a simple UDP endpoint. The node fragments the data to send into
+smaller chunks, calculating the number of required chunks based on the
+maximum payload size available. The sent chunks are encoded using the
+encoding specified in the configuration file. If <cite>encode_b64</cite> is set to
+true, the data chunks will be encoded in base64.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>argument</p></th>
+<th class="head"><p>type</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">endpoint</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>destination host</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">port</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>destination port</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">payload_size</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>size in bytes of the message payload</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">max_sequence</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>maximum message sequence number</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">max_chunks</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>maximum frame sequence number</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">encoding</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>data encoding format</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">encode_b64</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>whether to encode the payload in base64</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Each transmitted chunk will have the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;seq&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;frag&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;tot&quot;</span><span class="p">:</span> <span class="mi">99</span><span class="p">,</span>
+  <span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="o">...</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><cite>seq</cite> is the sequence number of the message being transmitted</p></li>
+<li><p><cite>frag</cite> is the fragment number of the transmitted chunk</p></li>
+<li><p><cite>tot</cite> is the total number of expected chunks for the message</p></li>
+<li><p><cite>data</cite> is the chunk data content</p></li>
+</ul>
+</section>
 </section>
 </section>
 
@@ -696,6 +759,7 @@ underlying <code class="docutils literal notranslate"><span class="pre">ffmpeg</
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notifier-http"><code class="docutils literal notranslate"><span class="pre">notifier_http</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notifier-websocket"><code class="docutils literal notranslate"><span class="pre">notifier_websocket</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#videostream-ffmpeg"><code class="docutils literal notranslate"><span class="pre">videostream_ffmpeg</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#notifier-udp"><code class="docutils literal notranslate"><span class="pre">notifier_udp</span></code></a></li>
 </ul>
 </li>
 </ul>
