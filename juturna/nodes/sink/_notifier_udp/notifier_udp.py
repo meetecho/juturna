@@ -6,8 +6,10 @@ import typing
 from juturna.components import BaseNode
 from juturna.components import Message
 
+from juturna.payloads._payloads import ObjectPayload
 
-class NotifierUDP(BaseNode):
+
+class NotifierUDP(BaseNode[ObjectPayload, None]):
     def __init__(self,
                  endpoint: str,
                  port: int,
@@ -48,7 +50,7 @@ class NotifierUDP(BaseNode):
     def destroy(self):
         ...
 
-    def update(self, message: Message):
+    def update(self, message: Message[ObjectPayload]):
         chunks = self.prepare_chunks(message.payload, message.version)
 
         for chunk in chunks:

@@ -6,8 +6,10 @@ import subprocess
 from juturna.components import Message
 from juturna.components import BaseNode
 
+from juturna.payloads._payloads import ImagePayload
 
-class VideostreamFFMPEG(BaseNode):
+
+class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
     """Sink node for video streaming
     """
     def __init__(self,
@@ -78,7 +80,7 @@ class VideostreamFFMPEG(BaseNode):
         except Exception:
             ...
 
-    def update(self, message: Message):
+    def update(self, message: Message[ImagePayload]):
         frame = message.payload
         frame_bytes = frame.tobytes()
 

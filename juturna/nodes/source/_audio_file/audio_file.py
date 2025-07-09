@@ -64,6 +64,7 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
 
     def generate_chunks(self) -> Message[AudioPayload] | None:
         logging.info('source generating chunk...')
+
         try:
             return Message[AudioPayload](
                 creator=self.name,
@@ -75,6 +76,7 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
                     end=self._block_size * self._transmitted + self._block_size))
         except IndexError:
             logging.info(f'{self.name} sending None')
+
             return None
 
     def _get_audio_chunks(self) -> list:
@@ -94,21 +96,15 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
     def update(self, message: Message[AudioPayload]):
         if message is None:
             logging.info('audio file done, stopping...')
+
             self.stop()
             self.status = ComponentStatus.STOPPED
 
             return
 
-        # to_send = Message[AudioPayload](
-        #     creator=self.name,
-        #     payload=message,
-        #     version=self._transmitted)
         message.version = self._transmitted
         message.meta['session_id'] = self.pipe_id
         message.meta['size'] = self._block_size
-
-        # to_send.meta['session_id'] = self.pipe_id
-        # to_send.meta['size'] = self._block_size
 
         self.transmit(message)
         self._transmitted += 1
