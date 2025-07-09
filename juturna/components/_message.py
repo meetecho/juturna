@@ -4,7 +4,9 @@ import copy
 import json
 
 
-class Message:
+from juturna.payloads import T_Input
+
+class Message(typing.Generic[T_Input]):
     """Container to move data across the pipeline
 
     A message is an object that all nodes produce and read to and from buffers.
@@ -12,7 +14,7 @@ class Message:
     def __init__(self,
                  creator: str | None = None,
                  version: int = -1,
-                 payload: typing.Any = None):
+                 payload: T_Input = None):
         """
         Parameters
         ----------
@@ -118,7 +120,7 @@ class Message:
         self._version = data_version
 
     @property
-    def payload(self) -> typing.Any:
+    def payload(self) -> T_Input:
         """
         Returns the payload of the message.
         """
