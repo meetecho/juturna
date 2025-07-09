@@ -8,9 +8,10 @@ import numpy as np
 
 from juturna.components import BaseNode
 from juturna.components import Message
+from juturna.payloads import BytesPayload, ImagePayload
 
 
-class VideoFile(BaseNode):
+class VideoFile(BaseNode[BytesPayload, ImagePayload]):
     """Read video file and steam it locally
     """
     def __init__(self,
@@ -73,8 +74,11 @@ class VideoFile(BaseNode):
             stdout=subprocess.PIPE,
             bufsize=10**8)
 
-        self.set_source(lambda: self._ffmpeg_proc.stdout.read(
-            self._width * self._height * 3))
+        self.set_source(lambda: Message[BytesPayload](
+            creator=self.name,
+            payload=BytesPayload(
+                cnt=self._ffmpeg_proc.stdout.read(
+                    self._width * self._height * 3))))
 
         super().start()
 
@@ -97,12 +101,20 @@ class VideoFile(BaseNode):
     def destroy(self):
         self.stop()
 
-    def update(self, message: bytes):
+    def update(self, message: Message[BytesPayload]):
         try:
-            full_frame = np.frombuffer(message, np.uint8).reshape(
+            full_frame = np.frombuffer(message.payload.cnt, np.uint8).reshape(
                 (self._height, self._width, 3))
-            to_send = Message(creator=self.name, version=self._sent)
-            to_send.payload = full_frame
+            to_send = Message(
+                creator=self.name,
+                version=self._sent,
+                payload=ImagePayload(
+                    image=full_frame,
+                    width=self._width,
+                    height=self._height,
+                    pixel_format='rgb24',
+                    timestamp=time.time()
+                ))
 
             self.transmit(to_send)
             self._sent += 1

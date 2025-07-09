@@ -6,8 +6,10 @@ import requests
 from juturna.components import Message
 from juturna.components import BaseNode
 
+from juturna.payloads._payloads import ObjectPayload
 
-class NotifierHTTP(BaseNode):
+
+class NotifierHTTP(BaseNode[ObjectPayload, None]):
     _CNT_CB = {
         'application/json': lambda m: m.to_dict(),
         'text/plain': lambda m: m.to_json()
@@ -36,7 +38,7 @@ class NotifierHTTP(BaseNode):
 
             self._endpoint = value
 
-    def update(self, message: Message):
+    def update(self, message: Message[ObjectPayload]):
         message.meta['session_id'] = self.pipe_id
         message = NotifierHTTP._CNT_CB[self._content_type](message)
 
