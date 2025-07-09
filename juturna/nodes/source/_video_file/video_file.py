@@ -41,10 +41,8 @@ class VideoFile(BaseNode[BytesPayload, ImagePayload]):
         self._ffmpeg_proc = None
 
     def configure(self):
-        cmd = [
-            'ffprobe', '-v', 'quiet', '-print_format', 'json',
-            '-show_format', '-show_streams', str(self._video_path)
-        ]
+        cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json',
+               '-show_format', '-show_streams', str(self._video_path)]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(result.stdout)
 
