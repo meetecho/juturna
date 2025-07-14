@@ -30,11 +30,11 @@ class Message(typing.Generic[T_Input]):
         """
         self.created_at = time.time()
         self.meta = dict()
+        self.timers = dict()
 
         self._creator = creator
         self._version = version
         self._payload = payload
-        self._timers = dict()
         self._current_timer = None
 
     def __repr__(self):
@@ -52,18 +52,7 @@ class Message(typing.Generic[T_Input]):
 
         self._current_timer = None
 
-    @staticmethod
-    def from_message(message: 'Message',
-                     keep_meta: bool = False) -> 'Message':
-        msg = Message()
-        msg._timers = copy.deepcopy(message.timers)
-
-        if keep_meta:
-            msg.meta = copy.deepcopy(message.meta)
-
-        return msg
-
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Convert the message to a dictionary representation.
 
@@ -105,7 +94,7 @@ class Message(typing.Generic[T_Input]):
         return self._creator
 
     @creator.setter
-    def creator(self, creator: str):
+    def creator(self, creator: str | None):
         self._creator = creator
 
     @property
@@ -130,13 +119,6 @@ class Message(typing.Generic[T_Input]):
     def payload(self, payload: typing.Any):
         self._payload = payload
 
-    @property
-    def timers(self) -> dict:
-        """
-        Returns the timers of the message.
-        """
-        return self._timers
-
     def timer(self, timer_name: str, timer_value: float | None = None):
         """
         Records a timer with the given name and value.
@@ -151,7 +133,7 @@ class Message(typing.Generic[T_Input]):
         """
         timer_value = timer_value or time.time()
 
-        self._timers[timer_name] = timer_value
+        self.timers[timer_name] = timer_value
 
     def timeit(self, timer_name: str) -> typing.Self:
         """
