@@ -420,8 +420,8 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.payloads" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.payloads.AudioPayload">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">AudioPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.AudioPayload" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">AudioPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio:</span> <span class="pre">numpy.ndarray</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.AudioPayload" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BasePayload</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.AudioPayload.audio">
 <span class="sig-name descname"><span class="pre">audio</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.audio" title="Link to this definition">#</a></dt>
@@ -429,30 +429,30 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.AudioPayload.channels">
-<span class="sig-name descname"><span class="pre">channels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.channels" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">channels</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.channels" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.AudioPayload.end">
-<span class="sig-name descname"><span class="pre">end</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.end" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">end</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1.0</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.end" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.AudioPayload.sampling_rate">
-<span class="sig-name descname"><span class="pre">sampling_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.sampling_rate" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">sampling_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.sampling_rate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.AudioPayload.start">
-<span class="sig-name descname"><span class="pre">start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.start" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1.0</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.start" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.payloads.BytesPayload">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">BytesPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cnt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.BytesPayload" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">BytesPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cnt:</span> <span class="pre">bytes</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.BytesPayload" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BasePayload</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.BytesPayload.cnt">
 <span class="sig-name descname"><span class="pre">cnt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#juturna.payloads.BytesPayload.cnt" title="Link to this definition">#</a></dt>
@@ -462,11 +462,11 @@
 
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.payloads.ImagePayload">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">ImagePayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">numpy.ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_format</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.ImagePayload" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">ImagePayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image:</span> <span class="pre">numpy.ndarray</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pixel_format:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timestamp:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.ImagePayload" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BasePayload</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.ImagePayload.height">
-<span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#juturna.payloads.ImagePayload.height" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#juturna.payloads.ImagePayload.height" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -476,17 +476,17 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.ImagePayload.pixel_format">
-<span class="sig-name descname"><span class="pre">pixel_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#juturna.payloads.ImagePayload.pixel_format" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">pixel_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#juturna.payloads.ImagePayload.pixel_format" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.ImagePayload.timestamp">
-<span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#juturna.payloads.ImagePayload.timestamp" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">timestamp</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1.0</span></em><a class="headerlink" href="#juturna.payloads.ImagePayload.timestamp" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.ImagePayload.width">
-<span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#juturna.payloads.ImagePayload.width" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#juturna.payloads.ImagePayload.width" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -494,26 +494,26 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.payloads.ObjectPayload">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">ObjectPayload</span></span><a class="headerlink" href="#juturna.payloads.ObjectPayload" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">BasePayload</span></code></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.payloads.VideoPayload">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">VideoPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#juturna.payloads.ImagePayload" title="juturna.payloads._payloads.ImagePayload"><span class="pre">juturna.payloads._payloads.ImagePayload</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames_per_second</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.VideoPayload" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">VideoPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video:</span> <span class="pre">List[juturna.payloads._payloads.ImagePayload]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames_per_second:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.VideoPayload" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BasePayload</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.VideoPayload.end">
-<span class="sig-name descname"><span class="pre">end</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#juturna.payloads.VideoPayload.end" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">end</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1.0</span></em><a class="headerlink" href="#juturna.payloads.VideoPayload.end" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.VideoPayload.frames_per_second">
-<span class="sig-name descname"><span class="pre">frames_per_second</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#juturna.payloads.VideoPayload.frames_per_second" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">frames_per_second</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1.0</span></em><a class="headerlink" href="#juturna.payloads.VideoPayload.frames_per_second" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.VideoPayload.start">
-<span class="sig-name descname"><span class="pre">start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#juturna.payloads.VideoPayload.start" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1.0</span></em><a class="headerlink" href="#juturna.payloads.VideoPayload.start" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
