@@ -28,6 +28,7 @@ class ImagePayload(BasePayload):
     image: np.ndarray = field(default_factory=lambda: np.ndarray([0, 0]))
     width: int = -1
     height: int = -1
+    depth: int = -1
     pixel_format: str = ''
     timestamp: float = -1.0
 
