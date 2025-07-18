@@ -49,7 +49,7 @@
     <script src="../_static/js/meetecho-icon.js?v=56c1bf0c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Messages" href="message.html" />
+    <link rel="next" title="Payloads" href="payloads.html" />
     <link rel="prev" title="Pipeline fundamentals" href="pipeline.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -328,6 +328,7 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline fundamentals</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Node fundamentals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="payloads.html">Payloads</a></li>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Messages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Built-in nodes</a></li>
 </ul>
@@ -439,15 +440,19 @@ ones showed earlier.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">juturna.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseNode</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">juturna.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">juturna.payloads._payloads</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicPayload</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">CustomNode</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">):</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomNode</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">[</span><span class="n">BasicPayload</span><span class="p">,</span> <span class="n">BasicPayload</span><span class="p">]):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">param_2</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;proc&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">BasicPayload</span><span class="p">]):</span>
         <span class="o">...</span>
 </pre></div>
 </div>
+<p>The node class signature reports the types of input and output payloads the
+node respectively expects as input and produces as output.</p>
 <p>Notes:</p>
 <ul class="simple">
 <li><p>do not include keyword arguments in the node constructor: the argument values
@@ -624,11 +629,15 @@ pipeline folder, ready to be used by the node:</p>
 </div>
 <section id="full-node-example">
 <h3>Full node example<a class="headerlink" href="#full-node-example" title="Link to this heading">#</a></h3>
+<p>This is an example of a node that receives an audio message and produces a
+image message.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">juturna.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseNode</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">juturna.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
 
+<span class="kn">from</span><span class="w"> </span><span class="nn">juturna.payloads._payloads</span><span class="w"> </span><span class="kn">import</span> <span class="n">AudioPayload</span><span class="p">,</span> <span class="n">ImagePayload</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">CustomNode</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">):</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomNode</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">[</span><span class="n">AudioPayload</span><span class="p">,</span> <span class="n">ImagePayload</span><span class="p">]):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">param_2</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;proc&#39;</span><span class="p">)</span>
 
@@ -670,7 +679,7 @@ pipeline folder, ready to be used by the node:</p>
         <span class="c1"># perform cleanup operations for the node, if needed</span>
         <span class="o">...</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">AudioPayload</span><span class="p">]):</span>
         <span class="c1"># receive data from the source node, process them, and generate</span>
         <span class="c1"># new data for the destination node</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span>
@@ -678,7 +687,9 @@ pipeline folder, ready to be used by the node:</p>
 
         <span class="n">new_data</span> <span class="o">=</span> <span class="n">do_stuff</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
-        <span class="n">new_message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="n">creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">new_message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">[</span><span class="n">ImagePayload</span><span class="p">](</span>
+         <span class="n">creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+         <span class="n">payload</span><span class="o">=</span><span class="n">ImagePayload</span><span class="p">(</span><span class="n">image</span><span class="o">=</span><span class="n">new_data</span><span class="p">))</span>
         <span class="n">new_message</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="n">current_version</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">transmit</span><span class="p">(</span><span class="n">new_message</span><span class="p">)</span>
@@ -708,11 +719,11 @@ pipeline folder, ready to be used by the node:</p>
       </div>
     </a>
     <a class="right-next"
-       href="message.html"
+       href="payloads.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Messages</p>
+        <p class="prev-next-title">Payloads</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

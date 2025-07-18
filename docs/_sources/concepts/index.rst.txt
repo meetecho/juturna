@@ -9,6 +9,7 @@ This section builds on the Getting Started guide by diving into Juturna’s core
 
    pipeline
    custom_nodes
+   payloads
    message
    nodes
 

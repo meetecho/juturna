@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Messages &#8212; juturna 0.1.0 documentation</title>
+    <title>Payloads &#8212; juturna 0.1.0 documentation</title>
   
   
   
@@ -45,12 +45,12 @@
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'concepts/message';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'concepts/payloads';</script>
     <script src="../_static/js/meetecho-icon.js?v=56c1bf0c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Built-in nodes" href="nodes.html" />
-    <link rel="prev" title="Payloads" href="payloads.html" />
+    <link rel="next" title="Messages" href="message.html" />
+    <link rel="prev" title="Node fundamentals" href="custom_nodes.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -328,8 +328,8 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline fundamentals</a></li>
 <li class="toctree-l1"><a class="reference internal" href="custom_nodes.html">Node fundamentals</a></li>
-<li class="toctree-l1"><a class="reference internal" href="payloads.html">Payloads</a></li>
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Messages</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Payloads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Messages</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Built-in nodes</a></li>
 </ul>
 </div>
@@ -374,7 +374,7 @@
     
     <li class="breadcrumb-item"><a href="index.html" class="nav-link">Basic Concepts</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Messages</span></li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Payloads</span></li>
   </ul>
 </nav>
 </div>
@@ -391,9 +391,12 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="messages">
-<h1>Messages<a class="headerlink" href="#messages" title="Link to this heading">#</a></h1>
-<p>A message is a data container used to exchange data across nodes.</p>
+  <section id="payloads">
+<h1>Payloads<a class="headerlink" href="#payloads" title="Link to this heading">#</a></h1>
+<p>A payload is a data container used to store and transfer different types of
+multimedia and data within messages.</p>
+<section id="basepayload">
+<h2>BasePayload<a class="headerlink" href="#basepayload" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>property</p></th>
@@ -402,96 +405,198 @@
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.creator</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
-<td><p>name or id of the creating node</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.version</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
-<td><p>message data version</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.payload</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">BasicPayload</span></code></p></td>
-<td><p>data to be transferred upstream
-in the pipeline</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.meta</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">dict</span></code></p></td>
-<td><p>message metadata</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.timers</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">dict</span></code></p></td>
-<td><p>collection of timers to evaluate
-performed data operations</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.clone()</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">method</span></code></p></td>
+<td><p>creates a deep copy of the
+payload instance</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>An empty message is created with:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">creator</span></code> set to <code class="docutils literal notranslate"><span class="pre">None</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">version</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
-</ul>
-<p>The message payload is an object of type <code class="docutils literal notranslate"><span class="pre">BasePayload</span></code> (or any of its
-derived types; see the <a class="reference internal" href="payloads.html"><span class="doc">payload doc page</span></a>
-for more details). When a message is created, its payload type should be
-specified.</p>
+</section>
+<section id="audiopayload">
+<h2>AudioPayload<a class="headerlink" href="#audiopayload" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
-<tr class="row-odd"><th class="head"><p>method</p></th>
-<th class="head"><p>arguments</p></th>
+<tr class="row-odd"><th class="head"><p>property</p></th>
+<th class="head"><p>type</p></th>
 <th class="head"><p>description</p></th>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Message.from_message()</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">(Message,</span> <span class="pre">bool)</span></code></p></td>
-<td><p>create a message by
-copying another message</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.audio</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code></p></td>
+<td><p>NumPy array containing the
+audio data</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.to_dict()</span></code></p></td>
-<td></td>
-<td><p>convert the message to
-a dictionary</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.sampling_rate</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>audio sampling rate in Hz</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.to_json()</span></code></p></td>
-<td></td>
-<td><p>convert the message to
-a json string</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.channels</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>number of audio channels</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.timer()</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">(str,</span> <span class="pre">float)</span></code></p></td>
-<td><p>add timer to message</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.start</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">float</span></code></p></td>
+<td><p>start time in seconds</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.end</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">float</span></code></p></td>
+<td><p>end time in seconds</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<p>An empty AudioPayload is created with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">audio</span></code> set to <code class="docutils literal notranslate"><span class="pre">np.ndarray(0)</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">sampling_rate</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">channels</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1.0</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">end</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1.0</span></code></p></li>
+</ul>
+</section>
+<section id="imagepayload">
+<h2>ImagePayload<a class="headerlink" href="#imagepayload" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>property</p></th>
+<th class="head"><p>type</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.image</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code></p></td>
+<td><p>NumPy array containing the
+image data</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.width</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>image width in pixels</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.height</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>image height in pixels</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.depth</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">int</span></code></p></td>
+<td><p>image depth/channels (e.g., 3
+for RGB, 4 for RGBA)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.pixel_format</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">str</span></code></p></td>
+<td><p>pixel format description (e.g.,
+‘RGB’, ‘RGBA’, ‘BGR’)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.timestamp</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">float</span></code></p></td>
+<td><p>timestamp associated with the
+image</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>An empty ImagePayload is created with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">image</span></code> set to <code class="docutils literal notranslate"><span class="pre">np.ndarray([0,</span> <span class="pre">0])</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">width</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">height</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">depth</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pixel_format</span></code> set to <code class="docutils literal notranslate"><span class="pre">''</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timestamp</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1.0</span></code></p></li>
+</ul>
+</section>
+<section id="videopayload">
+<h2>VideoPayload<a class="headerlink" href="#videopayload" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>property</p></th>
+<th class="head"><p>type</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.video</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">List[ImagePayload]</span></code></p></td>
+<td><p>list of ImagePayload objects
+representing video frames</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.frames_per_second</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">float</span></code></p></td>
+<td><p>video frame rate in frames
+per second</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.start</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">float</span></code></p></td>
+<td><p>start time in seconds</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">self.end</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">float</span></code></p></td>
+<td><p>end time in seconds</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>An empty VideoPayload is created with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">video</span></code> set to <code class="docutils literal notranslate"><span class="pre">list()</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frames_per_second</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1.0</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1.0</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">end</span></code> set to <code class="docutils literal notranslate"><span class="pre">-1.0</span></code></p></li>
+</ul>
+</section>
+<section id="bytespayload">
+<h2>BytesPayload<a class="headerlink" href="#bytespayload" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>property</p></th>
+<th class="head"><p>type</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.cnt</span></code></p></td>
+<td colspan="2"><p><code class="docutils literal notranslate"><span class="pre">bytes</span></code> | binary data content</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>An empty BytesPayload is created with:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cnt</span></code> set to <code class="docutils literal notranslate"><span class="pre">bytes()</span></code></p></li>
+</ul>
+</section>
+<section id="objectpayload">
+<h2>ObjectPayload<a class="headerlink" href="#objectpayload" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>property</p></th>
+<th class="head"><p>type</p></th>
+<th class="head"><p>description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>(inherits from
+dict)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">dict</span></code></p></td>
+<td><p>dictionary-like access for
+arbitrary object data</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>An empty ObjectPayload is created as an empty dictionary.</p>
 <p>Notes:</p>
 <ul class="simple">
-<li><p>currently, <code class="docutils literal notranslate"><span class="pre">to_json()</span></code> simply returns the <code class="docutils literal notranslate"><span class="pre">json.dumps()</span></code> on the
-dictionary version of a message; this means that generating a json string for
-the message will fail if the message payload is not serialisable using the
-encoder function provided as argument</p></li>
+<li><p>all payload classes inherit from <code class="docutils literal notranslate"><span class="pre">BasePayload</span></code> and provide a <code class="docutils literal notranslate"><span class="pre">clone()</span></code> method
+for deep copying</p></li>
+<li><p>default values of <code class="docutils literal notranslate"><span class="pre">-1</span></code> for numeric fields and empty strings/collections
+typically indicate unspecified or uninitialized values</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ObjectPayload</span></code> combines dictionary functionality with payload cloning
+capabilities</p></li>
 </ul>
-<section id="timers">
-<h2>Timers<a class="headerlink" href="#timers" title="Link to this heading">#</a></h2>
-<p>In order to keep track of any operations performed to generate the data
-contained in a message, a context manager, <code class="docutils literal notranslate"><span class="pre">timeit</span></code>, is offered to
-automatically create within the message <code class="docutils literal notranslate"><span class="pre">timers</span></code> dictionary a relevant entry.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">Message</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">m</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="s1">&#39;timer_name&#39;</span><span class="p">):</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">timers</span>
-<span class="go">{&#39;timer_name&#39;: 1.001392364501953}</span>
-</pre></div>
-</div>
-<p>Alternatively, set a timer using the <code class="docutils literal notranslate"><span class="pre">timer()</span></code> method:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">Message</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">timer</span><span class="p">(</span><span class="s1">&#39;timer_name&#39;</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">)</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">m</span><span class="o">.</span><span class="n">timers</span>
-<span class="go">{&#39;timer_name&#39;: 1.1}</span>
-</pre></div>
-</div>
 </section>
 </section>
 
@@ -506,20 +611,20 @@ automatically create within the message <code class="docutils literal notranslat
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="payloads.html"
+       href="custom_nodes.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Payloads</p>
+        <p class="prev-next-title">Node fundamentals</p>
       </div>
     </a>
     <a class="right-next"
-       href="nodes.html"
+       href="message.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Built-in nodes</p>
+        <p class="prev-next-title">Messages</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -542,7 +647,12 @@ automatically create within the message <code class="docutils literal notranslat
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#timers">Timers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#basepayload">BasePayload</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#audiopayload">AudioPayload</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#imagepayload">ImagePayload</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#videopayload">VideoPayload</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bytespayload">BytesPayload</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#objectpayload">ObjectPayload</a></li>
 </ul>
   </nav></div>
 
