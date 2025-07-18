@@ -1,10 +1,20 @@
+"""$_node_class_name
+
+@ Author: $_node_author_name
+@ Email: $_node_author_email
+@ Created at: $_creation_datetime
+
+Automatically generated with jt.utils.node_utils.node_stub
+"""
 import typing
 
 from juturna.components import BaseNode
 from juturna.components import Message
 
+from juturna.payloads._payloads import BasePayload
 
-class $_node_class_name(BaseNode):
+
+class $_node_class_name(BaseNode[BasePayload, BasePayload]):
     def __init__(self):
         super().__init__('$_node_type')
 
@@ -28,5 +38,5 @@ class $_node_class_name(BaseNode):
     def destroy(self):
         ...
 
-    def update(self, message: Message):
+    def update(self, message: Message[BasePayload]):
         ...
