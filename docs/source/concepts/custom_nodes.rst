@@ -54,13 +54,18 @@ ones showed earlier.
    from juturna.components import BaseNode
    from juturna.components import Message
 
+   from juturna.payloads._payloads import BasicPayload
 
-   class CustomNode(BaseNode):
+
+   class CustomNode(BaseNode[BasicPayload, BasicPayload]):
        def __init__(self, param_1: int, param_2: str):
            super().__init__('proc')
 
-       def update(self, message: Message):
+       def update(self, message: Message[BasicPayload]):
            ...
+
+The node class signature reports the types of input and output payloads the
+node respectively expects as input and produces as output.
 
 Notes:
 
@@ -195,13 +200,18 @@ pipeline folder, ready to be used by the node::
 Full node example
 -----------------
 
+This is an example of a node that receives an audio message and produces a
+image message.
+
 ::
 
    from juturna.components import BaseNode
    from juturna.components import Message
 
+   from juturna.payloads._payloads import AudioPayload, ImagePayload
 
-   class CustomNode(BaseNode):
+
+   class CustomNode(BaseNode[AudioPayload, ImagePayload]):
        def __init__(self, param_1: int, param_2: str):
            super().__init__('proc')
 
@@ -243,7 +253,7 @@ Full node example
            # perform cleanup operations for the node, if needed
            ...
 
-       def update(self, message: Message):
+       def update(self, message: Message[AudioPayload]):
            # receive data from the source node, process them, and generate
            # new data for the destination node
            data = message.payload
@@ -251,7 +261,9 @@ Full node example
 
            new_data = do_stuff(data)
 
-           new_message = Message(creator=self.name)
+           new_message = Message[ImagePayload](
+            creator=self.name,
+            payload=ImagePayload(image=new_data))
            new_message.version = current_version + 1
 
            self.transmit(new_message)
