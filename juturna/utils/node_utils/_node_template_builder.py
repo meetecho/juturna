@@ -1,10 +1,13 @@
 import pathlib
+import datetime
 import warnings
 
 
 def node_stub(node_name: str,
               node_type: str,
               node_class_name: str | None = None,
+              node_author_name: str = '',
+              node_author_email: str = '',
               destination: str = './plugins'):
     """
     Create a basic node template with a config file and a README file.
@@ -52,6 +55,10 @@ def node_stub(node_name: str,
 
     template = template.replace('$_node_class_name', node_class_name)
     template = template.replace('$_node_type', node_type)
+    template = template.replace('$_node_author_name', node_author_name)
+    template = template.replace('$_node_author_email', node_author_email)
+    template = template.replace('$_creation_datetime',
+                                str(datetime.datetime.now()))
 
     node_file_path = pathlib.Path(node_destination, f'{node_name}.py')
 

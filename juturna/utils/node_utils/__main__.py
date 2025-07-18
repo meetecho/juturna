@@ -28,6 +28,17 @@ _stub_parser.add_argument(
     type=str,
     help='node class name, used for class name')
 _stub_parser.add_argument(
+    '--author', '-a',
+    type=str,
+    default='not provided',
+    help='node author name')
+_stub_parser.add_argument(
+    '--email', '-e',
+    type=str,
+    default='not provided',
+    help='node author email'
+)
+_stub_parser.add_argument(
     '--destination-folder', '-d',
     type=str,
     default='./plugins',
@@ -43,4 +54,6 @@ match _command:
             node_name=arguments['node_name'],
             node_type=arguments['node_type'],
             node_class_name=arguments['node_class'],
+            node_author_name=arguments['author'],
+            node_author_email=arguments['email'],
             destination=arguments['destination_folder'])
