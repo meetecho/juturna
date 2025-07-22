@@ -20,6 +20,7 @@ T_Input = TypeVar(
 
 T_Output = TypeVar(
     'T_Output',
+    BasePayload,
     AudioPayload,
     ImagePayload,
     VideoPayload,
