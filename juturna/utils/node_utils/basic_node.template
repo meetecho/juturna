@@ -11,6 +11,8 @@ import typing
 from juturna.components import BaseNode
 from juturna.components import Message
 
+# BasePayload type is intended to be a placehoder for the input-output types
+# you intend to use in the node implementation
 from juturna.payloads._payloads import BasePayload
 
 
