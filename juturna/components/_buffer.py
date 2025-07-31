@@ -1,5 +1,6 @@
 import copy
 import threading
+import typing
 import logging
 
 from juturna.components import Message
@@ -18,6 +19,8 @@ class Buffer:
         self._name = name
         self._lock = threading.Lock()
 
+        self._on_update_cbs: list[typing.Callable[[Message], None]] = list()
+
     @property
     def name(self) -> str:
         return self._name
@@ -25,6 +28,10 @@ class Buffer:
     @name.setter
     def name(self, name: str):
         self._name = name
+
+    def subscribe(self, callback: typing.Callable[[Message], None]) -> None:
+        with self._lock:
+            self._on_update_cbs.append(callback)
 
     def update(self, message: Message | None):
         """
@@ -46,6 +53,9 @@ class Buffer:
         with self._lock:
             self._this_message = copy.deepcopy(message)
             self._received += 1
+
+        for cb in self._on_update_cbs:
+            cb(message)
 
     def version(self) -> int | None:
         """
