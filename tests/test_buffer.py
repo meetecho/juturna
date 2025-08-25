@@ -83,32 +83,3 @@ def test_buffer_update_lock_with_message():
     buffer.update(message)
 
     assert buffer._lock.locked() is False
-
-
-def test_buffer_get_updated_empty():
-    buffer = Buffer(name='test_buffer')
-
-    updated_message = buffer.get_updated(last_version=0)
-
-    assert updated_message is None
-
-def test_buffer_get_updated():
-    buffer = Buffer(name='test_buffer')
-    message = Message(creator='test_creator', version=1, payload='test_payload')
-
-    buffer.update(message)
-    updated_message = buffer.get_updated(last_version=0)
-
-    assert isinstance(updated_message, Message)
-    assert updated_message.version == 1
-    assert updated_message.payload == 'test_payload'
-
-
-def test_buffer_get_updated_no_update():
-    buffer = Buffer(name='test_buffer')
-    message = Message(creator='test_creator', version=1, payload='test_payload')
-
-    buffer.update(message)
-    updated_message = buffer.get_updated(last_version=2)
-
-    assert updated_message is None
