@@ -98,28 +98,3 @@ class Buffer:
             A copy of the message currently stored in the buffer.
         """
         return copy.deepcopy(self._this_message)
-
-    def get_updated(self, last_version: int) -> Message | None:
-        """
-        Fetch the message stored in the buffer. This method locks the buffer
-        and atomically queries the message version against a provided version.
-        If the buffer contains an updated version of the message, then a copy
-        is returned, otherwise it returns None.
-
-        Parameters
-        ----------
-        last_version : int
-            The version to check the buffer content against.
-
-        Returns
-        -------
-        Message | None
-            A copy of the stored message, or None if the passed version is less
-            than the buffer version.
-        """
-        with self._lock:
-            if (curr_version := self.version()) and \
-                (last_version >= curr_version):
-                    return None
-
-            return copy.deepcopy(self._this_message)
