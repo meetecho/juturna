@@ -81,7 +81,7 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
             ...
 
     def update(self, message: Message[ImagePayload]):
-        frame = message.payload
+        frame = message.payload.image
         frame_bytes = frame.tobytes()
 
         self._ffmpeg_proc.stdin.write(frame_bytes)

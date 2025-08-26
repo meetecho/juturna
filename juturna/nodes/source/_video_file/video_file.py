@@ -64,7 +64,7 @@ class VideoFile(BaseNode[BytesPayload, ImagePayload]):
         self._ffmpeg_launcher_path = self.ffmpeg_launcher
 
     def start(self):
-        logging.info('starting ffmpeg source proc...')
+        logging.info('starting file source proc...')
 
         self._ffmpeg_proc = subprocess.Popen(
             ['sh', self.ffmpeg_launcher],
