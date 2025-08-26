@@ -8,11 +8,16 @@ from juturna.payloads._payloads import BasePayload
 
 
 class LoggerProperty(BaseNode[BasePayload, BasePayload]):
-    def __init__(self, target: str, value: typing.Any, in_meta: bool):
+    def __init__(self,
+                 target: str,
+                 value: typing.Any,
+                 match_any: bool,
+                 in_meta: bool):
         super().__init__('sink')
 
         self._target = target
         self._value = value
+        self._match_any = match_any
         self._in_meta = in_meta
 
     def configure(self):
@@ -37,7 +42,8 @@ class LoggerProperty(BaseNode[BasePayload, BasePayload]):
         try:
             _t = message.meta if self._in_meta else message.payload
 
-            if _t[self._target] == self._value:
-                logging.info(f'{self.name} match: {self._target} = {self._value}')
+            if self._match_any or (_t[self._target] == self._value):
+                logging.info(
+                    f'{self.name} match: {self._target} == {_t[self._target]}')
         except Exception as e:
             ...
