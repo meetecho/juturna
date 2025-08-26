@@ -1,0 +1,10 @@
+[arguments]
+model_name = "tiny"
+only_local = true
+language = "en"
+word_timestamps = true
+without_timestamps = false
+task = "transcribe"
+buffer_size = 5
+
+[meta]
