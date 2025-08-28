@@ -3,11 +3,11 @@ ffmpeg \
     -f rawvideo \
     -pix_fmt rgb24 \
     -s $_in_frame_shape \
+    -loglevel $_process_log_level \
     -i pipe: \
     -f rtp \
     -g $_gop \
     -level 3.1 \
-    -loglevel quiet \
     -pix_fmt yuv420p \
     -preset ultrafast \
     -sdp_file $_sdp_file_path \
