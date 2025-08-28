@@ -1,0 +1,14 @@
+ffmpeg \
+    -re \
+    -f rawvideo \
+    -pix_fmt rgb24 \
+    -s $_in_frame_shape \
+    -loglevel $_process_log_level \
+    -i pipe: \
+    -c:v libvpx \
+    -deadline realtime \
+    -cpu-used 4 \
+    -g $_gop \
+    -b:v 256000 \
+    output.webm \
+    -y
