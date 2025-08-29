@@ -3,16 +3,20 @@ ffmpeg \
     -f rawvideo \
     -pix_fmt rgb24 \
     -s $_in_frame_shape \
+    -loglevel $_process_log_level \
     -i pipe: \
     -f rtp \
-    -loglevel quiet \
     -pix_fmt yuv420p \
     -sdp_file $_sdp_file_path \
     -vcodec libvpx \
+    -deadline realtime \
+    -cpu-used 4 \
+    -rc_lookahead 4 \
     -auto-alt-ref 1 \
-    -lag-in-frames 16 \
-    -keyint_min 15 \
+    -lag-in-frames 4 \
+    -rc_lookahead 4 \
+    -keyint_min 9 \
     -g $_gop \
-    -b:v 1M \
+    -b:v 256000 \
     rtp://$_dst_host:$_dst_port \
     -y

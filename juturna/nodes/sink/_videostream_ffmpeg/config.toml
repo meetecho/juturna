@@ -5,7 +5,8 @@ in_width = 640
 in_height = 480
 out_width = 640
 out_height = 480
-gop = 90
+gop = 30
+process_log_level = "quiet"
 ffmpeg_proc_path = "ffmpeg_launcher_vp8.sh.template" 
 
 [meta]
