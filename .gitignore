@@ -1,5 +1,6 @@
 tests/running_pipelines/
 .idea/
+.vscode/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
