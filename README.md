@@ -7,11 +7,14 @@
 [![Forks](https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge)](FORKS)
 [![issues](https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge)](ISSUES)
 
-## :rotating_light: Disclaimer
-Juturna is still under **heavy development**, so there might be breaking changes
-along the way. We also recommend, for the moment, using Juturna in
-experimenting and prototyping scenarios. Please be sure you know what you are
-doing if you want to deploy Juturna in a production environment.
+## :seedling: Important to know
+Juturna is actively evolving with exciting new features and improvements being
+added regularly. We're using semantic versioning to clearly communicate any
+breaking changes between releases, so you can upgrade with confidence. Juturna
+is perfect for experimentation and prototyping today, and we're working toward
+production-ready stability with each release. So, if you plan to deploy it in
+production, make sure you are comfortable managing potential updates and
+adjustments.
 
 ## At a glance
 
