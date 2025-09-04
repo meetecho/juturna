@@ -1,6 +1,8 @@
 import pathlib
 import subprocess
+import threading
 import time
+import logging
 
 import numpy as np
 
@@ -8,6 +10,7 @@ from juturna.components import _resource_broker as rb
 from juturna.components import Message
 from juturna.components import BaseNode
 from juturna.payloads import BytesPayload, AudioPayload
+from juturna.names import ComponentStatus
 
 
 class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
@@ -58,6 +61,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         self._sdp_file_path = None
         self._ffmpeg_proc = None
         self._ffmpeg_launcher_path = None
+        self._monitor_thread = None
 
     def configure(self):
         if self._rec_port == 'auto':
@@ -72,7 +76,11 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            bufsize=10**8)
+            stderr=subprocess.PIPE,
+            bufsize=64536)
+
+        self._monitor_thread = threading.Thread(target=self.monitor_process, args=(self._ffmpeg_proc,))
+        self._monitor_thread.start()
 
         self.set_source(lambda: Message[BytesPayload](
             creator=self.name,
@@ -95,6 +103,9 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             self._ffmpeg_proc.terminate()
             self._ffmpeg_proc.wait()
             self._ffmpeg_proc = None
+
+            self._monitor_thread.join()
+
         except Exception:
             ...
 
@@ -157,3 +168,14 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                 AudioRTP._FFMPEG_TEMPLATE_NAME, '_ffmpeg_launcher.sh', {
                     '_sdp_location': self.sdp_descriptor,
                     '_audio_rate': self._audio_rate })
+
+    def monitor_process(self, proc):
+        proc.wait()
+        self.clear_source()
+        logging.debug(f'{self.name} subprocess terminates with code: {proc.returncode} - current node status: {self.status.name}')
+        time.sleep(5)
+        if self.status == ComponentStatus.RUNNING:
+            logging.info(f'{self.name} subprocess is respawning in 5 seconds')
+            self.stop()
+            time.sleep(5)
+            self.start()
