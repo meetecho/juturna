@@ -80,7 +80,6 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
             bufsize=64536)
 
         self._monitor_thread = threading.Thread(target=self.monitor_process, args=(self._ffmpeg_proc,))
