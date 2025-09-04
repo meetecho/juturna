@@ -4,6 +4,7 @@ rec_port = "auto"
 audio_rate = 16000
 block_size = 3
 channels = 2
+process_log_level = "quiet"
 payload_type = 97
 
 [meta]
