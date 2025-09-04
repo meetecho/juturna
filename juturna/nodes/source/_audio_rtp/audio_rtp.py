@@ -105,10 +105,17 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             time.sleep(2)
 
             self._ffmpeg_proc.terminate()
-            self._ffmpeg_proc.wait()
+            try:
+                self._ffmpeg_proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                logging.warning("ffmpeg process did not terminate in time, killing it.")
+                self._ffmpeg_proc.kill()
+                self._ffmpeg_proc.wait()
             self._ffmpeg_proc = None
 
-            self._monitor_thread.join()
+            self._monitor_thread.join(timeout=5)
+            if self._monitor_thread.is_alive():
+                logging.warning("Monitor thread did not exit in time.")
 
         except Exception:
             ...
