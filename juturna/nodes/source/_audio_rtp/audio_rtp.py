@@ -25,6 +25,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                  audio_rate: int,
                  block_size: int,
                  channels: int,
+                 process_log_level: str,
                  payload_type: int):
         """
         Parameters
@@ -40,6 +41,8 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             Size of the audio block to sample, in seconds.
         channels : int
             Number of source audio channels.
+        process_log_level : str
+            Log level for the ffmpeg process.
         payload_type : int
             Payload type for the RTP stream.
         """
@@ -57,6 +60,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
 
         self._rec_host = rec_host
         self._rec_port = rec_port
+        self._process_log_level = process_log_level
 
         self._sdp_file_path = None
         self._ffmpeg_proc = None
@@ -167,6 +171,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             self.prepare_template(
                 AudioRTP._FFMPEG_TEMPLATE_NAME, '_ffmpeg_launcher.sh', {
                     '_sdp_location': self.sdp_descriptor,
+                    '_process_log_level': self._process_log_level,
                     '_audio_rate': self._audio_rate })
 
     def monitor_process(self, proc):
