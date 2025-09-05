@@ -97,7 +97,7 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
         to_send.payload['transcript'] = rescaled
 
         self.transmit(to_send)
-        logging.info(f'{self.name} transmit: {to_send.version} - {to_send.payload['transcript']}')
+        logging.info(f'{self.name} transmit: {to_send.version}')
 
     @staticmethod
     def rescale_trx_words(words, buffer):
