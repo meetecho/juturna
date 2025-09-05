@@ -5,5 +5,5 @@ ffmpeg \
     -ac 2 \
     -acodec pcm_s16le \
     -ar $_audio_rate \
-    -loglevel quiet \
+    -loglevel $_process_log_level \
     pipe:
