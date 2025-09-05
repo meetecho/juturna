@@ -84,8 +84,8 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
             'word': w.word,
             'start': float(w.start),
             'end': float(w.end),
-            'start_abs': float(w.start) + self._data[0].meta['start_abs'],
-            'end_abs': float(w.end) + self._data[0].meta['start_abs'],
+            'start_abs': float(w.start) + self._data[0].payload.start,
+            'end_abs': float(w.end) + self._data[0].payload.start,
             'probability': float(w.probability)
         } for segment in transcript for w in segment.words]
 
@@ -105,7 +105,7 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
         accumulated_time = 0
 
         for m in buffer:
-            start_abs = m.meta['start_abs']
+            start_abs = m.payload.start
             speech_offset_map = []
 
             for segment in m.meta['speech_timestamps']:

@@ -34,6 +34,8 @@ class NotifierUDP(BaseNode[ObjectPayload, None]):
             'tot': self._max_chunks -1,
             'data': ''
         }))
+        
+        self._data_size = self._payload_size - self._meta_overhead
 
     def configure(self):
         ...
@@ -64,11 +66,11 @@ class NotifierUDP(BaseNode[ObjectPayload, None]):
             json_bytes = base64.b64encode(json_bytes).decode('ascii')
 
         total_chunks = (len(json_bytes) + self._payload_size - 1) // \
-            self._payload_size
+            self._data_size
 
         for i in range(total_chunks):
-            start_idx = i * self._payload_size
-            end_idx = min(start_idx + self._payload_size, len(json_bytes))
+            start_idx = i * self._data_size
+            end_idx = min(start_idx + self._data_size, len(json_bytes))
             payload_chunk = json_bytes[start_idx:end_idx]
 
             chunk_obj = {
