@@ -82,7 +82,8 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             stdout=subprocess.PIPE,
             bufsize=64536)
 
-        self._monitor_thread = threading.Thread(target=self.monitor_process, args=(self._ffmpeg_proc,))
+        self._monitor_thread = threading.Thread(target=self.monitor_process,
+                                                args=(self._ffmpeg_proc,))
         self._monitor_thread.start()
 
         self.set_source(lambda: Message[BytesPayload](
@@ -108,11 +109,13 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                 self._ffmpeg_proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 logging.warning("ffmpeg process did not terminate in time, killing it.")
+                
                 self._ffmpeg_proc.kill()
                 self._ffmpeg_proc.wait()
             self._ffmpeg_proc = None
 
             self._monitor_thread.join(timeout=5)
+            
             if self._monitor_thread.is_alive():
                 logging.warning("Monitor thread did not exit in time.")
 
@@ -185,6 +188,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         self.clear_source()
         logging.debug(f'{self.name} subprocess terminates with code: {proc.returncode} - current node status: {self.status.name}')
         time.sleep(5)
+        
         if self.status == ComponentStatus.RUNNING:
             logging.info(f'{self.name} subprocess is respawning in 5 seconds')
             self.stop()
