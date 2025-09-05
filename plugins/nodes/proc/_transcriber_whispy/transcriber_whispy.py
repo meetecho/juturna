@@ -151,6 +151,10 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
                 rescaled_words.append({
                     'word': word['word'],
                     'start': word_start_rescaled,
+                    'packet_start': word['start'],
+                    'packet_end': word['end'],
+                    'start_abs_computed': word['start_abs'],
+                    'end_abs_computed': word['end_abs'],
                     'end': word_end_rescaled,
                     'probability': word['probability']
                 })
