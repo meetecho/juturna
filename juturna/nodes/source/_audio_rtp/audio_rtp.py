@@ -112,6 +112,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                 
                 self._ffmpeg_proc.kill()
                 self._ffmpeg_proc.wait()
+                
             self._ffmpeg_proc = None
 
             self._monitor_thread.join(timeout=5)
@@ -186,11 +187,14 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
     def monitor_process(self, proc):
         proc.wait()
         self.clear_source()
-        logging.debug(f'{self.name} subprocess terminates with code: {proc.returncode} - current node status: {self.status.name}')
+        logging.debug(f'{self.name} subprocess terminates with code: \
+            {proc.returncode} - current node status: {self.status.name}')
+
         time.sleep(5)
         
         if self.status == ComponentStatus.RUNNING:
             logging.info(f'{self.name} subprocess is respawning in 5 seconds')
+            
             self.stop()
             time.sleep(5)
             self.start()
