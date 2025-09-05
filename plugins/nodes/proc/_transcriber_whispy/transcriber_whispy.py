@@ -80,12 +80,15 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
         with to_send.timeit(self.name):
             transcript = list(transcript)
 
+        word_start_abs = (self._data[0].meta['size'] * 
+                          self._data[0].meta['sequence_number'])
+
         word_list = [{
             'word': w.word,
             'start': float(w.start),
             'end': float(w.end),
-            'start_abs': float(w.start) + self._data[0].meta['start_abs'],
-            'end_abs': float(w.end) + self._data[0].meta['start_abs'],
+            'start_abs': float(w.start) + word_start_abs,
+            'end_abs': float(w.end) + word_start_abs,
             'probability': float(w.probability)
         } for segment in transcript for w in segment.words]
 
@@ -105,7 +108,8 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
         accumulated_time = 0
 
         for m in buffer:
-            start_abs = m.meta['start_abs']
+            
+            start_abs = (m.meta['size'] * m.meta['sequence_number'])
             speech_offset_map = []
 
             for segment in m.meta['speech_timestamps']:
