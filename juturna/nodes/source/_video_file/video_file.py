@@ -50,8 +50,8 @@ class VideoFile(BaseNode[BytesPayload, ImagePayload]):
             s for s in data['streams'] if s['codec_type'] == 'video')
 
         self._video_info = {
-            'duration': float(data['format']['duration']),
-            'fps': eval(video_stream['r_frame_rate']),
+            'duration': float(data['format'].get('duration', -1)),
+            'fps': eval(video_stream.get('r_frame_rate', -1)),
             'width': video_stream['width'],
             'height': video_stream['height'],
             'total_frames': int(video_stream.get('nb_frames', 0))
