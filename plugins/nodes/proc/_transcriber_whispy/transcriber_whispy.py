@@ -50,7 +50,7 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
 
         if message.meta['silence']:
             logging.info('    silence detected, sending silence...')
-            to_send.payload['transcript'] = dict()
+            to_send.payload['transcript'] = list()
             to_send.timer(self.name, -1)
 
             self.transmit(to_send)
