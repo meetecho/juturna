@@ -420,8 +420,8 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.components" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.components.BaseNode">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">BaseNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.BaseNode" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">T_Input</span></code>, <code class="xref py py-obj docutils literal notranslate"><span class="pre">T_Output</span></code>]</p>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">BaseNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipe_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.BaseNode" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></p>
 <p>Use this class to design custom nodes. BaseNode comes with a number of
 utility methods and fields that can be either used as they are or extended
 in the derived classes.</p>
@@ -467,6 +467,11 @@ in the derived classes.</p>
 <dd></dd></dl>
 
 <dl class="py property">
+<dt class="sig sig-object py" id="juturna.components.BaseNode.logger">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logger</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Logger</span></em><a class="headerlink" href="#juturna.components.BaseNode.logger" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
 <dt class="sig sig-object py" id="juturna.components.BaseNode.name">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#juturna.components.BaseNode.name" title="Link to this definition">#</a></dt>
 <dd><p>The node symbolic name. This name will also be assigned to the node
@@ -474,8 +479,8 @@ bridge component.</p>
 </dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="juturna.components.BaseNode.pipe_id">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pipe_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#juturna.components.BaseNode.pipe_id" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="juturna.components.BaseNode.pipe_name">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pipe_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#juturna.components.BaseNode.pipe_name" title="Link to this definition">#</a></dt>
 <dd><p>Id of the pipe the node belongs to. This will automatically be
 assigned to the node when it is intantiated within a pipeline, but can
 also be set manually. An isolated node not included within a pipeline
@@ -580,7 +585,7 @@ the bridge is stopped correctly.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.BaseNode.transmit">
-<span class="sig-name descname"><span class="pre">transmit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T_Output</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.BaseNode.transmit" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">transmit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.BaseNode.transmit" title="Link to this definition">#</a></dt>
 <dd><p>Transmit a message through the bridge. This method is used to send data
 from the node to its destinations. When invoking this method, remember
 that only messages with a newer version with respect to the versions
@@ -595,7 +600,7 @@ receiving nodes.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.BaseNode.update">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T_Input</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.BaseNode.update" title="Link to this definition">#</a></dt>
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.BaseNode.update" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -608,9 +613,9 @@ receiving nodes.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.components.Message">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">Message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">creator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T_Input</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Message" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">T_Input</span></code>]</p>
-<p>Container to move data across the pipeline</p>
-<p>A message is an object that all nodes produce and read to and from buffers.</p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></p>
+<p>A message is a container object that all nodes produce and read to and from
+buffers, plus offering few extra utilities.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="juturna.components.Message.creator">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">creator</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#juturna.components.Message.creator" title="Link to this definition">#</a></dt>
@@ -701,7 +706,6 @@ JSON encoder.</p>
 <dt class="sig sig-object py" id="juturna.components.Pipeline">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">Pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Juturna working pipeline</p>
 <p>A pipeline aggregates nodes to create a data workflow from a source node to
 destination nodes.</p>
 <dl class="py method">
@@ -851,8 +855,9 @@ their required resources.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.configure"><code class="docutils literal notranslate"><span class="pre">BaseNode.configure()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.destroy"><code class="docutils literal notranslate"><span class="pre">BaseNode.destroy()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.dump_json"><code class="docutils literal notranslate"><span class="pre">BaseNode.dump_json()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.logger"><code class="docutils literal notranslate"><span class="pre">BaseNode.logger</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.name"><code class="docutils literal notranslate"><span class="pre">BaseNode.name</span></code></a></li>
-<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.pipe_id"><code class="docutils literal notranslate"><span class="pre">BaseNode.pipe_id</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.pipe_name"><code class="docutils literal notranslate"><span class="pre">BaseNode.pipe_name</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.pipe_path"><code class="docutils literal notranslate"><span class="pre">BaseNode.pipe_path</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.prepare_template"><code class="docutils literal notranslate"><span class="pre">BaseNode.prepare_template()</span></code></a></li>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.components.BaseNode.set_on_config"><code class="docutils literal notranslate"><span class="pre">BaseNode.set_on_config()</span></code></a></li>

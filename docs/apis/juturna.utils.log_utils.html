@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>juturna.utils package &#8212; juturna 0.1.0 documentation</title>
+    <title>juturna.utils.log_utils package &#8212; juturna 0.1.0 documentation</title>
   
   
   
@@ -45,12 +45,12 @@
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'apis/juturna.utils';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'apis/juturna.utils.log_utils';</script>
     <script src="../_static/js/meetecho-icon.js?v=56c1bf0c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="juturna.utils.log_utils package" href="juturna.utils.log_utils.html" />
-    <link rel="prev" title="juturna.payloads package" href="juturna.payloads.html" />
+    <link rel="next" title="juturna.utils.net_utils package" href="juturna.utils.net_utils.html" />
+    <link rel="prev" title="juturna.utils package" href="juturna.utils.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -334,8 +334,8 @@
 <li class="toctree-l2"><a class="reference internal" href="juturna.names.html">juturna.names package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="juturna.nodes.html">juturna.nodes package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="juturna.payloads.html">juturna.payloads package</a></li>
-<li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">juturna.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l3"><a class="reference internal" href="juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="juturna.utils.html">juturna.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">juturna.utils.log_utils package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.utils.node_utils.html">juturna.utils.node_utils package</a></li>
 </ul>
@@ -353,8 +353,8 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Utilities</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active has-children"><a class="current reference internal" href="#">juturna.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="juturna.utils.html">juturna.utils package</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">juturna.utils.log_utils package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
 <li class="toctree-l2"><a class="reference internal" href="juturna.utils.node_utils.html">juturna.utils.node_utils package</a></li>
 </ul>
@@ -407,7 +407,10 @@
     
     <li class="breadcrumb-item"><a href="juturna.html" class="nav-link">juturna package</a></li>
     
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">juturna.utils package</span></li>
+    
+    <li class="breadcrumb-item"><a href="juturna.utils.html" class="nav-link">juturna.utils package</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">juturna.utils.log_utils package</span></li>
   </ul>
 </nav>
 </div>
@@ -424,52 +427,25 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="juturna-utils-package">
-<h1>juturna.utils package<a class="headerlink" href="#juturna-utils-package" title="Link to this heading">#</a></h1>
-<section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">#</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="juturna.utils.log_utils.html">juturna.utils.log_utils package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.utils.log_utils.html#module-juturna.utils.log_utils">Module contents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="juturna.utils.log_utils.html#juturna.utils.log_utils.formatter"><code class="docutils literal notranslate"><span class="pre">formatter()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="juturna.utils.log_utils.html#juturna.utils.log_utils.formatters"><code class="docutils literal notranslate"><span class="pre">formatters()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="juturna.utils.log_utils.html#juturna.utils.log_utils.jt_logger"><code class="docutils literal notranslate"><span class="pre">jt_logger()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.utils.net_utils.html">juturna.utils.net_utils package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.utils.net_utils.html#module-juturna.utils.net_utils">Module contents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="juturna.utils.net_utils.html#juturna.utils.net_utils.RTPClient"><code class="docutils literal notranslate"><span class="pre">RTPClient</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="juturna.utils.net_utils.html#juturna.utils.net_utils.RTPClient.connect"><code class="docutils literal notranslate"><span class="pre">RTPClient.connect()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.utils.net_utils.html#juturna.utils.net_utils.RTPClient.connected"><code class="docutils literal notranslate"><span class="pre">RTPClient.connected</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.utils.net_utils.html#juturna.utils.net_utils.RTPClient.disconnect"><code class="docutils literal notranslate"><span class="pre">RTPClient.disconnect()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.utils.net_utils.html#juturna.utils.net_utils.RTPClient.rec"><code class="docutils literal notranslate"><span class="pre">RTPClient.rec()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.utils.net_utils.html#juturna.utils.net_utils.RTPClient.send_terminate"><code class="docutils literal notranslate"><span class="pre">RTPClient.send_terminate()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="juturna.utils.net_utils.html#juturna.utils.net_utils.RTPDatagram"><code class="docutils literal notranslate"><span class="pre">RTPDatagram</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="juturna.utils.net_utils.html#juturna.utils.net_utils.RTPDatagram.datagram"><code class="docutils literal notranslate"><span class="pre">RTPDatagram.datagram</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="juturna.utils.net_utils.html#juturna.utils.net_utils.get_available_port"><code class="docutils literal notranslate"><span class="pre">get_available_port()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.utils.node_utils.html">juturna.utils.node_utils package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.utils.node_utils.html#module-juturna.utils.node_utils">Module contents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="juturna.utils.node_utils.html#juturna.utils.node_utils.node_stub"><code class="docutils literal notranslate"><span class="pre">node_stub()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="module-juturna.utils">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.utils" title="Link to this heading">#</a></h2>
+  <section id="juturna-utils-log-utils-package">
+<h1>juturna.utils.log_utils package<a class="headerlink" href="#juturna-utils-log-utils-package" title="Link to this heading">#</a></h1>
+<section id="module-juturna.utils.log_utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.utils.log_utils" title="Link to this heading">#</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.formatter">
+<span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">formatter_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#juturna.utils.log_utils.formatter" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.formatters">
+<span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">formatters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#juturna.utils.log_utils.formatters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.jt_logger">
+<span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">jt_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Logger</span></span></span><a class="headerlink" href="#juturna.utils.log_utils.jt_logger" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
 </section>
 </section>
 
@@ -484,20 +460,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="juturna.payloads.html"
+       href="juturna.utils.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">juturna.payloads package</p>
+        <p class="prev-next-title">juturna.utils package</p>
       </div>
     </a>
     <a class="right-next"
-       href="juturna.utils.log_utils.html"
+       href="juturna.utils.net_utils.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">juturna.utils.log_utils package</p>
+        <p class="prev-next-title">juturna.utils.net_utils package</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -520,8 +496,12 @@
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-juturna.utils">Module contents</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-juturna.utils.log_utils">Module contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.utils.log_utils.formatter"><code class="docutils literal notranslate"><span class="pre">formatter()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.utils.log_utils.formatters"><code class="docutils literal notranslate"><span class="pre">formatters()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.utils.log_utils.jt_logger"><code class="docutils literal notranslate"><span class="pre">jt_logger()</span></code></a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
