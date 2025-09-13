@@ -9,8 +9,8 @@ from juturna.payloads._payloads import ImagePayload
 
 
 class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
-    """Sink node for video streaming
-    """
+    """Sink node for video streaming"""
+
     def __init__(self,
                  dst_host: str,
                  dst_port: int,
@@ -20,7 +20,8 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
                  out_height: int,
                  gop: int,
                  process_log_level: str,
-                 ffmpeg_proc_path: str):
+                 ffmpeg_proc_path: str,
+                 **kwargs):
         """
         Parameters
         ----------
@@ -29,17 +30,24 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
         dst_port : int
             Port of the RTP endpoint to direct the stream to.
         in_width : int
-            Width of the video stream to send to the endpoint.
+            Width of the incoming video data.
         in_height : int
-            Height of the video stream to send to the endpoint.
+            Height of the incoming video data.
+        out_width : int
+            Width of the outgoing video stream.
+        out_height : int
+            Height of the outgoing video stream.
         gop : int
             Interval at which send keyframes in the output stream.
         process_log_level : str
             Log level for the ffmpeg process.
         ffmpeg_proc_path : str
             Path to the ffmpeg launcher script template.
+        kwargs : dict
+            Superclass arguments.
+
         """
-        super().__init__('sink')
+        super().__init__(**kwargs)
 
         self._dst_host = dst_host
         self._dst_port = dst_port
@@ -51,7 +59,7 @@ class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
         self._gop = gop
         self._ffmpeg_proc_path = ffmpeg_proc_path
         self._process_log_level = process_log_level
-        
+
         self._ffmpeg_proc = None
         self._ffmpeg_launcher_path = None
 

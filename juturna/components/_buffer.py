@@ -1,23 +1,23 @@
 import copy
 import threading
 import typing
-import logging
 
 from juturna.components import Message
+from juturna.utils.log_utils import jt_logger
 
 
 class Buffer:
-    """Data storage class
-
+    """
     A buffer stores the provided data, and makes it available to nodes that
     polls it for updates.
-
     """
+
     def __init__(self, name: str = ''):
         self._received = 0
         self._this_message = None
         self._name = name
         self._lock = threading.Lock()
+        self._logger = jt_logger(f'{self._name}_buf')
 
         self._on_update_cbs: list[typing.Callable[[Message], None]] = list()
 
@@ -44,9 +44,10 @@ class Buffer:
         ----------
         message : Message | None
             The message with the new datum in its payload.
+
         """
         if message is None:
-            logging.warning(f'invalid message received in {self._name}')
+            self._logger.warning(f'invalid message received in {self._name}')
 
             return
 
@@ -69,6 +70,7 @@ class Buffer:
             empty.
 
         .. deprecated::
+
         """
         if self._this_message:
             return self._this_message.version
@@ -85,6 +87,7 @@ class Buffer:
         -------
         int
             The number of packages received from the buffer.
+
         """
         return self._received
 
@@ -96,5 +99,6 @@ class Buffer:
         -------
         Message
             A copy of the message currently stored in the buffer.
+
         """
         return copy.deepcopy(self._this_message)

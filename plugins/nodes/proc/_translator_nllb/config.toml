@@ -1,0 +1,9 @@
+[arguments]
+model_name = "facebook/nllb-200-distilled-600M"
+tokenizer_name = "facebook/nllb-200-distilled-600M"
+src_language = "en"
+dst_language = "ita_Latn"
+device = "cuda"
+max_length = 400
+
+[meta]

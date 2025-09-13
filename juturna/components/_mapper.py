@@ -4,9 +4,7 @@ import tomllib
 import pathlib
 import os
 
-from typing import Tuple
-from typing import Type
-from typing import Iterable
+from collections.abc import Iterable
 
 
 _NODE_IMPORT_PATH = 'juturna.nodes'
@@ -18,8 +16,9 @@ _REGISTER_IMPORT_MASK = '{}.{}'
 
 def node(node_type: str,
          node_name: str,
-         import_prefix: str = _NODE_IMPORT_PATH) -> Tuple[type | None, dict]:
-    """Constructs a node module based on the given node type and name.
+         import_prefix: str = _NODE_IMPORT_PATH) -> tuple[type | None, dict]:
+    """
+    Constructs a node module based on the given node type and name.
 
     This function is responsible for dynamically constructing a node module
     using the provided node type and node name. The full module path is built
@@ -44,6 +43,7 @@ def node(node_type: str,
     Examples
     --------
     >>> launcher, config = node('proc', 'silero_vad')
+
     """
     _node_module_path = f'{import_prefix}.{_NODE_IMPORT_MASK}'
     _node_module_path = _node_module_path.format(
@@ -53,7 +53,8 @@ def node(node_type: str,
 
 
 def buffer(buf_type: str, import_prefix: str = _REGISTER_IMPORT_PATH):
-    """Constructs a register module based on the given register type.
+    """
+    Constructs a register module based on the given register type.
 
     This function is used to dynamically load a register module based on the
     provided type. By specifying the register type, the function determines the
@@ -75,6 +76,7 @@ def buffer(buf_type: str, import_prefix: str = _REGISTER_IMPORT_PATH):
     Examples
     --------
     >>> launcher, config = buffer('audio_shift')
+
     """
     _reg_module_path = import_prefix + '.{}.{}'
     _reg_module_path = f'{import_prefix}.{_REGISTER_IMPORT_MASK}'
@@ -83,8 +85,9 @@ def buffer(buf_type: str, import_prefix: str = _REGISTER_IMPORT_PATH):
     return _build(_reg_module_path, buf_type)
 
 
-def _build(_item_path: str, _item_type: str) -> Tuple[type | None, dict]:
-    """Build a module by discovering its classes and configuration.
+def _build(_item_path: str, _item_type: str) -> tuple[type | None, dict]:
+    """
+    Build a module by discovering its classes and configuration.
 
     This helper function combines several steps to build a module: discovering
     all the classes in a given import path, identifying the correct launcher
@@ -103,6 +106,7 @@ def _build(_item_path: str, _item_type: str) -> Tuple[type | None, dict]:
     -------
     Tuple[type, dict]
         A tuple containing the module class and its configuration dictionary.
+
     """
     _classes = _discover_classes(_item_path)
     _module_launcher = _get_module_launcher(_classes, _item_type)
@@ -112,7 +116,8 @@ def _build(_item_path: str, _item_type: str) -> Tuple[type | None, dict]:
 
 
 def _discover_classes(_import_path: str) -> list:
-    """Discovers and returns a list of classes in a given module.
+    """
+    Discovers and returns a list of classes in a given module.
 
     This function imports a module from the specified path and inspects it to
     identify all classes defined within it. It filters out any private or
@@ -129,6 +134,7 @@ def _discover_classes(_import_path: str) -> list:
     -------
     list
         A list of tuples, each tuple contains a class name and its object.
+
     """
     _item_module = importlib.import_module(_import_path)
 
@@ -136,8 +142,9 @@ def _discover_classes(_import_path: str) -> list:
             if not m[0].startswith('_')]
 
 
-def _get_module_launcher(_classes: Iterable, _item_type: str) -> Type | None:
-    """Retrieves the main launcher class from a list of discovered classes.
+def _get_module_launcher(_classes: Iterable, _item_type: str) -> type | None:
+    """
+    Retrieves the main launcher class from a list of discovered classes.
 
     This function iterates over the list of classes identified by
     `_discover_classes`, looking for the class whose module matches the
@@ -156,10 +163,11 @@ def _get_module_launcher(_classes: Iterable, _item_type: str) -> Type | None:
     -------
     class
         The class that matches the module type, or None if no match is found.
+
     """
     for _c in _classes:
         try:
-            if getattr(_c[1], '__module__').split('.')[-1] == _item_type:
+            if _c[1].__module__.split('.')[-1] == _item_type:
                 return _c[1]
         except Exception:
             ...
@@ -167,8 +175,9 @@ def _get_module_launcher(_classes: Iterable, _item_type: str) -> Type | None:
         return None
 
 
-def _get_module_conf(_module_launcher: Type | None) -> dict:
-    """Loads the configuration for a module if a config.toml file is found.
+def _get_module_conf(_module_launcher: type | None) -> dict:
+    """
+    Loads the configuration for a module if a config.toml file is found.
 
     This function attempts to load a TOML configuration file located in the
     same directory as the module's launcher class. If a `config.toml` file is
@@ -186,6 +195,7 @@ def _get_module_conf(_module_launcher: Type | None) -> dict:
     dict
         A dictionary containing the configuration for the module, or an empty
         dictionary if no configuration file is found.
+
     """
     _module_path = inspect.getfile(_module_launcher)
     _module_path = pathlib.Path(_module_path).parent

@@ -1,6 +1,5 @@
 import json
 import threading
-import logging
 
 from websockets.sync.client import connect
 
@@ -9,8 +8,19 @@ from juturna.components import BaseNode
 
 
 class NotifierWebsocket(BaseNode):
-    def __init__(self, endpoint: str):
-        super().__init__('sink')
+    """Transmit data to a websocket endpoint"""
+
+    def __init__(self, endpoint: str, **kwargs):
+        """
+        Parameters
+        ----------
+        endpoint : str
+            Destination endpoint, including port.
+        kwargs : dict
+            Superclass arguments.
+
+        """
+        super().__init__(**kwargs)
 
         self._endpoint = endpoint
 
@@ -18,7 +28,7 @@ class NotifierWebsocket(BaseNode):
         self._t = None
 
     def warmup(self):
-        logging.info(f'[{self.name}] set to endpoint {self._endpoint}')
+        self.logger.info(f'[{self.name}] set to endpoint {self._endpoint}')
 
     def update(self, message: Message):
         message = message.to_dict()
@@ -39,7 +49,7 @@ class NotifierWebsocket(BaseNode):
             try:
                 ws.send(json.dumps(payload))
             except Exception as e:
-                logging.warning(e)
+                self.logger.warning(e)
 
     def destroy(self):
         if self._t:

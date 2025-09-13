@@ -1,6 +1,6 @@
 [project]
 name = "juturna"
-version = "0.1.0"
+version = "0.2.0"
 description = "Juturna core library"
 authors = [
     { name = "Antonio Bevilacqua", email = "b3by.in.th3.sky@gmail.com" }

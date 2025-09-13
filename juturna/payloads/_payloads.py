@@ -1,6 +1,5 @@
 import copy
 
-from typing import List
 from typing import Self
 from dataclasses import dataclass
 from dataclasses import field
@@ -35,7 +34,7 @@ class ImagePayload(BasePayload):
 
 @dataclass
 class VideoPayload(BasePayload):
-    video: List[ImagePayload] = field(default_factory=lambda: list())
+    video: list[ImagePayload] = field(default_factory=lambda: list())
     frames_per_second: float = -1.0
     start: float = -1.0
     end: float = -1.0
@@ -43,7 +42,7 @@ class VideoPayload(BasePayload):
 
 @dataclass
 class BytesPayload(BasePayload):
-    cnt: bytes = field(default_factory=lambda: bytes())
+    cnt: bytes = field(default_factory=lambda: b'')
 
 
 @dataclass

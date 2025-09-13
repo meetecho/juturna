@@ -4,20 +4,18 @@ import json
 import pathlib
 import gc
 import typing
-import logging
 
 from juturna.components import _component_builder
+from juturna.utils.log_utils import jt_logger
 
 from juturna.names import ComponentStatus
 from juturna.names import PipelineStatus
 
 
 class Pipeline:
-    """Juturna working pipeline
-
+    """
     A pipeline aggregates nodes to create a data workflow from a source node to
     destination nodes.
-
     """
 
     def __init__(self, config: dict):
@@ -28,11 +26,14 @@ class Pipeline:
             The pipeline configuration. This is a dictionary that contains the
             pipeline configuration, including the pipeline name, ID, folder,
             nodes, and links.
+
         """
         self._raw_config = copy.deepcopy(config)
         self._name = self._raw_config['pipeline']['name']
         self._pipe_id = self._raw_config['pipeline']['id']
         self._pipe_path = self._raw_config['pipeline']['folder']
+
+        self._logger = jt_logger(self._name)
 
         self._pipe = dict()
 
@@ -54,8 +55,9 @@ class Pipeline:
         -------
         Pipeline
             The pipeline object.
+
         """
-        with open(json_path, 'r') as f:
+        with open(json_path) as f:
             config = json.load(f)
 
         return Pipeline(config)
@@ -86,15 +88,15 @@ class Pipeline:
         }
 
     def warmup(self):
-        """Prepare the pipeline and all its nodes.
+        """
+        Prepare the pipeline and all its nodes.
 
         This method creates all the concrete nodes in the pipe, allocating
         their required resources.
-
         """
         if self._status != PipelineStatus.NEW:
             raise RuntimeError(f'pipeline {self.name} cannot be warmed up')
-        
+
         if self._pipe is None:
             self._pipe = dict()
 
@@ -107,15 +109,13 @@ class Pipeline:
         links = self._raw_config['pipeline']['links']
 
         for node in nodes:
-            name = node['name']
-            node_folder = pathlib.Path(self.pipe_path, name)
+            node_name = node['name']
+            node_folder = pathlib.Path(self.pipe_path, node_name)
             node_folder.mkdir(exist_ok=True)
 
             _node, _register = _component_builder.build_component(
-                node, plugin_dirs=self._raw_config['plugins'])
-
-            _node.name = name
-            logging.info(f'SESS: calling configure for node {name}')
+                node, plugin_dirs=self._raw_config['plugins'],
+                pipe_name=self.name)
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)
             _node.pipe_path = node_folder
@@ -124,7 +124,7 @@ class Pipeline:
             if _register:
                 _node.add_destination(_register)
 
-            self._pipe[name] = {'node': _node, 'register': _register}
+            self._pipe[node_name] = {'node': _node, 'register': _register}
 
         for link in links:
             from_node = link['from']
@@ -133,13 +133,14 @@ class Pipeline:
             self._pipe[to_node]['node'].set_source(
                 self._pipe[from_node]['register'])
 
-        for node_name in self._pipe.keys():
-            logging.info(f'SESS: calling warmup for {node_name}')
+        for node_name in self._pipe:
             self._pipe[node_name]['node'].warmup()
             self._pipe[node_name]['node'].status = ComponentStatus.CONFIGURED
 
+            self._logger.info(f'warmed up node {node_name}')
+
         self._status = PipelineStatus.READY
-        logging.info('warmed up!')
+        self._logger.info('pipe warmed up!')
 
         return
 
@@ -164,7 +165,7 @@ class Pipeline:
         """
         if self._status != PipelineStatus.READY:
             raise RuntimeError(f'pipeline {self.name} is not ready')
-        
+
         if self._pipe is None:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
@@ -172,6 +173,8 @@ class Pipeline:
             self._pipe[node_name]['node'].start()
 
         self._status = PipelineStatus.RUNNING
+
+        self._logger.info('pipe started')
 
     def stop(self):
         """
@@ -184,7 +187,7 @@ class Pipeline:
         """
         if self._status != PipelineStatus.RUNNING:
             raise RuntimeError(f'pipeline {self.name} is not running')
-        
+
         if self._pipe is None:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
@@ -192,6 +195,8 @@ class Pipeline:
             self._pipe[node_name]['node'].stop()
 
         self._status = PipelineStatus.READY
+
+        self._logger.info('pipe stopped')
 
     def destroy(self):
         """
@@ -210,10 +215,10 @@ class Pipeline:
             return
 
         for node_name in list(self._pipe.keys())[::-1]:
-            logging.info('clearing source...')
+            self._logger.info('clearing source...')
             self._pipe[node_name]['node'].clear_source()
 
-            logging.info('clearing destinations...')
+            self._logger.info('clearing destinations...')
             self._pipe[node_name]['node'].clear_destinations()
 
             self._pipe[node_name]['node'].destroy()
@@ -224,3 +229,6 @@ class Pipeline:
         self._pipe = None
 
         gc.collect()
+
+        self._logger.info('pipe destroyed')
+

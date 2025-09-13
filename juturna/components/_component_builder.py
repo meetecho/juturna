@@ -1,13 +1,16 @@
 import pathlib
 import typing
 
-import juturna as jt
-
 from juturna.components import _mapper as mapper
 from juturna.components._buffer import Buffer
 
+from juturna.utils.log_utils import jt_logger
 
-def build_component(node: dict, plugin_dirs: list):
+
+_logger = jt_logger()
+
+
+def build_component(node: dict, plugin_dirs: list, pipe_name: str):
     node_name = node['name']
     node_type = node['type']
     node_mark = node['mark']
@@ -36,8 +39,10 @@ def build_component(node: dict, plugin_dirs: list):
     operational_config = _update_local_with_remote(
         _node_local_config['arguments'], node_remote_config)
 
-    concrete_node = _node_module(**operational_config)
-    concrete_node.name = node_name
+    concrete_node = _node_module(**operational_config,
+                                 **{ 'node_type': node_type,
+                                     'node_name': node_name,
+                                     'pipe_name': pipe_name })
     concrete_node.configure()
     concrete_buffer = _build_buf(buffer_remote_config)
 
@@ -86,8 +91,10 @@ def _fetch_component(fetch_args: list, fetch_fun: typing.Callable) -> tuple:
     for args in fetch_args:
         try:
             _component, _config = fetch_fun(**args)
-        except ModuleNotFoundError as e:
+        except ModuleNotFoundError as _:
             ...
+        except Exception as e:
+            _logger.warning(e)
 
     return _component, _config
 
@@ -109,9 +116,6 @@ def component_lookup_args(
 
 
 def _update_local_with_remote(local: dict, remote: dict) -> dict:
-    merged_config = dict()
-
-    for k, v in local.items():
-        merged_config[k] = remote[k] if k in remote.keys() else v
+    merged_config = { k: remote.get(k, v) for k, v in local.items() }
 
     return merged_config

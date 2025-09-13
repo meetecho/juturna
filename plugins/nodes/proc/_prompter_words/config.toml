@@ -1,0 +1,56 @@
+[arguments]
+regex_replace = [ "\\.*$" ]
+keywords = [
+  "IETF",
+  "Meetecho",
+  "Janus",
+  "magnus westerlund",
+  "robert sparks",
+  "cindy morgan",
+  "alexey melnikov",
+  "russ housley",
+  "alexa morris",
+  "joel jaeggli",
+  "dave sinicrope"
+]
+cut_edge_word_thresh = 0.75
+overlap_thresh = 0.3
+matcher_thresh = 85
+
+  [arguments.static_replace]
+  IPP6 = "IPv6"
+  IPB6 = "IPv6"
+  IV6 = "IPv6"
+  IPP4 = "IPv4"
+  IPB4 = "IPv4"
+  IV4 = "IPv4"
+  IOTF = "IRTF"
+  non-com = "NOMCOM"
+  namcam = "NOMCOM"
+  nomcom = "NOMCOM"
+  NRW = "ANRW"
+  Missilla = "Mozilla"
+  IEP = "IAB"
+  IEB = "IAB"
+  IBS = "IAB"
+  "node well" = "Note Well"
+  node-well = "Note Well"
+  IRATF = "IRTF"
+  ITF = "IETF"
+  IATF = "IETF"
+  udip = "UDP"
+  "meat echo" = "Meetecho"
+  ISG = "IESG"
+  "data tracker" = "Datatracker"
+  "ISO board" = "ISOC board"
+  ICCI = "IEEE"
+  mideco = "Meetecho"
+  "Meet Echo" = "Meetecho"
+  metico = "Meetecho"
+  midecco = "Meetecho"
+  "Jen Dispatch" = "GENDISPATCH"
+  "Gen Dispatch" = "GENDISPATCH"
+  ayanna = "IANA"
+  Allianna = "IANA"
+  
+[meta]

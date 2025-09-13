@@ -16,6 +16,7 @@ class ComponentStatus(StrEnum):
     - ``STOPPED`` (``component_stopped``): a previously running component was
       stopped, so ``stop()`` was invoked on it
     """
+
     NEW            = 'component_created'
     CONFIGURED     = 'component_configured'
     RUNNING        = 'component_running'

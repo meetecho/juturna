@@ -1,4 +1,3 @@
-import logging
 import copy
 
 from collections import deque
@@ -21,8 +20,9 @@ class VadSilero(BaseNode[AudioPayload, AudioPayload]):
                  max_speech_duration_s: float | str,
                  min_silence_duration_ms: int,
                  speech_pad_ms: int,
-                 keep: int):
-        super().__init__('proc')
+                 keep: int,
+                 **kwargs):
+        super().__init__(**kwargs)
 
         self._model = silero_vad.load_silero_vad()
         self._rate = rate
@@ -37,7 +37,7 @@ class VadSilero(BaseNode[AudioPayload, AudioPayload]):
 
     def update(self, message: Message[AudioPayload]):
         assert isinstance(self._data, deque)
-        logging.info(f'{self.name} receive: {message.version}')
+        self.logger.info(f'{self.name} receive: {message.version}')
 
         self._data.append(message)
 
@@ -70,14 +70,14 @@ class VadSilero(BaseNode[AudioPayload, AudioPayload]):
             to_send.meta['silence'] = True
 
             self.transmit(to_send)
-            logging.info(f'{self.name} transmit: {to_send.version}')
+            self.logger.info(f'{self.name} transmit: {to_send.version}')
 
             return
 
         to_send.meta['speech_timestamps'] = speech_timestamps
 
         self.transmit(to_send)
-        logging.info(f'{self.name} transmit: {to_send.version}')
+        self.logger.info(f'{self.name} transmit: {to_send.version}')
 
     def destroy(self):
         self._data = None
