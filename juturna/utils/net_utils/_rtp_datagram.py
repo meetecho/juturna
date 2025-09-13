@@ -8,6 +8,7 @@ class RTPDatagram:
     RTP protocol datagram parser
     Based on github.com/plazmer/pyrtsp with minor cosmetic changes
     """
+
     def __init__(self, datagram: typing.Self):
         self.version = 0
         self.padding = 0

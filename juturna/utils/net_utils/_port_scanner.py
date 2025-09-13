@@ -11,6 +11,7 @@ def get_available_port() -> int:
     -------
     int
         An available port number.
+
     """
     s = socket.socket()
     s.bind(('', 0))

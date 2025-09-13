@@ -1,5 +1,4 @@
 import io
-import logging
 import itertools
 
 import av
@@ -15,11 +14,30 @@ from juturna.payloads import AudioPayload
 
 
 class AudioFile(BaseNode[AudioPayload, AudioPayload]):
+    """
+    Read in an audio file, chunk it based on the configured length, then make
+    them available to the pipe in a real-time fashion.
+    """
+
     def __init__(self,
                  file_source: str,
                  block_size: int,
-                 audio_rate: int):
-        super().__init__('source')
+                 audio_rate: int,
+                 **kwargs):
+        """
+        Parameter
+        ---------
+        file_source : str
+            The path of the file to source into the pipeline.
+        block_size : int
+            Time length of each produced audio chunk.
+        audio_rate : int
+            Sampling rate of the audio file.
+        kwargs : dict
+            Superclass arguments.
+
+        """
+        super().__init__(**kwargs)
 
         self._file_source = file_source
         self._block_size = block_size
@@ -57,13 +75,13 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
         self._audio = audio
         self._audio_chunks = self._get_audio_chunks()
 
-        self.set_source(self.generate_chunks, by=self._block_size, mode='pre')
+        self.set_source(self._generate_chunks, by=self._block_size, mode='pre')
 
-        logging.info('audio loaded')
-        logging.info(f'duration: {len(audio) / self._rate}')
+        self.logger.info('audio loaded')
+        self.logger.info(f'duration: {len(audio) / self._rate}')
 
-    def generate_chunks(self) -> Message[AudioPayload] | None:
-        logging.info('source generating chunk...')
+    def _generate_chunks(self) -> Message[AudioPayload] | None:
+        self.logger.info('source generating chunk...')
 
         try:
             return Message[AudioPayload](
@@ -75,7 +93,7 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
                     start=self._block_size * self._transmitted,
                     end=self._block_size * self._transmitted + self._block_size))
         except IndexError:
-            logging.info(f'{self.name} sending None')
+            self.logger.info(f'{self.name} sending None')
 
             return None
 
@@ -83,7 +101,7 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
         chunks = list()
         wave_len = self._block_size * self._rate
 
-        for chunk in AudioFile.chunker(self._audio, wave_len):
+        for chunk in AudioFile._chunker(self._audio, wave_len):
             if len(chunk) < wave_len:
                 chunk = np.pad(
                     chunk, (0, wave_len - len(chunk)),
@@ -95,7 +113,7 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
 
     def update(self, message: Message[AudioPayload]):
         if message is None:
-            logging.info('audio file done, stopping...')
+            self.logger.info('audio file done, stopping...')
 
             self.stop()
             self.status = ComponentStatus.STOPPED
@@ -123,7 +141,7 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
                 continue
 
     @staticmethod
-    def chunker(seq, size):
+    def _chunker(seq, size):
         return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
     @staticmethod

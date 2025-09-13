@@ -1,5 +1,4 @@
 import threading
-import logging
 
 import pymongo
 
@@ -19,7 +18,7 @@ class NotifierMongo(BaseNode):
         self._t = None
 
     def warmup(self):
-        logging.info(f'[{self.name}] set to endpoint {self._endpoint}')
+        self.logger.info(f'[{self.name}] set to endpoint {self._endpoint}')
 
     def update(self, message: Message):
         message = message.to_dict()
@@ -41,7 +40,7 @@ class NotifierMongo(BaseNode):
                 target_cl = client[self._database][self._collection]
                 _ = target_cl.insert_one(payload)
             except Exception as e:
-                logging.info(e)
+                self.logger.info(e)
 
     def destroy(self):
         if self._t:

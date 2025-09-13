@@ -2,7 +2,6 @@ import pathlib
 import subprocess
 import threading
 import time
-import logging
 
 import numpy as np
 
@@ -14,8 +13,8 @@ from juturna.names import ComponentStatus
 
 
 class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
-    """Source node for streaming audio
-    """
+    """Source node for streaming audio"""
+
     _SDP_TEMPLATE_NAME : str = 'remote_source.sdp.template'
     _FFMPEG_TEMPLATE_NAME : str = 'ffmpeg_launcher.sh.template'
 
@@ -26,7 +25,8 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                  block_size: int,
                  channels: int,
                  process_log_level: str,
-                 payload_type: int):
+                 payload_type: int,
+                 **kwargs):
         """
         Parameters
         ----------
@@ -45,8 +45,11 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             Log level for the ffmpeg process.
         payload_type : int
             Payload type for the RTP stream.
+        kwargs : dict
+            Superclass arguments.
+
         """
-        super().__init__('source')
+        super().__init__(**kwargs)
 
         self._audio_rate = audio_rate
         self._block_size = block_size
@@ -67,6 +70,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         self._ffmpeg_launcher_path = None
         self._monitor_thread = None
 
+    # isort: skip
     def configure(self):
         if self._rec_port == 'auto':
             self._rec_port = rb.get('port')
@@ -89,7 +93,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         self.set_source(lambda: Message[BytesPayload](
             creator=self.name,
             payload=BytesPayload(
-                cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes)))) # type: ignore
+                cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes))))
 
         super().start()
 
@@ -108,15 +112,16 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             try:
                 self._ffmpeg_proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                logging.warning("ffmpeg process did not terminate in time, killing it.")
-                
+                self.logger.warning(
+                    'ffmpeg process did not terminate in time, killing it.')
+
                 self._ffmpeg_proc.kill()
                 self._ffmpeg_proc.wait()
-                
+
             self._ffmpeg_proc = None
 
             self._monitor_thread.join()
-            
+
         except Exception:
             ...
 
@@ -150,6 +155,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         to_send.meta['source_recv'] = self._abs_recv
 
         self.transmit(to_send)
+        self.logger.info(f'transmitting message {to_send.version}')
 
         self._abs_recv += 1
 
@@ -181,17 +187,19 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                     '_process_log_level': self._process_log_level,
                     '_audio_rate': self._audio_rate })
 
-    def monitor_process(self, proc):
+    def monitor_process(self, proc: subprocess.Popen):
         proc.wait()
         self.clear_source()
-        logging.debug(f'{self.name} subprocess terminates with code: \
+
+        self.logger.debug(f'{self.name} subprocess terminates with code: \
             {proc.returncode} - current node status: {self.status.name}')
 
         time.sleep(5)
-        
+
         if self.status == ComponentStatus.RUNNING:
-            logging.info(f'{self.name} subprocess is respawning in 5 seconds')
-            
+            self.logger.info(
+                f'{self.name} subprocess is respawning in 5 seconds')
+
             self.stop()
             time.sleep(5)
             self.start()

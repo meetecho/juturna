@@ -1,5 +1,4 @@
 import typing
-import logging
 
 from juturna.components import BaseNode
 from juturna.components import Message
@@ -12,8 +11,9 @@ class LoggerProperty(BaseNode[BasePayload, BasePayload]):
                  target: str,
                  value: typing.Any,
                  match_any: bool,
-                 in_meta: bool):
-        super().__init__('sink')
+                 in_meta: bool,
+                 **kwargs):
+        super().__init__(**kwargs)
 
         self._target = target
         self._value = value
@@ -43,7 +43,7 @@ class LoggerProperty(BaseNode[BasePayload, BasePayload]):
             _t = message.meta if self._in_meta else message.payload
 
             if self._match_any or (_t[self._target] == self._value):
-                logging.info(
+                self.logger.info(
                     f'{self.name} match: {self._target} == {_t[self._target]}')
         except Exception as e:
             ...

@@ -3,8 +3,6 @@ import pathlib
 import urllib
 import json
 
-import requests
-
 import juturna as jt
 
 from juturna.hub import _gh_utils
@@ -47,7 +45,7 @@ def list_plugins(repository_url: str = None,
 
     if all_pipelines:
         plugins['pipelines'] = [
-            pathlib.Path(p).name for p in  all_pipelines.keys()
+            pathlib.Path(p).name for p in  all_pipelines
         ]
 
     return plugins
@@ -58,8 +56,7 @@ def download_node(node_name: str,
                   authenticate: bool = False,
                   repository_url: str = None,
                   force: bool = True):
-    """Download a node from the Juturna hub
-
+    """
     Given a target node, download it locally.
 
     Parameters
@@ -78,13 +75,15 @@ def download_node(node_name: str,
     force : bool
         Will not download the node if one with the same name already exists in
         the destination folder. Defaults to True.
+
     """
     node_url = urllib.parse.urljoin(
         repository_url or jt.meta.JUTURNA_HUB_URL, f'nodes/{node_name}')
     node_content = _gh_utils._gh_node_content_list(node_url, authenticate)
 
     if node_content is None:
-        warnings.warn(f'requested node does not exist on hub: {node_name}')
+        warnings.warn(f'requested node does not exist on hub: {node_name}',
+                      stacklevel=1)
 
         return
 
@@ -92,7 +91,8 @@ def download_node(node_name: str,
         pathlib.Path(jt.meta.JUTURNA_CACHE_DIR, 'plugins')
 
     if pathlib.Path(target_dir, node_name).exists() and not force:
-        warnings.warn(f'requested node already download: {node_name}')
+        warnings.warn(f'requested node already download: {node_name}',
+                      stacklevel=1)
 
         return
 
@@ -136,13 +136,15 @@ def download_pipeline(pipe_name: str,
     force : bool
         Will not download the pipeline if one with the same name already exists
         in the destination folder. Defaults to True.
+
     """
     pipe_url = urllib.parse.urljoin(
         repository_url or jt.meta.JUTURNA_HUB_URL, f'pipelines/{pipe_name}')
     pipe_content = _gh_utils._gh_node_content_list(pipe_url, authenticate)
 
     if pipe_content is None:
-        warnings.warn(f'requested pipeline does not exist on hub: {pipe_name}')
+        warnings.warn(f'requested pipeline does not exist on hub: {pipe_name}',
+                      stacklevel=1)
 
         return
 
@@ -154,7 +156,8 @@ def download_pipeline(pipe_name: str,
 
     if len(pipe_config_url) == 0:
         warnings.warn(
-            f'requested pipeline does not have a config file: {pipe_name}')
+            f'requested pipeline does not have a config file: {pipe_name}',
+            stacklevel=1)
 
         return
 

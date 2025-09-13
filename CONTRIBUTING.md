@@ -1,10 +1,12 @@
 # Contributing to Juturna
 
-Thanks for your interest in contributing! Whether it's reporting a bug, improving documentation, or submitting a pull request — you're welcome here.
+Thanks for your interest in contributing! Whether it's reporting a bug,
+improving documentation, or submitting a pull request — you're welcome here.
 
 ## Code of Conduct
 
-We expect everyone to be respectful and constructive. If you're a jerk, your PR will be closed. Simple as that.
+We expect everyone to be respectful and constructive. If you're a jerk, your PR
+will be closed. Simple as that.
 
 ## How to Contribute
 
@@ -17,6 +19,11 @@ We expect everyone to be respectful and constructive. If you're a jerk, your PR 
    Keep it clean, small, and focused.
 5. **Open a pull request** 
    Include a clear description of what you did and why.
+
+## Code Linting
+Juturna uses [Ruff](https://docs.astral.sh/ruff/) for code linting and
+formatting. Please refer to that and keep an eye on the adopted ruleset, making
+sure you follow them while writing your own code.
 
 ## Commit Message Guidelines
 Use clear, conventional commit messages:

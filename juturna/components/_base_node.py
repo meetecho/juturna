@@ -1,9 +1,10 @@
 import pathlib
 import inspect
 import string
+import logging
 
-from typing import Callable
-from typing import Generic
+from collections.abc import Callable
+
 from typing import Any
 
 from juturna.components._buffer import Buffer
@@ -11,20 +12,22 @@ from juturna.components._bridge import Bridge
 from juturna.components._poll_bridge import PollBridge
 from juturna.components._stream_bridge import StreamBridge
 
-from juturna.payloads import T_Input, T_Output
-
 from juturna.components import Message
 from juturna.names import ComponentStatus
+from juturna.utils.log_utils import jt_logger
 
 
-class BaseNode(Generic[T_Input, T_Output]):
+class BaseNode[T_Input, T_Output]:
     """
     Use this class to design custom nodes. BaseNode comes with a number of
     utility methods and fields that can be either used as they are or extended
     in the derived classes.
-
     """
-    def __init__(self, node_type: str):
+
+    def __init__(self,
+                 node_type: str,
+                 node_name: str = '',
+                 pipe_name: str = ''):
         """
         Parameters
         ----------
@@ -32,11 +35,22 @@ class BaseNode(Generic[T_Input, T_Output]):
             The type of node to be created. This field can have the values
             ``source``, ``proc`` or ``sink``, depending on the node being
             created.
+
+        node_name : str
+            The name to assign to the node.
+
+        pipe_name : str
+            The name of the pipe this node belongs to.
+
         """
-        self._name = None
+        self._name = node_name
         self._status = None
         self._session_id = None
         self._pipe_path = None
+        self._pipe_name = pipe_name
+
+        self._logger = jt_logger(f'{self.pipe_name}.{self._name}')
+        self._logger.propagate = True
 
         self._bridge = StreamBridge('') \
             if node_type == 'source' else PollBridge('')
@@ -54,19 +68,18 @@ class BaseNode(Generic[T_Input, T_Output]):
         """
         The node symbolic name. This name will also be assigned to the node
         bridge component.
+
         """
         return self._name
 
     @name.setter
-    def name(self, node_name: str):
-        self._name = node_name
-        self._bridge.bridge_id = node_name
+    def name(self, name: str):
+        self._name = name
+        self._bridge.bridge_id = name
 
     @property
     def bridge(self) -> Bridge:
-        """
-        The node bridge component.
-        """
+        """The node bridge component."""
         return self._bridge
 
     @bridge.setter
@@ -89,18 +102,18 @@ class BaseNode(Generic[T_Input, T_Output]):
         self._status = ComponentStatus(new_status)
 
     @property
-    def pipe_id(self) -> str | None:
+    def pipe_name(self) -> str | None:
         """
         Id of the pipe the node belongs to. This will automatically be
         assigned to the node when it is intantiated within a pipeline, but can
         also be set manually. An isolated node not included within a pipeline
         will have a ``None`` value for this field.
         """
-        return self._session_id
+        return self._pipe_name
 
-    @pipe_id.setter
-    def pipe_id(self, session_id: str):
-        self._session_id = session_id
+    @pipe_name.setter
+    def pipe_name(self, pipe_name: str):
+        self._pipe_name = pipe_name
 
     @property
     def pipe_path(self) -> str | None:
@@ -125,6 +138,10 @@ class BaseNode(Generic[T_Input, T_Output]):
         node.
         """
         return pathlib.Path(inspect.getfile(self.__class__)).parent
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
 
     def prepare_template(self,
                          template_name: str,
@@ -153,6 +170,7 @@ class BaseNode(Generic[T_Input, T_Output]):
         ------
         ValueError
             If the node is not part of a pipeline, and pipe_path is not set.
+
         """
         if self.pipe_path is None:
             raise ValueError('pipe_path is not set. '
@@ -161,7 +179,7 @@ class BaseNode(Generic[T_Input, T_Output]):
         _template_path = pathlib.Path(self.static_path, template_name)
         _destination_path = pathlib.Path(self.pipe_path, file_destination_name)
 
-        with open(_template_path, 'r') as f:
+        with open(_template_path) as f:
             _template_string = f.read()
 
         _content = string.Template(_template_string).substitute(arguments)
@@ -179,7 +197,7 @@ class BaseNode(Generic[T_Input, T_Output]):
 
         with open(dump_path, 'w') as f:
             f.write(message.to_json(encoder=lambda x: x.tolist()))
-        
+
         return str(dump_path)
 
     def set_source(self,
@@ -206,6 +224,7 @@ class BaseNode(Generic[T_Input, T_Output]):
             for ``by`` seconds before being called. If set to ``pre``, the
             source function will be called and then wait for ``by`` seconds
             before being called again.
+
         """
         if self._bridge.source is None:
             self._bridge.set_source(source, by, mode)
@@ -232,6 +251,7 @@ class BaseNode(Generic[T_Input, T_Output]):
         ----------
         message : Message
             The message to be transmitted.
+
         """
         self._bridge.transmit(message)
 

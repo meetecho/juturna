@@ -1,7 +1,9 @@
 import socket
-import logging
 
 from juturna.utils.net_utils import RTPDatagram
+from juturna.utils.log_utils import jt_logger
+
+_logger = jt_logger()
 
 
 class RTPClient:
@@ -9,6 +11,7 @@ class RTPClient:
     RTPClient is a class that represents a Real-time Transport Protocol (RTP)
     client. It is used to send and receive RTP packets over a network.
     """
+
     def __init__(self, host: str, port: int):
         """
         Parameters
@@ -17,6 +20,7 @@ class RTPClient:
             The host address of the RTP server.
         port : int
             The port number of the RTP server.
+
         """
         self.host = host
         self.port = port
@@ -35,7 +39,7 @@ class RTPClient:
         if self._socket:
             return
 
-        logging.info(f'local bind to {self.host}:{self.port}')
+        _logger.info(f'local bind to {self.host}:{self.port}')
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self._socket.bind((self.host, self.port))
@@ -43,18 +47,16 @@ class RTPClient:
         self._is_connected = True
 
     def disconnect(self):
-        """
-        Disconnect from the RTP server and clean up resources.
-        """
+        """Disconnect from the RTP server and clean up resources."""
         try:
             self._socket.close()
             self.send_terminate()
             self._socket = None
         except AttributeError:
-            logging.info('socket not created')
+            _logger.info('socket not created')
 
         self._is_connected = False
-        logging.info('local rtp client disconnected')
+        _logger.info('local rtp client disconnected')
 
     def send_terminate(self):
         """
@@ -63,8 +65,7 @@ class RTPClient:
         disconnecting.
         """
         blank_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        blank_socket.sendto('000000000000xxxx'.encode(),
-                            (self.host, self.port))
+        blank_socket.sendto(b'000000000000xxxx', (self.host, self.port))
 
     def rec(self, chunk_size: int = 1024) -> RTPDatagram:
         """
@@ -80,6 +81,7 @@ class RTPClient:
         -------
         RTPDatagram
             The received RTP datagram. If an error occurs, None is returned.
+
         """
         try:
             data = self._socket.recv(chunk_size)

@@ -10,6 +10,8 @@ from juturna.payloads._payloads import ObjectPayload
 
 
 class NotifierUDP(BaseNode[ObjectPayload, None]):
+    """Send data to a UDP endpoint, managing segmentation"""
+
     def __init__(self,
                  endpoint: str,
                  port: int,
@@ -17,8 +19,30 @@ class NotifierUDP(BaseNode[ObjectPayload, None]):
                  max_sequence: int,
                  max_chunks: int,
                  encoding: str,
-                 encode_b64: bool):
-        super().__init__('sink')
+                 encode_b64: bool,
+                 **kwargs):
+        """
+        Parameters
+        ----------
+        endpoint : str
+            Address of the destination endpoint.
+        port : int
+            Port of the destination endpoint.
+        payload_size : int
+            Size of each payload (including header).
+        max_sequence : int
+            Maximum sequence number before reset.
+        max_chunks : int
+            Maximum fragment number before reset.
+        encoding : str
+            Data encoding.
+        encode_b64 : bool
+            Whether to encode data to base64.
+        kwargs : dict
+            Superclass arguments.
+
+        """
+        super().__init__(**kwargs)
 
         self._address = [endpoint, port]
         self._payload_size = payload_size
@@ -34,7 +58,7 @@ class NotifierUDP(BaseNode[ObjectPayload, None]):
             'tot': self._max_chunks -1,
             'data': ''
         }))
-        
+
         self._data_size = self._payload_size - self._meta_overhead
 
     def configure(self):
@@ -83,7 +107,8 @@ class NotifierUDP(BaseNode[ObjectPayload, None]):
             chunk_bytes = json.dumps(chunk_obj).encode(self._encoding)
 
             if len(chunk_bytes) > self._payload_size:
-                raise ValueError(f'chunk size {len(chunk_bytes)} exceeds buffer size {self._payload_size}')
+                raise ValueError(f'chunk size {len(chunk_bytes)} '
+                                 'exceeds buffer size {self._payload_size}')
 
             chunks.append(chunk_bytes)
 

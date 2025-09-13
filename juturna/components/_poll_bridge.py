@@ -1,10 +1,13 @@
 import copy
 import threading
-import logging
+
+from juturna.components._bridge import Bridge
 
 from juturna.components import Message
-from juturna.components._bridge import Bridge
-from juturna.components._buffer import Buffer
+from juturna.utils.log_utils import jt_logger
+
+
+_logger = jt_logger()
 
 
 class PollBridge(Bridge):
@@ -26,5 +29,5 @@ class PollBridge(Bridge):
             if self._update_callback:
                 self._update_callback(copy.deepcopy(self._latest_message))
             else:
-                logging.warning(
+                _logger.warning(
                     f'no callback set for bridge {self.bridge_id}')

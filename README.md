@@ -110,7 +110,7 @@ $ docker build -t juturna:latest .
 Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) for:
 
 * Branching & PR workflow 
-* Code style & linting (TBD)
+* Code style & linting
 * Issue triage (TBD)
 * Issue & PR templates and a Code of Conduct are provided (TBD)
 * Signing CRA

@@ -1,12 +1,15 @@
 import threading
 import weakref
-import logging
 
-from typing import Callable
-from typing import Union
+from collections.abc import Callable
 
 from juturna.components._buffer import Buffer
 from juturna.components._message import Message
+
+from juturna.utils.log_utils import jt_logger
+
+
+_logger = jt_logger()
 
 
 class Bridge:
@@ -23,7 +26,7 @@ class Bridge:
         self._thread = None
         self._stop_event = threading.Event()
 
-    def set_source(self, source: Union[Callable, Buffer],
+    def set_source(self, source: Callable | Buffer,
                    by: int = 0,
                    mode: str = 'post'):
         if isinstance(source, Buffer):
@@ -38,12 +41,12 @@ class Bridge:
         self._source_f = None
 
     @property
-    def source(self) -> Union[Callable, str, None]:
+    def source(self) -> Callable | str | None:
         return self._source_f
 
     @source.setter
     def source(self, src):
-        logging.warning(
+        _logger.warning(
             f'{self.bridge_id}: use set_source method to set bridge source')
 
     def add_destination(self, destination: Buffer):
@@ -76,7 +79,7 @@ class Bridge:
         #         try:
         #             self._thread.join()
         #         except RuntimeError as e:
-        #             logging.warning(
+        #             _logger.warning(
         #                 f'{self.bridge_id} thread could not be stopped, wt')
         #             time.sleep(0.1)
         #

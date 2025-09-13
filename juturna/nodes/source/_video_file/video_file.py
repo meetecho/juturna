@@ -1,5 +1,4 @@
 import subprocess
-import logging
 import pathlib
 import json
 import time
@@ -12,12 +11,13 @@ from juturna.payloads import BytesPayload, ImagePayload
 
 
 class VideoFile(BaseNode[BytesPayload, ImagePayload]):
-    """Read video file and steam it locally
-    """
+    """Read video file and steam it locally"""
+
     def __init__(self,
                  video_path: str,
                  width: int,
-                 height: int):
+                 height: int,
+                 **kwargs):
         """
         Parameters
         ----------
@@ -27,8 +27,11 @@ class VideoFile(BaseNode[BytesPayload, ImagePayload]):
             Output width of the produced video frames.
         height : int
             Output height of the produced video frames.
+        kwargs : dict
+            Superclass arguments.
+
         """
-        super().__init__('source')
+        super().__init__(**kwargs)
 
         self._video_path = video_path
         self._width = width
@@ -57,14 +60,14 @@ class VideoFile(BaseNode[BytesPayload, ImagePayload]):
             'total_frames': int(video_stream.get('nb_frames', 0))
         }
 
-        logging.info('video info acquired')
-        logging.info(self._video_info)
+        self.logger.info('video info acquired')
+        self.logger.info(self._video_info)
 
     def warmup(self):
         self._ffmpeg_launcher_path = self.ffmpeg_launcher
 
     def start(self):
-        logging.info('starting file source proc...')
+        self.logger.info('starting file source proc...')
 
         self._ffmpeg_proc = subprocess.Popen(
             ['sh', self.ffmpeg_launcher],

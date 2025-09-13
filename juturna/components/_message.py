@@ -1,16 +1,14 @@
 import typing
 import time
-import copy
 import json
 
 
-from juturna.payloads import T_Input
-
-class Message(typing.Generic[T_Input]):
-    """Container to move data across the pipeline
-
-    A message is an object that all nodes produce and read to and from buffers.
+class Message[T_Input]:
     """
+    A message is a container object that all nodes produce and read to and from
+    buffers, plus offering few extra utilities.
+    """
+
     def __init__(self,
                  creator: str | None = None,
                  version: int = -1,
@@ -27,6 +25,7 @@ class Message(typing.Generic[T_Input]):
         payload : Any, optional
             The payload of the message. This is the actual data contained in the
             message. The default is None.
+
         """
         self.created_at = time.time()
         self.meta = dict()
@@ -60,6 +59,7 @@ class Message(typing.Generic[T_Input]):
         -------
         dict
             A dictionary representation of the message.
+
         """
         return {
             'created_at': self.created_at,
@@ -79,18 +79,18 @@ class Message(typing.Generic[T_Input]):
         encoder : callable, optional
             A custom JSON encoder. The default is None, which uses the default
             JSON encoder.
+
         Returns
         -------
         str
             The JSON string representation of the message.
+
         """
         return json.dumps(self.to_dict(), default=encoder, indent=2)
 
     @property
     def creator(self) -> str | None:
-        """
-        Returns the creator of the message.
-        """
+        """Returns the creator of the message."""
         return self._creator
 
     @creator.setter
@@ -99,9 +99,7 @@ class Message(typing.Generic[T_Input]):
 
     @property
     def version(self) -> int:
-        """
-        Returns the version of the message.
-        """
+        """Returns the version of the message."""
         return self._version
 
     @version.setter
@@ -110,9 +108,7 @@ class Message(typing.Generic[T_Input]):
 
     @property
     def payload(self) -> T_Input:
-        """
-        Returns the payload of the message.
-        """
+        """Returns the payload of the message."""
         return self._payload
 
     @payload.setter
@@ -130,6 +126,7 @@ class Message(typing.Generic[T_Input]):
             The name of the timer.
         timer_value : float, optional
             The value of the timer. If None, the current time is used.
+
         """
         timer_value = timer_value or time.time()
 
@@ -150,6 +147,7 @@ class Message(typing.Generic[T_Input]):
         -------
         typing.Self
             The current instance of the Message class.
+
         """
         self._current_timer = timer_name
 

@@ -6,7 +6,8 @@ _VAR_DEFAULTS = {
     'JUTURNA_BASE_REPO': 'https://github.com/meetecho/juturna',
     'JUTURNA_HUB_URL': 'https://api.github.com/repos/meetecho/juturna/contents/plugins/',
     'JUTURNA_HUB_TOKEN': None,
-    'JUTURNA_CACHE_DIR': str(pathlib.Path(pathlib.Path.home(), '.cache', 'juturna'))
+    'JUTURNA_CACHE_DIR': str(
+        pathlib.Path(pathlib.Path.home(),'.cache', 'juturna'))
 }
 
 

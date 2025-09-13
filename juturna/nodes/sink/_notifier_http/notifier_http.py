@@ -1,5 +1,4 @@
 import threading
-import logging
 
 import requests
 
@@ -10,13 +9,33 @@ from juturna.payloads._payloads import ObjectPayload
 
 
 class NotifierHTTP(BaseNode[ObjectPayload, None]):
+    """Send data to a HTTP endpoint"""
+
     _CNT_CB = {
         'application/json': lambda m: m.to_dict(),
         'text/plain': lambda m: m.to_json()
     }
 
-    def __init__(self, endpoint: str, timeout: int, content_type: str):
-        super().__init__('sink')
+    def __init__(self,
+                 endpoint: str,
+                 timeout: int,
+                 content_type: str,
+                 **kwargs):
+        """
+        Parameters
+        ----------
+        endpoint : str
+            Destination endpoint, including the port.
+        timeout : int
+            Transmission timeout.
+        content_type : str
+            Transmission data content type (this node supports, for now,
+            application/json and text/plain data).
+        kwargs : dict
+            Superclass arguments.
+
+        """
+        super().__init__(**kwargs)
 
         self._endpoint = endpoint
         self._timeout = timeout
@@ -30,11 +49,11 @@ class NotifierHTTP(BaseNode[ObjectPayload, None]):
         return base_config
 
     def warmup(self):
-        logging.info(f'[{self.name}] set to endpoint {self._endpoint}')
+        self.logger.info(f'[{self.name}] set to endpoint {self._endpoint}')
 
     def set_on_config(self, property: str, value: str):
         if property == 'endpoint':
-            logging.info(f'{self.name}: updating endpoint to {value}')
+            self.logger.info(f'{self.name}: updating endpoint to {value}')
 
             self._endpoint = value
 
@@ -59,7 +78,7 @@ class NotifierHTTP(BaseNode[ObjectPayload, None]):
                 headers=headers,
                 timeout=self._timeout)
 
-            logging.info('message sent')
-            logging.info(f'  --> {response.status_code} - {response.text}')
+            self.logger.info('message sent')
+            self.logger.info(f'  --> {response.status_code} - {response.text}')
         except Exception as e:
-            logging.info(e)
+            self.logger.info(e)

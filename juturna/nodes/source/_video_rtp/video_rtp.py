@@ -12,15 +12,16 @@ from juturna.payloads import BytesPayload, ImagePayload
 
 
 class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
-    """Source node for video streaming
-    """
+    """Source node for video streaming"""
+
     def __init__(self,
                  rec_host: str,
                  rec_port: int | str,
                  payload_type: int,
                  codec: str,
                  width: int,
-                 height: int):
+                 height: int,
+                 **kwargs):
         """
         Parameters
         ----------
@@ -37,8 +38,11 @@ class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
             Width of the received RTP video stream.
         height : int
             Height of the received RTP video stream.
+        kwargs : dict
+            Superclass arguments.
+
         """
-        super().__init__('source')
+        super().__init__(**kwargs)
 
         self._rec_host = rec_host
         self._rec_port = rec_port

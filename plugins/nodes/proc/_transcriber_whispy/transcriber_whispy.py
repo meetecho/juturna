@@ -22,8 +22,9 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
                  task: str,
                  buffer_size: int,
                  word_timestamps: bool = True,
-                 without_timestamps: bool = False):
-        super().__init__('proc')
+                 without_timestamps: bool = False,
+                 **kwargs):
+        super().__init__(**kwargs)
 
         self._only_local = only_local
         self._model = WhisperModel(model_name,
@@ -38,34 +39,32 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
         self._data = collections.deque(maxlen=buffer_size)
 
         logging.getLogger('faster_whisper').disabled = True
-        logging.info(f'trx created, model id {id(self._model)}')
+        self.logger.info(f'trx created, model id {id(self._model)}')
 
     def update(self, message: Message[AudioPayload]):
-        logging.info(f'{self.name} receive: {message.version}')
-
+        self.logger.info(f'received {message.version}')
         to_send = Message[ObjectPayload](
             creator=self.name,
             version=message.version,
             payload=ObjectPayload())
 
         if message.meta['silence']:
-            logging.info('    silence detected, sending silence...')
+            self.logger.info('silence detected, sending silence...')
             to_send.payload['transcript'] = list()
             to_send.timer(self.name, -1)
 
             self.transmit(to_send)
-            logging.info(f'{self.name} transmit: {to_send.version}')
             self._data.clear()
-            logging.info('    silence message sent')
+
+            self.logger.info(f'sent {to_send.version}')
 
             return
 
+        self.logger.info('transcribing audio content')
         self._data.append(message)
 
-        logging.info('    non-silence, concatenating...')
         speech = [m.payload.audio for m in self._data]
         speech = np.concatenate(speech)
-        logging.info('    non-silence, transcribing...')
 
         transcript, trx_info = self._model.transcribe(
             speech,
@@ -92,9 +91,10 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
         rescaled = TranscriberWhispy.rescale_trx_words(word_list, self._data)
 
         to_send.payload['transcript'] = rescaled
+        self.logger.info(f'transcript {rescaled}')
 
         self.transmit(to_send)
-        logging.info(f'{self.name} transmit: {to_send.version}')
+        self.logger.info(f'transmit: {to_send.version}')
 
     @staticmethod
     def rescale_trx_words(words, buffer):
@@ -157,23 +157,23 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
         self._release_model()
 
     def _release_model(self):
-        logging.info(f'releasing model: {self._model_name}')
+        self.logger.info(f'releasing model: {self._model_name}')
 
         if hasattr(self._model, 'model'):
-            logging.info('purging model object...')
+            self.logger.info('purging model object...')
             # self._model.model.unload_model(to_cpu=True)
             del self._model.model
             time.sleep(1)
             gc.collect()
 
         if hasattr(self._model, 'feature_extractor'):
-            logging.info('purging feature extractor...')
+            self.logger.info('purging feature extractor...')
             del self._model.feature_extractor
             time.sleep(1)
             gc.collect()
 
         if hasattr(self._model, 'hf_tokenizer'):
-            logging.info('purging tokenizer...')
+            self.logger.info('purging tokenizer...')
             del self._model.hf_tokenizer
             time.sleep(1)
             gc.collect()
