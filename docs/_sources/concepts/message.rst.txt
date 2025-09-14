@@ -4,21 +4,21 @@ Messages
 
 A message is a data container used to exchange data across nodes.
 
-+---------------------+-------------------+----------------------------------+
-| property            | type              | description                      |
-+=====================+===================+==================================+
-| ``self.creator``    | ``str``           | name or id of the creating node  |
-+---------------------+-------------------+----------------------------------+
-| ``self.version``    | ``int``           | message data version             |
-+---------------------+-------------------+----------------------------------+
-| ``self.payload``    | ``BasicPayload``  | data to be transferred upstream  |
-|                     |                   | in the pipeline                  |
-+---------------------+-------------------+----------------------------------+
-|  ``self.meta``      | ``dict``          | message metadata                 |
-+---------------------+-------------------+----------------------------------+
-| ``self.timers``     | ``dict``          | collection of timers to evaluate |
-|                     |                   | performed data operations        |
-+---------------------+-------------------+----------------------------------+
++---------------------+-----------------+----------------------------------+
+| property            | type            | description                      |
++=====================+=================+==================================+
+| ``self.creator``    | ``str``         | name or id of the creating node  |
++---------------------+-----------------+----------------------------------+
+| ``self.version``    | ``int``         | message data version             |
++---------------------+-----------------+----------------------------------+
+| ``self.payload``    | ``BasePayload`` | data to be transferred upstream  |
+|                     |                 | in the pipeline                  |
++---------------------+-----------------+----------------------------------+
+|  ``self.meta``      | ``dict``        | message metadata                 |
++---------------------+-----------------+----------------------------------+
+| ``self.timers``     | ``dict``        | collection of timers to evaluate |
+|                     |                 | performed data operations        |
++---------------------+-----------------+----------------------------------+
 
 An empty message is created with:
 

@@ -49,7 +49,7 @@
     <script src="../_static/js/meetecho-icon.js?v=56c1bf0c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Payloads" href="payloads.html" />
+    <link rel="next" title="Messages" href="message.html" />
     <link rel="prev" title="Pipeline fundamentals" href="pipeline.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -328,9 +328,11 @@
   <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline fundamentals</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Node fundamentals</a></li>
-<li class="toctree-l1"><a class="reference internal" href="payloads.html">Payloads</a></li>
 <li class="toctree-l1"><a class="reference internal" href="message.html">Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="payloads.html">Payloads</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Built-in nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="logging.html">Logging</a></li>
+
 </ul>
 </div>
 </nav></div>
@@ -440,24 +442,31 @@ ones showed earlier.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">juturna.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseNode</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">juturna.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">juturna.payloads._payloads</span><span class="w"> </span><span class="kn">import</span> <span class="n">BasicPayload</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">juturna.payloads</span><span class="w"> </span><span class="kn">import</span> <span class="n">BytesPayload</span><span class="p">,</span> <span class="n">AudioPayload</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">CustomNode</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">[</span><span class="n">BasicPayload</span><span class="p">,</span> <span class="n">BasicPayload</span><span class="p">]):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">param_2</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;proc&#39;</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomNode</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">[</span><span class="n">BytesPayload</span><span class="p">,</span> <span class="n">AudioPayload</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">param_2</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">BasicPayload</span><span class="p">]):</span>
         <span class="o">...</span>
 </pre></div>
 </div>
 <p>The node class signature reports the types of input and output payloads the
-node respectively expects as input and produces as output.</p>
+node respectively expects as input and produces as output. Additionally, a set
+of arguments will be automatically added when the node is first instantiated,
+under <code class="docutils literal notranslate"><span class="pre">kwargs</span></code>. This contains:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">node_name</span></code>, the name assigned to the node,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">node_type</span></code>, the node type specified in the configuration file,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pipe_name</span></code>, the name of the pipe where the node was created.</p></li>
+</ul>
 <p>Notes:</p>
 <ul class="simple">
-<li><p>do not include keyword arguments in the node constructor: the argument values
-stored in the configuration file will be treated as default values for the
-node, whenever not provided in the pipeline configuration</p></li>
+<li><p>do not include other keyword arguments in the node constructor: the argument
+values stored in the configuration file will be treated as default values for
+the node, whenever not provided in the pipeline configuration</p></li>
 </ul>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
@@ -496,6 +505,12 @@ the pipeline folder</p></td>
 where the node files reside
 (used to fetch static
 resources)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">self.logger</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">logging.Logger</span></code></p></td>
+<td><p>internal node logger (this
+will have the same name as
+the node)</p></td>
 </tr>
 </tbody>
 </table>
@@ -587,6 +602,39 @@ not be specified, hence the compiled template will have no destination
 folder); at any rate, a <code class="docutils literal notranslate"><span class="pre">pipe_path</span></code> should be defined for the node</p></li>
 </ul>
 </section>
+<section id="node-payloads">
+<h2>Node payloads<a class="headerlink" href="#node-payloads" title="Link to this heading">#</a></h2>
+<p>A node class specifies the types the node expects as input, and offers as
+output. Specifying the payloads in the node signature helps users understanding
+what sort of data the node produces.</p>
+<p>For a node signature like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">NodeName</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">[</span><span class="n">AudioPayload</span><span class="p">,</span> <span class="n">ObjectPayload</span><span class="p">]):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>we are defining a node that expects audio data as input, and transmits object to
+all the nodes attached to it. The relevance of the payload specification is also
+shown in the <code class="docutils literal notranslate"><span class="pre">update</span></code> method:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">AudioPayload</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">waveform</span>
+    <span class="n">to_send</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="n">payload</span><span class="o">=</span><span class="n">ObjectPayload</span><span class="p">())</span>
+    <span class="o">...</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">transmit</span><span class="p">(</span><span class="n">to_send</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For an overview of what built-in payloads look like, take a look at the
+<a class="reference internal" href="payloads.html"><span class="doc">paylaod doc page</span></a>.</p>
+</section>
+<section id="logging">
+<h2>Logging<a class="headerlink" href="#logging" title="Link to this heading">#</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">BaseNode</span></code> class comes shipped with a logger object that all nodes can
+use. A node logger is a child of the root logger, and will be named
+<code class="docutils literal notranslate"><span class="pre">jt.&lt;PIPE_NAME&gt;.&lt;NODE_NAME&gt;</span></code>. To use it, simply run:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">AudioPayload</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;node-specific logging entry&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
 <section id="node-templates">
 <h2>Node templates<a class="headerlink" href="#node-templates" title="Link to this heading">#</a></h2>
 <p>A node can carry template files, so that they can be dynamically compiled when
@@ -638,11 +686,13 @@ image message.</p>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">CustomNode</span><span class="p">(</span><span class="n">BaseNode</span><span class="p">[</span><span class="n">AudioPayload</span><span class="p">,</span> <span class="n">ImagePayload</span><span class="p">]):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">param_2</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;proc&#39;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">param_2</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="o">**</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_param_1</span> <span class="o">=</span> <span class="n">param_1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_param_2</span> <span class="o">=</span> <span class="n">param_2</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;node created&#39;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># acquire system resources such as network ports, devices, or</span>
@@ -682,7 +732,7 @@ image message.</p>
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">AudioPayload</span><span class="p">]):</span>
         <span class="c1"># receive data from the source node, process them, and generate</span>
         <span class="c1"># new data for the destination node</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">waveform</span>
         <span class="n">current_version</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">version</span>
 
         <span class="n">new_data</span> <span class="o">=</span> <span class="n">do_stuff</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -719,11 +769,11 @@ image message.</p>
       </div>
     </a>
     <a class="right-next"
-       href="payloads.html"
+       href="message.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Payloads</p>
+        <p class="prev-next-title">Messages</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -748,6 +798,8 @@ image message.</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#node-configuration">Node configuration</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#node-class">Node class</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#node-payloads">Node payloads</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#logging">Logging</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#node-templates">Node templates</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full-node-example">Full node example</a></li>
 </ul>

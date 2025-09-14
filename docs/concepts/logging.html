@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>API Reference &#8212; juturna 0.1.0 documentation</title>
+    <title>Logging &#8212; juturna 0.1.0 documentation</title>
   
   
   
@@ -45,12 +45,12 @@
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/design-tabs.js?v=f930bc37"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'apis/index';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'concepts/logging';</script>
     <script src="../_static/js/meetecho-icon.js?v=56c1bf0c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="juturna package" href="juturna.html" />
-    <link rel="prev" title="Logging" href="../concepts/logging.html" />
+    <link rel="next" title="API Reference" href="../apis/index.html" />
+    <link rel="prev" title="Built-in nodes" href="nodes.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
@@ -136,15 +136,15 @@
 </li>
 
 
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../concepts/index.html">
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
     Basic Concepts
   </a>
 </li>
 
 
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="#">
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apis/index.html">
     API Reference
   </a>
 </li>
@@ -220,6 +220,10 @@
   
 
   
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
 </div>
 
     </header>
@@ -253,15 +257,15 @@
 </li>
 
 
-<li class="nav-item ">
-  <a class="nav-link nav-internal" href="../concepts/index.html">
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
     Basic Concepts
   </a>
 </li>
 
 
-<li class="nav-item current active">
-  <a class="nav-link nav-internal" href="#">
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apis/index.html">
     API Reference
   </a>
 </li>
@@ -321,23 +325,14 @@
 <nav class="bd-docs-nav bd-links"
      aria-label="Section Navigation">
   <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
-  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">Core Modules</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="juturna.html">juturna package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.components.html">juturna.components package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.meta.html">juturna.meta package</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Nodes</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="juturna.nodes.html">juturna.nodes package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.nodes.sink.html">juturna.nodes.sink package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.nodes.source.html">juturna.nodes.source package</a></li>
-</ul>
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Utilities</span></p>
-<ul class="nav bd-sidenav">
-<li class="toctree-l1"><a class="reference internal" href="juturna.utils.html">juturna.utils package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.utils.node_utils.html">juturna.utils.node_utils package</a></li>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="pipeline.html">Pipeline fundamentals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="custom_nodes.html">Node fundamentals</a></li>
+<li class="toctree-l1"><a class="reference internal" href="message.html">Messages</a></li>
+<li class="toctree-l1"><a class="reference internal" href="payloads.html">Payloads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="nodes.html">Built-in nodes</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Logging</a></li>
+
 </ul>
 </div>
 </nav></div>
@@ -378,7 +373,10 @@
         <i class="fa-solid fa-home"></i>
       </a>
     </li>
-    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">API Reference</span></li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Basic Concepts</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Logging</span></li>
   </ul>
 </nav>
 </div>
@@ -395,62 +393,52 @@
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="api-reference">
-<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h1>
-<div class="toctree-wrapper compound">
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Core Modules</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="juturna.html">juturna package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.html#subpackages">Subpackages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="juturna.html#module-juturna">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.components.html">juturna.components package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.components.html#module-juturna.components">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.meta.html">juturna.meta package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.meta.html#module-juturna.meta">Module contents</a></li>
-</ul>
-</li>
-</ul>
+  <section id="logging">
+<h1>Logging<a class="headerlink" href="#logging" title="Link to this heading">#</a></h1>
+<p>Juturna offers a library-level logger called <code class="docutils literal notranslate"><span class="pre">jt</span></code>, and a number of dynamic
+child loggers for pipelines and nodes.</p>
+<p>Setting a level on the root logger will propagate on all its child loggers.
+However, loggers can be selectively enabled or disabled. So, for example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
+
+<span class="c1"># loading a pipe named &#39;trx_pipe&#39;</span>
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">jt</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">Pipeline</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s1">&#39;config.json&#39;</span><span class="p">)</span>
+
+<span class="c1"># this will set ERROR level on a pipe node called &#39;4_dst&#39;</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;jt.trx_pipe.4_dst&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+
+<span class="c1"># this will set ERROR level on the entire pipe (including all the nodes)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;jt.trx_pipe&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+
+<span class="c1"># this will set ERROR level on the whole library (all pipes and nodes)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;jt&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="toctree-wrapper compound">
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Nodes</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="juturna.nodes.html">juturna.nodes package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.nodes.html#subpackages">Subpackages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="juturna.nodes.html#module-juturna.nodes">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.nodes.sink.html">juturna.nodes.sink package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.nodes.sink.html#module-juturna.nodes.sink">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.nodes.source.html">juturna.nodes.source package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.nodes.source.html#module-juturna.nodes.source">Module contents</a></li>
-</ul>
-</li>
-</ul>
+</section>
+<section id="formatting-logs">
+<h1>Formatting logs<a class="headerlink" href="#formatting-logs" title="Link to this heading">#</a></h1>
+<p>Some formatters are conveniently shipped in Juturna to offer basic logging
+formats. These can be changed with:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
+
+
+<span class="n">jt</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">log_utils</span><span class="o">.</span><span class="n">formatter</span><span class="p">(</span><span class="s1">&#39;colored&#39;</span><span class="p">)</span>
+</pre></div>
 </div>
-<div class="toctree-wrapper compound">
-<p aria-level="2" class="caption" role="heading"><span class="caption-text">Utilities</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="juturna.utils.html">juturna.utils package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.utils.html#subpackages">Subpackages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="juturna.utils.html#module-juturna.utils">Module contents</a></li>
+<p>Available formatters are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">simple</span></code>: <code class="docutils literal notranslate"><span class="pre">2025-09-14</span> <span class="pre">09:08:38,412</span> <span class="pre">-</span> <span class="pre">jt.demo.4_translate</span> <span class="pre">-</span> <span class="pre">INFO</span> <span class="pre">-</span> <span class="pre">message</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">colored</span></code>: <code class="docutils literal notranslate"><span class="pre">2025-09-14</span> <span class="pre">09:10:03,183</span> <span class="pre">|</span> <span class="pre">INFO</span>&#160;&#160;&#160;&#160; <span class="pre">|</span> <span class="pre">jt.demo.4_translate</span>&#160;&#160;&#160;&#160; <span class="pre">|</span> <span class="pre">message</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">full</span></code>: <code class="docutils literal notranslate"><span class="pre">2025-09-14</span> <span class="pre">09:11:14</span> <span class="pre">|</span> <span class="pre">INFO</span>&#160;&#160;&#160;&#160; <span class="pre">|</span> <span class="pre">jt.demo.4_translate</span>&#160;&#160;&#160;&#160; <span class="pre">|</span> <span class="pre">message</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">compact</span></code>: <code class="docutils literal notranslate"><span class="pre">09:12:43</span> <span class="pre">|</span> <span class="pre">I</span> <span class="pre">|</span> <span class="pre">jt.demo.4_translate</span>&#160;&#160;&#160;&#160; <span class="pre">|</span> <span class="pre">message</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">development</span></code>: <code class="docutils literal notranslate"><span class="pre">09:13:58</span> <span class="pre">|</span> <span class="pre">INFO</span>&#160;&#160;&#160;&#160; <span class="pre">|jt.demo.4_translate:39</span> <span class="pre">|</span> <span class="pre">warmup()</span> <span class="pre">|</span> <span class="pre">message</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">minimal</span></code>: <code class="docutils literal notranslate"><span class="pre">INFO:</span> <span class="pre">tokenizer:</span> <span class="pre">message</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">json</span></code>: <code class="docutils literal notranslate"><span class="pre">{&quot;timestamp&quot;:</span> <span class="pre">&quot;2025-09-14T09:15:20.561188&quot;,</span> <span class="pre">&quot;level&quot;:</span> <span class="pre">&quot;INFO&quot;,</span> <span class="pre">&quot;logger&quot;:</span> <span class="pre">&quot;jt.demo.4_translate&quot;,</span> <span class="pre">&quot;message&quot;:</span> <span class="pre">&quot;message&quot;,</span> <span class="pre">&quot;module&quot;:</span> <span class="pre">&quot;translator_nllb&quot;,</span> <span class="pre">&quot;function&quot;:</span> <span class="pre">&quot;warmup&quot;,</span> <span class="pre">&quot;line&quot;:</span> <span class="pre">39}</span></code></p></li>
 </ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.utils.net_utils.html">juturna.utils.net_utils package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.utils.net_utils.html#module-juturna.utils.net_utils">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="juturna.utils.node_utils.html">juturna.utils.node_utils package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="juturna.utils.node_utils.html#module-juturna.utils.node_utils">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
+<p>The default formatter is <code class="docutils literal notranslate"><span class="pre">full</span></code>. It differs from the <code class="docutils literal notranslate"><span class="pre">colored</span></code> formatter as
+the latter highlights with colours the logging level.</p>
 </section>
 
 
@@ -464,20 +452,20 @@
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="../concepts/logging.html"
+       href="nodes.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Logging</p>
+        <p class="prev-next-title">Built-in nodes</p>
       </div>
     </a>
     <a class="right-next"
-       href="juturna.html"
+       href="../apis/index.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">juturna package</p>
+        <p class="prev-next-title">API Reference</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -487,6 +475,26 @@
             </div>
             
             
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Logging</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#formatting-logs">Formatting logs</a></li>
+</ul>
+
+  </nav></div>
+
+</div></div>
               
             
           </div>

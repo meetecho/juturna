@@ -9,8 +9,9 @@ This section builds on the Getting Started guide by diving into Juturna’s core
 
    pipeline
    custom_nodes
-   payloads
    message
+   payloads
    nodes
+   logging
 
 Whether you’re looking to understand how pipelines are assembled, how nodes communicate via messages, or to leverage the built-in node library, these resources will guide your next steps.

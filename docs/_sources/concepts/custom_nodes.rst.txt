@@ -54,24 +54,30 @@ ones showed earlier.
    from juturna.components import BaseNode
    from juturna.components import Message
 
-   from juturna.payloads._payloads import BasicPayload
+   from juturna.payloads import BytesPayload, AudioPayload
 
 
-   class CustomNode(BaseNode[BasicPayload, BasicPayload]):
-       def __init__(self, param_1: int, param_2: str):
-           super().__init__('proc')
+   class CustomNode(BaseNode[BytesPayload, AudioPayload]):
+       def __init__(self, param_1: int, param_2: str, **kwargs):
+           super().__init__(**kwargs)
 
        def update(self, message: Message[BasicPayload]):
            ...
 
 The node class signature reports the types of input and output payloads the
-node respectively expects as input and produces as output.
+node respectively expects as input and produces as output. Additionally, a set
+of arguments will be automatically added when the node is first instantiated,
+under ``kwargs``. This contains:
+
+- ``node_name``, the name assigned to the node,
+- ``node_type``, the node type specified in the configuration file,
+- ``pipe_name``, the name of the pipe where the node was created.
 
 Notes:
 
-- do not include keyword arguments in the node constructor: the argument values
-  stored in the configuration file will be treated as default values for the
-  node, whenever not provided in the pipeline configuration
+- do not include other keyword arguments in the node constructor: the argument
+  values stored in the configuration file will be treated as default values for
+  the node, whenever not provided in the pipeline configuration
 
 +------------------------+---------------------+-----------------------------+
 | property               | type                | description                 |
@@ -93,6 +99,10 @@ Notes:
 |                        |                     | where the node files reside |
 |                        |                     | (used to fetch static       |
 |                        |                     | resources)                  |
++------------------------+---------------------+-----------------------------+
+| ``self.logger``        | ``logging.Logger``  | internal node logger (this  |
+|                        |                     | will have the same name as  |
+|                        |                     | the node)                   |
 +------------------------+---------------------+-----------------------------+
 
 +-----------------------------+-----------------------+-----------------------------+
@@ -156,6 +166,39 @@ Notes:
   not be specified, hence the compiled template will have no destination
   folder); at any rate, a ``pipe_path`` should be defined for the node
 
+Node payloads
+=============
+A node class specifies the types the node expects as input, and offers as
+output. Specifying the payloads in the node signature helps users understanding
+what sort of data the node produces.
+
+For a node signature like this::
+
+  class NodeName(BaseNode[AudioPayload, ObjectPayload]):
+      ...
+
+we are defining a node that expects audio data as input, and transmits object to
+all the nodes attached to it. The relevance of the payload specification is also
+shown in the ``update`` method::
+
+  def update(self, message: AudioPayload):
+      data = message.payload.waveform
+      to_send = Message(payload=ObjectPayload())
+      ...
+      self.transmit(to_send)
+
+For an overview of what built-in payloads look like, take a look at the
+:doc:`paylaod doc page <./payloads>`.
+
+Logging
+=======
+The ``BaseNode`` class comes shipped with a logger object that all nodes can
+use. A node logger is a child of the root logger, and will be named
+``jt.<PIPE_NAME>.<NODE_NAME>``. To use it, simply run::
+
+  def update(self, message: AudioPayload):
+      self.logger.info('node-specific logging entry')
+
 Node templates
 ==============
 
@@ -212,11 +255,13 @@ image message.
 
 
    class CustomNode(BaseNode[AudioPayload, ImagePayload]):
-       def __init__(self, param_1: int, param_2: str):
-           super().__init__('proc')
+       def __init__(self, param_1: int, param_2: str, **kwargs):
+           super().__init__(**kwargs**)
 
            self._param_1 = param_1
            self._param_2 = param_2
+
+           self.logger.info('node created')
 
        def configure(self):
            # acquire system resources such as network ports, devices, or
@@ -256,7 +301,7 @@ image message.
        def update(self, message: Message[AudioPayload]):
            # receive data from the source node, process them, and generate
            # new data for the destination node
-           data = message.payload
+           data = message.payload.waveform
            current_version = message.version
 
            new_data = do_stuff(data)
