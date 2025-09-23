@@ -17,7 +17,7 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
     node_remote_config = node['configuration']
 
     if node_remote_config.get('buffer', None) is None:
-        buffer_remote_config = { 'type': 'buffer' }
+        buffer_remote_config = {'type': 'buffer'}
     else:
         buffer_remote_config = node_remote_config['buffer']
         del node_remote_config['buffer']
@@ -30,19 +30,25 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
     base_node_explore = component_lookup_args(
         component_type=node_type,
         component_mark=node_mark,
-        plugin_dirs=plugin_dirs)
+        plugin_dirs=plugin_dirs,
+    )
     _node_module, _node_local_config = fetch_node(base_node_explore)
 
     if _node_module is None:
         raise ModuleNotFoundError(f'node module not found: {node_name}')
 
     operational_config = _update_local_with_remote(
-        _node_local_config['arguments'], node_remote_config)
+        _node_local_config['arguments'], node_remote_config
+    )
 
-    concrete_node = _node_module(**operational_config,
-                                 **{ 'node_type': node_type,
-                                     'node_name': node_name,
-                                     'pipe_name': pipe_name })
+    concrete_node = _node_module(
+        **operational_config,
+        **{
+            'node_type': node_type,
+            'node_name': node_name,
+            'pipe_name': pipe_name,
+        },
+    )
     concrete_node.configure()
     concrete_buffer = _build_buf(buffer_remote_config)
 
@@ -69,7 +75,8 @@ def _build_buf(buffer_remote_config: dict) -> Buffer | None:
         raise ModuleNotFoundError()
 
     buffer_operational_config = _update_local_with_remote(
-        _buffer_local_config, buffer_remote_config)
+        _buffer_local_config, buffer_remote_config
+    )
 
     concrete_buffer = _buffer_module(**buffer_operational_config)
     concrete_buffer.name = buffer_name
@@ -100,22 +107,27 @@ def _fetch_component(fetch_args: list, fetch_fun: typing.Callable) -> tuple:
 
 
 def component_lookup_args(
-        component_type: str,
-        component_mark: str | None = None,
-        plugin_dirs: list | None = None):
+    component_type: str,
+    component_mark: str | None = None,
+    plugin_dirs: list | None = None,
+):
     sub = 'nodes' if component_mark else 'buffers'
     plugin_dirs = plugin_dirs or list()
     plugin_dirs = ['.'.join(pathlib.Path(p, sub).parts) for p in plugin_dirs]
 
-    def_args = {'node_type': component_type, 'node_name': component_mark} if \
-        component_mark else {'buf_type': component_type}
-    def_args = [def_args] + \
-        [{'import_prefix': p, **def_args} for p in plugin_dirs]
+    def_args = (
+        {'node_type': component_type, 'node_name': component_mark}
+        if component_mark
+        else {'buf_type': component_type}
+    )
+    def_args = [def_args] + [
+        {'import_prefix': p, **def_args} for p in plugin_dirs
+    ]
 
     return def_args
 
 
 def _update_local_with_remote(local: dict, remote: dict) -> dict:
-    merged_config = { k: remote.get(k, v) for k, v in local.items() }
+    merged_config = {k: remote.get(k, v) for k, v in local.items()}
 
     return merged_config

@@ -38,7 +38,7 @@ class $_node_class_name(BaseNode[BasePayload, BasePayload]):
         """Warmup the node"""
         ...
 
-    def set_on_config(self, property: str, value: typing.Any):
+    def set_on_config(self, prop: str, value: typing.Any):
         """Hot-swap node properties"""
         ...
 

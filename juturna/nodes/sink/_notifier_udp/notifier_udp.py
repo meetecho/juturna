@@ -12,15 +12,17 @@ from juturna.payloads._payloads import ObjectPayload
 class NotifierUDP(BaseNode[ObjectPayload, None]):
     """Send data to a UDP endpoint, managing segmentation"""
 
-    def __init__(self,
-                 endpoint: str,
-                 port: int,
-                 payload_size: int,
-                 max_sequence: int,
-                 max_chunks: int,
-                 encoding: str,
-                 encode_b64: bool,
-                 **kwargs):
+    def __init__(
+        self,
+        endpoint: str,
+        port: int,
+        payload_size: int,
+        max_sequence: int,
+        max_chunks: int,
+        encoding: str,
+        encode_b64: bool,
+        **kwargs,
+    ):
         """
         Parameters
         ----------
@@ -52,29 +54,30 @@ class NotifierUDP(BaseNode[ObjectPayload, None]):
         self._encode_b64 = encode_b64
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._meta_overhead = len(json.dumps({
-            'seq': self._max_sequence,
-            'frag': self._max_chunks -1,
-            'tot': self._max_chunks -1,
-            'data': ''
-        }))
+        self._meta_overhead = len(
+            json.dumps(
+                {
+                    'seq': self._max_sequence,
+                    'frag': self._max_chunks - 1,
+                    'tot': self._max_chunks - 1,
+                    'data': '',
+                }
+            )
+        )
 
         self._data_size = self._payload_size - self._meta_overhead
 
-    def configure(self):
-        ...
+    def configure(self): ...
 
-    def warmup(self):
-        ...
+    def warmup(self): ...
 
-    def set_on_config(self, property: str, value: typing.Any):
-        if property == 'endpoint':
+    def set_on_config(self, prop: str, value: typing.Any):
+        if prop == 'endpoint':
             self._address[0] = value
-        elif property == 'port':
+        elif prop == 'port':
             self._address[1] = value
 
-    def destroy(self):
-        ...
+    def destroy(self): ...
 
     def update(self, message: Message[ObjectPayload]):
         chunks = self.prepare_chunks(message.payload, message.version)
@@ -89,8 +92,9 @@ class NotifierUDP(BaseNode[ObjectPayload, None]):
         if self._encode_b64:
             json_bytes = base64.b64encode(json_bytes).decode('ascii')
 
-        total_chunks = (len(json_bytes) + self._payload_size - 1) // \
-            self._data_size
+        total_chunks = (
+            len(json_bytes) + self._payload_size - 1
+        ) // self._data_size
 
         for i in range(total_chunks):
             start_idx = i * self._data_size
@@ -101,14 +105,16 @@ class NotifierUDP(BaseNode[ObjectPayload, None]):
                 'seq': version % self._max_sequence,
                 'frag': i % self._max_chunks,
                 'tot': total_chunks,
-                'data': payload_chunk
+                'data': payload_chunk,
             }
 
             chunk_bytes = json.dumps(chunk_obj).encode(self._encoding)
 
             if len(chunk_bytes) > self._payload_size:
-                raise ValueError(f'chunk size {len(chunk_bytes)} '
-                                 'exceeds buffer size {self._payload_size}')
+                raise ValueError(
+                    f'chunk size {len(chunk_bytes)} '
+                    'exceeds buffer size {self._payload_size}'
+                )
 
             chunks.append(chunk_bytes)
 
