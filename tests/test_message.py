@@ -29,6 +29,7 @@ def test_message_init_with_params():
     assert msg.timers == dict()
     assert msg._current_timer is None
 
+
 def test_message_init_with_meta():
     msg = Message()
 
@@ -45,6 +46,22 @@ def test_message_init_with_timers():
     msg.timer('timer2', 2.0)
 
     assert msg.timers == {'timer1': 1.0, 'timer2': 2.0}
+
+
+def test_message_with_timer_copy():
+    msg = Message()
+
+    msg.timer('timer1', 1.0)
+    msg.timer('timer2', 2.0)
+
+    other_msg = Message(timers_from=msg)
+
+    msg.timer('timer2', 3.0)
+    other_msg.timer('timer3', 3.0)
+
+    assert other_msg.timers['timer1'] == 1.0
+    assert other_msg.timers['timer2'] == 2.0
+    assert other_msg.timers['timer3'] == 3.0
 
 
 def test_message_init_with_payload():
@@ -65,6 +82,42 @@ def test_message_timer_context():
     assert msg.timers['test_timer'] > 0
 
 
+def test_message_timer_duration():
+    msg = Message()
+
+    # measure time outside, compare with time inside
+    start = time.time()
+    with msg.timeit('test_timer'):
+        time.sleep(2)
+    elapsed = time.time() - start
+
+    np.testing.assert_approx_equal(
+        msg.timers['test_timer'], elapsed, significant=5
+    )
+
+
+def test_message_duration_timer_reset():
+    msg = Message()
+
+    start = time.time()
+    with msg.timeit('test_timer_1'):
+        time.sleep(1)
+    elapsed_1 = time.time() - start
+
+    start = time.time()
+    with msg.timeit('test_timer_2'):
+        time.sleep(2)
+    elapsed_2 = time.time() - start
+
+    np.testing.assert_approx_equal(
+        msg.timers['test_timer_1'], elapsed_1, significant=5
+    )
+
+    np.testing.assert_approx_equal(
+        msg.timers['test_timer_2'], elapsed_2, significant=5
+    )
+
+
 def test_message_repr_string():
     msg = Message()
 
@@ -80,7 +133,7 @@ def test_message_repr_dict():
         'version': -1,
         'payload': None,
         'meta': {},
-        'timers': {}
+        'timers': {},
     }
 
 

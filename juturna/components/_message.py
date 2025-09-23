@@ -9,10 +9,25 @@ class Message[T_Input]:
     buffers, plus offering few extra utilities.
     """
 
-    def __init__(self,
-                 creator: str | None = None,
-                 version: int = -1,
-                 payload: T_Input = None):
+    __slots__ = [
+        '_creator',
+        '_version',
+        '_payload',
+        '_current_timer',
+        '_start_timer',
+        '_stop_timer',
+        'created_at',
+        'meta',
+        'timers',
+    ]
+
+    def __init__(
+        self,
+        creator: str | None = None,
+        version: int = -1,
+        payload: T_Input = None,
+        timers_from: 'Message' = None,
+    ):
         """
         Parameters
         ----------
@@ -25,16 +40,23 @@ class Message[T_Input]:
         payload : Any, optional
             The payload of the message. This is the actual data contained in the
             message. The default is None.
+        timers_from : Message
+            When provided, timers will be copied from it into the new message.
 
         """
         self.created_at = time.time()
         self.meta = dict()
-        self.timers = dict()
+        self.timers = (
+            dict() if timers_from is None else timers_from.timers.copy()
+        )
 
         self._creator = creator
         self._version = version
         self._payload = payload
+
         self._current_timer = None
+        self._start_timer = None
+        self._stop_timer = None
 
     def __repr__(self):
         return f'<Message from {self._creator}, v. {self._version}>'
@@ -67,7 +89,7 @@ class Message[T_Input]:
             'version': self.version,
             'payload': self.payload,
             'meta': self.meta,
-            'timers': self.timers
+            'timers': self.timers,
         }
 
     def to_json(self, encoder: typing.Callable | None = None) -> str:
