@@ -1,3 +1,5 @@
+"""VideoRTP source node"""
+
 import pathlib
 import time
 import subprocess
@@ -14,14 +16,16 @@ from juturna.payloads import BytesPayload, ImagePayload
 class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
     """Source node for video streaming"""
 
-    def __init__(self,
-                 rec_host: str,
-                 rec_port: int | str,
-                 payload_type: int,
-                 codec: str,
-                 width: int,
-                 height: int,
-                 **kwargs):
+    def __init__(
+        self,
+        rec_host: str,
+        rec_port: int | str,
+        payload_type: int,
+        codec: str,
+        width: int,
+        height: int,
+        **kwargs,
+    ):
         """
         Parameters
         ----------
@@ -71,13 +75,19 @@ class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            bufsize=10**8)
+            bufsize=10**8,
+        )
 
-        self.set_source(lambda: Message[BytesPayload](
-            creator=self.name,
-            payload=BytesPayload(
-                cnt=self._ffmpeg_proc.stdout.read( # type: ignore
-                    self._width * self._height * 3))))
+        self.set_source(
+            lambda: Message[BytesPayload](
+                creator=self.name,
+                payload=BytesPayload(
+                    cnt=self._ffmpeg_proc.stdout.read(  # type: ignore
+                        self._width * self._height * 3
+                    )
+                ),
+            )
+        )
 
         super().start()
 
@@ -113,7 +123,8 @@ class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
     def update(self, message: Message[BytesPayload]):
         try:
             full_frame = np.frombuffer(message.payload.cnt, np.uint8).reshape(
-                (self._height, self._width, 3))
+                (self._height, self._width, 3)
+            )
 
             to_send = Message[ImagePayload](
                 creator=self.name,
@@ -123,8 +134,9 @@ class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
                     width=full_frame.shape[0],
                     height=full_frame.shape[1],
                     pixel_format='rgb24',
-                    timestamp=time.time()
-                ))
+                    timestamp=time.time(),
+                ),
+            )
 
             self.transmit(to_send)
             self._sent += 1
@@ -133,18 +145,24 @@ class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
 
     @property
     def sdp_descriptor(self) -> pathlib.Path:
-        return self._sdp_file_path or \
-            self.prepare_template(
-                'remote_source.sdp.template', '_session_in.sdp', {
-                    '_remote_rtp_host': self._rec_host,
-                    '_remote_rtp_port': self._rec_port,
-                    '_remote_codec': self._codec,
-                    '_remote_payload_type': self._payload_type })
+        return self._sdp_file_path or self.prepare_template(
+            'remote_source.sdp.template',
+            '_session_in.sdp',
+            {
+                '_remote_rtp_host': self._rec_host,
+                '_remote_rtp_port': self._rec_port,
+                '_remote_codec': self._codec,
+                '_remote_payload_type': self._payload_type,
+            },
+        )
 
     @property
     def ffmpeg_launcher(self) -> pathlib.Path:
-        return self._ffmpeg_launcher_path or \
-            self.prepare_template(
-                'ffmpeg_launcher.sh.template', '_ffmpeg_launcher.sh', {
-                    '_sdp_location': self.sdp_descriptor,
-                    '_frame_shape': f'{self._width}x{self._height}' })
+        return self._ffmpeg_launcher_path or self.prepare_template(
+            'ffmpeg_launcher.sh.template',
+            '_ffmpeg_launcher.sh',
+            {
+                '_sdp_location': self.sdp_descriptor,
+                '_frame_shape': f'{self._width}x{self._height}',
+            },
+        )

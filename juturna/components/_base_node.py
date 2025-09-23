@@ -24,10 +24,9 @@ class BaseNode[T_Input, T_Output]:
     in the derived classes.
     """
 
-    def __init__(self,
-                 node_type: str,
-                 node_name: str = '',
-                 pipe_name: str = ''):
+    def __init__(
+        self, node_type: str, node_name: str = '', pipe_name: str = ''
+    ):
         """
         Parameters
         ----------
@@ -52,8 +51,9 @@ class BaseNode[T_Input, T_Output]:
         self._logger = jt_logger(f'{self.pipe_name}.{self._name}')
         self._logger.propagate = True
 
-        self._bridge = StreamBridge('') \
-            if node_type == 'source' else PollBridge('')
+        self._bridge = (
+            StreamBridge('') if node_type == 'source' else PollBridge('')
+        )
 
         self._bridge.on_update_received(self.update)
 
@@ -92,10 +92,7 @@ class BaseNode[T_Input, T_Output]:
 
     @property
     def configuration(self) -> dict:
-        return {
-            'name': self.name,
-            'session_id': self.pipe_id
-        }
+        return {'name': self.name, 'session_id': self.pipe_id}
 
     @status.setter
     def status(self, new_status: ComponentStatus):
@@ -143,10 +140,9 @@ class BaseNode[T_Input, T_Output]:
     def logger(self) -> logging.Logger:
         return self._logger
 
-    def prepare_template(self,
-                         template_name: str,
-                         file_destination_name: str,
-                         arguments: dict) -> pathlib.Path:
+    def prepare_template(
+        self, template_name: str, file_destination_name: str, arguments: dict
+    ) -> pathlib.Path:
         """
         Fetch a template file from the node folder, compile it, and save the
         produced file to the node pipeline folder. The template will be compiled
@@ -173,8 +169,10 @@ class BaseNode[T_Input, T_Output]:
 
         """
         if self.pipe_path is None:
-            raise ValueError('pipe_path is not set. '
-                             'Make sure the node is part of a pipeline.')
+            raise ValueError(
+                'pipe_path is not set. '
+                'Make sure the node is part of a pipeline.'
+            )
 
         _template_path = pathlib.Path(self.static_path, template_name)
         _destination_path = pathlib.Path(self.pipe_path, file_destination_name)
@@ -200,10 +198,9 @@ class BaseNode[T_Input, T_Output]:
 
         return str(dump_path)
 
-    def set_source(self,
-                   source: Buffer | Callable,
-                   by: int = 0,
-                   mode: str = 'post'):
+    def set_source(
+        self, source: Buffer | Callable, by: int = 0, mode: str = 'post'
+    ):
         """
         Set the node source (to be used for ``source`` nodes). The source can be
         either a callable or a buffer. However, source nodes are expected to be
@@ -275,17 +272,12 @@ class BaseNode[T_Input, T_Output]:
         self._bridge.stop()
         self._status = ComponentStatus.STOPPED
 
-    def configure(self):
-        ...
+    def configure(self): ...
 
-    def update(self, message: Message[T_Input]):
-        ...
+    def update(self, message: Message[T_Input]): ...
 
-    def set_on_config(self, property: str, value: Any):
-        ...
+    def set_on_config(self, prop: str, value: Any): ...
 
-    def warmup(self):
-        ...
+    def warmup(self): ...
 
-    def destroy(self):
-        ...
+    def destroy(self): ...

@@ -13,14 +13,12 @@ class NotifierHTTP(BaseNode[ObjectPayload, None]):
 
     _CNT_CB = {
         'application/json': lambda m: m.to_dict(),
-        'text/plain': lambda m: m.to_json()
+        'text/plain': lambda m: m.to_json(),
     }
 
-    def __init__(self,
-                 endpoint: str,
-                 timeout: int,
-                 content_type: str,
-                 **kwargs):
+    def __init__(
+        self, endpoint: str, timeout: int, content_type: str, **kwargs
+    ):
         """
         Parameters
         ----------
@@ -51,8 +49,8 @@ class NotifierHTTP(BaseNode[ObjectPayload, None]):
     def warmup(self):
         self.logger.info(f'[{self.name}] set to endpoint {self._endpoint}')
 
-    def set_on_config(self, property: str, value: str):
-        if property == 'endpoint':
+    def set_on_config(self, prop: str, value: str):
+        if prop == 'endpoint':
             self.logger.info(f'{self.name}: updating endpoint to {value}')
 
             self._endpoint = value
@@ -65,20 +63,21 @@ class NotifierHTTP(BaseNode[ObjectPayload, None]):
             name=f'{self.name}_thread',
             target=self._send_chunk,
             args=(message,),
-            daemon=True)
+            daemon=True,
+        )
 
         t.start()
 
     def _send_chunk(self, message_cnt):
         try:
-            headers = { 'Content-Type': self._content_type }
+            headers = {'Content-Type': self._content_type}
             response = requests.post(
                 self._endpoint,
                 json=message_cnt,
                 headers=headers,
-                timeout=self._timeout)
+                timeout=self._timeout,
+            )
 
-            self.logger.info('message sent')
-            self.logger.info(f'  --> {response.status_code} - {response.text}')
+            self.logger.info(f'message sent: {response.status_code}')
         except Exception as e:
             self.logger.info(e)

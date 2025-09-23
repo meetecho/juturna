@@ -15,18 +15,20 @@ from juturna.names import ComponentStatus
 class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
     """Source node for streaming audio"""
 
-    _SDP_TEMPLATE_NAME : str = 'remote_source.sdp.template'
-    _FFMPEG_TEMPLATE_NAME : str = 'ffmpeg_launcher.sh.template'
+    _SDP_TEMPLATE_NAME: str = 'remote_source.sdp.template'
+    _FFMPEG_TEMPLATE_NAME: str = 'ffmpeg_launcher.sh.template'
 
-    def __init__(self,
-                 rec_host: str,
-                 rec_port: int | str,
-                 audio_rate: int,
-                 block_size: int,
-                 channels: int,
-                 process_log_level: str,
-                 payload_type: int,
-                 **kwargs):
+    def __init__(
+        self,
+        rec_host: str,
+        rec_port: int | str,
+        audio_rate: int,
+        block_size: int,
+        channels: int,
+        process_log_level: str,
+        payload_type: int,
+        **kwargs,
+    ):
         """
         Parameters
         ----------
@@ -55,10 +57,12 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         self._block_size = block_size
         self._payload_type = payload_type
         self._channels = channels
-        self._rec_bytes = np.dtype(np.int16).itemsize * \
-            self._channels * \
-            self._block_size * \
-            self._audio_rate
+        self._rec_bytes = int(
+            np.dtype(np.int16).itemsize
+            * self._channels
+            * self._block_size
+            * self._audio_rate
+        )
         self._abs_recv = 0
 
         self._rec_host = rec_host
@@ -84,16 +88,22 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            bufsize=64536)
+            bufsize=64536,
+        )
 
-        self._monitor_thread = threading.Thread(target=self.monitor_process,
-                                                args=(self._ffmpeg_proc,))
+        self._monitor_thread = threading.Thread(
+            target=self.monitor_process, args=(self._ffmpeg_proc,)
+        )
         self._monitor_thread.start()
 
-        self.set_source(lambda: Message[BytesPayload](
-            creator=self.name,
-            payload=BytesPayload(
-                cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes))))
+        self.set_source(
+            lambda: Message[BytesPayload](
+                creator=self.name,
+                payload=BytesPayload(
+                    cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes)
+                ),
+            )
+        )
 
         super().start()
 
@@ -113,7 +123,8 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                 self._ffmpeg_proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 self.logger.warning(
-                    'ffmpeg process did not terminate in time, killing it.')
+                    'ffmpeg process did not terminate in time, killing it.'
+                )
 
                 self._ffmpeg_proc.kill()
                 self._ffmpeg_proc.wait()
@@ -148,8 +159,9 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                 sampling_rate=self._audio_rate,
                 channels=self._channels,
                 start=self._block_size * self._abs_recv,
-                end=self._block_size * self._abs_recv + self._block_size
-            ))
+                end=self._block_size * self._abs_recv + self._block_size,
+            ),
+        )
 
         to_send.meta['size'] = self._block_size
         to_send.meta['source_recv'] = self._abs_recv
@@ -161,8 +173,10 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
 
     @staticmethod
     def _get_waveform(raw_data: bytes, channels: int) -> np.ndarray:
-        waveform = np.frombuffer(
-            raw_data, np.int16).flatten().astype(np.float32) / 32768.0
+        waveform = (
+            np.frombuffer(raw_data, np.int16).flatten().astype(np.float32)
+            / 32768.0
+        )
 
         if channels == 2:
             waveform = np.reshape(waveform, (-1, 2)).sum(axis=1) / 2
@@ -171,34 +185,43 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
 
     @property
     def sdp_descriptor(self) -> pathlib.Path:
-        return self._sdp_file_path or \
-            self.prepare_template(
-                AudioRTP._SDP_TEMPLATE_NAME, '_session_in.sdp', {
-                    '_remote_rtp_host': self._rec_host,
-                    '_remote_rtp_port': self._rec_port,
-                    '_remote_payload_type': self._payload_type })
+        return self._sdp_file_path or self.prepare_template(
+            AudioRTP._SDP_TEMPLATE_NAME,
+            '_session_in.sdp',
+            {
+                '_remote_rtp_host': self._rec_host,
+                '_remote_rtp_port': self._rec_port,
+                '_remote_payload_type': self._payload_type,
+            },
+        )
 
     @property
     def ffmpeg_launcher(self) -> pathlib.Path:
-        return self._ffmpeg_launcher_path or \
-            self.prepare_template(
-                AudioRTP._FFMPEG_TEMPLATE_NAME, '_ffmpeg_launcher.sh', {
-                    '_sdp_location': self.sdp_descriptor,
-                    '_process_log_level': self._process_log_level,
-                    '_audio_rate': self._audio_rate })
+        return self._ffmpeg_launcher_path or self.prepare_template(
+            AudioRTP._FFMPEG_TEMPLATE_NAME,
+            '_ffmpeg_launcher.sh',
+            {
+                '_sdp_location': self.sdp_descriptor,
+                '_process_log_level': self._process_log_level,
+                '_audio_rate': self._audio_rate,
+            },
+        )
 
     def monitor_process(self, proc: subprocess.Popen):
         proc.wait()
         self.clear_source()
 
-        self.logger.debug(f'{self.name} subprocess terminates with code: \
-            {proc.returncode} - current node status: {self.status.name}')
+        self.logger.debug(
+            f'{self.name} subprocess terminates with code: \
+            {proc.returncode} - current node status: {self.status.name}'
+        )
 
         time.sleep(5)
 
         if self.status == ComponentStatus.RUNNING:
             self.logger.info(
-                f'{self.name} subprocess is respawning in 5 seconds')
+                f'{self.name} subprocess is respawning in 5 seconds'
+            )
 
             self.stop()
             time.sleep(5)

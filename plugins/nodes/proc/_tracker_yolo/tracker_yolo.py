@@ -7,13 +7,18 @@ from juturna.payloads._payloads import ImagePayload
 
 
 class TrackerYolo(BaseNode[ImagePayload, ImagePayload]):
-    def __init__(self,
-                 model: str,
-                 device: str,
-                 targets: list,
-                 confidence: float,
-                 half: bool):
-        super().__init__('proc')
+    def __init__(
+        self,
+        model: str,
+        device: str,
+        targets: list,
+        confidence: float,
+        half: bool,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
+
+        self.logger.info(f'received extras: {kwargs}')
 
         self._model_name = model
         self._device = device
@@ -32,15 +37,19 @@ class TrackerYolo(BaseNode[ImagePayload, ImagePayload]):
             for t in self._targets
         ]
 
+        self.logger.info('tracker ready')
+
     def update(self, message: Message[ImagePayload]):
         assert self._model != None
 
         image = message.payload.image
-        results = self._model.predict(image,
-                                      verbose=False,
-                                      classes=self._classes,
-                                      conf=self._confidence,
-                                      half=self._half)
+        results = self._model.predict(
+            image,
+            verbose=False,
+            classes=self._classes,
+            conf=self._confidence,
+            half=self._half,
+        )
 
         annotated = results[0].plot()
 
@@ -53,8 +62,9 @@ class TrackerYolo(BaseNode[ImagePayload, ImagePayload]):
                 height=annotated.shape[0],
                 depth=annotated.shape[2],
                 pixel_format=message.payload.pixel_format,
-                timestamp=message.payload.timestamp
-            ))
+                timestamp=message.payload.timestamp,
+            ),
+        )
 
         to_send.meta['annotations'] = results[0]
 
