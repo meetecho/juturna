@@ -1,0 +1,774 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Introducing Juturna &#8212; juturna 0.1.0 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/style.css?v=60d24888" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/fa-6.7.2.all.min.css?v=b7e0f7cc" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'guides/quickstart';</script>
+    <script src="../_static/js/meetecho-icon.js?v=56c1bf0c"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Build and install" href="install.html" />
+    <link rel="prev" title="Guides &amp; Tutorials" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">juturna 0.1.0 documentation</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Guides & Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Basic Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apis/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/meetecho/juturna" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://meetecho.com" title="Meetecho" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-meetecho fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Meetecho</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="index.html">
+    Guides & Tutorials
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../concepts/index.html">
+    Basic Concepts
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../apis/index.html">
+    API Reference
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/meetecho/juturna" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://meetecho.com" title="Meetecho" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-custom fa-meetecho fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Meetecho</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Introducing Juturna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Build and install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hub.html">Juturna Hub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Common questions</a></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Guides &amp; Tutorials</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Introducing Juturna</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="introducing-juturna">
+<h1>Introducing Juturna<a class="headerlink" href="#introducing-juturna" title="Link to this heading">#</a></h1>
+<p>Juturna is a tool that lets you create and manage data processing pipelines
+starting from <code class="docutils literal notranslate"><span class="pre">json</span></code> files. Juturna is meant as a fast prototyping tool for
+consuming, manipulating and transforming input data throughout a number of
+customisable nodes.</p>
+<section id="main-entities">
+<h2>Main entities<a class="headerlink" href="#main-entities" title="Link to this heading">#</a></h2>
+<p>Let’s start by defining what is what in Juturna.</p>
+<p>A <strong>pipeline</strong> can simply be defined as a collection of <strong>nodes</strong>. Each node
+acquires a piece of data from its parent and, after performing a single task,
+provide its output to its children. In this sense, a Juturna pipeline is
+nothing else but a <a class="reference external" href="https://en.wikipedia.org/wiki/Tree_(graph_theory)#Rooted_tree" rel="noreferrer" target="_blank">rooted tree <svg version="1.1" width="1.0em" height="1.0em" viewBox="0 0 16 16" aria-hidden="true" style="display: inline-block; vertical-align: middle; fill: currentColor;"><path d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z"></path></svg></a>, a particular
+kind of <a class="reference external" href="https://en.wikipedia.org/wiki/Directed_acyclic_graph" rel="noreferrer" target="_blank">DAG <svg version="1.1" width="1.0em" height="1.0em" viewBox="0 0 16 16" aria-hidden="true" style="display: inline-block; vertical-align: middle; fill: currentColor;"><path d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z"></path></svg></a> where
+there is a single root node with in-degree of 0 (this is not technically the
+case, but we’ll skip it for now), and every other node has an in-degree of 1.</p>
+<img alt="Main Juturna entities" class="align-center" src="../_images/juturna_entities.png" />
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<p>A node is a pipeline component that should, ideally, do one and only one
+thing. Depending on the task they are programmed to perform, nodes can be:</p>
+<ul class="simple">
+<li><p><strong>source</strong>: they either consume external data (obtained from real-time
+streams, remote or local files, databases…) or generate data to push into
+the pipelline</p></li>
+<li><p><strong>processing</strong>: they either transform, annotate or tag input data, or
+generate completely new data based on their input</p></li>
+<li><p><strong>sink</strong>: they deliver the input data to a configured destination, either
+local or remote</p></li>
+</ul>
+<p>To recap, the key points to keep in mind about a pipeline are:</p>
+<ul class="simple">
+<li><p>a pipeline has a single source node, consuming data from an external source,
+either remote or local</p></li>
+<li><p>each node in a pipeline, be it source, processing, or sink, can read its
+input data from a single node, but can produce its output data for multiple
+nodes</p></li>
+</ul>
+<section id="creating-a-pipeline">
+<h3>Creating a pipeline<a class="headerlink" href="#creating-a-pipeline" title="Link to this heading">#</a></h3>
+<p>Pipelines can be created starting from a simple <code class="docutils literal notranslate"><span class="pre">json</span></code> file. An example is
+provided below of what a basic configuration file for an empty pipeline looks
+like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.1.0&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;plugins&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;./plugins&quot;</span><span class="p">],</span>
+  <span class="s2">&quot;pipeline&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;my_awesome_pipeline&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;folder&quot;</span><span class="p">:</span> <span class="s2">&quot;./running_pipelines&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">],</span>
+    <span class="s2">&quot;links&quot;</span><span class="p">:</span> <span class="p">[</span> <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The actual items concerning the pipeline are contained within the <code class="docutils literal notranslate"><span class="pre">pipeline</span></code>
+object. Namely, they are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: a symbolic pipeline name</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">id</span></code>: a unique pipeline identifier</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">folder</span></code>: a path to the folder where the required pipeline tree will be
+created (used to store artifacts, temporary files, or any other pipeline
+product that needs persistency)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nodes</span></code>: a list of all the nodes in the pipeline</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">links</span></code>: a list of the links connecting the nodes in the pipeline</p></li>
+</ul>
+<p>A couple of things to notice here:</p>
+<ul class="simple">
+<li><p>We have to specify the library version we are currently using. This field is
+likely to be removed in the future, but as of now it is important to keep it
+to make sure the API version is correct and nothing breaks apart.</p></li>
+<li><p>We assign both <code class="docutils literal notranslate"><span class="pre">name</span></code> and <code class="docutils literal notranslate"><span class="pre">id</span></code> fields in the pipeline
+configuration. Whilst there might be an overlap between them, the <code class="docutils literal notranslate"><span class="pre">id</span></code>
+field is required by other tools that might wrap Juturna and manage
+multiple pipelines at once. With those tools, pipeline ids are likely to be
+assigned automatically in order to prevent overlaps.</p></li>
+</ul>
+<p>Once this is ready, we can go on and instantiate the pipeline itself:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
+
+
+<span class="n">pipe</span> <span class="o">=</span> <span class="n">jt</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">Pipeline</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s1">&#39;path/to/config.json&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The pipeline we just created was configured to dump all its produced files and
+artifacts in a directory specified in the <code class="docutils literal notranslate"><span class="pre">folder</span></code> field. Here, Juturna will
+create a subdirectory assigned to the pipeline, and within it as many
+subdirectories as there are nodes in the pipeline. In our example, we did not
+have any node, so the pipeline subdirectory will only contain the configuration
+file provided when instantiated. Keep in mind, all these directories will only
+be created when the pipeline is warmed up, but we will get to that later.</p>
+<p>At this point, we can get back all the basic creation information from the
+pipeline:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipe</span><span class="o">.</span><span class="n">name</span>
+<span class="go">&#39;my_awesome_pipeline&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipe</span><span class="o">.</span><span class="n">pipe_id</span>
+<span class="go">&#39;1234567890&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipe</span><span class="o">.</span><span class="n">created_at</span>
+<span class="go">1743494475.7670584</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipe</span><span class="o">.</span><span class="n">pipe_folder</span>
+<span class="go">&#39;./running_pipelines/my_awesome_pipeline&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pipe</span><span class="o">.</span><span class="n">status</span>
+<span class="go">{&#39;pipe_id&#39;: &#39;1234567890&#39;,</span>
+<span class="go"> &#39;folder&#39;: &#39;./running_pipelines/my_awesome_pipeline&#39;,</span>
+<span class="go"> &#39;self&#39;: &lt;PipelineStatus.NEW: &#39;pipeline_created&#39;&gt;,</span>
+<span class="go"> &#39;nodes&#39;: {}}</span>
+</pre></div>
+</div>
+<p>This is great and all, but for now now we just created an empty pipeline with
+no nodes in it. A real pipeline is supposed to achieve something, and our
+example does nothing. Let’s go on and create a real pipeline.</p>
+</section>
+<section id="nodes-and-links">
+<h3>Nodes and links<a class="headerlink" href="#nodes-and-links" title="Link to this heading">#</a></h3>
+<p>Nodes are the basic building blocks of a pipeline. When designing a pipeline,
+there are some alternatives for how to get the nodes you need:</p>
+<ol class="arabic simple">
+<li><p>use Juturna built-in nodes, or nodes that are available within the Juturna
+library itself;</p></li>
+<li><p>use community plugin nodes, or nodes that can be downloaded using the
+Juturna hub facility;</p></li>
+<li><p>implement your own custom node.</p></li>
+</ol>
+<section id="built-in-nodes">
+<h4>Built-in nodes<a class="headerlink" href="#built-in-nodes" title="Link to this heading">#</a></h4>
+<p>Built-in nodes are shipped with the Juturna library itself. Whilst there is
+usually no need to instantiate built-in nodes directly, they can be accessed
+within:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jt</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">source</span> <span class="o">--&gt;</span> <span class="p">[</span> <span class="n">AudioFile</span><span class="p">,</span> <span class="n">AudioRTP</span><span class="p">,</span> <span class="n">VideoFile</span><span class="p">,</span> <span class="n">VideoRTP</span> <span class="p">]</span>
+<span class="n">jt</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">sink</span>   <span class="o">--&gt;</span> <span class="p">[</span> <span class="n">NotifierHTTP</span><span class="p">,</span> <span class="n">NotifierWebsocket</span><span class="p">,</span> <span class="n">VideostreamFFMPEG</span> <span class="p">]</span>
+</pre></div>
+</div>
+<p>These nodes only require their configuration arguments and nothing else. For a
+full description of built-in nodes, refer to the <a class="reference internal" href="../concepts/nodes.html"><span class="doc">built-in nodes doc page</span></a>.</p>
+</section>
+<section id="plugin-nodes">
+<h4>Plugin nodes<a class="headerlink" href="#plugin-nodes" title="Link to this heading">#</a></h4>
+<p>Juturna allows users to design and implement custom nodes of any kind. Custom
+nodes can be seamelessly plugged into any pipeline, and used just like built-in
+nodes. To get a better look at how to implement your own nodes, take a look at
+the <a class="reference internal" href="../concepts/custom_nodes.html"><span class="doc">custom nodes doc page</span></a>.</p>
+</section>
+<section id="custom-nodes">
+<h4>Custom nodes<a class="headerlink" href="#custom-nodes" title="Link to this heading">#</a></h4>
+<p>In the following example, we create a pipeline that reads a remote RTP audio
+stream, and performs Voice Activity Detection (VAD) at specific intervals. The
+voice activity coordinates, when detected, will be then delivered to a
+receiving HTTP server. To do so, we will make use of both built-in and plugin
+nodes.</p>
+<p>Let’s change the pipeline configuration file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.1.0&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;pipeline&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;my_awesome_pipeline&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;1234567890&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;folder&quot;</span><span class="p">:</span> <span class="s2">&quot;./running_pipelines&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;nodes&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;0_src&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;source&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mark&quot;</span><span class="p">:</span> <span class="s2">&quot;audio_rtp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;configuration&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;rec_host&quot;</span><span class="p">:</span> <span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;rec_port&quot;</span><span class="p">:</span> <span class="mi">123456</span><span class="p">,</span>
+          <span class="s2">&quot;audio_rate&quot;</span><span class="p">:</span> <span class="mi">16000</span><span class="p">,</span>
+          <span class="s2">&quot;block_size&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;channels&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+          <span class="s2">&quot;payload_type&quot;</span><span class="p">:</span> <span class="mi">97</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;1_vad&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;proc&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mark&quot;</span><span class="p">:</span> <span class="s2">&quot;vad_silero&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;configuration&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="mi">16000</span><span class="p">,</span>
+          <span class="s2">&quot;threshold&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+          <span class="s2">&quot;keep&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;2_dst&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;sink&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mark&quot;</span><span class="p">:</span> <span class="s2">&quot;notifier_http&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;configuration&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="s2">&quot;endpoint&quot;</span><span class="p">:</span> <span class="s2">&quot;http://127.0.0.1:8080&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;timeout&quot;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+          <span class="s2">&quot;content_type&quot;</span><span class="p">:</span> <span class="s2">&quot;application/json&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;exclude_payload&quot;</span><span class="p">:</span> <span class="n">true</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="s2">&quot;links&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="s2">&quot;0_src&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;to&quot;</span><span class="p">:</span> <span class="s2">&quot;1_vad&quot;</span>
+      <span class="p">},</span>
+      <span class="p">{</span>
+        <span class="s2">&quot;from&quot;</span><span class="p">:</span> <span class="s2">&quot;1_vad&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;to&quot;</span><span class="p">:</span> <span class="s2">&quot;2_dst&quot;</span>
+      <span class="p">}</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>There’s a lot to unpack there.</p>
+<ul class="simple">
+<li><p>We added 3 nodes to the <code class="docutils literal notranslate"><span class="pre">nodes</span></code> field in our configuration file. For each
+node, we provided a <code class="docutils literal notranslate"><span class="pre">name</span></code>, a <code class="docutils literal notranslate"><span class="pre">type</span></code> and a <code class="docutils literal notranslate"><span class="pre">mark</span></code> field. We also
+included a <code class="docutils literal notranslate"><span class="pre">configuration</span></code> item for each of them. These are the building
+blocks of our pipeline.</p></li>
+<li><p>We added 2 links to the <code class="docutils literal notranslate"><span class="pre">links</span></code> field in our configuration file. A link is
+a unidirectional path connecting a source node to a destination node (in this
+context, a source node is different from a node of <code class="docutils literal notranslate"><span class="pre">&quot;type&quot;:</span> <span class="pre">&quot;source&quot;</span></code>, but
+we will see this later).</p></li>
+</ul>
+<p>As it is, this pipeline will read a remote RTP audio stream, perform VAD on it,
+and deliver the VAD coordinates to a receiving HTTP server. The audio stream
+will be read from the <code class="docutils literal notranslate"><span class="pre">0_src</span></code> node, processed by the <code class="docutils literal notranslate"><span class="pre">1_vad</span></code> node, and
+delivered to the <code class="docutils literal notranslate"><span class="pre">2_dst</span></code> node.</p>
+<p>Assuming a <code class="docutils literal notranslate"><span class="pre">ffmpeg</span></code> stream is being sent to the <code class="docutils literal notranslate"><span class="pre">0_src</span></code> node, and a
+destination server is listening on port <code class="docutils literal notranslate"><span class="pre">8080</span></code>, we can run the pipeline as
+follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">jt</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">Pipeline</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s1">&#39;path/to/config.json&#39;</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="o">.</span><span class="n">warmup</span><span class="p">()</span>
+
+<span class="n">pipeline</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<span class="c1"># we will be running the pipeline for 10 seconds</span>
+<span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">pipeline</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The listening HTTP server will then receive a number of POST requests
+containing the VAD coordinates, in the following format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+  <span class="s2">&quot;silence&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
+  <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+  <span class="s2">&quot;rate&quot;</span><span class="p">:</span> <span class="mi">16000</span><span class="p">,</span>
+  <span class="s2">&quot;sequence_number&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+  <span class="s2">&quot;start_abs&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+  <span class="s2">&quot;end_abs&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+  <span class="s2">&quot;duration_after_vad&quot;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+  <span class="s2">&quot;speech_timestamps&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="s2">&quot;start&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+      <span class="s2">&quot;end&quot;</span><span class="p">:</span> <span class="mf">2.0</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Guides &amp; Tutorials</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="install.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Build and install</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#main-entities">Main entities</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-a-pipeline">Creating a pipeline</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#nodes-and-links">Nodes and links</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#built-in-nodes">Built-in nodes</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#plugin-nodes">Plugin nodes</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-nodes">Custom nodes</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2025, Meetecho.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,6 +1,0 @@
-[arguments]
-rate = 16000
-threshold = 0.75
-keep = 1
-
-[meta]
