@@ -1,0 +1,10 @@
+[arguments]
+host = "127.0.0.1"
+port = 8000
+tenant = "default_tenant"
+database = "default_database"
+collection = "default_collection"
+target = "input_query"
+results = 10
+
+[meta]
