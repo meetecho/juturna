@@ -1,3 +1,12 @@
+"""
+TranscriberParakeet
+
+@ Author: Antonio Bevilacqua
+@ Email: abevilacqua@meetecho.com
+
+Transcribe audio packets using whisper models.
+"""
+
 import gc
 import collections
 import time
@@ -15,6 +24,8 @@ from juturna.payloads._payloads import ObjectPayload
 
 
 class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
+    """Node implementation class"""
+
     def __init__(
         self,
         model_name: str,
@@ -27,6 +38,29 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
         without_timestamps: bool = False,
         **kwargs,
     ):
+        """
+        Parameters
+        ----------
+        model_name : str
+            Name of the model to use for transcription.
+        only_local : bool
+            Only use local model and prevent the node from downloading.
+        language : str
+            Source audio language.
+        task : str
+            What task to perform.
+        buffer_size : int
+            Number of messages to accumulate before transcription.
+        device : str
+            Where to run the model (cpu or cuda device).
+        word_timestamps : bool
+            Whether to generate timestamps during transcription.
+        without_timestamps : bool
+            Skip timestamp generation.
+        kwargs : dict
+            Supernode arguments.
+
+        """
         super().__init__(**kwargs)
 
         self._only_local = only_local
@@ -42,11 +76,13 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
 
         self._data = collections.deque(maxlen=buffer_size)
 
-        logging.getLogger('faster_whisper').disabled = True
+        logging.getLogger('faster_whisper').setLevel(logging.ERROR)
         self.logger.info(f'trx created, model id {id(self._model)}')
 
     def update(self, message: Message[AudioPayload]):
+        """Receive data from upstream, transmit data downstream"""
         self.logger.info(f'received {message.version}')
+
         to_send = Message[ObjectPayload](
             creator=self.name, version=message.version, payload=ObjectPayload()
         )
@@ -96,7 +132,7 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
             for w in segment.words
         ]
 
-        rescaled = TranscriberWhispy.rescale_trx_words(word_list, self._data)
+        rescaled = TranscriberWhispy._rescale_trx_words(word_list, self._data)
 
         to_send.payload['transcript'] = rescaled
         # self.logger.info(f'transcript {rescaled}')
@@ -105,7 +141,7 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
         self.logger.info(f'transmit: {to_send.version}')
 
     @staticmethod
-    def rescale_trx_words(words, buffer):
+    def _rescale_trx_words(words, buffer):
         if not buffer or not words:
             return list()
 
@@ -171,6 +207,7 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
         return rescaled_words
 
     def destroy(self):
+        """Destroy the node"""
         self._release_model()
 
     def _release_model(self):
