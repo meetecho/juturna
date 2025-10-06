@@ -15,20 +15,24 @@ from juturna.payloads._payloads import ObjectPayload
 
 
 class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
-    def __init__(self,
-                 model_name: str,
-                 only_local: bool,
-                 language: str,
-                 task: str,
-                 buffer_size: int,
-                 word_timestamps: bool = True,
-                 without_timestamps: bool = False,
-                 **kwargs):
+    def __init__(
+        self,
+        model_name: str,
+        only_local: bool,
+        language: str,
+        task: str,
+        buffer_size: int,
+        device: str,
+        word_timestamps: bool = True,
+        without_timestamps: bool = False,
+        **kwargs,
+    ):
         super().__init__(**kwargs)
 
         self._only_local = only_local
-        self._model = WhisperModel(model_name,
-                                   local_files_only=self._only_local)
+        self._model = WhisperModel(
+            model_name, local_files_only=self._only_local, device=device
+        )
         self._model_name = model_name
 
         self._language = language
@@ -44,9 +48,8 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
     def update(self, message: Message[AudioPayload]):
         self.logger.info(f'received {message.version}')
         to_send = Message[ObjectPayload](
-            creator=self.name,
-            version=message.version,
-            payload=ObjectPayload())
+            creator=self.name, version=message.version, payload=ObjectPayload()
+        )
 
         if message.meta['silence']:
             self.logger.info('silence detected, sending silence...')
@@ -74,19 +77,24 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
             without_timestamps=self._without_timestamps,
             condition_on_previous_text=False,
             prompt_reset_on_temperature=True,
-            vad_filter=False)
+            vad_filter=False,
+        )
 
         with to_send.timeit(self.name):
             transcript = list(transcript)
 
-        word_list = [{
-            'word': w.word,
-            'start': float(w.start),
-            'end': float(w.end),
-            'start_abs': float(w.start) + self._data[0].payload.start,
-            'end_abs': float(w.end) + self._data[0].payload.start,
-            'probability': float(w.probability)
-        } for segment in transcript for w in segment.words]
+        word_list = [
+            {
+                'word': w.word,
+                'start': float(w.start),
+                'end': float(w.end),
+                'start_abs': float(w.start) + self._data[0].payload.start,
+                'end_abs': float(w.end) + self._data[0].payload.start,
+                'probability': float(w.probability),
+            }
+            for segment in transcript
+            for w in segment.words
+        ]
 
         rescaled = TranscriberWhispy.rescale_trx_words(word_list, self._data)
 
@@ -112,8 +120,9 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
                 speech_start_abs = start_abs + segment['start_s']
                 speech_end_abs = start_abs + segment['end_s']
                 speech_offset_map.append(
-                    (speech_start_abs, speech_end_abs, accumulated_time))
-                accumulated_time += (segment['end_s'] - segment['start_s'])
+                    (speech_start_abs, speech_end_abs, accumulated_time)
+                )
+                accumulated_time += segment['end_s'] - segment['start_s']
 
             chunk_time_map.append((start_abs, speech_offset_map))
 
@@ -134,22 +143,30 @@ class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
                     if offset <= end < offset + (sp_end_abs - sp_start_abs):
                         word_end_rescaled = sp_start_abs + (end - offset)
 
-                    if word_start_rescaled is not None and \
-                            word_end_rescaled is not None:
+                    if (
+                        word_start_rescaled is not None
+                        and word_end_rescaled is not None
+                    ):
                         break
 
-                if word_start_rescaled is not None and \
-                        word_end_rescaled is not None:
+                if (
+                    word_start_rescaled is not None
+                    and word_end_rescaled is not None
+                ):
                     break
 
-            if word_start_rescaled is not None and \
-                    word_end_rescaled is not None:
-                rescaled_words.append({
-                    'word': word['word'],
-                    'start': word_start_rescaled,
-                    'end': word_end_rescaled,
-                    'probability': word['probability']
-                })
+            if (
+                word_start_rescaled is not None
+                and word_end_rescaled is not None
+            ):
+                rescaled_words.append(
+                    {
+                        'word': word['word'],
+                        'start': word_start_rescaled,
+                        'end': word_end_rescaled,
+                        'probability': word['probability'],
+                    }
+                )
 
         return rescaled_words
 

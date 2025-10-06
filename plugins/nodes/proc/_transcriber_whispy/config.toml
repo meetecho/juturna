@@ -6,5 +6,6 @@ word_timestamps = true
 without_timestamps = false
 task = "transcribe"
 buffer_size = 5
+device = "cuda"
 
 [meta]
