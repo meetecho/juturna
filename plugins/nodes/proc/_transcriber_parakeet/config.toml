@@ -1,0 +1,8 @@
+[arguments]
+model_name = "parakeet-tdt-0.6b-v3"
+only_local = true
+language = "en"
+word_timestamps = true
+buffer_size = 3
+
+[meta]
