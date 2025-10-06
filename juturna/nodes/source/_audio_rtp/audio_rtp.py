@@ -74,7 +74,6 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         self._ffmpeg_launcher_path = None
         self._monitor_thread = None
 
-    # isort: skip
     def configure(self):
         if self._rec_port == 'auto':
             self._rec_port = rb.get('port')
