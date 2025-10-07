@@ -1,0 +1,5 @@
+[arguments]
+activation = "hey echo"
+target = 'suggestion'
+
+[meta]
