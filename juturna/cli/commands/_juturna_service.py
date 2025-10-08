@@ -76,7 +76,7 @@ def run(host: str, port: int, folder: str, log_level: str):
     except FileExistsError:
         logger.info(f'folder {folder} exists, skipping...')
 
-    PipelineManager().running_folder = folder
+    PipelineManager().set_base_folder(folder)
 
     logging.info(f'service address: {host}:{port}')
 

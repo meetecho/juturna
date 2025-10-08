@@ -21,6 +21,7 @@ _INVALID_ID_MSG = {
 
 class PipelineManager:
     _instance = None
+    _base_folder = None
     _lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
@@ -29,32 +30,33 @@ class PipelineManager:
                 if not cls._instance:
                     cls._instance = super().__new__(cls)
                     cls._instance._pipelines = dict()
-                    cls._instance._running_folder = ''
 
         return cls._instance
 
     def __len__(self):
         return len(self._pipelines)
 
+    @classmethod
+    def set_base_folder(cls, base_folder: str) -> str:
+        if cls._base_folder is None:
+            cls._base_folder = base_folder
+
+        return cls()
+
     @property
-    def running_folder(self) -> str:
-        if hasattr(self, '_running_folder'):
-            return self._running_folder
-
-        return None
-
-    @running_folder.setter
-    def running_folder(self, folder: str):
-        self._running_folder = folder
+    def base_folder(self) -> str:
+        return self.__class__._base_folder
 
     def create_pipeline(self, pipeline_config: dict) -> dict:
         pipeline_id = str(uuid.uuid4())
 
         pipeline_config['pipeline']['id'] = pipeline_id
-        pipeline_config['pipeline']['folder'] = str(pathlib.Path(
-            self._running_folder,
-            f'{pipeline_config["pipeline"]["name"]}_{pipeline_id}',
-        ))
+        pipeline_config['pipeline']['folder'] = str(
+            pathlib.Path(
+                self.base_folder,
+                f'{pipeline_config["pipeline"]["name"]}_{pipeline_id}',
+            )
+        )
 
         this_pipeline = Pipeline(pipeline_config)
 
@@ -129,7 +131,6 @@ class PipelineManager:
 
         sys.exc_info()
 
-        self._pipelines[pipeline_id].stop()
         self._pipeline[pipeline_id].destroy()
 
         if wipe_folder:
