@@ -131,7 +131,7 @@ class PipelineManager:
 
         sys.exc_info()
 
-        self._pipeline[pipeline_id].destroy()
+        self._pipelines[pipeline_id].destroy()
 
         if wipe_folder:
             shutil.rmtree(self._pipelines[pipeline_id].pipe_folder)
