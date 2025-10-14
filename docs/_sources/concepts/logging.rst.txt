@@ -24,9 +24,48 @@ However, loggers can be selectively enabled or disabled. So, for example::
     # this will set ERROR level on the whole library (all pipes and nodes)
     logging.getLogger('jt').setLevel(logging.ERROR)
 
-###############
+
+Managing handlers and formatters
+================================
+
+By default, Juturna directs its log entries to the standard output. However, it
+is possible to add new handlers and formatters directly into the basic Juturna
+logger.::
+
+    import logging
+
+    import juturna as jt
+
+
+    _CONFIG = sys.argv[1]
+
+    # set a formatter for the juturna log entries
+    jt.log.formatter('colored')
+    logging.basicConfig(level=logging.INFO)
+
+    # create a file handler with a custom formatter
+    handler = logging.FileHandler('juturna.log')
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # add the handler and its formatter to the juturna logger
+    jt.log.add_handler(handler, formatter=formatter)
+
+
+New handlers can also used one of the built-in formatters available in Juturna.::
+
+
+    jt.log.add_handler(handler, formatter='full')
+
+
+If no formatter is provided, the default one set in the Juturna logger will be
+used.::
+
+    jt.log.add_handler(handler)
+
+
 Formatting logs
-###############
+===============
 
 Some formatters are conveniently shipped in Juturna to offer basic logging
 formats. These can be changed with::
@@ -34,7 +73,7 @@ formats. These can be changed with::
     import juturna as jt
 
 
-    jt.utils.log_utils.formatter('colored')
+    jt.log.formatter('colored')
 
 Available formatters are:
 

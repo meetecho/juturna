@@ -332,7 +332,6 @@
 <li class="toctree-l1"><a class="reference internal" href="payloads.html">Payloads</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Built-in nodes</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Logging</a></li>
-
 </ul>
 </div>
 </nav></div>
@@ -416,15 +415,49 @@ However, loggers can be selectively enabled or disabled. So, for example:</p>
 <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;jt&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
 </pre></div>
 </div>
+<section id="managing-handlers-and-formatters">
+<h2>Managing handlers and formatters<a class="headerlink" href="#managing-handlers-and-formatters" title="Link to this heading">#</a></h2>
+<p>By default, Juturna directs its log entries to the standard output. However, it
+is possible to add new handlers and formatters directly into the basic Juturna
+logger.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
+
+
+<span class="n">_CONFIG</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># set a formatter for the juturna log entries</span>
+<span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">formatter</span><span class="p">(</span><span class="s1">&#39;colored&#39;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+
+<span class="c1"># create a file handler with a custom formatter</span>
+<span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="s1">&#39;juturna.log&#39;</span><span class="p">)</span>
+<span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+    <span class="s1">&#39;</span><span class="si">%(asctime)s</span><span class="s1"> - </span><span class="si">%(name)s</span><span class="s1"> - </span><span class="si">%(levelname)s</span><span class="s1"> - </span><span class="si">%(message)s</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<span class="c1"># add the handler and its formatter to the juturna logger</span>
+<span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="n">formatter</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>New handlers can also used one of the built-in formatters available in Juturna.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="s1">&#39;full&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If no formatter is provided, the default one set in the Juturna logger will be
+used.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+</pre></div>
+</div>
 </section>
 <section id="formatting-logs">
-<h1>Formatting logs<a class="headerlink" href="#formatting-logs" title="Link to this heading">#</a></h1>
+<h2>Formatting logs<a class="headerlink" href="#formatting-logs" title="Link to this heading">#</a></h2>
 <p>Some formatters are conveniently shipped in Juturna to offer basic logging
 formats. These can be changed with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
 
 
-<span class="n">jt</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">log_utils</span><span class="o">.</span><span class="n">formatter</span><span class="p">(</span><span class="s1">&#39;colored&#39;</span><span class="p">)</span>
+<span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">formatter</span><span class="p">(</span><span class="s1">&#39;colored&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Available formatters are:</p>
@@ -439,6 +472,7 @@ formats. These can be changed with:</p>
 </ul>
 <p>The default formatter is <code class="docutils literal notranslate"><span class="pre">full</span></code>. It differs from the <code class="docutils literal notranslate"><span class="pre">colored</span></code> formatter as
 the latter highlights with colours the logging level.</p>
+</section>
 </section>
 
 
@@ -488,10 +522,9 @@ the latter highlights with colours the logging level.</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Logging</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#formatting-logs">Formatting logs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#managing-handlers-and-formatters">Managing handlers and formatters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#formatting-logs">Formatting logs</a></li>
 </ul>
-
   </nav></div>
 
 </div></div>
