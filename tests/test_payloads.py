@@ -1,6 +1,3 @@
-import time
-import json
-
 import numpy as np
 
 from juturna.payloads._payloads import AudioPayload
@@ -49,10 +46,19 @@ def test_bytes_empty_init():
 
 def test_clone_payload():
     original = np.ndarray(10)
-    
+
     first = AudioPayload(audio=original)
     cloned = first.clone()
 
     np.testing.assert_array_equal(first.audio, cloned.audio)
-    
+
     assert id(first.audio) != id(cloned.audio)
+
+
+def test_object_payload():
+    origin = {'prop_a': 'string', 'prop_b': 10}
+
+    payload = ObjectPayload.from_dict(origin)
+
+    assert payload['prop_a'] == 'string'
+    assert payload['prop_b'] == 10

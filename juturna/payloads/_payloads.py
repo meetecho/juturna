@@ -47,4 +47,11 @@ class BytesPayload(BasePayload):
 
 @dataclass
 class ObjectPayload(dict, BasePayload):
-    ...
+    @staticmethod
+    def from_dict(origin: dict):
+        obj = ObjectPayload()
+
+        for k, v in origin.items():
+            obj[k] = v
+
+        return obj
