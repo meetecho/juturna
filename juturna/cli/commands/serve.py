@@ -38,9 +38,37 @@ def setup_parser(subparsers):  # noqa: D103
         type=str,
         default='DEBUG',
         choices=['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR'],
-        help='set log level during pipeline execution'
+        help='set log level during pipeline execution',
+    )
+
+    parser.add_argument(
+        '--log-format',
+        '-F',
+        type=str,
+        default='full',
+        choices=[
+            'simple',
+            'colored',
+            'full',
+            'compact',
+            'development',
+            'minimal',
+            'json',
+        ],
+        help='log format',
+    )
+
+    parser.add_argument(
+        '--log-file', '-L', type=str, help='log file destination'
     )
 
 
 def _execute(args):
-    run(args.host, args.port, args.folder, args.log_level)
+    run(
+        args.host,
+        args.port,
+        args.folder,
+        args.log_level,
+        args.log_format,
+        args.log_file,
+    )

@@ -10,13 +10,17 @@ class _JuturnaLogger:
         self._root_formatter_name = 'full'
 
         self._root_handler.setFormatter(
-            _formatters._FORMATTERS[self._root_formatter_name])
+            _formatters._FORMATTERS[self._root_formatter_name]
+        )
         self._root_logger.addHandler(self._root_handler)
         self._root_logger.propagate = False
 
     def _logger(self, logger_name: str = '') -> logging.Logger:
-        return self._root_logger.getChild(logger_name) if logger_name \
+        return (
+            self._root_logger.getChild(logger_name)
+            if logger_name
             else self._root_logger
+        )
 
     def _formatters(self) -> list:
         return list(_formatters._FORMATTERS.keys())
@@ -45,3 +49,14 @@ def formatters() -> list:
 
 def formatter(formatter_name: str = '') -> str | None:
     return _JT_LOGGER._formatter(formatter_name)
+
+
+def add_handler(
+    handler: logging.Handler, formatter: str | logging.Formatter = ''
+):
+    formatter = _formatters._FORMATTERS[
+        formatter or _JT_LOGGER._root_formatter_name
+    ] if isinstance(formatter, str) else formatter
+
+    handler.setFormatter(formatter)
+    jt_logger().addHandler(handler)

@@ -5,6 +5,8 @@ import uvicorn
 import fastapi
 import pydantic
 
+import juturna as jt
+
 from juturna.components._pipeline_manager import PipelineManager
 
 
@@ -66,8 +68,21 @@ def pipeline_status(pipeline_id: str):
     return status
 
 
-def run(host: str, port: int, folder: str, log_level: str):
-    logger.setLevel(log_level)
+def run(
+    host: str,
+    port: int,
+    folder: str,
+    log_level: str,
+    log_format: str,
+    log_file: str,
+):
+    jt.log.formatter(log_format)
+    jt.log.jt_logger().setLevel(log_level)
+
+    if log_file:
+        _handler = logging.FileHandler(log_file)
+        jt.log.add_handler(_handler)
+
     logger.info('starting juturna server')
 
     try:
