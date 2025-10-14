@@ -416,72 +416,8 @@
                   
   <section id="juturna-hub-package">
 <h1>juturna.hub package<a class="headerlink" href="#juturna-hub-package" title="Link to this heading">#</a></h1>
-<section id="module-juturna.hub">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.hub" title="Link to this heading">#</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="juturna.hub.download_node">
-<span class="sig-prename descclassname"><span class="pre">juturna.hub.</span></span><span class="sig-name descname"><span class="pre">download_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authenticate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.hub.download_node" title="Link to this definition">#</a></dt>
-<dd><p>Given a target node, download it locally.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>node_name</strong> (<em>str</em>) – The name of the remote node to download (starts with the _ character).</p></li>
-<li><p><strong>destination_folder</strong> (<em>str</em>) – The folder the node will be downloaded to. Defaults to
-JUTURNA_CACHE_DIR when not provided.</p></li>
-<li><p><strong>authenticate</strong> (<em>bool</em>) – When true, the request to download the node will be authenticated using
-the access token defined in JUTURNA_HUB_TOKEN. Defaults to False.</p></li>
-<li><p><strong>repository_url</strong> (<em>str</em>) – The repository from which download a node. By default this is None, so
-the node will be downloaded from JUTURNA_HUB_URL.</p></li>
-<li><p><strong>force</strong> (<em>bool</em>) – Will not download the node if one with the same name already exists in
-the destination folder. Defaults to True.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="juturna.hub.download_pipeline">
-<span class="sig-prename descclassname"><span class="pre">juturna.hub.</span></span><span class="sig-name descname"><span class="pre">download_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipe_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination_folder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authenticate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repository_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">force</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.hub.download_pipeline" title="Link to this definition">#</a></dt>
-<dd><p>Download a pipeline from the Juturna hub
-Given a target pipeline, download it locally. This implies downloading all
-the nodes and files that are part of the pipeline.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>pipe_name</strong> (<em>str</em>) – The name of the remote pipeline to download.</p></li>
-<li><p><strong>destination_folder</strong> (<em>str</em>) – The folder the pipeline will be downloaded to. Defaults to
-JUTURNA_CACHE_DIR when not provided.</p></li>
-<li><p><strong>authenticate</strong> (<em>bool</em>) – When true, the request to download the pipeline will be authenticated
-using the access token defined in JUTURNA_HUB_TOKEN. Defaults to False.</p></li>
-<li><p><strong>repository_url</strong> (<em>str</em>) – The repository from which download a pipeline. By default this is None,
-so the pipeline will be downloaded from JUTURNA_HUB_URL.</p></li>
-<li><p><strong>force</strong> (<em>bool</em>) – Will not download the pipeline if one with the same name already exists
-in the destination folder. Defaults to True.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="juturna.hub.list_plugins">
-<span class="sig-prename descclassname"><span class="pre">juturna.hub.</span></span><span class="sig-name descname"><span class="pre">list_plugins</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">repository_url</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">authenticate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.hub.list_plugins" title="Link to this definition">#</a></dt>
-<dd><p>Get a list of remote plugins available for download. This method will look
-into the <code class="docutils literal notranslate"><span class="pre">JUTURNA_HUB_URL</span></code> repository, and return a dictionary with both
-nodes and pipelines. Nodes are returned as a collection of objects where
-each key is a type of node, and each value is a node name, whilst pipelines
-are returned as names within a list.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>repository_url</strong> (<em>str</em>) – The repository url to look into. By default this value is None, so the
-search will be performed on the env variable JUTURNA_HUB_URL.</p></li>
-<li><p><strong>authenticate</strong> (<em>bool</em>) – When true, the request to download the node will be authenticated using
-the access token defined in JUTURNA_HUB_TOKEN. Defaults to False.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
 </section>
 </section>
 
@@ -532,12 +468,7 @@ the access token defined in JUTURNA_HUB_TOKEN. Defaults to False.</p></li>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-juturna.hub">Module contents</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.hub.download_node"><code class="docutils literal notranslate"><span class="pre">download_node()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.hub.download_pipeline"><code class="docutils literal notranslate"><span class="pre">download_pipeline()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#juturna.hub.list_plugins"><code class="docutils literal notranslate"><span class="pre">list_plugins()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module contents</a></li>
 </ul>
   </nav></div>
 
