@@ -1,0 +1,6 @@
+[arguments]
+model_name = "canary-qwen-2.5b"
+device = "cuda"
+buffer_size = 5
+
+[meta]
