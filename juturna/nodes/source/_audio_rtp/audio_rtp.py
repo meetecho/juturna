@@ -27,6 +27,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         channels: int,
         process_log_level: str,
         payload_type: int,
+        encoding_clock_chan: str,
         **kwargs,
     ):
         """
@@ -47,6 +48,9 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
             Log level for the ffmpeg process.
         payload_type : int
             Payload type for the RTP stream.
+        encoding_clock_chan : str
+            encoding name/clock rate[/channels] for the RTP stream as defined 
+            in RFC 4566 (SDP) and in RFC 3555 (MIME type registration for RTP payload formats).
         kwargs : dict
             Superclass arguments.
 
@@ -57,6 +61,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
         self._block_size = block_size
         self._payload_type = payload_type
         self._channels = channels
+        self._encoding_clock_chan = encoding_clock_chan
         self._rec_bytes = int(
             np.dtype(np.int16).itemsize
             * self._channels
@@ -191,6 +196,7 @@ class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
                 '_remote_rtp_host': self._rec_host,
                 '_remote_rtp_port': self._rec_port,
                 '_remote_payload_type': self._payload_type,
+                "_encoding_clock_chan": self._encoding_clock_chan,
             },
         )
 
