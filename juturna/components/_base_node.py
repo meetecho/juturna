@@ -140,6 +140,32 @@ class BaseNode[T_Input, T_Output]:
     def logger(self) -> logging.Logger:
         return self._logger
 
+    def compile_template(self, template_name: str, arguments: dict) -> str:
+        """
+        Compile a template string
+
+        Parameters
+        ----------
+        template_name : str
+            Path of the template.
+        arguments : dict
+            Dictionary of template anrguments and their values.
+
+        Returns
+        -------
+        str
+            Compiled template string.
+
+        """
+        _template_path = pathlib.Path(self.static_path, template_name)
+
+        with open(_template_path) as f:
+            _template_string = f.read()
+
+        _content = string.Template(_template_string).substitute(arguments)
+
+        return _content
+
     def prepare_template(
         self, template_name: str, file_destination_name: str, arguments: dict
     ) -> pathlib.Path:
@@ -174,13 +200,8 @@ class BaseNode[T_Input, T_Output]:
                 'Make sure the node is part of a pipeline.'
             )
 
-        _template_path = pathlib.Path(self.static_path, template_name)
         _destination_path = pathlib.Path(self.pipe_path, file_destination_name)
-
-        with open(_template_path) as f:
-            _template_string = f.read()
-
-        _content = string.Template(_template_string).substitute(arguments)
+        _content = self.compile_template(template_name, arguments)
 
         with open(_destination_path, 'w') as f:
             f.write(_content)
