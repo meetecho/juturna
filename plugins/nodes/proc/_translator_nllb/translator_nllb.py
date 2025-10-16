@@ -144,7 +144,10 @@ class TranslatorNllb(BaseNode[ObjectPayload, ObjectPayload]):
         self.logger.info(f'translation: {translation}')
 
         to_send = Message[ObjectPayload](
-            creator=self.name, version=message.version, payload=ObjectPayload()
+            creator=self.name,
+            version=message.version,
+            payload=ObjectPayload(),
+            timers_from=message,
         )
 
         to_send.payload['translation'] = translation

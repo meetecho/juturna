@@ -17,7 +17,9 @@ class PassthroughIdentity(BaseNode[BasePayload, BasePayload]):
         to_send = Message[BasePayload](
             creator=self.name,
             version=message.version,
-            payload=message.payload.clone())
+            payload=message.payload.clone(),
+            timers_from=message,
+        )
 
         self._transmitted += 1
 

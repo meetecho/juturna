@@ -49,7 +49,8 @@ class VadSilero(BaseNode[AudioPayload, AudioPayload]):
         to_send = Message[AudioPayload](
             creator=self.name,
             version=message.version,
-            payload=AudioPayload.clone(message.payload))
+            payload=AudioPayload.clone(message.payload),
+            timers_from=message)
 
         to_send.meta = copy.deepcopy(message.meta)
         to_send.timers = copy.deepcopy(message.timers)

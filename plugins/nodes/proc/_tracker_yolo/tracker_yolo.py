@@ -64,6 +64,7 @@ class TrackerYolo(BaseNode[ImagePayload, ImagePayload]):
                 pixel_format=message.payload.pixel_format,
                 timestamp=message.payload.timestamp,
             ),
+            timers_from=message,
         )
 
         to_send.meta['annotations'] = results[0]

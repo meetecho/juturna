@@ -104,7 +104,10 @@ class TranscriberParakeet(BaseNode[AudioPayload, ObjectPayload]):
         self.logger.info(f'trx received {message.version}')
 
         to_send = Message[ObjectPayload](
-            creator=self.name, version=message.version, payload=ObjectPayload()
+            creator=self.name,
+            version=message.version,
+            payload=ObjectPayload(),
+            timers_from=message,
         )
 
         if message.meta['silence']:
