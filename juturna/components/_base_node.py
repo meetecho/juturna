@@ -43,16 +43,22 @@ class BaseNode[T_Input, T_Output]:
 
         """
         self._name = node_name
+        self._pipe_name = pipe_name
+
         self._status = None
         self._session_id = None
         self._pipe_path = None
-        self._pipe_name = pipe_name
 
-        self._logger = jt_logger(f'{self.pipe_name}.{self._name}')
+        logger_name = f'{self.pipe_name}.{self._name}'
+        bridge_name = f'{logger_name}.bridge'
+
+        self._logger = jt_logger(logger_name)
         self._logger.propagate = True
 
         self._bridge = (
-            StreamBridge('') if node_type == 'source' else PollBridge('')
+            StreamBridge(bridge_name)
+            if node_type == 'source'
+            else PollBridge(bridge_name)
         )
 
         self._bridge.on_update_received(self.update)

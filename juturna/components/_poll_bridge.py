@@ -7,12 +7,11 @@ from juturna.components import Message
 from juturna.utils.log_utils import jt_logger
 
 
-_logger = jt_logger()
-
-
 class PollBridge(Bridge):
     def __init__(self, bridge_id: str):
         super().__init__(bridge_id)
+
+        self.logger = jt_logger(self.bridge_id)
 
         self._latest_message = None
         self._ready = threading.Event()
@@ -29,5 +28,5 @@ class PollBridge(Bridge):
             if self._update_callback:
                 self._update_callback(copy.deepcopy(self._latest_message))
             else:
-                _logger.warning(
+                self.logger.warning(
                     f'no callback set for bridge {self.bridge_id}')

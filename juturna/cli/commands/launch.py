@@ -71,7 +71,7 @@ def _execute(args) -> int:
     pipeline.start()
 
     if not args.auto:
-        _ = input('pipeline running, press enter to stop...')
+        _ = input('pipeline running, press enter to stop...\n')
 
         pipeline.stop()
         pipeline.destroy()
