@@ -37,7 +37,7 @@ class VadSilero(BaseNode[AudioPayload, AudioPayload]):
 
     def update(self, message: Message[AudioPayload]):
         assert isinstance(self._data, deque)
-        self.logger.info(f'{self.name} receive: {message.version}')
+        self.logger.info(f'receive: {message.version}')
 
         self._data.append(message)
 
@@ -71,14 +71,14 @@ class VadSilero(BaseNode[AudioPayload, AudioPayload]):
             to_send.meta['silence'] = True
 
             self.transmit(to_send)
-            self.logger.info(f'{self.name} transmit: {to_send.version}')
+            self.logger.info(f'transmit: {to_send.version}')
 
             return
 
         to_send.meta['speech_timestamps'] = speech_timestamps
 
         self.transmit(to_send)
-        self.logger.info(f'{self.name} transmit: {to_send.version}')
+        self.logger.info(f'transmit: {to_send.version}')
 
     def destroy(self):
         self._data = None

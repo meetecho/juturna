@@ -51,7 +51,7 @@ class NotifierHTTP(BaseNode[ObjectPayload, None]):
 
     def set_on_config(self, prop: str, value: str):
         if prop == 'endpoint':
-            self.logger.info(f'{self.name}: updating endpoint to {value}')
+            self.logger.info(f'updating endpoint to {value}')
 
             self._endpoint = value
 

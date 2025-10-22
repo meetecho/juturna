@@ -93,7 +93,7 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
                     start=self._block_size * self._transmitted,
                     end=self._block_size * self._transmitted + self._block_size))
         except IndexError:
-            self.logger.info(f'{self.name} sending None')
+            self.logger.info('sending None')
 
             return None
 
