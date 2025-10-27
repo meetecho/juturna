@@ -133,8 +133,15 @@ class PipelineManager:
 
         self._pipelines[pipeline_id].destroy()
 
-        if wipe_folder:
-            shutil.rmtree(self._pipelines[pipeline_id].pipe_folder)
+        _target_folder = self._pipelines[pipeline_id].pipe_path
+
+        if _target_folder and wipe_folder:
+            try:
+                shutil.rmtree(_target_folder)
+
+                logger.info(f'wiped pipeline folder {_target_folder}')
+            except FileNotFoundError:
+                logger.warning(f'pipeline folder {_target_folder} not found')
 
         del self._pipelines[pipeline_id]
 

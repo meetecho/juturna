@@ -83,17 +83,17 @@ def run(
         _handler = logging.FileHandler(log_file)
         jt.log.add_handler(_handler)
 
-    logger.info('starting juturna server')
+    logger.info('starting juturna service...')
 
     try:
         pathlib.Path(folder).mkdir(parents=True)
-        logger.info(f'{folder} created')
+        logger.info(f'pipeline folder {folder} created')
     except FileExistsError:
-        logger.info(f'folder {folder} exists, skipping...')
+        logger.info(f'pipeline folder {folder} exists, skipping...')
 
     PipelineManager().set_base_folder(folder)
 
-    logging.info(f'service address: {host}:{port}')
+    logger.info(f'service address: {host}:{port}')
 
     uvicorn.run(
         'juturna.cli.commands._juturna_service:app',

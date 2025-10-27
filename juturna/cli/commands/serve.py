@@ -1,8 +1,17 @@
+"""
+Serve the Juturna pipeline manager
+
+Set up the Juturna pipeline manager and serve it on a provided host:port pair.
+The service is spawned by targeting a running folder for all the created
+pipelines, and log level, format, and destination file.
+
+Serving the Juturna manager requires Juturna to be installed with the
+`httpwrapper` dependency group.
+"""
 from juturna.cli.commands._juturna_service import run
 
 
 def setup_parser(subparsers):  # noqa: D103
-    # common_parser = _common_pipe_parser.common_parser()
     parser = subparsers.add_parser(
         'serve',
         help='instantiate and run the pipeline in the configuration file',
