@@ -1,12 +1,12 @@
 import time
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads._payloads import BasePayload
 
 
-class PassthroughIdentity(BaseNode[BasePayload, BasePayload]):
+class PassthroughIdentity(Node[BasePayload, BasePayload]):
     def __init__(self, delay: int, **kwargs):
         super().__init__(**kwargs)
 
@@ -14,6 +14,7 @@ class PassthroughIdentity(BaseNode[BasePayload, BasePayload]):
         self._transmitted = 0
 
     def update(self, message: Message[BasePayload]):
+        self.logger.info(f'message {message.version} received from: {message.creator}')
         to_send = Message[BasePayload](
             creator=self.name,
             version=message.version,

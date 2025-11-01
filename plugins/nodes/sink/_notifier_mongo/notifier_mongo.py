@@ -3,10 +3,12 @@ import threading
 import pymongo
 
 from juturna.components import Message
-from juturna.components import BaseNode
+from juturna.components import Node
+
+from juturna.payloads._payloads import ObjectPayload
 
 
-class NotifierMongo(BaseNode):
+class NotifierMongo(Node[ObjectPayload, None]):
     def __init__(self, endpoint: str, database: str, collection: str):
         super().__init__('sink')
 
@@ -20,7 +22,7 @@ class NotifierMongo(BaseNode):
     def warmup(self):
         self.logger.info(f'[{self.name}] set to endpoint {self._endpoint}')
 
-    def update(self, message: Message):
+    def update(self, message: Message[ObjectPayload]):
         message = message.to_dict()
         message['session_id'] = self.pipe_id
 

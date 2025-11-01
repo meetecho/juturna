@@ -12,13 +12,13 @@ import typing
 
 import ollama
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads._payloads import ObjectPayload
 
 
-class PrompterOllama(BaseNode[ObjectPayload, ObjectPayload]):
+class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
     """Node implementation class"""
 
     def __init__(self, endpoint: str, model_name: str, **kwargs):

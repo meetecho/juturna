@@ -17,14 +17,14 @@ import numpy as np
 
 from nemo.collections.speechlm2 import SALM
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads._payloads import AudioPayload
 from juturna.payloads._payloads import ObjectPayload
 
 
-class TranscriberQwen(BaseNode[AudioPayload, ObjectPayload]):
+class TranscriberQwen(Node[AudioPayload, ObjectPayload]):
     """Node implementation class"""
 
     def __init__(

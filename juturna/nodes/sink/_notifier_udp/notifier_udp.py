@@ -3,13 +3,13 @@ import json
 import base64
 import typing
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads._payloads import ObjectPayload
 
 
-class NotifierUDP(BaseNode[ObjectPayload, None]):
+class NotifierUDP(Node[ObjectPayload, None]):
     """Send data to a UDP endpoint, managing segmentation"""
 
     def __init__(

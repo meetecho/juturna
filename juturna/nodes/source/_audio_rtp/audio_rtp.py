@@ -7,12 +7,12 @@ import numpy as np
 
 from juturna.components import _resource_broker as rb
 from juturna.components import Message
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.payloads import BytesPayload, AudioPayload
 from juturna.names import ComponentStatus
 
 
-class AudioRTP(BaseNode[BytesPayload, AudioPayload]):
+class AudioRTP(Node[BytesPayload, AudioPayload]):
     """Source node for streaming audio"""
 
     _SDP_TEMPLATE_NAME: str = 'remote_source.sdp.template'

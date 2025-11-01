@@ -7,13 +7,13 @@ import subprocess
 import numpy as np
 
 from juturna.components import Message
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import _resource_broker as rb
 
 from juturna.payloads import BytesPayload, ImagePayload
 
 
-class VideoRTP(BaseNode[BytesPayload, ImagePayload]):
+class VideoRTP(Node[BytesPayload, ImagePayload]):
     """Source node for video streaming"""
 
     def __init__(

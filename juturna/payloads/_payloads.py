@@ -6,6 +6,8 @@ from dataclasses import field
 
 import numpy as np
 
+from juturna.components import Message
+
 
 @dataclass
 class BasePayload:
@@ -43,6 +45,11 @@ class VideoPayload(BasePayload):
 @dataclass
 class BytesPayload(BasePayload):
     cnt: bytes = field(default_factory=lambda: b'')
+
+
+@dataclass
+class Batch(BasePayload):
+    messages: list[Message] = field(default_factory=lambda: list())
 
 
 @dataclass

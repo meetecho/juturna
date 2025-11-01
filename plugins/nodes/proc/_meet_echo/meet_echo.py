@@ -11,13 +11,13 @@ Detect trigger words for command activations.
 import string
 import typing
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads._payloads import ObjectPayload
 
 
-class MeetEcho(BaseNode[ObjectPayload, ObjectPayload]):
+class MeetEcho(Node[ObjectPayload, ObjectPayload]):
     """Node implementation class"""
 
     def __init__(self, activation: str, target: str, **kwargs):

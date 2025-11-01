@@ -12,13 +12,13 @@ import collections
 import pathlib
 import typing
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads._payloads import ObjectPayload
 
 
-class AggregatorTranscript(BaseNode[ObjectPayload, ObjectPayload]):
+class AggregatorTranscript(Node[ObjectPayload, ObjectPayload]):
     """Node implementation class"""
 
     def __init__(self, system_input_template: str, **kwargs):

@@ -1,12 +1,12 @@
 import typing
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads._payloads import BasePayload
 
 
-class LoggerProperty(BaseNode[BasePayload, BasePayload]):
+class LoggerProperty(Node[BasePayload, BasePayload]):
     def __init__(self,
                  target: str,
                  value: typing.Any,

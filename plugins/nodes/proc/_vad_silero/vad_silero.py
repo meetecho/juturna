@@ -7,12 +7,12 @@ import torch
 import numpy as np
 
 from juturna.components import Message
-from juturna.components import BaseNode
+from juturna.components import Node
 
 from juturna.payloads._payloads import AudioPayload
 
 
-class VadSilero(BaseNode[AudioPayload, AudioPayload]):
+class VadSilero(Node[AudioPayload, AudioPayload]):
     def __init__(self,
                  rate: int,
                  threshold: float,

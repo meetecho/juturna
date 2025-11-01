@@ -18,7 +18,7 @@ import typing
 import collections
 import logging
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads._payloads import ObjectPayload
@@ -28,7 +28,7 @@ from transformers import AutoTokenizer
 from transformers import pipeline
 
 
-class TranslatorNllb(BaseNode[ObjectPayload, ObjectPayload]):
+class TranslatorNllb(Node[ObjectPayload, ObjectPayload]):
     """Node implementation class"""
 
     def __init__(

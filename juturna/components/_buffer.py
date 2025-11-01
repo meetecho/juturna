@@ -1,104 +1,66 @@
-import copy
-import threading
 import typing
+import threading
+import queue
 
 from juturna.components import Message
 from juturna.utils.log_utils import jt_logger
 
+from juturna.payloads._payloads import Batch
+from juturna.components._synchronisation_policy import SynchronisationPolicy
+
 
 class Buffer:
-    """
-    A buffer stores the provided data, and makes it available to nodes that
-    polls it for updates.
-    """
+    def __init__(
+        self, creator: str, sync_policy: SynchronisationPolicy | None = None
+    ):
+        self._data = dict()
+        self._data_lock = threading.Lock()
+        self._policy: SynchronisationPolicy = sync_policy
 
-    def __init__(self, name: str = ''):
-        self._received = 0
-        self._this_message = None
-        self._name = name
-        self._lock = threading.Lock()
-        self._logger = jt_logger(f'{self._name}_buf')
+        # out queue can be built based on the synchronisation policy
+        self._out_queue = queue.LifoQueue()
 
-        self._on_update_cbs: list[typing.Callable[[Message], None]] = list()
+        self._logger = jt_logger(creator)
+        self._logger.propagate = True
 
-    @property
-    def name(self) -> str:
-        return self._name
+    def get(self) -> typing.Any:
+        return self._out_queue.get()
 
-    @name.setter
-    def name(self, name: str):
-        self._name = name
+    def put(self, message: Message):
+        self._logger.info('message received, doing nothing')
 
-    def subscribe(self, callback: typing.Callable[[Message], None]) -> None:
-        with self._lock:
-            self._on_update_cbs.append(callback)
+        if message.creator not in self._data:
+            self._data[message.creator] = list()
 
-    def update(self, message: Message | None):
+        self._data[message.creator].append(message)
+
+        with self._data_lock:
+            next_batch = self._policy.next_batch(self._data)
+
+            self._consume(next_batch)
+
+    def _consume(self, marks: dict):
         """
-        Update the datum stored in the buffer with a new provided datum. If the
-        passed message is None, then nothing will be updated. The method locks
-        the buffer to prevent readers from querying the wrong data version
-        while the datum is being updated.
+        Consume sent data
+
+        Once a policy produces the data marks to send, consume then so that
+        local data will be updated accordingly.
 
         Parameters
         ----------
-        message : Message | None
-            The message with the new datum in its payload.
+        marks: dict
+            A dictionary of indexes of messages to send for every source.
 
         """
-        if message is None:
-            self._logger.warning(f'invalid message received in {self._name}')
+        to_send = list()
+
+        for mark in marks:
+            for pop_idx in marks[mark][::-1]:
+                to_send.append(self._data[mark].pop(pop_idx))
+
+        if len(to_send) == 1:
+            self._out_queue.put(to_send[0])
 
             return
 
-        with self._lock:
-            self._this_message = copy.deepcopy(message)
-            self._received += 1
-
-        for cb in self._on_update_cbs:
-            cb(message)
-
-    def version(self) -> int | None:
-        """
-        Return the version of the datum currently stored. If the buffer is
-        empty, the method returns None.
-
-        Returns
-        -------
-        int | None
-            The version of the data currently stored, None if the buffer is
-            empty.
-
-        .. deprecated::
-
-        """
-        if self._this_message:
-            return self._this_message.version
-
-        return None
-
-    def count(self) -> int:
-        """
-        Return the number of messages received by the buffer. This number may
-        differ from the version of the current datum if any messages were lost
-        from the source.
-
-        Returns
-        -------
-        int
-            The number of packages received from the buffer.
-
-        """
-        return self._received
-
-    def data(self) -> Message | None:
-        """
-        Return a copy of the datum currently stored in the buffer.
-
-        Returns
-        -------
-        Message
-            A copy of the message currently stored in the buffer.
-
-        """
-        return copy.deepcopy(self._this_message)
+        self._out_queue.put(Batch(messages=to_send))

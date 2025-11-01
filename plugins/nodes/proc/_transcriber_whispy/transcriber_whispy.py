@@ -17,13 +17,13 @@ import numpy as np
 from faster_whisper import WhisperModel
 
 from juturna.components import Message
-from juturna.components import BaseNode
+from juturna.components import Node
 
 from juturna.payloads._payloads import AudioPayload
 from juturna.payloads._payloads import ObjectPayload
 
 
-class TranscriberWhispy(BaseNode[AudioPayload, ObjectPayload]):
+class TranscriberWhispy(Node[AudioPayload, ObjectPayload]):
     """Node implementation class"""
 
     def __init__(

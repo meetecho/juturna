@@ -3,12 +3,12 @@ import threading
 import requests
 
 from juturna.components import Message
-from juturna.components import BaseNode
+from juturna.components import Node
 
 from juturna.payloads._payloads import ObjectPayload
 
 
-class NotifierHTTP(BaseNode[ObjectPayload, None]):
+class NotifierHTTP(Node[ObjectPayload, None]):
     """Send data to a HTTP endpoint"""
 
     _CNT_CB = {

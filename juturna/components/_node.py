@@ -2,22 +2,24 @@ import pathlib
 import inspect
 import string
 import logging
+import threading
+import queue
+import copy
+import time
 
 from collections.abc import Callable
 
 from typing import Any
 
-from juturna.components._buffer import Buffer
-from juturna.components._bridge import Bridge
-from juturna.components._poll_bridge import PollBridge
-from juturna.components._stream_bridge import StreamBridge
-
 from juturna.components import Message
 from juturna.names import ComponentStatus
 from juturna.utils.log_utils import jt_logger
+from juturna.components._buffer import Buffer
+from juturna.components._synchronisation_policy import SynchronisationPolicy
+from juturna.components._synchronisation_policy import PassthroughPolicy
 
 
-class BaseNode[T_Input, T_Output]:
+class Node[T_Input, T_Output]:
     """
     Use this class to design custom nodes. BaseNode comes with a number of
     utility methods and fields that can be either used as they are or extended
@@ -25,7 +27,11 @@ class BaseNode[T_Input, T_Output]:
     """
 
     def __init__(
-        self, node_type: str, node_name: str = '', pipe_name: str = ''
+        self,
+        node_type: str,
+        node_name: str = '',
+        pipe_name: str = '',
+        policy: SynchronisationPolicy | None = None,
     ):
         """
         Parameters
@@ -34,40 +40,45 @@ class BaseNode[T_Input, T_Output]:
             The type of node to be created. This field can have the values
             ``source``, ``proc`` or ``sink``, depending on the node being
             created.
-
         node_name : str
             The name to assign to the node.
-
         pipe_name : str
             The name of the pipe this node belongs to.
+        policy : SynchronisationPolicy
+            Management options for multi-input nodes.
 
         """
         self._name = node_name
-        self._pipe_name = pipe_name
+        self._status: ComponentStatus | None = None
+        self._session_id: str | None = None
+        self._pipe_path: str | None = None
+        self._pipe_name: str | None = pipe_name
 
-        self._status = None
-        self._session_id = None
-        self._pipe_path = None
-
-        logger_name = f'{self.pipe_name}.{self._name}'
-        bridge_name = f'{logger_name}.bridge'
-
-        self._logger = jt_logger(logger_name)
+        _logger_name = f'{self.pipe_name}.{self._name}'
+        self._logger = jt_logger(_logger_name)
         self._logger.propagate = True
 
-        self._bridge = (
-            StreamBridge(bridge_name)
-            if node_type == 'source'
-            else PollBridge(bridge_name)
-        )
+        # TODO: use LIFO to prevent message loss?
+        self._queue = queue.LifoQueue(maxsize=999)
+        self._worker_thread: threading.Thread | None = None
+        self._source_thread: threading.Thread | None = None
+        self._update_thread: threading.Thread | None = None
 
-        self._bridge.on_update_received(self.update)
+        # buffer stores messages, policy manages them
+        self._policy = policy or PassthroughPolicy()
+        self._buffer = Buffer(_logger_name, self._policy)
 
-    def __del__(self):
-        if self._bridge:
-            self.stop()
-            self.clear_destinations()
-            self.clear_source()
+        self._stop_worker_event = threading.Event()
+        self._stop_source_event = threading.Event()
+        self._stop_update_event = threading.Event()
+
+        self._source_f: Callable | None = None
+        self._source_sleep = -1
+        self._source_mode = ''
+
+        self._destinations: dict[str, queue.Queue] = dict()
+
+    def __del__(self): ...
 
     @property
     def name(self) -> str | None:
@@ -82,15 +93,6 @@ class BaseNode[T_Input, T_Output]:
     def name(self, name: str):
         self._name = name
         self._bridge.bridge_id = name
-
-    @property
-    def bridge(self) -> Bridge:
-        """The node bridge component."""
-        return self._bridge
-
-    @bridge.setter
-    def bridge(self, bridge: Bridge):
-        self._bridge = bridge
 
     @property
     def status(self) -> ComponentStatus | None:
@@ -145,6 +147,9 @@ class BaseNode[T_Input, T_Output]:
     @property
     def logger(self) -> logging.Logger:
         return self._logger
+
+    def put(self, message: Message):
+        self._queue.put(message)
 
     def compile_template(self, template_name: str, arguments: dict) -> str:
         """
@@ -225,9 +230,7 @@ class BaseNode[T_Input, T_Output]:
 
         return str(dump_path)
 
-    def set_source(
-        self, source: Buffer | Callable, by: int = 0, mode: str = 'post'
-    ):
+    def set_source(self, source: Callable, by: int = 0, mode: str = 'post'):
         """
         Set the node source (to be used for ``source`` nodes). The source can be
         either a callable or a buffer. However, source nodes are expected to be
@@ -250,18 +253,64 @@ class BaseNode[T_Input, T_Output]:
             before being called again.
 
         """
-        if self._bridge.source is None:
-            self._bridge.set_source(source, by, mode)
+        self._source_f = source
+        self._source_sleep = by
+        self._source_mode = mode
 
-    def add_destination(self, destination: Buffer | Callable):
-        self._bridge.add_destination(destination)
+    def add_destination(self, name: str, destination: 'Node'):
+        self._destinations[name] = destination
 
-    def clear_source(self):
-        self._bridge.unset_source()
+    def clear_source(self): ...
+
+    def clear_destination(self, name: str):
+        del self._destinations[name]
 
     def clear_destinations(self):
-        self._bridge._destination_containers = list()
-        self._bridge._destination_callbacks = list()
+        self._destinations = dict()
+
+    def _worker(self):
+        while not self._stop_worker_event.is_set():
+            message = self._queue.get()
+
+            if message is None:
+                self.transmit(None)
+                self._stop_worker_event.set()
+
+                return
+
+            self._buffer.put(message)
+
+    def _update(self):
+        while not self._stop_update_event.is_set():
+            batch = self._buffer.get()
+
+            if batch is None:
+                self._stop_update_event.set()
+
+                return
+
+            self.update(batch)
+
+    def _source(self):
+        while not self._stop_source_event.is_set():
+            if self._source_mode == 'pre':
+                time.sleep(self._source_sleep)
+
+            message = self._source_f()
+
+            if message is None:
+                self.put(message)
+                self._stop_source_event.set()
+
+                return
+
+            if self._stop_source_event.is_set():
+                return
+
+            if self._source_mode == 'post':
+                time.sleep(self._source_sleep)
+
+            self.put(copy.deepcopy(message))
 
     def transmit(self, message: Message[T_Output]):
         """
@@ -277,7 +326,9 @@ class BaseNode[T_Input, T_Output]:
             The message to be transmitted.
 
         """
-        self._bridge.transmit(message)
+        for node_name in self._destinations:
+            self.logger.info(f'sending message to {node_name}')
+            self._destinations[node_name].put(message)
 
     def start(self):
         """
@@ -286,8 +337,40 @@ class BaseNode[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the bridge is started correctly.
         """
-        self._bridge.start()
-        self._status = ComponentStatus.RUNNING
+        self.logger.info('starting...')
+        if self._worker_thread is None:
+            self._worker_thread = threading.Thread(
+                name=f'_worker_{self.name}',
+                target=self._worker,
+                args=(),
+                daemon=True,
+            )
+
+            self._worker_thread.start()
+            self._status = ComponentStatus.RUNNING
+
+        if self._update_thread is None:
+            self._update_thread = threading.Thread(
+                name=f'_update_{self.name}',
+                target=self._update,
+                args=(),
+                daemon=True,
+            )
+
+            self._update_thread.start()
+
+        if self._source_f is None:
+            return
+
+        if self._source_thread is None:
+            self._source_thread = threading.Thread(
+                name=f'_source_{self.name}',
+                target=self._source,
+                args=(),
+                daemon=True,
+            )
+
+            self._source_thread.start()
 
     def stop(self):
         """
@@ -296,7 +379,21 @@ class BaseNode[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the bridge is stopped correctly.
         """
-        self._bridge.stop()
+        if self._source_f:
+            self._queue.put(None)
+            # self.transmit(None)
+
+        self._stop_worker_event.set()
+        self._stop_source_event.set()
+
+        if self._source_thread and self._source_thread.is_alive():
+            self._source_thread.join()
+
+        if self._worker_thread and self._worker_thread.is_alive():
+            self._worker_thread.join()
+
+        self._worker_thread = None
+        self._source_thread = None
         self._status = ComponentStatus.STOPPED
 
     def configure(self): ...

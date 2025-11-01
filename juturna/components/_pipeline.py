@@ -6,6 +6,7 @@ import gc
 import typing
 
 from juturna.components import _component_builder
+from juturna.components._node import Node
 from juturna.utils.log_utils import jt_logger
 
 from juturna.names import ComponentStatus
@@ -83,8 +84,12 @@ class Pipeline:
             'nodes': {
                 n['node'].name: {
                     'status': n['node'].status,
-                    'config': n['node'].configuration
-                } for n in self._pipe.values()} if self._pipe else dict()
+                    'config': n['node'].configuration,
+                }
+                for n in self._pipe.values()
+            }
+            if self._pipe
+            else dict(),
         }
 
     def warmup(self):
@@ -113,25 +118,25 @@ class Pipeline:
             node_folder = pathlib.Path(self.pipe_path, node_name)
             node_folder.mkdir(exist_ok=True)
 
-            _node, _register = _component_builder.build_component(
-                node, plugin_dirs=self._raw_config['plugins'],
-                pipe_name=self.name)
+            _node = _component_builder.build_component(
+                node,
+                plugin_dirs=self._raw_config['plugins'],
+                pipe_name=self.name,
+            )
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)
             _node.pipe_path = node_folder
             _node.status = ComponentStatus.NEW
 
-            if _register:
-                _node.add_destination(_register)
-
-            self._pipe[node_name] = {'node': _node, 'register': _register}
+            self._pipe[node_name] = {'node': _node}
 
         for link in links:
             from_node = link['from']
             to_node = link['to']
 
-            self._pipe[to_node]['node'].set_source(
-                self._pipe[from_node]['register'])
+            self._pipe[from_node]['node'].add_destination(
+                to_node, self._pipe[to_node]['node']
+            )
 
         for node_name in self._pipe:
             self._pipe[node_name]['node'].warmup()
@@ -144,15 +149,15 @@ class Pipeline:
 
         return
 
-    def update_node(self,
-                    node_name: str,
-                    property_name: str,
-                    property_value: typing.Any):
+    def update_node(
+        self, node_name: str, property_name: str, property_value: typing.Any
+    ):
         assert self._pipe is not None
         assert self._pipe.get(node_name, None) is not None
 
         self._pipe[node_name]['node'].set_on_config(
-            property_name, property_value)
+            property_name, property_value
+        )
 
     def start(self):
         """
@@ -170,6 +175,7 @@ class Pipeline:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
         for node_name in list(self._pipe.keys())[::-1]:
+            self._logger.info(f'starting node {node_name}')
             self._pipe[node_name]['node'].start()
 
         self._status = PipelineStatus.RUNNING
@@ -191,7 +197,9 @@ class Pipeline:
         if self._pipe is None:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
-        for node_name in list(self._pipe.keys())[::-1]:
+        for node_name in self._pipe:
+            Node.stop(self._pipe[node_name]['node'])
+
             self._pipe[node_name]['node'].stop()
 
         self._status = PipelineStatus.READY
@@ -231,4 +239,3 @@ class Pipeline:
         gc.collect()
 
         self._logger.info('pipe destroyed')
-
