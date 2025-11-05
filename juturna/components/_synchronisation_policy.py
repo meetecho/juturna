@@ -1,17 +1,11 @@
-from typing import Protocol
+def passthrough(sources: dict) -> dict:
+    """
+    Relay every message as soon as it is available
+
+    This synchroniser simply marks every message stored in `source` as to be
+    delivered, regardless of number, timestamp, or creator.
+    """
+    return {source: list(range(len(sources[source]))) for source in sources}
 
 
-class SynchronisationPolicy(Protocol):
-    def next_batch(self, sources: dict) -> dict: ...
-
-
-class PassthroughPolicy(SynchronisationPolicy):
-    """Return whatever is stored in the source buffer"""
-
-    def next_batch(self, sources: dict) -> dict:
-        return {
-            creator: list(range(len(sources[creator]))) for creator in sources
-        }
-
-
-_POLICIES = {'passthrough': PassthroughPolicy}
+_POLICIES = {'passthrough': passthrough, 'node': None}

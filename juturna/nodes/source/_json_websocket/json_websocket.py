@@ -55,7 +55,7 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
 
     def start(self):
         """Start server thread and set source"""
-        self.set_source(self._queue.get)
+        self.set_origin(self._queue.get)
         self._thread.start()
 
         super().start()

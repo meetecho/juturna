@@ -1,18 +1,54 @@
-.. juturna documentation master file, created by
-   sphinx-quickstart on Mon Mar 31 16:21:18 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Welcome
 
-Juturna documentation
-=====================
+   welcome/install
+   welcome/docker
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Explain
+
+   explain/rationale
+   explain/entities_overview
+   explain/pipelines
+   explain/nodes
+   explain/messages
+
+.. toctree::
+    :maxdepth: 2
+    :hidden:
+    :caption: How To
+
+    how_to/why_how
+    how_to/create_nodes
+    how_to/create_pipelines
+
+.. toctree::
+    :maxdepth: 2
+    :hidden:
+    :caption: Build
+
+    build/real_world
+    build/audio_transcription
+    build/video_yolo
+
+|version-badge|
+
+.. image:: ./_static/img/logo_dark_alt_transparent.svg
+   :alt: juturna
+   :width: 30%
+   :align: center
+
+\
 
 .. image:: https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge
     :alt: License
 
 .. image:: https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fmeetecho%2Fjuturna%2Frefs%2Fheads%2Fmain%2Fpyproject.toml&style=for-the-badge&color=green
    :alt: Python Version from PEP 621 TOML
-
-\
 
 .. image:: https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge
     :alt: Stars
@@ -25,102 +61,60 @@ Juturna documentation
 
 ----
 
-**Juturna** is a data pipeline library written in Python. It is particularly
-useful for fast prototyping multimedia, real-time data applications, as well as
-exploring and testing AI models, in a modular and flexible fashion.
+Juturna's documentation
+=======================
 
-`github repository <https://github.com/meetecho/juturna>`_ | `contribute <https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md>`_ | `meetecho <https://www.meetecho.com/en/>`_
+Energise your multimedia data prototyping with **Juturna**: design, implement,
+execute and manipulate real-time pipelines in minutes!
 
-.. grid:: 1 1 2 2
-    :gutter: 2 3 4 4
+.. grid:: 2
 
-    .. grid-item-card::
-        :text-align: center
+    .. grid-item::
+        .. card:: ``jt/explain``
+            :link: rationale
+            :link-type: ref
 
-        :fas:`rocket` Quickstart
-        ^^^
+            Unfold the basic concepts behind Juturna, including its core working
+            principles and internals.
 
-        Look at basic examples of data pipelines built with Juturna, create and
-        setup new nodes and tasks in minutes.
+    .. grid-item::
+        .. card:: ``jt/how_to``
+            :link: howto
+            :link-type: ref
 
-        +++
-        .. button-ref:: guides/quickstart
-            :expand:
-            :color: primary
-            :click-parent:
+            Deep dive into common tasks and usage scenarios you may face when
+            using Juturna.
 
-            Guides
-            
-    .. grid-item-card::
-        :text-align: center
+.. grid:: 2
 
-        :fas:`diagram-project` Built-in nodes
-        ^^^
+    .. grid-item::
+        .. card:: ``jt/build``
+            :link: realworld
+            :link-type: ref
 
-        Check out all the nodes that come shipped with the library!
+            Get your hands dirty with practical guides to see Juturna in action
+            on real-world problems!
 
-        +++
+    .. grid-item::
+        .. card:: ``jt/apis``
 
-        .. button-ref:: concepts/nodes
-            :expand:
-            :color: primary
-            :click-parent:
+            Check out the code documentation and the Juturna Python APIs
+            reference, or explore the GitHub repository.
 
-            Built-in nodes
+.. grid:: 1
 
-    .. grid-item-card::
-        :text-align: center
+    .. grid-item::
 
-        :fas:`shop` Juturna Hub
-        ^^^
+            .. card::
+                :text-align: center
+                    
+                :fas:`meetecho`
 
-        Explore community-based nodes and pipelines, and incorporate them in
-        your project with ease using our hub!
+                Juturna is brewed with love by the awesome team of
+                `Meetecho <https://www.meetecho.com/en/>`_. Come and say hi!
 
-        +++
+Take a look at the `GitHub project <https://github.com/meetecho/juturna>`_ if
+you want to explore the code.
 
-        .. button-ref:: guides/hub
-            :expand:
-            :color: primary
-            :click-parent:
-
-            Explore the Hub
-
-    .. grid-item-card::
-        :text-align: center
-
-        :fas:`code` Library APIs
-        ^^^
-
-        Technical documentation of Juturna components, useful for developers.
-
-        +++
-
-        .. button-ref:: apis/index
-            :expand:
-            :color: primary
-            :click-parent:
-
-            To the reference guide
-
-================
-Explore the docs
-================
-
-.. toctree::
-    :maxdepth: 2
-    :titlesonly:
-    
-    guides/index
-
-.. toctree::
-    :maxdepth: 2
-    :titlesonly:
-    
-    concepts/index
-
-.. toctree::
-    :maxdepth: 1
-    :titlesonly:
-
-    apis/index
+Feel like contributing? Please refer to our
+`guidelines <https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md>`_.

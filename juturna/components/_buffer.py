@@ -2,23 +2,24 @@ import typing
 import threading
 import queue
 
+from collections.abc import Callable
+
 from juturna.components import Message
 from juturna.utils.log_utils import jt_logger
 
 from juturna.payloads._payloads import Batch
-from juturna.components._synchronisation_policy import SynchronisationPolicy
 
 
 class Buffer:
     def __init__(
-        self, creator: str, sync_policy: SynchronisationPolicy | None = None
+        self, creator: str, synchroniser: Callable | None = None
     ):
-        self._data = dict()
+        self._data: dict[str, Message] = dict()
         self._data_lock = threading.Lock()
-        self._policy: SynchronisationPolicy = sync_policy
+        self._synchroniser: Callable = synchroniser
 
         # out queue can be built based on the synchronisation policy
-        self._out_queue = queue.LifoQueue()
+        self._out_queue = queue.LifoQueue(maxsize=999)
 
         self._logger = jt_logger(creator)
         self._logger.propagate = True
@@ -27,15 +28,14 @@ class Buffer:
         return self._out_queue.get()
 
     def put(self, message: Message):
-        self._logger.info('message received, doing nothing')
-
+        self._logger.info('message received in buffer')
         if message.creator not in self._data:
             self._data[message.creator] = list()
 
         self._data[message.creator].append(message)
 
         with self._data_lock:
-            next_batch = self._policy.next_batch(self._data)
+            next_batch = self._synchroniser(self._data)
 
             self._consume(next_batch)
 
@@ -44,7 +44,9 @@ class Buffer:
         Consume sent data
 
         Once a policy produces the data marks to send, consume then so that
-        local data will be updated accordingly.
+        local data will be updated accordingly. Depending on whether the next
+        batch is a single message or a list of messages, the method will write
+        in the queue a Message or a Batch object.
 
         Parameters
         ----------

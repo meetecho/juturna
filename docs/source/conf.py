@@ -1,7 +1,8 @@
 project = 'juturna'
 copyright = '2025, Meetecho'
 author = 'Antonio Bevilacqua'
-release = '0.1.0'
+version = '1.0.1'
+release = 'beta'
 
 extensions = [
     'sphinx.ext.autodoc',
@@ -21,38 +22,37 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # open external links in blank targets
 new_tab_link_show_external_link_icon = True
 
-html_theme = 'pydata_sphinx_theme'
+# theme configuration
+
+html_theme = 'piccolo_theme'
+html_short_title = 'Juturna documentation'
+
 html_static_path = ['_static']
 
 # custom css content (relative to _static path)
 html_css_files = [
-#    'css/custom.css',
     'css/style.css',
-    'css/fa-6.7.2.all.min.css'
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+    # 'css/fa-6.7.2.all.min.css'
 ]
 
 html_js_files = [
-    'js/meetecho-icon.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js',
+    'js/meetecho-icon.js'
 ]
 
 html_theme_options = {
-    "show_nav_level": 2,
-    "collapse_navigation": True,
-    "navbar_align": "content",
-    "secondary_sidebar_items": ["page-toc"],
-    "github_url": "https://github.com/meetecho/juturna",
-    "icon_links": [
-        {
-            "name": "Meetecho",
-            "url": "https://meetecho.com",
-            "icon": "fa-custom fa-meetecho",
-            "type": "fontawesome",
-        }
-    ],
+    'banner_text': 'We just released version 1.0.1 - go check it out!',
+    'banner_hiding': 'permanent',
+    'globaltoc_collapse': False,
+    'source_url': 'https://github.com/meetecho/juturna'
+
 }
 
-html_sidebars = {
-    "**": [
-        "sidebar-nav-bs",
-    ]
-}
+rst_prolog = f"""
+.. |version-badge| replace:: :bdg-secondary-line:`version {version}-{release}`
+"""
+
+# html_sidebars = {
+#     '**': ['sidebar-nav-bs.html', 'searchbox.html'],
+# }

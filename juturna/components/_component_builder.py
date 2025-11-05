@@ -14,7 +14,7 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
     node_name = node['name']
     node_type = node['type']
     node_mark = node['mark']
-    node_policy = node.get('policy')
+    node_sync = node.get('sync')
     node_remote_config = node['configuration']
 
     # plugin_dirs.insert(0, jt.meta.JUTURNA_CACHE_DIR)
@@ -36,9 +36,12 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
         _node_local_config['arguments'], node_remote_config
     )
 
-    # del node_policy['name']
-    # policy = _POLICIES[node_policy](node_policy) if node_policy else None
-    policy = _POLICIES[node_policy]() if node_policy else None
+    # if no synchroniser is specified in the configuration, pass None, so the
+    # order of sync selection is:
+    # 1) if available, synchroniser specified in the configuration
+    # 2) if available, node synchroniser
+    # 3) default passthrough synchroniser
+    synchroniser = _POLICIES.get(node_sync)
 
     concrete_node = _node_module(
         **operational_config,
@@ -46,9 +49,10 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
             'node_type': node_type,
             'node_name': node_name,
             'pipe_name': pipe_name,
-            'policy': policy
+            'synchroniser': synchroniser
         },
     )
+
     concrete_node.configure()
 
     return concrete_node

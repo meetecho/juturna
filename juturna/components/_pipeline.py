@@ -138,6 +138,8 @@ class Pipeline:
                 to_node, self._pipe[to_node]['node']
             )
 
+            self._pipe[to_node]['node'].sources.append(from_node)
+
         for node_name in self._pipe:
             self._pipe[node_name]['node'].warmup()
             self._pipe[node_name]['node'].status = ComponentStatus.CONFIGURED
@@ -198,13 +200,9 @@ class Pipeline:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
         for node_name in self._pipe:
-            Node.stop(self._pipe[node_name]['node'])
-
             self._pipe[node_name]['node'].stop()
 
         self._status = PipelineStatus.READY
-
-        self._logger.info('pipe stopped')
 
     def destroy(self):
         """
@@ -223,16 +221,11 @@ class Pipeline:
             return
 
         for node_name in list(self._pipe.keys())[::-1]:
-            self._logger.info('clearing source...')
             self._pipe[node_name]['node'].clear_source()
-
-            self._logger.info('clearing destinations...')
             self._pipe[node_name]['node'].clear_destinations()
-
             self._pipe[node_name]['node'].destroy()
 
             self._pipe[node_name]['node'] = None
-            self._pipe[node_name]['register'] = None
 
         self._pipe = None
 

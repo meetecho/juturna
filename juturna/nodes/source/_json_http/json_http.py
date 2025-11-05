@@ -111,7 +111,7 @@ class HttpJson(Node[BytesPayload, ObjectPayload]):
         )
 
         self._thread.start()
-        self.set_source(self._poll)
+        self.set_origin(self._poll)
 
         super().start()
 

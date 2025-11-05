@@ -15,8 +15,7 @@ from juturna.components import Message
 from juturna.names import ComponentStatus
 from juturna.utils.log_utils import jt_logger
 from juturna.components._buffer import Buffer
-from juturna.components._synchronisation_policy import SynchronisationPolicy
-from juturna.components._synchronisation_policy import PassthroughPolicy
+from juturna.components._synchronisation_policy import _POLICIES
 
 
 class Node[T_Input, T_Output]:
@@ -31,7 +30,7 @@ class Node[T_Input, T_Output]:
         node_type: str,
         node_name: str = '',
         pipe_name: str = '',
-        policy: SynchronisationPolicy | None = None,
+        synchroniser: Callable | None = None,
     ):
         """
         Parameters
@@ -44,7 +43,7 @@ class Node[T_Input, T_Output]:
             The name to assign to the node.
         pipe_name : str
             The name of the pipe this node belongs to.
-        policy : SynchronisationPolicy
+        synchroniser : Callable
             Management options for multi-input nodes.
 
         """
@@ -58,25 +57,31 @@ class Node[T_Input, T_Output]:
         self._logger = jt_logger(_logger_name)
         self._logger.propagate = True
 
-        # TODO: use LIFO to prevent message loss?
+        # TODO: use LIFO to prevent message loss
         self._queue = queue.LifoQueue(maxsize=999)
         self._worker_thread: threading.Thread | None = None
         self._source_thread: threading.Thread | None = None
         self._update_thread: threading.Thread | None = None
 
-        # buffer stores messages, policy manages them
-        self._policy = policy or PassthroughPolicy()
-        self._buffer = Buffer(_logger_name, self._policy)
-
         self._stop_worker_event = threading.Event()
         self._stop_source_event = threading.Event()
         self._stop_update_event = threading.Event()
+
+        # buffer stores messages, policy manages them
+        # if the synchroniser is not provided, get local one or default
+        self._synchroniser = synchroniser or (
+            self.next_batch
+            if hasattr(self, 'next_batch')
+            else _POLICIES['passthrough']
+        )
+        self._buffer = Buffer(_logger_name, self._synchroniser)
 
         self._source_f: Callable | None = None
         self._source_sleep = -1
         self._source_mode = ''
 
         self._destinations: dict[str, queue.Queue] = dict()
+        self._sources: list = list()
 
     def __del__(self): ...
 
@@ -147,6 +152,22 @@ class Node[T_Input, T_Output]:
     @property
     def logger(self) -> logging.Logger:
         return self._logger
+
+    @property
+    def synchroniser(self) -> Callable:
+        return self._synchroniser
+
+    @synchroniser.setter
+    def synchroniser(self, synchroniser: Callable):
+        self.synchroniser = synchroniser
+
+    @property
+    def sources(self) -> list:
+        return self._sources
+
+    @property
+    def destinations(self) -> list:
+        return list(self._destinations.keys())
 
     def put(self, message: Message):
         self._queue.put(message)
@@ -230,7 +251,7 @@ class Node[T_Input, T_Output]:
 
         return str(dump_path)
 
-    def set_source(self, source: Callable, by: int = 0, mode: str = 'post'):
+    def set_origin(self, source: Callable, by: int = 0, mode: str = 'post'):
         """
         Set the node source (to be used for ``source`` nodes). The source can be
         either a callable or a buffer. However, source nodes are expected to be
@@ -337,7 +358,6 @@ class Node[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the bridge is started correctly.
         """
-        self.logger.info('starting...')
         if self._worker_thread is None:
             self._worker_thread = threading.Thread(
                 name=f'_worker_{self.name}',
@@ -379,7 +399,7 @@ class Node[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the bridge is stopped correctly.
         """
-        if self._source_f:
+        if self._source_f or len(self.destinations) == 0:
             self._queue.put(None)
             # self.transmit(None)
 
