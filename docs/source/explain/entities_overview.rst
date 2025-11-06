@@ -56,6 +56,8 @@ can be external, like we saw earlier, or it can be an upstream edge to another
 node), processes them, and makes the produced data available to all its
 downstream destinations.
 
+So, a node receives data, and spits out data.
+
 Broadly speaking, nodes can be split into three logical categories, depending on
 the task they are programmed to performed:
 
@@ -63,6 +65,11 @@ the task they are programmed to performed:
 real-time streams, remote or local files, databases, HTTP or websocket
 requests...) or generate data, to ultimately push them downstream into the
 pipeline. In the above pipeline examples, source nodes are the green ones.
+
+.. image:: ../_static/img/node_source_overview.svg
+   :alt: pipeline
+   :width: 60%
+   :align: center
 
 **Processing nodes** (proc node if you are in a hurry) are intermediate nodes in
 the pipeline. A processing node receives data from all its upstream connections,
@@ -73,20 +80,37 @@ input and a single output, and ``subtitles`` is a proc node with multiple inputs
 and a single output. The missing configuration, multiple input / multiple
 output, is still possible albeit not depicted.
 
+.. image:: ../_static/img/node_proc_overview.svg
+   :alt: pipeline
+   :width: 60%
+   :align: center
+
 **Sink nodes** deliver to remote or local destinations the data they receive
 from the nodes they are connected to. Remote destinations could be anything you
 can think of: HTTP endpoints, websocket servers, databases or caches, RTP
 streams. Of course, if there is no node capable of transmitting to the
 destination you need to reach, you can still create a custom node for it!
 
+.. image:: ../_static/img/node_sink_overview.svg
+   :alt: pipeline
+   :width: 60%
+   :align: center
+
 When designing a pipeline, there are some alternatives for how to get the nodes
 you need:
 
-1. use Juturna built-in nodes, or nodes that are available within the Juturna
-library itself;
-2. use community plugin nodes, that are, nodes that can be distributed using
-GitHub, the Juturna Hub facility, or any other tool you can think of;
-3. implement your own custom node.
+#. use Juturna **built-in nodes**, that are, all those nodes that are available within the
+   Juturna library itself
+#. use community **plugin nodes**, that are, nodes that can be distributed
+   through GitHub, the Juturna Hub facility, or any other tool you can think of
+#. implement your own **custom nodes** (this is the fun solution!)
 
 Messages and paylaods
 ---------------------
+
+Nodes within a pipeline pass data around using messages. A message is just a
+data container with some utilities attached to it. Also, messages can be created
+with the definition of the type of data they are going to encapsulate (a
+**payload**). This comes especially helpful when nodes are defined, so that
+users can have an idea of what kinda of data a node expects at the input, and
+produces at the output.

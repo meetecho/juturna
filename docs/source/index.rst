@@ -35,6 +35,13 @@
     build/audio_transcription
     build/video_yolo
 
+.. toctree::
+    :maxdepth: 2
+    :hidden:
+    :caption: References
+
+    apis/explore
+
 |version-badge|
 
 .. image:: ./_static/img/logo_dark_alt_transparent.svg

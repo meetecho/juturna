@@ -14,7 +14,7 @@ class Buffer:
     def __init__(
         self, creator: str, synchroniser: Callable | None = None
     ):
-        self._data: dict[str, Message] = dict()
+        self._data: dict[str, list[Message]] = dict()
         self._data_lock = threading.Lock()
         self._synchroniser: Callable = synchroniser
 
