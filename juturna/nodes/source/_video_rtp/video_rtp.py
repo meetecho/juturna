@@ -78,7 +78,7 @@ class VideoRTP(Node[BytesPayload, ImagePayload]):
             bufsize=10**8,
         )
 
-        self.set_origin(
+        self.set_source(
             lambda: Message[BytesPayload](
                 creator=self.name,
                 payload=BytesPayload(

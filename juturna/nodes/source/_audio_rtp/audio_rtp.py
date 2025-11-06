@@ -100,7 +100,7 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         )
         self._monitor_thread.start()
 
-        self.set_origin(
+        self.set_source(
             lambda: Message[BytesPayload](
                 creator=self.name,
                 payload=BytesPayload(
