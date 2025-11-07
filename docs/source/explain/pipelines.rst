@@ -73,14 +73,63 @@ The ``Pipeline`` class constructor accepts a dictionary object:
 Pipeline lifecycle
 ------------------
 
+Instantiating a pipeline object doesn't really do much. An empty pipeline
+container is created, with all the instructions required to build the actual
+nodes and linking them.
+
+A pipeline object can be in only three states:
+
+- a ``NEW`` pipeline is freshly created, and can't really do much;
+- a ``READY`` pipeline instantiated all the concrete nodes, and acquired
+  system and external resources required for its functioning - as the state
+  name says, this pipeline is ready to go;
+- a ``RUNNING`` pipeline is consuming data sources, processing and sending them,
+  so it working (hepefully) just how it is supposed to.
+
 .. image:: ../_static/img/pipeline_lifecycle.svg
    :alt: pipeline
    :width: 80%
    :align: center
 
-Ciao ciao.
+There are 4 main methods to manage a pipeline lifecycle:
 
-.. admonition:: Restarting a pipeline might catch fire
+``warmup()`` triggers node instantiation and linking, moving a pipeline from
+``NEW`` to ``READY``. Internally, this calls the warm up method on every node in
+the pipeline. Depending on the resources nodes need to acquire (learning
+models, third-party services, network connections), calling the ``warmup`` can
+be time-consuming.
+
+``start()`` triggers the beginning of the pipeline workflow, moving its state
+from ``READY`` to ``RUNNING``. Internally, this calls the start method on every
+node in the pipeline.
+
+``stop()`` interrupts the pipeline execution, moving it from ``RUNNING`` to
+``READY``. Again, this call is propagated to every node in the pipe.
+
+``destroy`` can be invoked if any kind of custom memory management should be
+performed by any of its composing nodes.
+
+Any call sequence that does not respect the state transitions here discussed
+will generate an exception:
+
+#. only a new pipe can be warmed up;
+#. only a ready pipe can be started;
+#. a running pipeline cannot be destroyed.
+
+.. admonition:: Warming up and configuring
+    :class: :NOTE:
+
+    A node defines 2 separate methods to get up and running: ``warmup`` and
+    ``configure``. Ideally, you want to use the ``configure`` method to acquire
+    resources that need to be acquired externally, so depend not only on the
+    node implementation (ports, connections), and the ``warmup`` to prepare the
+    node internal status for execution.
+
+.. admonition:: Restarting a pipeline might catch fire (|version|-|release|)
     :class: :ATTENTION:
 
-    ciao
+    Please be aware that the pipeline lifecycle and state transitions do not
+    currently support restarting a stopped pipeline. When designing your
+    workflow, please assume **pipelines cannot be restarted once stopped, only
+    destroyed**. If you need to stop a pipeline and later restart it, destroy it
+    and create a new pipe instead.

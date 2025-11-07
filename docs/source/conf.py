@@ -27,6 +27,8 @@ new_tab_link_show_external_link_icon = True
 html_theme = 'piccolo_theme'
 html_short_title = 'Juturna documentation'
 
+show_authors = True
+
 html_static_path = ['_static']
 
 # custom css content (relative to _static path)
