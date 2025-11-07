@@ -22,7 +22,7 @@ automated with the following:
 
 .. tab-set::
 
-    .. tab-item:: Dockerfile
+    .. tab-item:: dockerfile
 
         .. code-block:: dockerfile
 

@@ -27,7 +27,6 @@ class Node[T_Input, T_Output]:
 
     def __init__(
         self,
-        node_type: str,
         node_name: str = '',
         pipe_name: str = '',
         synchroniser: Callable | None = None,
@@ -35,10 +34,6 @@ class Node[T_Input, T_Output]:
         """
         Parameters
         ----------
-        node_type : str
-            The type of node to be created. This field can have the values
-            ``source``, ``proc`` or ``sink``, depending on the node being
-            created.
         node_name : str
             The name to assign to the node.
         pipe_name : str
@@ -335,11 +330,8 @@ class Node[T_Input, T_Output]:
 
     def transmit(self, message: Message[T_Output]):
         """
-        Transmit a message through the bridge. This method is used to send data
-        from the node to its destinations. When invoking this method, remember
-        that only messages with a newer version with respect to the versions
-        stored in their destination buffers will trigger an update in the
-        receiving nodes.
+        Transmit a message. This method is used to send data from the node to
+        its destinations.
 
         Parameters
         ----------

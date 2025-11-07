@@ -7,6 +7,9 @@ the library will *compile* it into a pipeline instance. When defining a
 pipeline, however, we still need to provide Juturna with a few extra bits of
 information.
 
+Configuration items
+-------------------
+
 The most basic pipeline configuration file looks something like this:
 
 .. code-block:: json

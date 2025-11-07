@@ -46,10 +46,9 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
     concrete_node = _node_module(
         **operational_config,
         **{
-            'node_type': node_type,
             'node_name': node_name,
             'pipe_name': pipe_name,
-            'synchroniser': synchroniser
+            'synchroniser': synchroniser,
         },
     )
 

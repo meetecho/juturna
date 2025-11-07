@@ -25,21 +25,25 @@ new_tab_link_show_external_link_icon = True
 # theme configuration
 
 html_theme = 'piccolo_theme'
-html_short_title = 'Juturna documentation'
+html_title = 'Juturna documentation page'
+html_short_title = 'Juturna docs'
+html_favicon = '_static/img/logo_dark.svg'
 
 show_authors = True
+html_show_copyright = True
+
+# pygments_style = "one-dark"
+# pygments_dark_style = "one-dark"
 
 html_static_path = ['_static']
 
-# custom css content (relative to _static path)
 html_css_files = [
     'css/style.css',
-    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
-    # 'css/fa-6.7.2.all.min.css'
+    'css/fa-6.7.2.all.min.css'
 ]
 
 html_js_files = [
-    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js',
+    'js/fa-6.7.2.all.min.js',
     'js/meetecho-icon.js'
 ]
 
@@ -47,14 +51,10 @@ html_theme_options = {
     'banner_text': 'We just released version 1.0.1 - go check it out!',
     'banner_hiding': 'permanent',
     'globaltoc_collapse': False,
-    'source_url': 'https://github.com/meetecho/juturna'
-
+    'source_url': 'https://github.com/meetecho/juturna',
+    # "dark_mode_code_blocks": False,
 }
 
 rst_prolog = f"""
 .. |version-badge| replace:: :bdg-secondary-line:`version {version}-{release}`
 """
-
-# html_sidebars = {
-#     '**': ['sidebar-nav-bs.html', 'searchbox.html'],
-# }

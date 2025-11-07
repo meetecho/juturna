@@ -1,24 +1,16 @@
-/* .bd-article {
-    max-width: 800px !important;
-} */
-
-/* img {
-    filter: brightness(0.8) contrast(1.2);
-} */
-
-/* .bd-content img:not(.only-dark):not(.dark-light) {
-    background-color: transparent !important;
-    border-radius: 0.25rem;
-} */
-
 body {
-    font-family: ui-sans-serif, system-ui, sans-serif, Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;
+    font-family: ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
     color: gray;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  color: white;
-  opacity: 0.8;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: white;
+    opacity: 0.8;
 }
 
 strong {
@@ -43,10 +35,10 @@ nav {
 }
 
 img.align-center {
-   margin-left: auto;
-   margin-right: auto;
-   text-align:center;
-   display:block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    display: block;
 }
 
 .sd-card {
@@ -83,12 +75,14 @@ img.align-center {
     transition: 0.3s;
 }
 
-.button_nav .left,.right {
+.button_nav .left,
+.right {
     border: 1px solid;
     border-color: transparent;
     opacity: 0.5;
     transition: 0.3s;
-    border-radius: 10px;;
+    border-radius: 10px;
+    ;
     margin-left: 1em;
     margin-right: 1em;
 }
@@ -108,17 +102,3 @@ img.align-center {
 .highlight {
     border-radius: 15px !important;
 }
-
-
-/* pre, code, .font-mono {
-    font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
-} */
-
-/* .nav-logo {
-    height: 44px;
-} */
-
-/* .eyebrow {
-    color: #666;
-    font-weight: 400;
-} */
