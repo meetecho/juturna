@@ -1,7 +1,6 @@
 import pathlib
 import logging
 
-import uvicorn
 import fastapi
 import pydantic
 
@@ -95,6 +94,14 @@ def run(
 
     logger.info(f'service address: {host}:{port}')
 
+    # Lazy import so non-HTTP CLI commands don't require httpwrapper extras
+    try:
+        import uvicorn
+    except ImportError as e:
+        raise RuntimeError(
+             "Install juturna[httpwrapper] to use 'serve' (missing 'uvicorn')."
+        ) from e
+    
     uvicorn.run(
         'juturna.cli.commands._juturna_service:app',
         host=host,
