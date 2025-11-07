@@ -81,7 +81,7 @@ class Node[T_Input, T_Output]:
         self._source_mode = ''
 
         self._destinations: dict[str, queue.Queue] = dict()
-        self._sources: list = list()
+        self._origins: list = list()
 
     def __del__(self): ...
 
@@ -162,8 +162,8 @@ class Node[T_Input, T_Output]:
         self.synchroniser = synchroniser
 
     @property
-    def sources(self) -> list:
-        return self._sources
+    def origins(self) -> list:
+        return self._origins
 
     @property
     def destinations(self) -> list:

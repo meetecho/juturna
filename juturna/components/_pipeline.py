@@ -138,7 +138,7 @@ class Pipeline:
                 to_node, self._pipe[to_node]['node']
             )
 
-            self._pipe[to_node]['node'].sources.append(from_node)
+            self._pipe[to_node]['node'].origins.append(from_node)
 
         for node_name in self._pipe:
             self._pipe[node_name]['node'].warmup()
