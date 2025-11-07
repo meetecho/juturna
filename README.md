@@ -1,11 +1,11 @@
 # Juturna – Real-time AI Pipeline Framework
-
-[![License](https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge)](LICENSE)
-![Python Version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2Fmeetecho%2Fjuturna%2Frefs%2Fheads%2Fmain%2Fpyproject.toml&style=for-the-badge&color=green)
-
-[![Stars](https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge)](STARS)
-[![Forks](https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge)](FORKS)
-[![issues](https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge)](ISSUES)
+<center><img src="./docs/source/_static/img/logo_dark_alt.svg?raw=true" align="center" width="40%">
+<br>
+<img src="https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge">
+<img src="https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge">
+<img src="https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge">
+<img src="https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge">
+</center>
 
 ## :seedling: Important to know
 Juturna is actively evolving with exciting new features and improvements being
@@ -40,11 +40,11 @@ Among its many features, there are a few keypoints to highligh about Juturna:
 
 A **pipeline** can simply be defined as a collection of **nodes**.
 
-Each **node** acquires a piece of data from its parent and, after performing a
+Each **node** acquires a piece of data from its parents and, after performing a
 single task, provide its output to its children. In this sense, a Juturna
-pipeline is nothing else but a rooted tree, a particular kind of DAG where
-there is a single root node with in-degree of 0 (this is not technically the
-case, but we’ll skip it for now), and every other node has an in-degree of 1.
+pipeline is nothing else but a DAG, where root nodes have an in-degree of 0
+(this is not technically the case, but we’ll skip it for now), and every other
+node has an in-degree of 1 or more.
 
 An example of one of our pipelines, currently in use for live audio
 transcription and summarisation is shown here.
@@ -62,12 +62,11 @@ documentation.
 
 The following dependencies are required to use Juturna:
 
-| dependency |   type   | notes |
-|------------|----------|-------|
-| `python`   | `>=3.12` | building version is 3.12, still to be tested on 3.13 with GIL disabled |
-| `libsm6`   | `system` | |
-| `libext6`  | `system` | |
-| `ffmpeg`   | `system` | |
+- ``python >= 3.12``
+- system libraries ``libsm6``, ``libext6``, ``ffmpeg``
+
+:information_source: Current Python building version is 3.12. The library still
+has to be tested on Python 3.13 and later with GIL disabled.
 
 
 Juturna is currently available as a opensource codebase, but not yet published
@@ -80,10 +79,16 @@ pip to install it (assuming you are working in a virtual environment):
 ```
 
 In case you want to include all the development dependencies in the
-installation, specify the dev group:
+installation, specify the ``dev`` group:
 
 ```
 (venv) $ pip install "./juturna[dev]"
+```
+
+To include the Juturna HTTP wrapper, include the ``httpwrapper``:
+
+```
+(venv) $ pip install "./juturna[httpwrapper]"
 ```
 
 Alternatively, you can manually install the required dependencies, and just
