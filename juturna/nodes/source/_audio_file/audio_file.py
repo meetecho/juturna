@@ -75,7 +75,7 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         self._audio = audio
         self._audio_chunks = self._get_audio_chunks()
 
-        self.set_origin(self._generate_chunks, by=self._block_size, mode='pre')
+        self.set_source(self._generate_chunks, by=self._block_size, mode='pre')
 
         self.logger.info('audio loaded')
         self.logger.info(f'duration: {len(audio) / self._rate}')

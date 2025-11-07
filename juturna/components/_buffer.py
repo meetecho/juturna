@@ -28,7 +28,7 @@ class Buffer:
         return self._out_queue.get()
 
     def put(self, message: Message):
-        self._logger.info('message received in buffer')
+        self._logger.debug('message received in buffer')
         if message.creator not in self._data:
             self._data[message.creator] = list()
 

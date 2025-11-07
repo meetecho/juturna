@@ -251,7 +251,7 @@ class Node[T_Input, T_Output]:
 
         return str(dump_path)
 
-    def set_origin(self, source: Callable, by: int = 0, mode: str = 'post'):
+    def set_source(self, source: Callable, by: int = 0, mode: str = 'post'):
         """
         Set the node source (to be used for ``source`` nodes). The source can be
         either a callable or a buffer. However, source nodes are expected to be

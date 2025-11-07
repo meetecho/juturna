@@ -75,7 +75,7 @@ class VideoFile(Node[BytesPayload, ImagePayload]):
             stdout=subprocess.PIPE,
             bufsize=10**8)
 
-        self.set_origin(lambda: Message[BytesPayload](
+        self.set_source(lambda: Message[BytesPayload](
             creator=self.name,
             payload=BytesPayload(
                 cnt=self._ffmpeg_proc.stdout.read(
