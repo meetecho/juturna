@@ -29,11 +29,11 @@
 .. toctree::
     :maxdepth: 2
     :hidden:
-    :caption: Build
+    :caption: Create
 
-    build/real_world
-    build/audio_transcription
-    build/video_yolo
+    create/real_world
+    create/audio_transcription
+    create/video_yolo
 
 .. toctree::
     :maxdepth: 2
