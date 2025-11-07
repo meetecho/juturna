@@ -1,6 +1,17 @@
 Pipelines
 =========
 
+Pipelines act as graph managers and lifecycle coordinators. A pipeline object
+knows when to start nodes, how to connect them, and where to store their state.
+It transforms a declarative configuration into a running, observable dataflow
+system.
+
+At its core, a Pipeline is a configuration interpreter. It doesn't contain
+business logic strictly speaking, so its only responsibility is to instantiate
+nodes, wire them together according to a graph definition, and manage their
+collective lifecycle. This separation of concerns is deliberate: the pipeline
+handles topology, while nodes handle data processing and transformation.
+
 The easiest way to interact with Juturna pipelines is through ``JSON`` objects.
 The definition of a pipeline graph can be included in a plain ``JSON`` file, and
 the library will *compile* it into a pipeline instance. When defining a

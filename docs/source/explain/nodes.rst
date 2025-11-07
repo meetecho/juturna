@@ -48,6 +48,17 @@ and does not reflect on how concrete nodes are instantiated. More node groups
 can be created, as long as the node type specified in the node configuration
 matches the folder where the node code lives (we'll get to that later).
 
+The node structure and setup is reflected into its configuration object:
+
+.. code-block:: json
+
+  {
+    "name": "my_awesome_node",
+    "type": "proc",
+    "mark": "node_module_name",
+    "configuration": { }
+  }
+
 Threading model
 ---------------
 
