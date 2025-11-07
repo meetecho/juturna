@@ -66,3 +66,20 @@ class Buffer:
             return
 
         self._out_queue.put(Batch(messages=to_send))
+
+
+    def flush(self):
+        """
+        Flushes the datum stored in the buffer.
+
+        """
+        with self._data_lock:
+            self._data = dict()
+            
+        while not self._out_queue.empty():
+            try:
+                self._out_queue.get_nowait()
+            except queue.Empty:
+                self._logger.debug('buffer flushed')
+                break
+

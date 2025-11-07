@@ -276,7 +276,9 @@ class Node[T_Input, T_Output]:
     def add_destination(self, name: str, destination: 'Node'):
         self._destinations[name] = destination
 
-    def clear_source(self): ...
+    def clear_source(self):
+        self._buffer.flush()
+        self._source_f = None
 
     def clear_destination(self, name: str):
         del self._destinations[name]
@@ -312,21 +314,23 @@ class Node[T_Input, T_Output]:
             if self._source_mode == 'pre':
                 time.sleep(self._source_sleep)
 
-            message = self._source_f()
+            message = None
+            if self._source_f:
+                message = self._source_f()
 
-            if message is None:
-                self.put(message)
-                self._stop_source_event.set()
+                if message is None:
+                    self.put(message)
+                    self._stop_source_event.set()
+                    return
 
-                return
-
-            if self._stop_source_event.is_set():
-                return
+                if self._stop_source_event.is_set():
+                    return
 
             if self._source_mode == 'post':
                 time.sleep(self._source_sleep)
 
-            self.put(copy.deepcopy(message))
+            if message is not None:
+                self.put(copy.deepcopy(message))
 
     def transmit(self, message: Message[T_Output]):
         """
