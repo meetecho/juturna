@@ -36,7 +36,8 @@ class Pipeline:
 
         self._logger = jt_logger(self._name)
 
-        self._pipe = dict()
+        self._nodes: dict[str, Node] = dict()
+        self._links: list = list()
 
         self._status = PipelineStatus.NEW
         self.created_at = time.time()
@@ -82,13 +83,10 @@ class Pipeline:
             'folder': self.pipe_path,
             'self': self._status,
             'nodes': {
-                n['node'].name: {
-                    'status': n['node'].status,
-                    'config': n['node'].configuration,
-                }
-                for n in self._pipe.values()
+                node_name: {'status': node.status, 'config': node.configuration}
+                for node_name, node in self._nodes.items()
             }
-            if self._pipe
+            if self._nodes
             else dict(),
         }
 
@@ -101,9 +99,6 @@ class Pipeline:
         """
         if self._status != PipelineStatus.NEW:
             raise RuntimeError(f'pipeline {self.name} cannot be warmed up')
-
-        if self._pipe is None:
-            self._pipe = dict()
 
         pathlib.Path(self.pipe_path).mkdir(parents=True, exist_ok=True)
 
@@ -118,7 +113,7 @@ class Pipeline:
             node_folder = pathlib.Path(self.pipe_path, node_name)
             node_folder.mkdir(exist_ok=True)
 
-            _node = _component_builder.build_component(
+            _node: Node = _component_builder.build_component(
                 node,
                 plugin_dirs=self._raw_config['plugins'],
                 pipe_name=self.name,
@@ -128,21 +123,23 @@ class Pipeline:
             _node.pipe_path = node_folder
             _node.status = ComponentStatus.NEW
 
-            self._pipe[node_name] = {'node': _node}
+            self._nodes[node_name] = _node
 
         for link in links:
             from_node = link['from']
             to_node = link['to']
 
-            self._pipe[from_node]['node'].add_destination(
-                to_node, self._pipe[to_node]['node']
+            self._nodes[from_node].add_destination(
+                to_node, self._nodes[to_node]
             )
 
-            self._pipe[to_node]['node'].origins.append(from_node)
+            self._nodes[to_node].origins.append(from_node)
 
-        for node_name in self._pipe:
-            self._pipe[node_name]['node'].warmup()
-            self._pipe[node_name]['node'].status = ComponentStatus.CONFIGURED
+            self._links.append(copy.copy(link))
+
+        for node_name, node in self._nodes.items():
+            node.warmup()
+            node.status = ComponentStatus.CONFIGURED
 
             self._logger.info(f'warmed up node {node_name}')
 
@@ -154,12 +151,10 @@ class Pipeline:
     def update_node(
         self, node_name: str, property_name: str, property_value: typing.Any
     ):
-        assert self._pipe is not None
-        assert self._pipe.get(node_name, None) is not None
-
-        self._pipe[node_name]['node'].set_on_config(
-            property_name, property_value
-        )
+        if node := self._nodes.get(node_name):
+            node.set_on_config(property_name, property_value)
+        else:
+            self._logger.warning(f'node {node_name} not in pipeline')
 
     def start(self):
         """
@@ -173,12 +168,13 @@ class Pipeline:
         if self._status != PipelineStatus.READY:
             raise RuntimeError(f'pipeline {self.name} is not ready')
 
-        if self._pipe is None:
+        if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
-        for node_name in list(self._pipe.keys())[::-1]:
+        for node_name in list(self._nodes.keys())[::-1]:
             self._logger.info(f'starting node {node_name}')
-            self._pipe[node_name]['node'].start()
+
+            self._nodes[node_name].start()
 
         self._status = PipelineStatus.RUNNING
 
@@ -196,11 +192,13 @@ class Pipeline:
         if self._status != PipelineStatus.RUNNING:
             raise RuntimeError(f'pipeline {self.name} is not running')
 
-        if self._pipe is None:
+        if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
-        for node_name in self._pipe:
-            self._pipe[node_name]['node'].stop()
+        for node_name, node in self._nodes.items():
+            self._logger.info(f'stopping node {node_name}')
+
+            node.stop()
 
         self._status = PipelineStatus.READY
 
@@ -217,17 +215,17 @@ class Pipeline:
         if self._status == PipelineStatus.RUNNING:
             self.stop()
 
-        if self._pipe is None:
+        if not self._nodes:
             return
 
-        for node_name in list(self._pipe.keys())[::-1]:
-            self._pipe[node_name]['node'].clear_source()
-            self._pipe[node_name]['node'].clear_destinations()
-            self._pipe[node_name]['node'].destroy()
+        for node_name in list(self._nodes.keys())[::-1]:
+            self._nodes[node_name].clear_source()
+            self._nodes[node_name].clear_destinations()
+            self._nodes[node_name].destroy()
 
-            self._pipe[node_name]['node'] = None
+            self._nodes[node_name] = None
 
-        self._pipe = None
+        self._nodes = None
 
         gc.collect()
 

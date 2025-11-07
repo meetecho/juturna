@@ -4,7 +4,7 @@ import typing
 from juturna.components import _mapper as mapper
 
 from juturna.utils.log_utils import jt_logger
-from juturna.components._synchronisation_policy import _POLICIES
+from juturna.components._synchronisers import _SYNCHRONISERS
 
 
 _logger = jt_logger()
@@ -41,7 +41,7 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
     # 1) if available, synchroniser specified in the configuration
     # 2) if available, node synchroniser
     # 3) default passthrough synchroniser
-    synchroniser = _POLICIES.get(node_sync)
+    synchroniser = _SYNCHRONISERS.get(node_sync)
 
     concrete_node = _node_module(
         **operational_config,

@@ -15,7 +15,7 @@ from juturna.components import Message
 from juturna.names import ComponentStatus
 from juturna.utils.log_utils import jt_logger
 from juturna.components._buffer import Buffer
-from juturna.components._synchronisation_policy import _POLICIES
+from juturna.components._synchronisers import _SYNCHRONISERS
 
 
 class Node[T_Input, T_Output]:
@@ -72,7 +72,7 @@ class Node[T_Input, T_Output]:
         self._synchroniser = synchroniser or (
             self.next_batch
             if hasattr(self, 'next_batch')
-            else _POLICIES['passthrough']
+            else _SYNCHRONISERS['passthrough']
         )
         self._buffer = Buffer(_logger_name, self._synchroniser)
 

@@ -54,6 +54,6 @@ class PassthroughIdentity(Node[BasePayload, BasePayload]):
 
     def next_batch(self, sources: dict) -> dict:
         self.logger.info('using custom policy')
-        self.logger.info(f'expected sources: {self.sources}')
+        self.logger.info(f'expected sources: {self.origins}')
 
         return {source: list(range(len(sources[source]))) for source in sources}

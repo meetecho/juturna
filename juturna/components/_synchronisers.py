@@ -8,4 +8,4 @@ def passthrough(sources: dict) -> dict:
     return {source: list(range(len(sources[source]))) for source in sources}
 
 
-_POLICIES = {'passthrough': passthrough, 'local': None}
+_SYNCHRONISERS = {'passthrough': passthrough, 'local': None}
