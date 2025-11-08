@@ -24,6 +24,10 @@ websockets = "^15.0.1"
 fastapi = { version = ">=0.115.12,<0.116.0", optional = true, extras = ["httpwrapper"] }
 fastapi-cli = { version = ">=0.0.7,<0.0.8", optional = true, extras = ["httpwrapper"] }
 
+# pipe builder
+prompt_toolkit = { version = "^3.0.52", optional = true, extras = ["pipebuilder"] }
+rich = { version = "^13.8.1", optional = true, extras = ["pipebuilder"] }
+
 # dev dependencies
 pytest = { version = "^8.3.5", optional = true, extras = ["dev"] }
 sphinx = { version = "^8.2.3", optional = true, extras = ["dev"] }
@@ -44,6 +48,7 @@ packages = [
 
 [tool.poetry.extras]
 httpwrapper = ["fastapi", "fastapi-cli"]
+pipebuilder = ["prompt_toolkit", "rich"]
 dev = ["pytest",
        "sphinx",
        "sphinx-autoapi",

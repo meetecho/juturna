@@ -232,8 +232,10 @@ class PipelineBuilder:
             if help_text:
                 self._cns.print(f'{help_text}', style='dim')
 
+            arg_type = arg_def.get('type', 'string')
+
             value = prompt(
-                f'{arg_name}: ',
+                f'{arg_name} ({arg_type}): ',
                 placeholder=FormattedText(
                     [
                         (
@@ -255,8 +257,6 @@ class PipelineBuilder:
                 continue
 
             try:
-                arg_type = arg_def.get('type', 'string')
-
                 if arg_type == 'boolean':
                     value = value.lower() in ('true', 'yes', '1', 'y')
                 elif arg_type == 'integer':
