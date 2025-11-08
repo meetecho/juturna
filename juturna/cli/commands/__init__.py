@@ -3,12 +3,14 @@
 from juturna.cli.commands import launch
 from juturna.cli.commands import validate
 from juturna.cli.commands import serve
+from juturna.cli.commands import create
 
 
 _COMMANDS = {
     'launch': launch._execute,
     'validate': validate._execute,
     'serve': serve._execute,
+    'create': create._execute,
 }
 
 
@@ -17,6 +19,7 @@ def register_all(subparsers):
     launch.setup_parser(subparsers)
     validate.setup_parser(subparsers)
     serve.setup_parser(subparsers)
+    create.setup_parser(subparsers)
 
 
 def command(cmd_name: str):
