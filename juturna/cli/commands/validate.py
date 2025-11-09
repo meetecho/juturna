@@ -194,13 +194,6 @@ def _check_dag_properties(dag: DAG, name_to_type: dict[str, str]) -> None:
             f'Non-source nodes with no input links: {non_source_zero_in}'
         )
 
-    multi_input = [n for n, d in in_degree.items() if d > 1]
-
-    if multi_input:
-        raise ValidationError(
-            f'Nodes with more than one input link: {multi_input}'
-        )
-
     non_sink_non_zero_out = [
         n for n, d in out_degree.items() if d != 0 and name_to_type[n] == 'sink'
     ]

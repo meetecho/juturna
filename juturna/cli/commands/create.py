@@ -1,3 +1,10 @@
+"""
+Interactive pipeline builder
+
+Use the CLI to interactively create a pipeline configuration and save it as
+JSON file. This utility navigates all the plugin folders that are provided.
+
+"""
 import pathlib
 
 import juturna as jt
