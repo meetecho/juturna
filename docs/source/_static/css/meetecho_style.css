@@ -3,20 +3,10 @@ body {
     color: gray;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+/* strong {
     color: white;
     opacity: 0.8;
-}
-
-strong {
-    color: white;
-    opacity: 0.8;
-}
+} */
 
 nav {
     background-color: black !important;
@@ -110,4 +100,20 @@ img.align-center {
 .caption-text {
     color: white;
     opacity: 1;
+}
+
+.highlight-dockerfile .highlight {
+    color: #EEFFFF !important;
+}
+
+.highlight-console .highlight {
+    color: #EEFFFF !important;
+}
+
+.highlight-default .highlight {
+    color: #EEFFFF !important;
+}
+
+.highlight-bash .highlight {
+    color: #EEFFFF !important;
 }

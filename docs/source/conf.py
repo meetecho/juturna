@@ -32,13 +32,12 @@ html_favicon = '_static/img/logo_dark.svg'
 show_authors = True
 html_show_copyright = True
 
-# pygments_style = "one-dark"
-# pygments_dark_style = "one-dark"
+pygments_style = 'nord'
 
 html_static_path = ['_static']
 
 html_css_files = [
-    'css/style.css',
+    'css/meetecho_style.css',
     'css/fa-6.7.2.all.min.css'
 ]
 
@@ -52,7 +51,7 @@ html_theme_options = {
     'banner_hiding': 'permanent',
     'globaltoc_collapse': False,
     'source_url': 'https://github.com/meetecho/juturna',
-    # "dark_mode_code_blocks": False,
+    'dark_mode_code_blocks': False
 }
 
 rst_prolog = f"""

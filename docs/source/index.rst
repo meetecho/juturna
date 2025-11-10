@@ -42,6 +42,7 @@
     :caption: References
 
     apis/explore
+    apis/modules
 
 |version-badge|
 
