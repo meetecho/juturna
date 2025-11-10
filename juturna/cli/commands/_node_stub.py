@@ -66,7 +66,8 @@ def node_stub(
     template = template.replace('$_node_author_name', author)
     template = template.replace('$_node_author_email', email)
     template = template.replace(
-        '$_creation_datetime', str(datetime.datetime.now())
+        '$_creation_datetime',
+        datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
     )
 
     node_file_path = pathlib.Path(node_destination, f'{node_name}.py')

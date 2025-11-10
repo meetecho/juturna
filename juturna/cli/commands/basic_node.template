@@ -1,9 +1,9 @@
 """
 $_node_class_name
 
-@ Author: $_node_author_name
-@ Email: $_node_author_email
-@ Created at: $_creation_datetime
+@author: $_node_author_name
+@email: $_node_author_email
+@created_at: $_creation_datetime
 
 Automatically generated with jt.utils.node_utils.node_stub
 """
