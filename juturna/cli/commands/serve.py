@@ -14,7 +14,7 @@ from juturna.cli.commands._juturna_service import run
 def setup_parser(subparsers):  # noqa: D103
     parser = subparsers.add_parser(
         'serve',
-        help='instantiate and run the pipeline in the configuration file',
+        help='launch the Juturna pipeline manager service',
     )
 
     parser.add_argument(

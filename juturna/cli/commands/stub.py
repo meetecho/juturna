@@ -11,7 +11,7 @@ from juturna.cli.commands import _node_stub
 def setup_parser(subparsers): # noqa: D103
     parser = subparsers.add_parser(
         'stub',
-        help='instantiate and run the pipeline in the configuration file',
+        help='create a custom node skeleton',
     )
 
     parser.add_argument(
