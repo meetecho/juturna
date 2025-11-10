@@ -9,7 +9,9 @@ will not be available in the command line.
 import importlib
 
 
-_MODULES = {cmd: None for cmd in ['launch', 'validate', 'serve', 'create']}
+_MODULES = {
+    cmd: None for cmd in ['launch', 'validate', 'serve', 'create', 'stub']
+}
 
 
 def _safe_reg(module_name: str, subparsers):
