@@ -38,6 +38,7 @@ installation. Currently available groups are:
 
 - ``dev`` to get all the tools for testing and documentation,
 - ``httpwrapper`` to get CLI serving capabilities.
+- ``pipebuilder`` to get the interactive CLI pipeline builder
 
 Extra groups can be selected during the installation proess.
 
