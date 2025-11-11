@@ -1,0 +1,118 @@
+body {
+    font-family: ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    color: gray;
+}
+
+/* strong {
+    color: white;
+    opacity: 0.8;
+} */
+
+/* nav {
+    background-color: black !important;
+} */
+
+/* #searchbox form.search input[type=text] {
+    color: gray !important;
+    background-color: black !important;
+    border-color: white !important;
+    border: 1px solid #ccc !important;
+    border-radius: 10px;
+} */
+
+/* #searchbox form.search input[type=text]::placeholder {
+    color: gray !important
+} */
+
+/* img.align-center {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    display: block;
+} */
+
+/* .sd-card {
+    border-color: gray !important;
+    opacity: 0.8;
+    transition: 0.3s;
+    border-width: 2px !important;
+    border-radius: 10px !important;
+} */
+
+.sd-card:hover {
+    opacity: 1;
+    transition: 0.3s;
+}
+
+.sd-card:hover .sd-card-title {
+    color: #65aaffff;
+    transition: 0.3s;
+}
+
+.sd-card-title .fa-meetecho {
+    width: 2em;
+    height: 2em;
+}
+
+.fa-meetecho {
+    width: 2em;
+    height: 2em;
+}
+
+.sd-card:hover .fa-meetecho {
+    color: #65aaffff;
+    transition: 0.3s;
+}
+
+/* .button_nav .left,
+.right {
+    border: 1px solid;
+    border-color: transparent;
+    opacity: 0.5;
+    transition: 0.3s;
+    border-radius: 10px;
+    ;
+    margin-left: 1em;
+    margin-right: 1em;
+} */
+
+/* .button_nav .left:hover {
+    border-color: gray;
+    opacity: 1;
+    transition: 0.3s;
+} */
+
+/* .button_nav .right:hover {
+    border-color: gray;
+    opacity: 1;
+    transition: 0.3s;
+} */
+
+/* .highlight {
+    border-radius: 15px !important;
+} */
+
+/* .toctree-l1 {
+    opacity: 0.7;
+} */
+
+/* .caption-text {
+    color: white;
+    opacity: 1;
+} */
+
+/* .highlight-dockerfile .highlight {
+    color: #EEFFFF !important;
+} */
+
+/* .highlight-console .highlight {
+    color: #EEFFFF !important;
+} */
+
+/* .highlight-default .highlight {
+    color: #EEFFFF !important;
+} */
+
+/* .highlight-bash .highlight {
+    color: #EEFFFF !important;
+} */

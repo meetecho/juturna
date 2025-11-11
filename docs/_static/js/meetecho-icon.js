@@ -5,7 +5,7 @@ FontAwesome.library.add(
    * see https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/header-links.html#svg-image-icons
    */
   {
-    prefix: "fa-custom",
+    prefix: "fas",
     iconName: "meetecho",
     icon: [
       24,

@@ -1,0 +1,549 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Messages and payloads" href="messages.html"><link rel="prev" title="Pipelines" href="pipelines.html">
+        <link rel="prefetch" href="../_static/img/logo_light_alt.svg" as="image">
+        <link rel="prefetch" href="../_static/img/logo_dark_alt.svg" as="image">
+
+    <link rel="shortcut icon" href="../_static/logo_dark.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
+        <title>Nodes - Juturna</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=02ca0aaa" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/meetecho_style.css?v=83603a25" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/fa-6.7.2.all.min.css?v=b7e0f7cc" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #fdf6e3;
+  --color-code-foreground: #657b83;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #242933;
+  --color-code-foreground: #d8dee9;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #242933;
+  --color-code-foreground: #d8dee9;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Juturna</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  <div class="sidebar-logo-container">
+    <img class="sidebar-logo only-light" src="../_static/img/logo_light_alt.svg" alt="Light Logo"/>
+    <img class="sidebar-logo only-dark" src="../_static/img/logo_dark_alt.svg" alt="Dark Logo"/>
+  </div>
+  
+  <span class="sidebar-brand-text">Juturna</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Welcome</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../welcome/install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../welcome/docker.html">Docker</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explain</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="rationale.html">Rationale</a></li>
+<li class="toctree-l1"><a class="reference internal" href="entities_overview.html">Entities overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pipelines.html">Pipelines</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="messages.html">Messages and payloads</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">How To</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/why_how.html">Why and how</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/create_nodes.html">Create custom nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/create_pipelines.html">Create pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/use_cli.html">Use Juturna CLI tools</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Create</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../create/real_world.html">Juturna in the real world</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../create/audio_transcription.html">Audio transcription</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../create/video_yolo.html">Video annotation with YOLO</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../apis/explore.html">Explore the APIs</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input aria-label="Toggle navigation of juturna" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input aria-label="Toggle navigation of juturna package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../apis/juturna.components.html">juturna.components package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apis/juturna.hub.html">juturna.hub package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apis/juturna.meta.html">juturna.meta package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../apis/juturna.names.html">juturna.names package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.nodes.html">juturna.nodes package</a><input aria-label="Toggle navigation of juturna.nodes package" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.sink.html">juturna.nodes.sink package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.source.html">juturna.nodes.source package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../apis/juturna.payloads.html">juturna.payloads package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.proc_utils.html">juturna.utils.proc_utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/explain/nodes.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="nodes">
+<h1>Nodes<a class="headerlink" href="#nodes" title="Link to this heading">¶</a></h1>
+<p>Juturna’s basic node is the fundamental abstraction upon which Juturna’s data
+processing pipelines can be built. It embodies a simple design philosophy:
+complex data flows can be made robust, testable, and composable by treating
+each processing unit as an independent, message-driven actor with well-defined
+boundaries.</p>
+<section id="a-simple-message-processor">
+<h2>A simple message processor<a class="headerlink" href="#a-simple-message-processor" title="Link to this heading">¶</a></h2>
+<p>At its essence, a node is a typed message transformer: it receives messages of
+type <code class="docutils literal notranslate"><span class="pre">T_Input</span></code>, performs a designed task, and optionally emits messages of
+type <code class="docutils literal notranslate"><span class="pre">T_Output</span></code>. This generic type signature is not just decorative, but
+rather it enforces a contract that makes pipeline composition predictable and
+type-safe. Whether a node generates data from scratch, enriches incoming
+records, or writes results to disk, it always conforms to this same conceptual
+shape.</p>
+<div class="attention admonition">
+<p class="admonition-title">Multi-input nodes and clashing types (1.0.1-beta)</p>
+<p>Whilst node input type finds an easy match for single-input nodes, there
+might be cases where a node receives messages of heterogeneous types (think
+of a node that needs to mix audio and video data). In this case, the message
+typing could not be respected, so be aware when you design custom nodes.</p>
+</div>
+<p>In Juturna, a node can play three distinct roles, all shareing the same
+underlying implementation:</p>
+<ul class="simple">
+<li><p><strong>source nodes</strong> originate data, pulling from APIs, databases, live streams,
+or generating synthetic content;</p></li>
+<li><p><strong>processor nodes</strong> (often called <code class="docutils literal notranslate"><span class="pre">proc</span></code> in the codebase) sit in the middle
+of pipelines, transforming messages and making them available for intermediate
+steps;</p></li>
+<li><p><strong>sink nodes</strong> terminate data flows, persisting results or delivering them to
+external systems.</p></li>
+</ul>
+<p>This tripartite division reflects a classic pattern in stream processing, but
+Juturna unifies them under one class because the differences are primarily about
+how a node obtains its input, not how it processes it. A source node simply has
+its input generated by a dedicated thread rather than received from upstream
+nodes.</p>
+<p>It is also worh mentioning that the taxonomy of node roles is purely conceptual,
+and does not reflect on how concrete nodes are instantiated. More node groups
+can be created, as long as the node type specified in the node configuration
+matches the folder where the node code lives (we’ll get to that later).</p>
+<p>The node structure and setup is reflected into its configuration object:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my_awesome_node&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;proc&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;mark&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;node_module_name&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;configuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="threading-model">
+<h2>Threading model<a class="headerlink" href="#threading-model" title="Link to this heading">¶</a></h2>
+<p>Every node runs up to three independent threads, each with a singular
+responsibility. This separation of concerns is the key to the framework’s
+responsiveness and fault isolation.</p>
+<a class="reference internal image-reference" href="../_images/node.svg"><img alt="node" class="align-center" src="../_images/node.svg" style="width: 100%;" />
+</a>
+<p>The <code class="docutils literal notranslate"><span class="pre">_worker</span></code> thread is the node’s inbound gatekeeper. It runs in every node,
+and blocks on the node’s inbound queue, waiting for incoming messages from
+upstream nodes. When a message arrives, the worker immediately buffers it, thus
+decoupling the message reception from its processing. By placing the message
+into a buffer rather than processing it directly, the worker thread can quickly
+return to listening for new messages, preventing backpressure from rippling
+upstream.</p>
+<div class="note admonition">
+<p class="admonition-title">The inbound queue (1.0.1-beta)</p>
+<p>Node currently use LIFO queues as inbound message receptors. Whilst this
+should not really have an impact on the node’s workings (the inbound queue is
+expected to always contain only the last message transmitted by the upstream
+nodes), there is still the chance to acquire messages out of order compared
+with their actual transmission times. Further refinements to the inbound
+queue might come in the future.</p>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">_update</span></code> thread represents the node’s processing engine. It consumes
+messages from the buffer in batches, not individually. This batching is where
+Juturna’s synchronisation logic becomes visible. The buffer doesn’t simply store
+messages, it coordinates them. When a node has multiple upstream origins, the
+buffer’s synchroniser determines when enough messages have arrived to form a
+coherent batch for processing. The default synchroniser implements a simple
+passthrough policy, forwarding messages as-is. However, custom synchronisers can
+be designed with more complex policies in mind: waiting for matching keys across
+streams, enforcing timeouts, or aggregating windows of data. The choice of
+synchroniser can be specified in the node configuration using the <code class="docutils literal notranslate"><span class="pre">sync</span></code> key.</p>
+<p>When a batch is ready, the <code class="docutils literal notranslate"><span class="pre">_update</span></code> thread calls the node’s <code class="docutils literal notranslate"><span class="pre">update()</span></code>
+method. This is the only place where user-defined processing logic should run,
+ensuring that the framework maintains full control over threading, error
+boundaries, and lifecycle management.</p>
+<p>For source nodes, the <code class="docutils literal notranslate"><span class="pre">_source</span></code> thread runs in parallel to the <code class="docutils literal notranslate"><span class="pre">_worker</span></code> and
+<code class="docutils literal notranslate"><span class="pre">_update</span></code> threads. Its sole purpose is to repeatedly invoke a user-provided
+callable (<code class="docutils literal notranslate"><span class="pre">_source_f</span></code>) and inject the resulting messages into the node’s own
+queue. The <em>pre</em> and <em>post</em> sleep modes allow fine-tuning of polling
+behavior, such as waiting before generating data (useful for rate-limiting) or
+after (useful for ensuring minimum intervals between calls).</p>
+<p>In short:</p>
+<ol class="arabic simple">
+<li><p>A message is pushed in the node’s inbound queue - a source node will write
+the message itsels through the <code class="docutils literal notranslate"><span class="pre">_source</span></code> thread, while intermediate nodes
+will received messages from other upstream nodes;</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">_worker</span></code> thread pops the received message from the queue, and writes
+it in the node buffer, which is a simple map <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">node_name:</span> <span class="pre">message_list</span> <span class="pre">}</span></code>;</p></li>
+<li><p>for every new message received, the buffer will invoke the synchroniser, a
+method responsible for aggregating buffered messages in a batch according to
+a specific policy;</p></li>
+<li><p>every time a batch is available, the buffer writes it on an outbound queue;</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">_update</span></code> thread reads on the outbound queue, and whenever a new batch
+is available, it invokes the blocking <code class="docutils literal notranslate"><span class="pre">update()</span></code> method, where the actual
+data elaboration and subsequent transmission downstream take place.</p></li>
+</ol>
+</section>
+<section id="buffer">
+<h2>Buffer<a class="headerlink" href="#buffer" title="Link to this heading">¶</a></h2>
+<p>While the <code class="docutils literal notranslate"><span class="pre">_worker</span></code> thread uses a simple queue for inbound message transfer,
+the buffer sits between worker and update, providing three critical services:</p>
+<ul class="simple">
+<li><p><strong>Per-origin message tracking</strong>: messages are stored in a dictionary that maps
+node names to message lists, allowing the synchroniser to reason about which
+upstream nodes sent which messages.</p></li>
+<li><p><strong>Synchronisation policy application</strong>: the <code class="docutils literal notranslate"><span class="pre">get()</span></code> method on the node
+buffer doesn’t dequeue messages, it rather invokes the synchroniser on the
+entire data structure to decide what constitutes a processable batch.</p></li>
+<li><p><strong>Stateful consumption</strong>: the <code class="docutils literal notranslate"><span class="pre">_consume</span></code> method on the node buffer pops
+specific messages, based on the synchroniser’s <em>marks</em>, then places either a
+single message or a batch into the outbound queue.</p></li>
+</ul>
+<p>Having a buffer that decides which messages are ready for processing prevents
+the <code class="docutils literal notranslate"><span class="pre">update()</span></code> method from being called with partial or inconsistent data when
+multiple upstream nodes feed into a single processor.</p>
+</section>
+<section id="synchronising-data">
+<h2>Synchronising data<a class="headerlink" href="#synchronising-data" title="Link to this heading">¶</a></h2>
+<p>Unless differently specified in the node configuration, a buffer adopts the
+passthrough synchronisation policy, that simply lets every available message
+move into the outboud queue. However, if a node implements the <code class="docutils literal notranslate"><span class="pre">next_batch()</span></code>
+method, that one will be picked as synchroniser. The synchroniser priority can
+be described as follows:</p>
+<ul class="simple">
+<li><p>the default synchroniser for a node is the <code class="docutils literal notranslate"><span class="pre">passthrough</span></code> (it will be applied
+for every node without any <code class="docutils literal notranslate"><span class="pre">sync</span></code> value in its configuration, nor a
+<code class="docutils literal notranslate"><span class="pre">next_batch()</span></code> method implementation);</p></li>
+<li><p>if a <code class="docutils literal notranslate"><span class="pre">next_batch()</span></code> method is implemented on the node, it will be used
+instead of the default synchroniser (no need to specify anything in the
+configuration, but can be explicitly put there with <code class="docutils literal notranslate"><span class="pre">&quot;sync&quot;:</span> <span class="pre">&quot;local&quot;</span></code>).</p></li>
+<li><p>any other built-in synchroniser can be set as <code class="docutils literal notranslate"><span class="pre">sync</span></code> value in the node
+configuration, and will be used.</p></li>
+</ul>
+<div class="note admonition">
+<p class="admonition-title">Built-in synchronisers (1.0.1-beta)</p>
+<p>Currently Juturna only implements a single built-in synchroniser, the
+passthrough one. Stay tuned, more are coming!</p>
+</div>
+</section>
+<section id="node-lifecycle">
+<h2>Node lifecycle<a class="headerlink" href="#node-lifecycle" title="Link to this heading">¶</a></h2>
+<p>A node’s life follows a clear progression managed by the pipeline:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>configure() → warmup() → start() → stop() → destroy()
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">status</span></code> property, backed by the <code class="docutils literal notranslate"><span class="pre">ComponentStatus</span></code> enum, makes this
+state machine explicit.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">start()</span></code> method’s logic reveals the framework’s defensive design. It
+checks for <code class="docutils literal notranslate"><span class="pre">None</span></code> on thread references before spawning new ones, preventing
+accidental restarts. Stopping is equally nuanced. The stop sequence puts a
+sentinel <code class="docutils literal notranslate"><span class="pre">None</span></code> value into the queue, which gracefully unwinds the worker and
+update threads.</p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="messages.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Messages and payloads</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="pipelines.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Pipelines</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Meetecho
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            <div class="icons">
+              <a class="muted-link fa-brands fa-solid fa-github fa-2x" href="https://github.com/meetecho/juturna" aria-label="GitHub"></a>
+              <a class="muted-link " href="https://meetecho.com" aria-label="MeetEcho">
+                <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24">
+                    <path fill-rule="evenodd" d="M4.44,15.54 C4.44,15.54 4.44,21.60 4.44,21.60 4.44,21.60 6.42,21.60 6.42,21.60 6.42,21.60 8.40,21.60 8.40,21.60 8.40,21.60 8.42,18.44 8.42,18.44 8.46,15.54 8.47,15.30 8.66,15.34 8.87,15.37 11.22,16.72 11.70,17.08 11.92,17.24 11.99,17.22 12.60,16.80 13.34,16.30 15.17,15.24 15.28,15.24 15.32,15.24 15.36,16.67 15.36,18.42 15.36,18.42 15.36,21.60 15.36,21.60 15.36,21.60 17.34,21.60 17.34,21.60 17.34,21.60 19.32,21.60 19.32,21.60 19.32,21.60 19.32,15.54 19.32,15.54 19.32,15.54 19.32,9.48 19.32,9.48 19.32,9.48 17.34,9.48 17.34,9.48 17.34,9.48 15.36,9.48 15.36,9.48 15.36,9.48 15.36,10.18 15.36,10.18 15.36,10.18 15.36,10.88 15.36,10.88 15.36,10.88 13.63,12.04 13.63,12.04 13.63,12.04 11.92,13.18 11.92,13.18 11.92,13.18 10.16,12.02 10.16,12.02 10.16,12.02 8.41,10.86 8.41,10.86 8.41,10.86 8.40,10.16 8.40,10.16 8.40,10.16 8.40,9.48 8.40,9.48 8.40,9.48 6.42,9.48 6.42,9.48 6.42,9.48 4.44,9.48 4.44,9.48 4.44,9.48 4.44,15.54 4.44,15.54 Z M16.25,2.81 C15.20,3.26 14.52,4.32 14.52,5.46 14.52,6.26 14.71,6.76 15.25,7.38 15.79,7.98 16.45,8.28 17.32,8.28 18.49,8.28 19.45,7.68 19.93,6.66 20.22,6.02 20.23,4.90 19.93,4.26 19.69,3.71 18.98,3.05 18.41,2.81 17.90,2.59 16.74,2.60 16.25,2.81 Z M5.15,2.99 C3.12,4.07 3.11,6.89 5.15,7.94 7.60,9.22 10.25,6.65 9.01,4.21 8.26,2.75 6.59,2.22 5.15,2.99Z"></path>
+                </svg>
+            </a>
+              
+            </div>
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Nodes</a><ul>
+<li><a class="reference internal" href="#a-simple-message-processor">A simple message processor</a></li>
+<li><a class="reference internal" href="#threading-model">Threading model</a></li>
+<li><a class="reference internal" href="#buffer">Buffer</a></li>
+<li><a class="reference internal" href="#synchronising-data">Synchronising data</a></li>
+<li><a class="reference internal" href="#node-lifecycle">Node lifecycle</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=f0d2c090"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script src="../_static/js/fa-6.7.2.all.min.js?v=aa14f8ef"></script>
+    <script src="../_static/js/meetecho-icon.js?v=6e862b68"></script>
+    </body>
+</html>
