@@ -1,6 +1,6 @@
 [arguments]
 rec_host = "127.0.0.1"
-rec_port = "auto"
+rec_port = 0
 audio_rate = 16000
 block_size = 3
 channels = 2
