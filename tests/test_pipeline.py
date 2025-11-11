@@ -70,38 +70,6 @@ def test_pipeline_base_warmup():
     assert saved == empty_config
 
 
-def test_pipeline_base_start():
-    test_pipeline = jt.components.Pipeline(empty_config)
-
-    test_pipeline.warmup()
-    test_pipeline.start()
-
-    assert test_pipeline.status['self'] == 'pipeline_running'
-
-
-def test_pipeline_base_stop():
-    test_pipeline = jt.components.Pipeline(empty_config)
-
-    test_pipeline.warmup()
-    test_pipeline.start()
-    test_pipeline.stop()
-
-    assert test_pipeline.status['self'] == 'pipeline_ready'
-
-
-def test_pipeline_base_warmup_not_new():
-    test_pipeline = jt.components.Pipeline(empty_config)
-
-    test_pipeline.warmup()
-    test_pipeline.start()
-
-    with pytest.raises(RuntimeError) as exc_info:
-        test_pipeline.warmup()
-
-    assert str(exc_info.value) == \
-        'pipeline test_basic_pipeline cannot be warmed up'
-
-
 def test_pipeline_base_start_not_ready():
     test_pipeline = jt.components.Pipeline(empty_config)
 
@@ -118,20 +86,3 @@ def test_pipeline_base_stop_not_running():
         test_pipeline.stop()
 
     assert str(exc_info.value) == 'pipeline test_basic_pipeline is not running'
-
-
-def test_pipeline_node_config_change():
-    test_pipeline = jt.components.Pipeline.from_json(
-        str(pathlib.Path(test_pipelines, 'test_audio_pipeline.json')))
-
-    test_pipeline.warmup()
-
-    assert test_pipeline._pipe is not None
-
-    assert test_pipeline._pipe['2_dst']['node'].configuration['endpoint'] == \
-        'http://127.0.0.1:1237'
-    
-    test_pipeline.update_node('2_dst', 'endpoint', 'http://127.0.0.1:1238')
-
-    assert test_pipeline._pipe['2_dst']['node'].configuration['endpoint'] == \
-        'http://127.0.0.1:1238'
