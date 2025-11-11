@@ -56,7 +56,7 @@ dev = ["pytest",
        "sphinxcontrib-apidoc",
        "sphinxcontrib-napoleon",
        "sphinx-rtd-theme",
-       "pydata-sphinx-theme",
+       "piccolo_theme",
        "sphinx-design",
        "sphinx_new_tab_link"]
 
@@ -71,7 +71,7 @@ sphinxcontrib-napoleon = "^0.7"
 sphinx-autoapi = "^3.6.0"
 sphinx-autobuild = "^2024.10.3"
 sphinx-rtd-theme = "^3.0.2"
-pydata-sphinx-theme = "^0.16.1"
+piccolo_theme = "^0.24.0"
 sphinx-design = "^0.6.1"
 
 [build-system]
