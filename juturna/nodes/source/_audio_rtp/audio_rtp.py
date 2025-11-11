@@ -79,6 +79,11 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         self._ffmpeg_launcher_path = None
         self._monitor_thread = None
 
+        # avoid sleep and race conditions during restart using a flag and a lock
+        self._stop_requested = False
+        self._subprocess_running = False
+        self._restart_lock = threading.Lock()
+
     def configure(self):
         if self._rec_port == 'auto':
             self._rec_port = rb.get('port')
@@ -88,62 +93,81 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         self._ffmpeg_launcher_path = self.ffmpeg_launcher
 
     def start(self):
-        self._ffmpeg_proc = subprocess.Popen(
-            ['sh', self.ffmpeg_launcher],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            bufsize=64536,
-        )
-
-        self._monitor_thread = threading.Thread(
-            target=self.monitor_process, args=(self._ffmpeg_proc,)
-        )
-        self._monitor_thread.start()
-
-        self.set_source(
-            lambda: Message[BytesPayload](
-                creator=self.name,
-                payload=BytesPayload(
-                    cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes)
-                ),
-            )
-        )
-
+        self.logger.debug('starting ffmpeg process...')
+        self._stop_requested = False
+        self._start_ffmpeg_process()
         super().start()
 
     def stop(self):
+        self.logger.debug('stopping node...')
+        self._stop_requested = True
+    
+        # safe stop procedure if no process exists        
+        if self._ffmpeg_proc is None:
+            self.logger.debug('ffmpeg process is already None, nothing to stop')
+            super().stop()
+            return
+
         try:
-            assert self._ffmpeg_proc is not None
-            assert self._ffmpeg_proc.stdin is not None
+            # process is still running ?
+            if self._ffmpeg_proc.poll() is None:
+                self.logger.debug('attempting graceful shutdown of ffmpeg process...')
+                
+                # trying to stop ffmpeg process gracefully (send 'q' to stdin)
+                try:
+                    if self._ffmpeg_proc.stdin and not self._ffmpeg_proc.stdin.closed:
+                        self._ffmpeg_proc.stdin.write(b'q\n')
+                        self._ffmpeg_proc.stdin.flush()
+                        self._ffmpeg_proc.stdin.close()
+                        self.logger.debug('sent quit command to ffmpeg')
+                except (BrokenPipeError, OSError) as termination_error:
+                    self.logger.debug(f'could not send quit command: {termination_error}')
 
-            self._ffmpeg_proc.stdin.write(b'q\n')
-            self._ffmpeg_proc.stdin.flush()
-            self._ffmpeg_proc.stdin.close()
+                # wait for graceful shutdown
+                try:
+                    self._ffmpeg_proc.wait(timeout=3)
+                    self.logger.debug('ffmpeg process exited gracefully')
+                except subprocess.TimeoutExpired:
+                    self.logger.warning('ffmpeg did not exit gracefully, terminating...')
+                    
+                    # Try SIGTERM
+                    self._ffmpeg_proc.terminate()
+                    try:
+                        self._ffmpeg_proc.wait(timeout=5)
+                        self.logger.debug('ffmpeg process terminated')
+                    except subprocess.TimeoutExpired:
+                        # Force kill as last resort
+                        self.logger.warning('ffmpeg did not terminate, forcing kill...')
+                        self._ffmpeg_proc.kill()
+                        self._ffmpeg_proc.wait()
+                        self.logger.warning('ffmpeg process killed')
 
-            time.sleep(2)
+            else:
+                self.logger.debug(f'ffmpeg process already exited with code {self._ffmpeg_proc.returncode}')
 
-            self._ffmpeg_proc.terminate()
-            try:
-                self._ffmpeg_proc.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                self.logger.warning(
-                    'ffmpeg process did not terminate in time, killing it.'
-                )
-
-                self._ffmpeg_proc.kill()
-                self._ffmpeg_proc.wait()
-
-            self._ffmpeg_proc = None
-
-            self._monitor_thread.join()
-
-        except Exception:
-            ...
+                
+        except Exception as stopping_error:
+            self.logger.exception(f'error while stopping ffmpeg process: {stopping_error}')
+            # try to kill as last resort
+            if self._ffmpeg_proc and self._ffmpeg_proc.poll() is None:
+                try:
+                    self._ffmpeg_proc.kill()
+                    self._ffmpeg_proc.wait()
+                except Exception as kill_error:
+                    self.logger.error(f'failed to kill process: {kill_error}')
 
         super().stop()
 
     def destroy(self):
+        self.logger.debug('destroying node...')
+        self._stop_requested = True
         self.stop()
+        
+        # monitor thread is fully stopped?
+        if self._monitor_thread:
+            if self._monitor_thread.is_alive():
+                self._monitor_thread.join(timeout=5)
+            self._monitor_thread = None
 
     @property
     def configuration(self) -> dict:
@@ -153,6 +177,10 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         return base_config
 
     def update(self, message: Message[BytesPayload]):
+
+        if not self._subprocess_running:
+            return
+
         waveform = AudioRTP._get_waveform(message.payload.cnt, self._channels)
 
         to_send = Message[AudioPayload](
@@ -174,6 +202,16 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         self.logger.info(f'transmitting message {to_send.version}')
 
         self._abs_recv += 1
+
+    def clear_source(self):
+        self.logger.debug('clearing source...')
+        self.set_source(
+            lambda: Message[BytesPayload](
+                creator=self.name,
+                payload=BytesPayload(cnt=b''),
+            ),
+            1, 'pre'
+        )
 
     @staticmethod
     def _get_waveform(raw_data: bytes, channels: int) -> np.ndarray:
@@ -213,21 +251,82 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         )
 
     def monitor_process(self, proc: subprocess.Popen):
-        proc.wait()
-        self.clear_source()
 
+        proc.wait()
+        
+        returncode = proc.returncode
         self.logger.debug(
-            f'{self.name} subprocess terminates with code: \
-            {proc.returncode} - current node status: {self.status.name}'
+            f'subprocess terminated with code: {returncode} '
+            f'- current node status: {self.status.name}'
         )
 
-        time.sleep(5)
+        # only attempt restart if:
+        # 1. stop was not explicitly requested
+        # 2. node is still in RUNNING state
+        if not self._stop_requested and self.status == ComponentStatus.RUNNING:
 
-        if self.status == ComponentStatus.RUNNING:
-            self.logger.info(
-                f'{self.name} subprocess is respawning in 5 seconds'
+            self._subprocess_running = False
+            self.clear_source()
+
+            self.logger.warning(
+                f'subprocess crashed unexpectedly with code {returncode} '
+                f'attempting restart in 2 seconds...'
             )
+            
+            time.sleep(2)
+            
+            # use lock to prevent concurrent restart attempts
+            with self._restart_lock:
+                # double-check status before restarting
+                if self.status == ComponentStatus.RUNNING and not self._stop_requested:
+                    try:
+                        self.logger.info(f'subprocess is respawning...')
+                        # Don't call stop() to avoid deadlock
+                        # Just restart the process directly
+                        self._start_ffmpeg_process()
+                        self.logger.info(f'subprocess respawned successfully.')
+                    except Exception as respawn_error:
+                        self.logger.exception(f'failed to restart subprocess: {respawn_error}')
+                else:
+                    self.logger.debug('restart cancelled - node is no longer running')
+        else:
+            self.logger.debug('process termination was expected, no restart needed')
+            
+           
+    def _start_ffmpeg_process(self):
 
-            self.stop()
-            time.sleep(5)
-            self.start()
+        if self._subprocess_running:
+           return  # already running
+        
+        self._ffmpeg_proc = subprocess.Popen(
+            ['sh', self.ffmpeg_launcher],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            bufsize=64536,
+        )
+
+        self._subprocess_running = True
+        self.logger.debug('ffmpeg process started, launching monitor thread...')
+        
+        # terminate monitor thread if already running
+        # if self._monitor_thread and self._monitor_thread.is_alive():
+        #     self.logger.debug('previous monitor thread still alive, waiting for it to finish...')
+        #     self._monitor_thread.join(timeout=5)
+        #     self._monitor_thread = None
+        
+        self._monitor_thread = threading.Thread(
+            target=self.monitor_process, 
+            args=(self._ffmpeg_proc,),
+            daemon=True  # ensure thread exits when main program exits
+        )
+        self._monitor_thread.start()
+
+        self.logger.debug(f'setting source with process {self._ffmpeg_proc.pid}')
+        self.set_source(
+            lambda: Message[BytesPayload](
+                creator=self.name,
+                payload=BytesPayload(
+                    cnt=self._ffmpeg_proc.stdout.read(self._rec_bytes)
+                ),
+            )
+        )
