@@ -21,7 +21,7 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
     def __init__(
         self,
         rec_host: str,
-        rec_port: int | str,
+        rec_port: int,
         audio_rate: int,
         block_size: int,
         channels: int,
@@ -35,15 +35,15 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         ----------
         rec_host : str
             Hostname of the remote RTP server to receive audio from.
-        rec_port : int | str
-            Port of the RTP server to receive audio from. If set to "auto",
+        rec_port : int
+            Port of the RTP server to receive audio from. If set to 0,
             the port will be assigned automatically by the resource broker.
         audio_rate : int
-            Audio sample rate in Hz (samples per seconds).
+            Internal audio sample rate in Hz (samples per seconds).
         block_size : int
             Size of the audio block to sample, in seconds.
         channels : int
-            Number of source audio channels.
+            Number of internal audio channels.
         process_log_level : str
             Log level for the ffmpeg process.
         payload_type : int
@@ -80,7 +80,7 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         self._monitor_thread = None
 
     def configure(self):
-        if self._rec_port == 'auto':
+        if self._rec_port == 0:
             self._rec_port = rb.get('port')
 
     def warmup(self):
@@ -209,6 +209,7 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
                 '_sdp_location': self.sdp_descriptor,
                 '_process_log_level': self._process_log_level,
                 '_audio_rate': self._audio_rate,
+                '_channels': self._channels,
             },
         )
 
