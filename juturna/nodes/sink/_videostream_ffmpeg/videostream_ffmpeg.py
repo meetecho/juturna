@@ -3,12 +3,12 @@ import time
 import subprocess
 
 from juturna.components import Message
-from juturna.components import BaseNode
+from juturna.components import Node
 
 from juturna.payloads._payloads import ImagePayload
 
 
-class VideostreamFFMPEG(BaseNode[ImagePayload, None]):
+class VideostreamFFMPEG(Node[ImagePayload, None]):
     """Sink node for video streaming"""
 
     def __init__(self,

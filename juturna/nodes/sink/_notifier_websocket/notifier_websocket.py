@@ -4,10 +4,12 @@ import threading
 from websockets.sync.client import connect
 
 from juturna.components import Message
-from juturna.components import BaseNode
+from juturna.components import Node
+
+from juturna.payloads._payloads import ObjectPayload
 
 
-class NotifierWebsocket(BaseNode):
+class NotifierWebsocket(Node[ObjectPayload, None]):
     """Transmit data to a websocket endpoint"""
 
     def __init__(self, endpoint: str, **kwargs):
@@ -30,7 +32,7 @@ class NotifierWebsocket(BaseNode):
     def warmup(self):
         self.logger.info(f'[{self.name}] set to endpoint {self._endpoint}')
 
-    def update(self, message: Message):
+    def update(self, message: Message[ObjectPayload]):
         message = message.to_dict()
         message['session_id'] = self.pipe_id
 

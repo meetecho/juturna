@@ -6,6 +6,7 @@ import gc
 import typing
 
 from juturna.components import _component_builder
+from juturna.components._node import Node
 from juturna.utils.log_utils import jt_logger
 
 from juturna.names import ComponentStatus
@@ -35,7 +36,8 @@ class Pipeline:
 
         self._logger = jt_logger(self._name)
 
-        self._pipe = dict()
+        self._nodes: dict[str, Node] = dict()
+        self._links: list = list()
 
         self._status = PipelineStatus.NEW
         self.created_at = time.time()
@@ -81,10 +83,11 @@ class Pipeline:
             'folder': self.pipe_path,
             'self': self._status,
             'nodes': {
-                n['node'].name: {
-                    'status': n['node'].status,
-                    'config': n['node'].configuration
-                } for n in self._pipe.values()} if self._pipe else dict()
+                node_name: {'status': node.status, 'config': node.configuration}
+                for node_name, node in self._nodes.items()
+            }
+            if self._nodes
+            else dict(),
         }
 
     def warmup(self):
@@ -96,9 +99,6 @@ class Pipeline:
         """
         if self._status != PipelineStatus.NEW:
             raise RuntimeError(f'pipeline {self.name} cannot be warmed up')
-
-        if self._pipe is None:
-            self._pipe = dict()
 
         pathlib.Path(self.pipe_path).mkdir(parents=True, exist_ok=True)
 
@@ -113,29 +113,33 @@ class Pipeline:
             node_folder = pathlib.Path(self.pipe_path, node_name)
             node_folder.mkdir(exist_ok=True)
 
-            _node, _register = _component_builder.build_component(
-                node, plugin_dirs=self._raw_config['plugins'],
-                pipe_name=self.name)
+            _node: Node = _component_builder.build_component(
+                node,
+                plugin_dirs=self._raw_config['plugins'],
+                pipe_name=self.name,
+            )
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)
             _node.pipe_path = node_folder
             _node.status = ComponentStatus.NEW
 
-            if _register:
-                _node.add_destination(_register)
-
-            self._pipe[node_name] = {'node': _node, 'register': _register}
+            self._nodes[node_name] = _node
 
         for link in links:
             from_node = link['from']
             to_node = link['to']
 
-            self._pipe[to_node]['node'].set_source(
-                self._pipe[from_node]['register'])
+            self._nodes[from_node].add_destination(
+                to_node, self._nodes[to_node]
+            )
 
-        for node_name in self._pipe:
-            self._pipe[node_name]['node'].warmup()
-            self._pipe[node_name]['node'].status = ComponentStatus.CONFIGURED
+            self._nodes[to_node].origins.append(from_node)
+
+            self._links.append(copy.copy(link))
+
+        for node_name, node in self._nodes.items():
+            node.warmup()
+            node.status = ComponentStatus.CONFIGURED
 
             self._logger.info(f'warmed up node {node_name}')
 
@@ -144,15 +148,13 @@ class Pipeline:
 
         return
 
-    def update_node(self,
-                    node_name: str,
-                    property_name: str,
-                    property_value: typing.Any):
-        assert self._pipe is not None
-        assert self._pipe.get(node_name, None) is not None
-
-        self._pipe[node_name]['node'].set_on_config(
-            property_name, property_value)
+    def update_node(
+        self, node_name: str, property_name: str, property_value: typing.Any
+    ):
+        if node := self._nodes.get(node_name):
+            node.set_on_config(property_name, property_value)
+        else:
+            self._logger.warning(f'node {node_name} not in pipeline')
 
     def start(self):
         """
@@ -166,11 +168,13 @@ class Pipeline:
         if self._status != PipelineStatus.READY:
             raise RuntimeError(f'pipeline {self.name} is not ready')
 
-        if self._pipe is None:
+        if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
-        for node_name in list(self._pipe.keys())[::-1]:
-            self._pipe[node_name]['node'].start()
+        for node_name in list(self._nodes.keys())[::-1]:
+            self._logger.info(f'starting node {node_name}')
+
+            self._nodes[node_name].start()
 
         self._status = PipelineStatus.RUNNING
 
@@ -188,15 +192,15 @@ class Pipeline:
         if self._status != PipelineStatus.RUNNING:
             raise RuntimeError(f'pipeline {self.name} is not running')
 
-        if self._pipe is None:
+        if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
-        for node_name in list(self._pipe.keys())[::-1]:
-            self._pipe[node_name]['node'].stop()
+        for node_name, node in self._nodes.items():
+            self._logger.info(f'stopping node {node_name}')
+
+            node.stop()
 
         self._status = PipelineStatus.READY
-
-        self._logger.info('pipe stopped')
 
     def destroy(self):
         """
@@ -211,24 +215,18 @@ class Pipeline:
         if self._status == PipelineStatus.RUNNING:
             self.stop()
 
-        if self._pipe is None:
+        if not self._nodes:
             return
 
-        for node_name in list(self._pipe.keys())[::-1]:
-            self._logger.info('clearing source...')
-            self._pipe[node_name]['node'].clear_source()
+        for node_name in list(self._nodes.keys())[::-1]:
+            self._nodes[node_name].clear_source()
+            self._nodes[node_name].clear_destinations()
+            self._nodes[node_name].destroy()
 
-            self._logger.info('clearing destinations...')
-            self._pipe[node_name]['node'].clear_destinations()
+            self._nodes[node_name] = None
 
-            self._pipe[node_name]['node'].destroy()
-
-            self._pipe[node_name]['node'] = None
-            self._pipe[node_name]['register'] = None
-
-        self._pipe = None
+        self._nodes = None
 
         gc.collect()
 
         self._logger.info('pipe destroyed')
-

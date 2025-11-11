@@ -13,13 +13,13 @@ import threading
 
 from websockets.sync.server import serve
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads import BytesPayload, ObjectPayload
 
 
-class JsonWebsocket(BaseNode[BytesPayload, ObjectPayload]):
+class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
     """Node implementation class"""
 
     def __init__(self, rtx_host: str, rtx_port: int, **kwargs):

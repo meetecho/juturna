@@ -5,12 +5,12 @@ import time
 
 import numpy as np
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 from juturna.payloads import BytesPayload, ImagePayload
 
 
-class VideoFile(BaseNode[BytesPayload, ImagePayload]):
+class VideoFile(Node[BytesPayload, ImagePayload]):
     """Read video file and steam it locally"""
 
     def __init__(self,

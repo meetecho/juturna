@@ -1,12 +1,12 @@
 from ultralytics import YOLO
 
 from juturna.components import Message
-from juturna.components import BaseNode
+from juturna.components import Node
 
 from juturna.payloads._payloads import ImagePayload
 
 
-class TrackerYolo(BaseNode[ImagePayload, ImagePayload]):
+class TrackerYolo(Node[ImagePayload, ImagePayload]):
     def __init__(
         self,
         model: str,

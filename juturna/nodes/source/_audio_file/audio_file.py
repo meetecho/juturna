@@ -8,12 +8,12 @@ import av.audio.resampler
 import numpy as np
 
 from juturna.names import ComponentStatus
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 from juturna.payloads import AudioPayload
 
 
-class AudioFile(BaseNode[AudioPayload, AudioPayload]):
+class AudioFile(Node[AudioPayload, AudioPayload]):
     """
     Read in an audio file, chunk it based on the configured length, then make
     them available to the pipe in a real-time fashion.
@@ -81,8 +81,6 @@ class AudioFile(BaseNode[AudioPayload, AudioPayload]):
         self.logger.info(f'duration: {len(audio) / self._rate}')
 
     def _generate_chunks(self) -> Message[AudioPayload] | None:
-        self.logger.info('source generating chunk...')
-
         try:
             return Message[AudioPayload](
                 creator=self.name,

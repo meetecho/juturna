@@ -17,14 +17,14 @@ import omegaconf
 import nemo.collections.asr as nemo_asr
 import numpy as np
 
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads._payloads import AudioPayload
 from juturna.payloads._payloads import ObjectPayload
 
 
-class TranscriberParakeet(BaseNode[AudioPayload, ObjectPayload]):
+class TranscriberParakeet(Node[AudioPayload, ObjectPayload]):
     """Node implementation class"""
 
     def __init__(

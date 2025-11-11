@@ -8,15 +8,12 @@ from collections.abc import Iterable
 
 
 _NODE_IMPORT_PATH = 'juturna.nodes'
-_REGISTER_IMPORT_PATH = 'juturna.components'
-
 _NODE_IMPORT_MASK = '{}._{}.{}'
-_REGISTER_IMPORT_MASK = '{}.{}'
 
 
-def node(node_type: str,
-         node_name: str,
-         import_prefix: str = _NODE_IMPORT_PATH) -> tuple[type | None, dict]:
+def node(
+    node_type: str, node_name: str, import_prefix: str = _NODE_IMPORT_PATH
+) -> tuple[type | None, dict]:
     """
     Constructs a node module based on the given node type and name.
 
@@ -47,42 +44,10 @@ def node(node_type: str,
     """
     _node_module_path = f'{import_prefix}.{_NODE_IMPORT_MASK}'
     _node_module_path = _node_module_path.format(
-        node_type, node_name, node_name)
+        node_type, node_name, node_name
+    )
 
     return _build(_node_module_path, node_name)
-
-
-def buffer(buf_type: str, import_prefix: str = _REGISTER_IMPORT_PATH):
-    """
-    Constructs a register module based on the given register type.
-
-    This function is used to dynamically load a register module based on the
-    provided type. By specifying the register type, the function determines the
-    appropriate module path, loads it, and returns the register class and its
-    configuration.
-
-    Parameters
-    ----------
-    buf_type : str
-        The type of the register to be loaded (e.g., "audio", "video").
-    import_prefix : str, optional
-        The import prefix for the register (default is 'juturna.buffers').
-
-    Returns
-    -------
-    tuple
-        A tuple containing the register class and its configuration dictionary.
-
-    Examples
-    --------
-    >>> launcher, config = buffer('audio_shift')
-
-    """
-    _reg_module_path = import_prefix + '.{}.{}'
-    _reg_module_path = f'{import_prefix}.{_REGISTER_IMPORT_MASK}'
-    _reg_module_path = _reg_module_path.format(buf_type, buf_type)
-
-    return _build(_reg_module_path, buf_type)
 
 
 def _build(_item_path: str, _item_type: str) -> tuple[type | None, dict]:
@@ -123,7 +88,7 @@ def _discover_classes(_import_path: str) -> list:
     identify all classes defined within it. It filters out any private or
     protected classes (those whose names start with an underscore). The primary
     use of this function is to provide a list of candidate classes that could
-    serve as the main entry point (launcher) for a node or register module.
+    serve as the main entry point (launcher) for a node.
 
     Parameters
     ----------
@@ -138,8 +103,9 @@ def _discover_classes(_import_path: str) -> list:
     """
     _item_module = importlib.import_module(_import_path)
 
-    return [m for m in inspect.getmembers(_item_module)
-            if not m[0].startswith('_')]
+    return [
+        m for m in inspect.getmembers(_item_module) if not m[0].startswith('_')
+    ]
 
 
 def _get_module_launcher(_classes: Iterable, _item_type: str) -> type | None:
@@ -149,8 +115,8 @@ def _get_module_launcher(_classes: Iterable, _item_type: str) -> type | None:
     This function iterates over the list of classes identified by
     `_discover_classes`, looking for the class whose module matches the
     specified item type. The correct launcher class is typically the one whose
-    module name matches the node or register being loaded. If no such class is
-    found, the function returns `None`.
+    module name matches the node being loaded. If no such class is found, the
+    function returns `None`.
 
     Parameters
     ----------
@@ -213,13 +179,10 @@ def discover_components(import_prefix: str | None = None) -> dict:
     _prefix_paths = _get_full_prefix(import_prefix)
     components = {
         'nodes': {
-            t.name: [s_t.name for s_t in t.glob('*') if s_t.is_dir()] \
-            for t in _prefix_paths['nodes'] if t.name != '__pycache__'
-        },
-        'buffers': [
-            t.name for t in _prefix_paths['buffers'].glob('*') \
-            if t.is_dir() and t.name != '__pycache__'
-        ]
+            t.name: [s_t.name for s_t in t.glob('*') if s_t.is_dir()]
+            for t in _prefix_paths['nodes']
+            if t.name != '__pycache__'
+        }
     }
 
     return components
@@ -228,12 +191,7 @@ def discover_components(import_prefix: str | None = None) -> dict:
 def _get_full_prefix(prefix: str | None = None) -> dict:
     node_path = pathlib.Path(
         prefix or _NODE_IMPORT_PATH.replace('.', os.sep),
-        'nodes' if prefix else '')
-    register_path = pathlib.Path(
-            prefix or _REGISTER_IMPORT_PATH.replace('.', os.sep),
-        'buffers' if prefix else '')
+        'nodes' if prefix else '',
+    )
 
-    return {
-        'nodes': [p for p in node_path.glob('*') if p.is_dir()],
-        'buffers': register_path
-    }
+    return {'nodes': [p for p in node_path.glob('*') if p.is_dir()]}

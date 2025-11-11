@@ -1,24 +1,35 @@
-"""CLI registry"""
+"""
+CLI registry
 
-from juturna.cli.commands import launch
-from juturna.cli.commands import validate
-from juturna.cli.commands import serve
+Commands are registered based on whether their required modules are installed. A
+command for which its module fails to be imported will not be registered, so it
+will not be available in the command line.
+"""
+
+import importlib
 
 
-_COMMANDS = {
-    'launch': launch._execute,
-    'validate': validate._execute,
-    'serve': serve._execute,
+_MODULES = {
+    cmd: None for cmd in ['launch', 'validate', 'serve', 'create', 'stub']
 }
 
 
+def _safe_reg(module_name: str, subparsers):
+    try:
+        _MODULES[module_name] = importlib.import_module(
+            f'juturna.cli.commands.{module_name}'
+        )
+        _MODULES[module_name].setup_parser(subparsers)
+    except ModuleNotFoundError:
+        ...
+
+
 def register_all(subparsers):
-    """Register command subparsers to main parser"""
-    launch.setup_parser(subparsers)
-    validate.setup_parser(subparsers)
-    serve.setup_parser(subparsers)
+    """Register subparsers for all modules"""
+    for module in _MODULES:
+        _safe_reg(module, subparsers)
 
 
 def command(cmd_name: str):
     """Return command caller function"""
-    return _COMMANDS[cmd_name]
+    return _MODULES[cmd_name]._execute

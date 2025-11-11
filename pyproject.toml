@@ -1,6 +1,6 @@
 [project]
 name = "juturna"
-version = "0.2.0"
+version = "1.0.1"
 description = "Juturna core library"
 authors = [
     { name = "Antonio Bevilacqua", email = "b3by.in.th3.sky@gmail.com" }
@@ -8,6 +8,11 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "MIT" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
 
 [tool.poetry.dependencies]
 av = "^14.2.0"
@@ -19,6 +24,10 @@ websockets = "^15.0.1"
 fastapi = { version = ">=0.115.12,<0.116.0", optional = true, extras = ["httpwrapper"] }
 fastapi-cli = { version = ">=0.0.7,<0.0.8", optional = true, extras = ["httpwrapper"] }
 
+# pipe builder
+prompt_toolkit = { version = "^3.0.52", optional = true, extras = ["pipebuilder"] }
+rich = { version = "^13.8.1", optional = true, extras = ["pipebuilder"] }
+
 # dev dependencies
 pytest = { version = "^8.3.5", optional = true, extras = ["dev"] }
 sphinx = { version = "^8.2.3", optional = true, extras = ["dev"] }
@@ -26,8 +35,7 @@ sphinxcontrib-apidoc = { version = "^0.5.0", optional = true, extras = ["dev"] }
 sphinxcontrib-napoleon = { version = "^0.7", optional = true, extras = ["dev"] }
 sphinx-autoapi = { version = "^3.6.0", optional = true, extras = ["dev"] }
 sphinx-autobuild = { version = "^2024.10.3", optional = true, extras = ["dev"] }
-sphinx-rtd-theme = { version = "^3.0.2", optional = true, extras = ["dev"] }
-pydata-sphinx-theme = { version = "^0.16.1", optional = true, extras = ["dev"] }
+furo = { version = "^2025.9.25", optional = true, extras = ["dev"] }
 sphinx-design = { version = "^0.6.1", optional = true, extras = ["dev"] }
 sphinx-new-tab-link = {version = "^0.8.0", optional = true, extras = ["dev"] }
 
@@ -39,14 +47,14 @@ packages = [
 
 [tool.poetry.extras]
 httpwrapper = ["fastapi", "fastapi-cli"]
+pipebuilder = ["prompt_toolkit", "rich"]
 dev = ["pytest",
        "sphinx",
        "sphinx-autoapi",
        "sphinx-autobuild",
        "sphinxcontrib-apidoc",
        "sphinxcontrib-napoleon",
-       "sphinx-rtd-theme",
-       "pydata-sphinx-theme",
+       "furo",
        "sphinx-design",
        "sphinx_new_tab_link"]
 
@@ -60,8 +68,7 @@ sphinxcontrib-apidoc = "^0.5.0"
 sphinxcontrib-napoleon = "^0.7"
 sphinx-autoapi = "^3.6.0"
 sphinx-autobuild = "^2024.10.3"
-sphinx-rtd-theme = "^3.0.2"
-pydata-sphinx-theme = "^0.16.1"
+furo = "^2025.9.25"
 sphinx-design = "^0.6.1"
 
 [build-system]

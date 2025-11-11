@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING
 import requests
 
 from juturna.components import _resource_broker as rb
-from juturna.components import BaseNode
+from juturna.components import Node
 from juturna.components import Message
 from juturna.payloads import BytesPayload, ObjectPayload
 
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
     from typing import Any
 
 
-class HttpJson(BaseNode[BytesPayload, ObjectPayload]):
+class HttpJson(Node[BytesPayload, ObjectPayload]):
     """HTTP JSON source node."""
 
     def __init__(

@@ -7,8 +7,9 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   juturna.utils.log_utils
    juturna.utils.net_utils
-   juturna.utils.node_utils
+   juturna.utils.proc_utils
 
 Module contents
 ---------------
