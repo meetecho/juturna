@@ -25,7 +25,6 @@ jobs:
       - name: Generate documentation
         run: |
           sphinx-apidoc -f -o docs/source/apis --no-toc juturna/
-          cp docs/source/static-index/apis.rst docs/source/apis/index.rst
 
       # Build docs
       - name: Build Sphinx
