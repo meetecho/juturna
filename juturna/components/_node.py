@@ -284,6 +284,9 @@ class Node[T_Input, T_Output]:
     def clear_destinations(self):
         self._destinations = dict()
 
+    def clear_buffer(self):
+        self._buffer.flush()
+
     def _worker(self):
         while not self._stop_worker_event.is_set():
             message = self._queue.get()
