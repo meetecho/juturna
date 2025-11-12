@@ -16,6 +16,7 @@ from juturna.names import ComponentStatus
 from juturna.utils.log_utils import jt_logger
 from juturna.components._buffer import Buffer
 from juturna.components._synchronisers import _SYNCHRONISERS
+from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 
 
 class Node[T_Input, T_Output]:
@@ -394,18 +395,19 @@ class Node[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the bridge is stopped correctly.
         """
+        self._stop_worker_event.set()
+
         if self._source_f or len(self.destinations) == 0:
             self._queue.put(None)
-            # self.transmit(None)
 
-        self._stop_worker_event.set()
         self._stop_source_event.set()
 
-        if self._source_thread and self._source_thread.is_alive():
-            self._source_thread.join()
-
-        if self._worker_thread and self._worker_thread.is_alive():
-            self._worker_thread.join()
+        for _t in [
+            self._source_thread,
+            self._worker_thread,
+        ]:
+            if _t and _t.is_alive:
+                _t.join(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
 
         self._worker_thread = None
         self._source_thread = None
