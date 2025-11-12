@@ -329,7 +329,7 @@ class Node[T_Input, T_Output]:
             if self._source_mode == 'post':
                 time.sleep(self._source_sleep)
 
-            self.put(copy.deepcopy(message))
+            self.put(message)
 
     def transmit(self, message: Message[T_Output]):
         """
@@ -344,7 +344,7 @@ class Node[T_Input, T_Output]:
         """
         for node_name in self._destinations:
             self.logger.info(f'sending message to {node_name}')
-            self._destinations[node_name].put(message)
+            self._destinations[node_name].put(copy.deepcopy(message))
 
     def start(self):
         """
