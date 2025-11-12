@@ -205,6 +205,7 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
 
     def clear_source(self):
         self.logger.debug('clearing source...')
+        self._buffer.flush()
         self.set_source(
             lambda: Message[BytesPayload](
                 creator=self.name,
