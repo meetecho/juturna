@@ -275,13 +275,12 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
             f'- current node status: {self.status.name}'
         )
 
+        self._subprocess_running = False
+        self.clear_source()
         # only attempt restart if:
         # 1. stop was not explicitly requested
         # 2. node is still in RUNNING state
         if not self._stop_requested and self.status == ComponentStatus.RUNNING:
-            self._subprocess_running = False
-            self.clear_source()
-
             self.logger.warning(
                 f'subprocess crashed unexpectedly with code {returncode} '
                 f'attempting restart in 2 seconds...'
