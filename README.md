@@ -1,11 +1,8 @@
 # Juturna – Real-time AI Pipeline Framework
-<center><img src="./docs/source/_static/img/logo_dark_alt.svg?raw=true" align="center" width="40%">
+<p align="center"><img src="./docs/source/_static/img/logo_dark_alt.svg?raw=true" width="30%">
 <br>
-<img src="https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge">
-<img src="https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge">
-<img src="https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge">
-<img src="https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge">
-</center>
+<img src="https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge">
+</p>
 
 ## :seedling: Important to know
 Juturna is actively evolving with exciting new features and improvements being

@@ -46,12 +46,15 @@
 
 |version-badge|
 
-.. image:: ./_static/img/logo_dark_alt_transparent.svg
-   :alt: juturna
-   :width: 30%
-   :align: center
+Juturna's documentation
+=======================
 
-\
+.. .. image:: ./_static/img/logo_dark_alt_transparent.svg
+..    :alt: juturna
+..    :width: 30%
+..    :align: center
+
+.. \
 
 .. image:: https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge
     :alt: License
@@ -69,9 +72,6 @@
     :alt: Issues
 
 ----
-
-Juturna's documentation
-=======================
 
 Energise your multimedia data prototyping with **Juturna**: design, implement,
 execute and manipulate real-time pipelines in minutes!
@@ -106,6 +106,8 @@ execute and manipulate real-time pipelines in minutes!
 
     .. grid-item::
         .. card:: ``jt/apis``
+            :link: reference
+            :link-type: ref
 
             Check out the code documentation and the Juturna Python APIs
             reference, or explore the GitHub repository.
