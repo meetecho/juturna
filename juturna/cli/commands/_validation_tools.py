@@ -39,7 +39,7 @@ class ValidationPipe:
         for check, args, kwargs in self._checks:
             self.results.append((check.name, check(*args, **kwargs)))
 
-            print(f'\N{check mark} {check.name} ciao')
+            print(f'\N{check mark} {check.name}')
 
     def to_dict(self) -> dict[str, typing.Any]:
         return {
