@@ -68,20 +68,31 @@ class TranscriberWhispy(Node[AudioPayload, ObjectPayload]):
             model_name, local_files_only=self._only_local, device=device
         )
         self._model_name = model_name
+        self._buffer_size = buffer_size
 
         self._language = language
         self._task = task
         self._word_timestamps = word_timestamps
         self._without_timestamps = without_timestamps
 
-        self._data = collections.deque(maxlen=buffer_size)
+        # self._data = collections.deque(maxlen=buffer_size)
+        self.logger.info(f'init sources: {self.origins}')
 
         logging.getLogger('faster_whisper').setLevel(logging.ERROR)
         self.logger.info(f'trx created, model id {id(self._model)}')
 
+    def warmup(self):
+        self._data = {
+            k: collections.deque(maxlen=self._buffer_size) for k in self.origins
+        }
+
+        self.logger.info(f'warmup sources: {self.origins}')
+
     def update(self, message: Message[AudioPayload]):
         """Receive data from upstream, transmit data downstream"""
         self.logger.info(f'received {message.version}')
+
+        origin = message.creator
 
         to_send = Message[ObjectPayload](
             creator=self.name,
@@ -90,22 +101,26 @@ class TranscriberWhispy(Node[AudioPayload, ObjectPayload]):
             timers_from=message,
         )
 
+        to_send.meta['origin'] = origin
+
         if message.meta['silence']:
             self.logger.info('silence detected, sending silence...')
             to_send.payload['transcript'] = list()
             to_send.timer(self.name, -1)
 
             self.transmit(to_send)
-            self._data.clear()
+            # self._data.clear()
+            self._data[origin].clear()
 
             self.logger.info(f'sent {to_send.version}')
 
             return
 
         self.logger.info('transcribing audio content')
-        self._data.append(message)
+        self._data[origin].append(message)
 
-        speech = [m.payload.audio for m in self._data]
+        # speech = [m.payload.audio for m in self._data]
+        speech = [m.payload.audio for m in self._data[origin]]
         speech = np.concatenate(speech)
 
         transcript, trx_info = self._model.transcribe(
@@ -127,15 +142,15 @@ class TranscriberWhispy(Node[AudioPayload, ObjectPayload]):
                 'word': w.word,
                 'start': float(w.start),
                 'end': float(w.end),
-                'start_abs': float(w.start) + self._data[0].payload.start,
-                'end_abs': float(w.end) + self._data[0].payload.start,
+                'start_abs': float(w.start) + self._data[origin][0].payload.start,
+                'end_abs': float(w.end) + self._data[origin][0].payload.start,
                 'probability': float(w.probability),
             }
             for segment in transcript
             for w in segment.words
         ]
 
-        rescaled = TranscriberWhispy._rescale_trx_words(word_list, self._data)
+        rescaled = TranscriberWhispy._rescale_trx_words(word_list, self._data[origin])
 
         to_send.payload['transcript'] = rescaled
         # self.logger.info(f'transcript {rescaled}')

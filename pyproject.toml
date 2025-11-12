@@ -1,6 +1,6 @@
 [project]
 name = "juturna"
-version = "0.2.0"
+version = "1.0.1"
 description = "Juturna core library"
 authors = [
     { name = "Antonio Bevilacqua", email = "b3by.in.th3.sky@gmail.com" }
@@ -35,8 +35,7 @@ sphinxcontrib-apidoc = { version = "^0.5.0", optional = true, extras = ["dev"] }
 sphinxcontrib-napoleon = { version = "^0.7", optional = true, extras = ["dev"] }
 sphinx-autoapi = { version = "^3.6.0", optional = true, extras = ["dev"] }
 sphinx-autobuild = { version = "^2024.10.3", optional = true, extras = ["dev"] }
-sphinx-rtd-theme = { version = "^3.0.2", optional = true, extras = ["dev"] }
-piccolo_theme = { version = "^0.24.0", optional = true, extras = ["dev"] }
+furo = { version = "^2025.9.25", optional = true, extras = ["dev"] }
 sphinx-design = { version = "^0.6.1", optional = true, extras = ["dev"] }
 sphinx-new-tab-link = {version = "^0.8.0", optional = true, extras = ["dev"] }
 
@@ -55,8 +54,7 @@ dev = ["pytest",
        "sphinx-autobuild",
        "sphinxcontrib-apidoc",
        "sphinxcontrib-napoleon",
-       "sphinx-rtd-theme",
-       "piccolo_theme",
+       "furo",
        "sphinx-design",
        "sphinx_new_tab_link"]
 
@@ -70,8 +68,7 @@ sphinxcontrib-apidoc = "^0.5.0"
 sphinxcontrib-napoleon = "^0.7"
 sphinx-autoapi = "^3.6.0"
 sphinx-autobuild = "^2024.10.3"
-sphinx-rtd-theme = "^3.0.2"
-piccolo_theme = "^0.24.0"
+furo = "^2025.9.25"
 sphinx-design = "^0.6.1"
 
 [build-system]
