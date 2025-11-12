@@ -10,6 +10,7 @@ _VAR_DEFAULTS = {
         pathlib.Path(pathlib.Path.home(), '.cache', 'juturna')
     ),
     'JUTURNA_LOCAL_PLUGIN_DIR': './plugins',
+    'JUTURNA_THREAD_JOIN_TIMEOUT': 2.0,
 }
 
 
@@ -22,3 +23,4 @@ JUTURNA_HUB_URL = _get_env_var('JUTURNA_HUB_URL')
 JUTURNA_CACHE_DIR = _get_env_var('JUTURNA_CACHE_DIR')
 JUTURNA_HUB_TOKEN = _get_env_var('JUTURNA_HUB_TOKEN')
 JUTURNA_LOCAL_PLUGIN_DIR = _get_env_var('JUTURNA_LOCAL_PLUGIN_DIR')
+JUTURNA_THREAD_JOIN_TIMEOUT = _get_env_var('JUTURNA_THREAD_JOIN_TIMEOUT')

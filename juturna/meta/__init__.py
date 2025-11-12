@@ -4,6 +4,7 @@ from juturna.meta._constants import (
     JUTURNA_HUB_TOKEN,
     JUTURNA_CACHE_DIR,
     JUTURNA_LOCAL_PLUGIN_DIR,
+    JUTURNA_THREAD_JOIN_TIMEOUT
 )
 
 
@@ -13,4 +14,5 @@ __all__ = [
     'JUTURNA_HUB_TOKEN',
     'JUTURNA_CACHE_DIR',
     'JUTURNA_LOCAL_PLUGIN_DIR',
+    'JUTURNA_THREAD_JOIN_TIMEOUT'
 ]
