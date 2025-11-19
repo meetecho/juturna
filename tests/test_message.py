@@ -5,6 +5,13 @@ import numpy as np
 
 from juturna.components import Message
 
+from juturna.payloads._payloads import AudioPayload
+from juturna.payloads._payloads import ImagePayload
+from juturna.payloads._payloads import VideoPayload
+from juturna.payloads._payloads import BytesPayload
+from juturna.payloads._payloads import Batch
+from juturna.payloads._payloads import ObjectPayload
+
 
 def test_message_init():
     msg = Message()
@@ -153,9 +160,9 @@ def test_message_to_json():
 
 def test_message_to_json_custom_encoder():
     msg = Message()
-    msg.payload = np.array([1, 2, 3])
+    msg.payload = AudioPayload(audio=np.ndarray(10))
 
-    json_str = msg.to_json(encoder=lambda x: x.tolist())
+    json_str = msg.to_json(encoder=lambda x: 'custom_serialised')
 
     assert isinstance(json_str, str)
     assert 'created_at' in json_str
@@ -165,7 +172,26 @@ def test_message_to_json_custom_encoder():
     assert 'meta' in json_str
     assert 'timers' in json_str
 
-    retrieved_payload = json.loads(json_str)['payload']
+    recoded = json.loads(json_str)
 
-    assert isinstance(retrieved_payload, list)
-    assert retrieved_payload == [1, 2, 3]
+    assert 'created_at' in recoded.keys()
+    assert 'creator' in recoded.keys()
+    assert 'version' in recoded.keys()
+    assert 'payload' in recoded.keys()
+    assert 'meta' in recoded.keys()
+    assert 'timers' in recoded.keys()
+
+    assert recoded['payload'] == 'custom_serialised'
+
+def test_message_serialisation():
+    test_payload = AudioPayload(
+        audio=np.ndarray(10),
+        sampling_rate=10,
+        channels=2,
+        start=0,
+        end=5
+    )
+
+    test_message = Message(creator='tester', version=7, payload=test_payload)
+
+    serialized = test_message.to_json()
