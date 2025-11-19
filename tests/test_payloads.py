@@ -62,3 +62,47 @@ def test_object_payload():
 
     assert payload['prop_a'] == 'string'
     assert payload['prop_b'] == 10
+
+
+def test_serialize_audio():
+    test_waveform = [1, 2, 3, 4, 5]
+    test_audio = np.asarray(test_waveform, dtype=np.int8)
+
+    test_payload = AudioPayload(
+        audio=test_audio,
+        sampling_rate=100,
+        channels=1,
+        start=0,
+        end=5
+    )
+
+    serialized = AudioPayload.serialize(test_payload)
+
+    assert isinstance(serialized, dict)
+    assert serialized['audio'] == test_waveform
+    assert serialized['sampling_rate'] == 100
+    assert serialized['channels'] == 1
+    assert serialized['start'] == 0
+    assert serialized['end'] == 5
+
+
+def test_serialize_image():
+    test_frame = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+    test_image = np.asarray(test_frame, dtype=np.float32)
+
+    test_payload = ImagePayload(
+        image=test_image,
+        width=3,
+        height=3,
+        depth=1,
+        pixel_format='test_format'
+    )
+
+    serialized = ImagePayload.serialize(test_payload)
+
+    assert isinstance(serialized, dict)
+    np.testing.assert_array_equal(serialized['image'], test_image)
+    assert serialized['width'] == 3
+    assert serialized['height'] == 3
+    assert serialized['depth'] == 1
+    assert serialized['pixel_format'] == 'test_format'

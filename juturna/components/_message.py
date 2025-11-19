@@ -92,15 +92,21 @@ class Message[T_Input]:
             'timers': self.timers,
         }
 
-    def to_json(self, encoder: typing.Callable | None = None) -> str:
+    def to_json(
+        self, encoder: typing.Callable | None = None, indent: int | None = None
+    ) -> str:
         """
-        Convert the message to a JSON string.
+        Convert the message to a JSON string. A custom encoder can be provided
+        to serialise non-serialisable content, otherwise the default serialize
+        method defined on the payload will be used.
 
         Parameters
         ----------
         encoder : callable, optional
             A custom JSON encoder. The default is None, which uses the default
             JSON encoder.
+        indent : int
+            Indentation level for the serialisation, Defaulted to None.
 
         Returns
         -------
@@ -108,7 +114,15 @@ class Message[T_Input]:
             The JSON string representation of the message.
 
         """
-        return json.dumps(self.to_dict(), default=encoder, indent=2)
+        use_encoder = encoder or (
+            self.payload.serialize if self.payload is not None else None
+        )
+
+        return json.dumps(
+            self.to_dict(),
+            default=use_encoder,
+            indent=indent,
+        )
 
     @property
     def creator(self) -> str | None:
