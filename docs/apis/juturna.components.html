@@ -397,12 +397,17 @@ If no value is provided, the current time is used.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Message.to_json">
-<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#juturna.components.Message.to_json" title="Link to this definition">¶</a></dt>
-<dd><p>Convert the message to a JSON string.</p>
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#juturna.components.Message.to_json" title="Link to this definition">¶</a></dt>
+<dd><p>Convert the message to a JSON string. A custom encoder can be provided
+to serialise non-serialisable content, otherwise the default serialize
+method defined on the payload will be used.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>encoder</strong> (<em>callable</em><em>, </em><em>optional</em>) – A custom JSON encoder. The default is None, which uses the default
-JSON encoder.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoder</strong> (<em>callable</em><em>, </em><em>optional</em>) – A custom JSON encoder. The default is None, which uses the default
+JSON encoder.</p></li>
+<li><p><strong>indent</strong> (<em>int</em>) – Indentation level for the serialisation, Defaulted to None.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The JSON string representation of the message.</p>

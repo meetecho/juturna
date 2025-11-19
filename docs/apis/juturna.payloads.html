@@ -316,6 +316,11 @@
 <span class="sig-name descname"><span class="pre">sampling_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.sampling_rate" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.AudioPayload.serialize">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.payloads.AudioPayload.serialize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.AudioPayload.start">
 <span class="sig-name descname"><span class="pre">start</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1.0</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.start" title="Link to this definition">¶</a></dt>
@@ -332,6 +337,11 @@
 <span class="sig-name descname"><span class="pre">messages</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="juturna.components.html#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#juturna.payloads.Batch.messages" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.Batch.serialize">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#juturna.payloads.Batch.serialize" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </dd></dl>
 
 <dl class="py class">
@@ -341,6 +351,11 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.BytesPayload.cnt">
 <span class="sig-name descname"><span class="pre">cnt</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bytes</span></em><a class="headerlink" href="#juturna.payloads.BytesPayload.cnt" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.BytesPayload.serialize">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.payloads.BytesPayload.serialize" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -367,6 +382,11 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.ImagePayload.pixel_format">
 <span class="sig-name descname"><span class="pre">pixel_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#juturna.payloads.ImagePayload.pixel_format" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.ImagePayload.serialize">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.payloads.ImagePayload.serialize" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -404,6 +424,11 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.VideoPayload.frames_per_second">
 <span class="sig-name descname"><span class="pre">frames_per_second</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1.0</span></em><a class="headerlink" href="#juturna.payloads.VideoPayload.frames_per_second" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.VideoPayload.serialize">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.payloads.VideoPayload.serialize" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -491,15 +516,18 @@
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.channels"><code class="docutils literal notranslate"><span class="pre">AudioPayload.channels</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.end"><code class="docutils literal notranslate"><span class="pre">AudioPayload.end</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.sampling_rate"><code class="docutils literal notranslate"><span class="pre">AudioPayload.sampling_rate</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.AudioPayload.serialize"><code class="docutils literal notranslate"><span class="pre">AudioPayload.serialize()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.start"><code class="docutils literal notranslate"><span class="pre">AudioPayload.start</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.payloads.Batch"><code class="docutils literal notranslate"><span class="pre">Batch</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.payloads.Batch.messages"><code class="docutils literal notranslate"><span class="pre">Batch.messages</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.Batch.serialize"><code class="docutils literal notranslate"><span class="pre">Batch.serialize()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.payloads.BytesPayload"><code class="docutils literal notranslate"><span class="pre">BytesPayload</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.payloads.BytesPayload.cnt"><code class="docutils literal notranslate"><span class="pre">BytesPayload.cnt</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.BytesPayload.serialize"><code class="docutils literal notranslate"><span class="pre">BytesPayload.serialize()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload"><code class="docutils literal notranslate"><span class="pre">ImagePayload</span></code></a><ul>
@@ -507,6 +535,7 @@
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload.height"><code class="docutils literal notranslate"><span class="pre">ImagePayload.height</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload.image"><code class="docutils literal notranslate"><span class="pre">ImagePayload.image</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload.pixel_format"><code class="docutils literal notranslate"><span class="pre">ImagePayload.pixel_format</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.ImagePayload.serialize"><code class="docutils literal notranslate"><span class="pre">ImagePayload.serialize()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload.timestamp"><code class="docutils literal notranslate"><span class="pre">ImagePayload.timestamp</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload.width"><code class="docutils literal notranslate"><span class="pre">ImagePayload.width</span></code></a></li>
 </ul>
@@ -518,6 +547,7 @@
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload"><code class="docutils literal notranslate"><span class="pre">VideoPayload</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload.end"><code class="docutils literal notranslate"><span class="pre">VideoPayload.end</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload.frames_per_second"><code class="docutils literal notranslate"><span class="pre">VideoPayload.frames_per_second</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.VideoPayload.serialize"><code class="docutils literal notranslate"><span class="pre">VideoPayload.serialize()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload.start"><code class="docutils literal notranslate"><span class="pre">VideoPayload.start</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload.video"><code class="docutils literal notranslate"><span class="pre">VideoPayload.video</span></code></a></li>
 </ul>
