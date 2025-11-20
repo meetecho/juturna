@@ -1,0 +1,9 @@
+[arguments]
+location = "./"
+pattern = "*"
+recursive = false
+ignore_directories = true
+ignore_updates = true
+ignore_deletions = true
+
+[meta]
