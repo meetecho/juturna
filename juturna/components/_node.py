@@ -402,6 +402,22 @@ class Node[T_Input, T_Output]:
 
         self._stop_source_event.set()
 
+        # Replace the source callback with a no-op stub to prevent deadlock
+        # when _source_thread is blocked waiting for _source_f (e.g., reading
+        # from subprocess stdout). This ensures the thread can exit gracefully.
+        if self._source_f is not None:
+            self._logger.debug(
+                f'Replacing blocking source callback with no-op stub to prevent deadlock'
+            )
+            # Create a stub that immediately returns None to unblock the thread
+            def _no_op_source():
+                return None
+            original_source_name = getattr(self._source_f, '__name__', 'lambda')
+            self._source_f = _no_op_source
+            self._logger.debug(
+                f'Source callback replaced: {original_source_name} -> _no_op_source'
+            )
+
         for _t in [
             self._source_thread,
             self._worker_thread,
