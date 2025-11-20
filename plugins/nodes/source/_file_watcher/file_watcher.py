@@ -49,6 +49,8 @@ class FileWatcher(Node[ObjectPayload, ObjectPayload]):
             If true, also watch subdirectories.
         ignore_directories : bool
             Do not watch for new directories.
+        ignore_updates : bool
+            Do not fire for updated files.
         ignore_deletions : bool
             Do not fire for deleted files
         kwargs : dict

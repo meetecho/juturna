@@ -15,6 +15,7 @@ import pathlib
 import typing
 import time
 
+import PIL
 import numpy as np
 
 from PIL import Image
@@ -38,9 +39,7 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
         location: str,
         pattern: str,
         recursive: bool,
-        ignore_directories: bool,
         ignore_updates: bool,
-        ignore_deletions: bool,
         **kwargs,
     ):
         """
@@ -52,10 +51,8 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
             Glob-style pattern to apply when watching the target.
         recursive : bool
             If true, also watch subdirectories.
-        ignore_directories : bool
-            Do not watch for new directories.
-        ignore_deletions : bool
-            Do not fire for deleted files
+        ignore_updates : bool
+            Do not fire for updated files.
         kwargs : dict
             Supernode arguments.
 
@@ -66,7 +63,6 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
         self._handler = _Handler(
             self._queue,
             self.logger,
-            ignore_directories=ignore_directories,
             ignore_updates=ignore_updates,
         )
 
@@ -110,8 +106,11 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
 
     def update(self, message: Message[ObjectPayload]):
         """Receive data from upstream, transmit data downstream"""
-        image = Image.open(message.payload['src_path'])
-        image.load()
+        try:
+            image = Image.open(message.payload['src_path'])
+            image.load()
+        except PIL.UnidentifiedImageError:
+            self.logger.warn(f'cannot load image {message.payload["src_path"]}')
 
         image_arr = np.array(image)
 
@@ -142,10 +141,9 @@ class _Handler(PatternMatchingEventHandler):
         self,
         q,
         logger,
-        ignore_directories: bool,
         ignore_updates: bool,
     ):
-        super().__init__(ignore_directories=ignore_directories)
+        super().__init__(ignore_directories=True)
         self._q = q
         self._logger = logger
 
