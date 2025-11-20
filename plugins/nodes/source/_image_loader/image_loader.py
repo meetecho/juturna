@@ -40,6 +40,7 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
         pattern: str,
         recursive: bool,
         ignore_updates: bool,
+        convert_rgb: bool,
         **kwargs,
     ):
         """
@@ -53,6 +54,8 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
             If true, also watch subdirectories.
         ignore_updates : bool
             Do not fire for updated files.
+        convert_rgb : bool
+            Force image format conversion into RGB.
         kwargs : dict
             Supernode arguments.
 
@@ -60,6 +63,7 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
         super().__init__(**kwargs)
 
         self._location = location
+        self._convert_rgb = convert_rgb
         self._handler = _Handler(
             self._queue,
             self.logger,
@@ -108,6 +112,10 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
         """Receive data from upstream, transmit data downstream"""
         try:
             image = Image.open(message.payload['src_path'])
+
+            if self._convert_rgb:
+                image = image.convert('RGB')
+
             image.load()
         except PIL.UnidentifiedImageError:
             self.logger.warn(f'cannot load image {message.payload["src_path"]}')
