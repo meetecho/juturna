@@ -17,6 +17,7 @@ from juturna.utils.log_utils import jt_logger
 from juturna.components._buffer import Buffer
 from juturna.components._synchronisers import _SYNCHRONISERS
 from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
+from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
 
 
 class Node[T_Input, T_Output]:
@@ -56,7 +57,7 @@ class Node[T_Input, T_Output]:
         # TODO: use LIFO to prevent message loss
         # FIX: The use of LIFO caused message misordering in certain scenarios (https://github.com/meetecho/juturna/issues/36)
         # Replace with FIFO queue for now
-        self._queue = queue.Queue(maxsize=999)
+        self._queue = queue.Queue(maxsize=JUTURNA_MAX_QUEUE_SIZE)
         self._worker_thread: threading.Thread | None = None
         self._source_thread: threading.Thread | None = None
         self._update_thread: threading.Thread | None = None
