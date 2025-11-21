@@ -19,7 +19,7 @@ class Buffer:
         self._synchroniser: Callable = synchroniser
 
         # out queue can be built based on the synchronisation policy
-        self._out_queue = queue.LifoQueue(maxsize=999)
+        self._out_queue = queue.Queue(maxsize=999)
 
         self._logger = jt_logger(creator)
         self._logger.propagate = True

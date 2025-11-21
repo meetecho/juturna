@@ -54,7 +54,9 @@ class Node[T_Input, T_Output]:
         self._logger.propagate = True
 
         # TODO: use LIFO to prevent message loss
-        self._queue = queue.LifoQueue(maxsize=999)
+        # FIX: The use of LIFO caused message misordering in certain scenarios (https://github.com/meetecho/juturna/issues/36)
+        # Replace with FIFO queue for now
+        self._queue = queue.Queue(maxsize=999)
         self._worker_thread: threading.Thread | None = None
         self._source_thread: threading.Thread | None = None
         self._update_thread: threading.Thread | None = None
