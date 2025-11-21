@@ -1,6 +1,6 @@
 [arguments]
 location = "./"
-pattern = "*"
+patterns = ["*"]
 recursive = false
 ignore_updates = true
 convert_rgb = true

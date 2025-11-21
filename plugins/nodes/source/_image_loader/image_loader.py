@@ -37,7 +37,7 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
     def __init__(
         self,
         location: str,
-        pattern: str,
+        patterns: list,
         recursive: bool,
         ignore_updates: bool,
         convert_rgb: bool,
@@ -48,8 +48,8 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
         ----------
         location : str
             Target location on the filesystem.
-        pattern : str
-            Glob-style pattern to apply when watching the target.
+        patterns : list
+            Glob-style patterns to apply when watching the target.
         recursive : bool
             If true, also watch subdirectories.
         ignore_updates : bool
@@ -63,11 +63,14 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
         super().__init__(**kwargs)
 
         self._location = location
+        self._patterns = patterns
         self._convert_rgb = convert_rgb
+
         self._handler = _Handler(
             self._queue,
             self.logger,
             ignore_updates=ignore_updates,
+            patterns=patterns,
         )
 
         self._observer = Observer()
@@ -120,6 +123,8 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
         except PIL.UnidentifiedImageError:
             self.logger.warn(f'cannot load image {message.payload["src_path"]}')
 
+            return
+
         image_arr = np.array(image)
 
         to_send = Message[ImagePayload](
@@ -146,12 +151,9 @@ class _Handler(PatternMatchingEventHandler):
     """File watcher for pattern matching"""
 
     def __init__(  # noqa
-        self,
-        q,
-        logger,
-        ignore_updates: bool,
+        self, q, logger, ignore_updates: bool, patterns: list
     ):
-        super().__init__(ignore_directories=True)
+        super().__init__(ignore_directories=True, patterns=patterns)
         self._q = q
         self._logger = logger
 
