@@ -1,6 +1,6 @@
 import os
 import pathlib
-
+from juturna.utils.log_utils import jt_logger
 
 _VAR_DEFAULTS = {
     'JUTURNA_BASE_REPO': 'https://github.com/meetecho/juturna',
@@ -19,10 +19,22 @@ def _get_env_var(var_name: str) -> str:
     return os.environ.get(var_name, _VAR_DEFAULTS[var_name])
 
 
+_logger = jt_logger()
+
 JUTURNA_BASE_REPO = _get_env_var('JUTURNA_BASE_REPO')
 JUTURNA_HUB_URL = _get_env_var('JUTURNA_HUB_URL')
 JUTURNA_CACHE_DIR = _get_env_var('JUTURNA_CACHE_DIR')
 JUTURNA_HUB_TOKEN = _get_env_var('JUTURNA_HUB_TOKEN')
 JUTURNA_LOCAL_PLUGIN_DIR = _get_env_var('JUTURNA_LOCAL_PLUGIN_DIR')
 JUTURNA_THREAD_JOIN_TIMEOUT = _get_env_var('JUTURNA_THREAD_JOIN_TIMEOUT')
-JUTURNA_MAX_QUEUE_SIZE = int(_get_env_var('JUTURNA_MAX_QUEUE_SIZE'))
+
+try:
+    JUTURNA_MAX_QUEUE_SIZE = int(_get_env_var('JUTURNA_MAX_QUEUE_SIZE'))
+except (ValueError, TypeError):
+    _logger.warning(
+        f'invalid JUTURNA_MAX_QUEUE_SIZE: {
+            _get_env_var("JUTURNA_MAX_QUEUE_SIZE")
+        }, '
+        f'falling back to default: {_VAR_DEFAULTS["JUTURNA_MAX_QUEUE_SIZE"]}'
+    )
+    JUTURNA_MAX_QUEUE_SIZE = _VAR_DEFAULTS['JUTURNA_MAX_QUEUE_SIZE']
