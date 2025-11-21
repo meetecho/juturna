@@ -2,6 +2,7 @@ import pathlib
 import subprocess
 import threading
 import time
+import contextlib
 
 import numpy as np
 
@@ -69,6 +70,9 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
             * self._audio_rate
         )
         self._abs_recv = 0
+
+        # infer incoming channel by encoding_clock_chan
+        self._in_channels = AudioRTP._parse_audio_channels(encoding_clock_chan)
 
         self._rec_host = rec_host
         self._rec_port = rec_port
@@ -194,7 +198,9 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         if not self._subprocess_running:
             return
 
-        waveform = AudioRTP._get_waveform(message.payload.cnt, self._channels)
+        waveform = AudioRTP._get_waveform(
+            message.payload.cnt, self._in_channels
+        )
 
         to_send = Message[AudioPayload](
             creator=self.name,
@@ -239,6 +245,13 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
             waveform = np.reshape(waveform, (-1, 2)).sum(axis=1) / 2
 
         return waveform
+
+    @staticmethod
+    def _parse_audio_channels(encoding_clock_chan: str) -> int:
+        channels = 1
+        with contextlib.suppress(IndexError, ValueError):
+            channels = max(1, int(encoding_clock_chan.split('/')[2]))
+        return channels
 
     @property
     def sdp_descriptor(self) -> pathlib.Path:
