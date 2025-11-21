@@ -123,12 +123,12 @@ def test_real_pipeline_with_blocking_subprocess():
         
         print(f"\n[STEP 6] Verification:")
         timeout_value = 2.0
-        print(f"    ✓ Stop completed in {elapsed_time:.3f}s (timeout: {timeout_value}s)")
-        print(f"    ✓ No deadlock occurred (would hang indefinitely without fix)")
-        print(f"    ✓ Source callback was replaced: {node._source_f is not None}")
-        print(f"    ✓ Source thread exited cleanly: {node._source_thread is None}")
-        print(f"    ✓ Worker thread exited cleanly: {node._worker_thread is None}")
-        print(f"    ✓ Subprocess cleaned up: {node._proc is None}")
+        print(f"     Stop completed in {elapsed_time:.3f}s (timeout: {timeout_value}s)")
+        print(f"     No deadlock occurred (would hang indefinitely without fix)")
+        print(f"     Source callback was replaced: {node._source_f is not None}")
+        print(f"     Source thread exited cleanly: {node._source_thread is None}")
+        print(f"     Worker thread exited cleanly: {node._worker_thread is None}")
+        print(f"     Subprocess cleaned up: {node._proc is None}")
         
         print("="*80 + "\n")
         
@@ -282,12 +282,12 @@ def test_real_pipeline_with_pipeline_class():
             print(f"    Subprocess: {source_node._proc}")
         
         print(f"\n[STEP 6] Verification:")
-        print(f"    ✓ Pipeline stop completed in {elapsed_time:.3f}s")
-        print(f"    ✓ No deadlock occurred")
-        print(f"    ✓ All nodes stopped cleanly")
-        print(f"    ✓ Source -> Proc -> Sink chain verified")
+        print(f"     Pipeline stop completed in {elapsed_time:.3f}s")
+        print(f"     No deadlock occurred")
+        print(f"     All nodes stopped cleanly")
+        print(f"     Source -> Proc -> Sink chain verified")
         if hasattr(source_node, '_proc'):
-            print(f"    ✓ Subprocess cleaned up: {source_node._proc is None}")
+            print(f"     Subprocess cleaned up: {source_node._proc is None}")
         
         print("="*80 + "\n")
         
