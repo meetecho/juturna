@@ -243,7 +243,7 @@ class Node[T_Input, T_Output]:
         dump_path = pathlib.Path(self.pipe_path, file_name)
 
         with open(dump_path, 'w') as f:
-            f.write(message.to_json(encoder=lambda x: x.tolist()))
+            f.write(message.to_json())
 
         return str(dump_path)
 
