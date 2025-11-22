@@ -1,6 +1,7 @@
 import pathlib
 import typing
-import traceback
+import os
+import re
 
 from juturna.components import _mapper as mapper
 
@@ -35,6 +36,10 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
             _log_import_exception(exc)
 
         raise ModuleNotFoundError(f'node module not found: {node_name}')
+
+    # Resolve environment variable references in the remote configuration
+    _logger.info(f'resolving environment variables for node "{node_name}"')
+    node_remote_config = _resolve_env_vars(node_remote_config, node_name=node_name)
 
     operational_config = _update_local_with_remote(
         _node_local_config['arguments'], node_remote_config
@@ -87,6 +92,101 @@ def component_lookup_args(
     ]
 
     return def_args
+
+
+def _resolve_env_vars(value: typing.Any, node_name: str = '', config_key: str = '') -> typing.Any:
+    """
+    Recursively resolve environment variable references in configuration values.
+    
+    Environment variables are referenced using the syntax ${ENV_VAR_NAME}.
+    This function traverses dictionaries and lists to resolve all env var references.
+    
+    Parameters
+    ----------
+    value : Any
+        The configuration value to process. Can be a string, dict, list, or other type.
+    node_name : str, optional
+        The name of the node being processed, used for logging context.
+    config_key : str, optional
+        The configuration key being processed, used for logging context.
+    
+    Returns
+    -------
+    Any
+        The value with environment variables resolved. If a string contains ${VAR_NAME},
+        it will be replaced with the value of the environment variable.
+    
+    Raises
+    ------
+    ValueError
+        If an environment variable reference is found but the variable is not set.
+    
+    Examples
+    --------
+    >>> _resolve_env_vars("${API_KEY}")
+    "actual_api_key_value"
+    
+    >>> _resolve_env_vars({"token": "${SECRET_TOKEN}", "host": "localhost"})
+    {"token": "actual_secret_value", "host": "localhost"}
+    
+    >>> _resolve_env_vars(["${VAR1}", "${VAR2}"])
+    ["value1", "value2"]
+    """
+    if isinstance(value, str):
+        # Pattern to match ${ENV_VAR_NAME}
+        env_var_pattern = r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}'
+        
+        def replace_env_var(match):
+            env_var_name = match.group(1)
+            env_value = os.environ.get(env_var_name)
+            if env_value is None:
+                context = f' in node "{node_name}"' if node_name else ''
+                key_context = f' for config key "{config_key}"' if config_key else ''
+                error_msg = (
+                    f'Environment variable "{env_var_name}" is not set{context}{key_context}. '
+                    f'Referenced in configuration but not found in environment.'
+                )
+                _logger.error(error_msg)
+                raise ValueError(error_msg)
+            
+            context_info = f'node "{node_name}"' if node_name else 'configuration'
+            key_info = f'config key "{config_key}"' if config_key else 'value'
+            masked_value = _mask_sensitive_value(env_var_name, env_value)
+            _logger.info(
+                f'resolved environment variable ${env_var_name} -> {masked_value} '
+                f'({key_info} in {context_info})'
+            )
+            return env_value
+        
+        # Replace all ${VAR_NAME} patterns with actual env var values
+        resolved = re.sub(env_var_pattern, replace_env_var, value)
+        return resolved
+    elif isinstance(value, dict):
+        return {k: _resolve_env_vars(v, node_name=node_name, config_key=k) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [_resolve_env_vars(item, node_name=node_name, config_key=config_key) for item in value]
+    else:
+        return value
+
+
+def _mask_sensitive_value(var_name: str, value: str) -> str:
+    """
+    Mask sensitive values in logs for security.
+    
+    Masks values that appear to be secret keys, tokens, or passwords.
+    Shows first 4 and last 4 characters with asterisks in between.
+    """
+    sensitive_keywords = ['key', 'token', 'secret', 'password', 'passwd', 'pwd', 'auth', 'credential']
+    
+    var_lower = var_name.lower()
+    is_sensitive = any(keyword in var_lower for keyword in sensitive_keywords)
+    
+    if is_sensitive and len(value) > 8:
+        return f'{value[:4]}****{value[-4:]}'
+    elif is_sensitive:
+        return '****'
+    else:
+        return value
 
 
 def _update_local_with_remote(local: dict, remote: dict) -> dict:
