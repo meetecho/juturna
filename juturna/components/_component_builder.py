@@ -1,7 +1,6 @@
 import pathlib
 import typing
 import os
-import re
 
 from juturna.components import _mapper as mapper
 
@@ -37,12 +36,8 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
 
         raise ModuleNotFoundError(f'node module not found: {node_name}')
 
-    # Resolve environment variable references in the remote configuration
-    _logger.info(f'resolving environment variables for node "{node_name}"')
-    node_remote_config = _resolve_env_vars(node_remote_config, node_name=node_name)
-
     operational_config = _update_local_with_remote(
-        _node_local_config['arguments'], node_remote_config
+        _node_local_config.get('arguments', {}), node_remote_config, node_name=node_name
     )
 
     synchroniser = _SYNCHRONISERS.get(node_sync)
@@ -94,79 +89,94 @@ def component_lookup_args(
     return def_args
 
 
-def _resolve_env_vars(value: typing.Any, node_name: str = '', config_key: str = '') -> typing.Any:
+def _cast_value_to_type(value: str, default_value: typing.Any) -> typing.Any:
     """
-    Recursively resolve environment variable references in configuration values.
-    
-    Environment variables are referenced using the syntax ${ENV_VAR_NAME}.
-    This function traverses dictionaries and lists to resolve all env var references.
+    Cast a string value to the type of the default value.
     
     Parameters
     ----------
-    value : Any
-        The configuration value to process. Can be a string, dict, list, or other type.
-    node_name : str, optional
-        The name of the node being processed, used for logging context.
-    config_key : str, optional
-        The configuration key being processed, used for logging context.
+    value : str
+        The string value to cast.
+    default_value : Any
+        The default value whose type will be used for casting.
     
     Returns
     -------
     Any
-        The value with environment variables resolved. If a string contains ${VAR_NAME},
-        it will be replaced with the value of the environment variable.
+        The value cast to the appropriate type.
+    """
+    if isinstance(default_value, bool):
+        return value.lower() in ('true', 'yes', '1', 'y', 'on')
+    elif isinstance(default_value, int):
+        try:
+            return int(value)
+        except ValueError:
+            raise ValueError(f'Cannot cast "{value}" to integer')
+    elif isinstance(default_value, float):
+        try:
+            return float(value)
+        except ValueError:
+            raise ValueError(f'Cannot cast "{value}" to float')
+    else:
+        return value
+
+
+def _resolve_env_var_value(value: str, env_var_name: str, config_key: str, 
+                           default_value: typing.Any, node_name: str) -> typing.Any:
+    """
+    Resolve an environment variable value and cast it to the appropriate type.
+    
+    Parameters
+    ----------
+    value : str
+        The original value from config (should start with $JT_ENV_).
+    env_var_name : str
+        The environment variable name (after stripping $JT_ENV_ prefix).
+    config_key : str
+        The configuration key name.
+    default_value : Any
+        The default value from TOML config (used for type inference).
+    node_name : str
+        The name of the node being processed.
+    
+    Returns
+    -------
+    Any
+        The resolved and type-cast value from environment.
     
     Raises
     ------
     ValueError
-        If an environment variable reference is found but the variable is not set.
-    
-    Examples
-    --------
-    >>> _resolve_env_vars("${API_KEY}")
-    "actual_api_key_value"
-    
-    >>> _resolve_env_vars({"token": "${SECRET_TOKEN}", "host": "localhost"})
-    {"token": "actual_secret_value", "host": "localhost"}
-    
-    >>> _resolve_env_vars(["${VAR1}", "${VAR2}"])
-    ["value1", "value2"]
+        If the environment variable is not set.
     """
-    if isinstance(value, str):
-        # Pattern to match ${ENV_VAR_NAME}
-        env_var_pattern = r'\$\{([A-Za-z_][A-Za-z0-9_]*)\}'
-        
-        def replace_env_var(match):
-            env_var_name = match.group(1)
-            env_value = os.environ.get(env_var_name)
-            if env_value is None:
-                context = f' in node "{node_name}"' if node_name else ''
-                key_context = f' for config key "{config_key}"' if config_key else ''
-                error_msg = (
-                    f'Environment variable "{env_var_name}" is not set{context}{key_context}. '
-                    f'Referenced in configuration but not found in environment.'
-                )
-                _logger.error(error_msg)
-                raise ValueError(error_msg)
-            
-            context_info = f'node "{node_name}"' if node_name else 'configuration'
-            key_info = f'config key "{config_key}"' if config_key else 'value'
-            masked_value = _mask_sensitive_value(env_var_name, env_value)
-            _logger.info(
-                f'resolved environment variable ${env_var_name} -> {masked_value} '
-                f'({key_info} in {context_info})'
-            )
-            return env_value
-        
-        # Replace all ${VAR_NAME} patterns with actual env var values
-        resolved = re.sub(env_var_pattern, replace_env_var, value)
-        return resolved
-    elif isinstance(value, dict):
-        return {k: _resolve_env_vars(v, node_name=node_name, config_key=k) for k, v in value.items()}
-    elif isinstance(value, list):
-        return [_resolve_env_vars(item, node_name=node_name, config_key=config_key) for item in value]
-    else:
-        return value
+    env_value = os.environ.get(env_var_name)
+    if env_value is None:
+        error_msg = (
+            f'Environment variable "{env_var_name}" is not set in node "{node_name}" '
+            f'for config key "{config_key}". Referenced in configuration but not found in environment.'
+        )
+        _logger.error(error_msg)
+        raise ValueError(error_msg)
+    
+    # Cast to type of default value
+    try:
+        cast_value = _cast_value_to_type(env_value, default_value)
+    except ValueError as e:
+        error_msg = (
+            f'Type casting error in node "{node_name}" for config key "{config_key}": {e}. '
+            f'Expected type based on default value: {type(default_value).__name__}'
+        )
+        _logger.error(error_msg)
+        raise ValueError(error_msg) from e
+    
+    # Log the resolution (mask sensitive values for security)
+    masked_value = _mask_sensitive_value(env_var_name, env_value)
+    _logger.info(
+        f'resolved environment variable ${env_var_name} -> {masked_value} '
+        f'(config key "{config_key}" in node "{node_name}")'
+    )
+    
+    return cast_value
 
 
 def _mask_sensitive_value(var_name: str, value: str) -> str:
@@ -189,9 +199,51 @@ def _mask_sensitive_value(var_name: str, value: str) -> str:
         return value
 
 
-def _update_local_with_remote(local: dict, remote: dict) -> dict:
-    merged_config = {k: remote.get(k, v) for k, v in local.items()}
-
+def _update_local_with_remote(local: dict, remote: dict, node_name: str = '') -> dict:
+    """
+    Merge local (TOML defaults) and remote (pipeline config) configurations.
+    
+    If a remote value starts with "$JT_ENV_", it is resolved from environment
+    and cast to the type of the local default value.
+    
+    Parameters
+    ----------
+    local : dict
+        Local configuration from TOML file (defaults with types).
+    remote : dict
+        Remote configuration from pipeline config file.
+    node_name : str, optional
+        Name of the node being processed, used for logging context.
+    
+    Returns
+    -------
+    dict
+        Merged configuration with env vars resolved and type-cast.
+    """
+    ENV_VAR_PREFIX = '$JT_ENV_'
+    merged_config = {}
+    
+    for key, default_value in local.items():
+        if key in remote:
+            remote_value = remote[key]
+            
+            # Check if value starts with $JT_ENV_ prefix
+            if isinstance(remote_value, str) and remote_value.startswith(ENV_VAR_PREFIX):
+                # Strip prefix to get environment variable name
+                env_var_name = remote_value[len(ENV_VAR_PREFIX):]
+                
+                # Resolve from environment and cast to type
+                resolved_value = _resolve_env_var_value(
+                    remote_value, env_var_name, key, default_value, node_name
+                )
+                merged_config[key] = resolved_value
+            else:
+                # Use remote value as-is (normal assignment)
+                merged_config[key] = remote_value
+        else:
+            # Use local default value
+            merged_config[key] = default_value
+    
     return merged_config
 
 
