@@ -8,18 +8,17 @@ from juturna.components import Message
 from juturna.utils.log_utils import jt_logger
 
 from juturna.payloads._payloads import Batch
+from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
 
 
 class Buffer:
-    def __init__(
-        self, creator: str, synchroniser: Callable | None = None
-    ):
+    def __init__(self, creator: str, synchroniser: Callable | None = None):
         self._data: dict[str, list[Message]] = dict()
         self._data_lock = threading.Lock()
         self._synchroniser: Callable = synchroniser
 
         # out queue can be built based on the synchronisation policy
-        self._out_queue = queue.LifoQueue(maxsize=999)
+        self._out_queue = queue.Queue(maxsize=JUTURNA_MAX_QUEUE_SIZE)
 
         self._logger = jt_logger(creator)
         self._logger.propagate = True
@@ -66,7 +65,6 @@ class Buffer:
             return
 
         self._out_queue.put(Batch(messages=to_send))
-
 
     def flush(self):
         """
