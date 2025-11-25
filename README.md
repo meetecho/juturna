@@ -1,5 +1,5 @@
 # Juturna – Real-time AI Pipeline Framework
-<p align="center"><img src="./docs/source/_static/img/logo_dark_alt.svg?raw=true" width="30%">
+<p align="center"><img src="https://raw.githubusercontent.com/meetecho/juturna/main/docs/source/_static/img/logo_dark_alt.svg" width="30%">
 <br>
 <img src="https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge">
 </p>
@@ -31,7 +31,7 @@ Among its many features, there are a few keypoints to highligh about Juturna:
   throughput
 * 📊 **Observability:** built-in logging and metrics support
 
-[documentation](https://meetecho.github.io/juturna/index.html) | [contribute](./CONTRIBUTING.md) | [meetecho](https://www.meetecho.com/en/)
+[documentation](https://meetecho.github.io/juturna/index.html) | [contribute](https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md) | [meetecho](https://www.meetecho.com/en/)
 
 ## Overview
 
@@ -46,7 +46,7 @@ node has an in-degree of 1 or more.
 An example of one of our pipelines, currently in use for live audio
 transcription and summarisation is shown here.
 
-![juturna entities](./assets/img/pipeline_example.png?raw=true)
+<p align="center"><img src="https://raw.githubusercontent.com/meetecho/juturna/main/assets/img/pipeline_example.png"></p>
 
 Whilst Juturna ships with a number of built-in nodes (mainly source and sink
 nodes), you can implement your own nodes with ease, and share them so others
@@ -109,7 +109,7 @@ $ docker build -t juturna:latest .
 
 ## Contributing
 
-Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) for:
+Please read [`CONTRIBUTING.md`](https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md) for:
 
 * Branching & PR workflow 
 * Code style & linting
@@ -119,7 +119,7 @@ Please read [`CONTRIBUTING.md`](./CONTRIBUTING.md) for:
 
 ## Changelog
 
-All notable changes are documented in [`CHANGELOG.md`](./CHANGELOG.md)
+All notable changes are documented in [`CHANGELOG.md`](https://github.com/meetecho/juturna/blob/main/CHANGELOG.md)
 following [Semantic Versioning](https://semver.org).
 
 ## External Docs & Support
@@ -128,4 +128,4 @@ Coming soon!
 
 ## License
 
-Distributed under the **MIT License**. See [LICENSE](./LICENSE) for details.
+Distributed under the **MIT License**. See [LICENSE](https://github.com/meetecho/juturna/blob/main/LICENSE) for details.
