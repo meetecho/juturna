@@ -82,12 +82,7 @@ upstream.
 .. admonition:: The inbound queue (|version|-|release|)
    :class: :NOTE:
 
-   Node currently use LIFO queues as inbound message receptors. Whilst this
-   should not really have an impact on the node's workings (the inbound queue is
-   expected to always contain only the last message transmitted by the upstream
-   nodes), there is still the chance to acquire messages out of order compared
-   with their actual transmission times. Further refinements to the inbound
-   queue might come in the future.
+   Nodes and Buffer classes now use FIFO (First-In, First-Out) queues as inbound message buffers. This update replaces the previous LIFO implementation to prevent message misordering. The inbound queue size is now configurable through the ``JUTURNA_MAX_QUEUE_SIZE`` environment variable (default: 999). Further refinements to the inbound queue might come in the future.
 
 The ``_update`` thread represents the node's processing engine. It consumes
 messages from the buffer in batches, not individually. This batching is where
