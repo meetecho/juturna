@@ -3,7 +3,12 @@ name = "juturna"
 version = "1.0.1"
 description = "Juturna core library"
 authors = [
-    { name = "Antonio Bevilacqua", email = "b3by.in.th3.sky@gmail.com" }
+    { name = "Antonio Bevilacqua", email = "b3by.in.th3.sky@gmail.com" },
+    { name = "Paolo Saviano", email = "psaviano@meetecho.com" }
+]
+maintainers = [
+    { name = "Antonio Bevilacqua", email = "b3by.in.th3.sky@gmail.com" },
+    { name = "Paolo Saviano", email = "psaviano@meetecho.com" }
 ]
 readme = "README.md"
 requires-python = ">=3.12"
@@ -13,6 +18,13 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
 ]
+
+[project.urls]
+Homepage = "https://github.com/meetecho/juturna"
+Documentation = "https://meetecho.github.io/juturna/index.html"
+Repository = "https://github.com/meetecho/juturna"
+Issues = "https://github.com/meetecho/juturna/issues"
+Changelog = "https://github.com/meetecho/juturna/blob/main/CHANGELOG.md"
 
 [tool.poetry.dependencies]
 av = "^14.2.0"
