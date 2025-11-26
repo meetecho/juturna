@@ -82,7 +82,13 @@ upstream.
 .. admonition:: The inbound queue (|version|-|release|)
    :class: :NOTE:
 
-   Nodes and Buffer classes now use FIFO (First-In, First-Out) queues as inbound message buffers. This update replaces the previous LIFO implementation to prevent message misordering. The inbound queue size is now configurable through the ``JUTURNA_MAX_QUEUE_SIZE`` environment variable (default: 999). Further refinements to the inbound queue might come in the future.
+   Nodes and Buffer classes now use FIFO (First-In, First-Out) queues. This
+   ensures messages are processed in the order they are produced, even when a
+   source node generates data faster than its descendants can consume it. The
+   previous LIFO-based design could reorder messages during such bursts, leading
+   to incorrect processing. Further refinements to the inbound queue may be
+   introduced in the future.
+
 
 The ``_update`` thread represents the node's processing engine. It consumes
 messages from the buffer in batches, not individually. This batching is where
