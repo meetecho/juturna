@@ -1,7 +1,6 @@
 import pathlib
 import typing
 import traceback
-import warnings
 
 from juturna.components import _mapper as mapper
 
@@ -103,24 +102,28 @@ def _log_import_exception(exception):
     if isinstance(exception, SyntaxError):
         filename = exception.filename
         line_number = exception.lineno
-        exc_txt = exception.text.strip() if exception.text else 'unkwnown'
-
-        _logger.error(f'[err] {error_type} in {filename}')
-        _logger.error(f'      {exception.msg}')
-        _logger.error(f'      line {line_number} "{exc_txt}"')
-
+        code_context = (
+            exception.text.strip() if exception.text else 'Context unavailable'
+        )
     else:
         tb_summary = traceback.extract_tb(exception.__traceback__)
 
-        if tb_summary:
-            last_frame = tb_summary[-1]
-            filename = last_frame.filename
-
-            code_context = last_frame.line
-            line_number = last_frame.lineno
-
-            _logger.error(f'[err] {error_type} in {filename}')
-            _logger.error(f'      {error_msg}')
-            _logger.error(f'      line {line_number} "{code_context}"')
-        else:
+        if not tb_summary:
             _logger.error(f'{error_type}: {error_msg} (No traceback available)')
+
+            return
+
+        last_frame = tb_summary[-1]
+
+        filename = last_frame.filename
+        line_number = last_frame.lineno
+        code_context = (
+            last_frame.line.strip()
+            if last_frame.line
+            else 'Context unavailable'
+        )
+
+    _logger.error(
+        f'{error_type} in {filename}, line {line_number}: '
+        f'{code_context} - {error_msg}'
+    )
