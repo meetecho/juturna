@@ -16,7 +16,7 @@ _VAR_DEFAULTS = {
 
 
 def get_constant_var(var_name: str):
-    return get_env_var(var_name, _VAR_DEFAULTS)
+    return get_env_var(var_name, _VAR_DEFAULTS[var_name])
 
 
 JUTURNA_BASE_REPO = get_constant_var('JUTURNA_BASE_REPO')

@@ -4,13 +4,11 @@ from juturna.utils.log_utils import jt_logger
 _logger = jt_logger()
 
 
-def get_env_var(var_name: str, defaults: dict):
+def get_env_var(var_name: str, default_value: type.Any):
     env_value = os.environ.get(var_name)
 
     if env_value is None:
-        return defaults[var_name]
-
-    default_value = defaults[var_name]
+        return default_value
 
     try:
         target_type = type(default_value)
