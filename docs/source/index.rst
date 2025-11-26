@@ -26,6 +26,7 @@
     how_to/create_nodes
     how_to/create_pipelines
     how_to/use_cli
+    how_to/environment
 
 .. toctree::
     :maxdepth: 2
