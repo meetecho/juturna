@@ -109,3 +109,8 @@ You can customize the following variables in your environment.
     and bugs. If you find any of the latter, please report them on GitHub. We
     are working hard to make the hub a reality, and we are looking for your
     feedback to make it better.
+
+Working with env variables
+--------------------------
+
+:fas:`pen-to-square;sd-text-danger fa-xl` Section under construction
