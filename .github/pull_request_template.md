@@ -1,12 +1,3 @@
----
-name: Pull request
-about: Create a pull request for a feature or a bug fix
-title: ''
-labels: ''
-assignees: ''
-
----
-
 **Description**
 A clear and concise description of how the PR affects the code. If applicable, refer
 the related issue or issues.
