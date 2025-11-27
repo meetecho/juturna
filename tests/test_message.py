@@ -1,6 +1,7 @@
 import time
 import json
 
+import pytest
 import numpy as np
 
 from juturna.components import Message
@@ -195,3 +196,104 @@ def test_message_serialisation():
     test_message = Message(creator='tester', version=7, payload=test_payload)
 
     serialized = test_message.to_json()
+
+
+def test_message_freeze_modify_message():
+    test_message = Message(creator='tester', version=10)
+
+    test_message.freeze()
+
+    with pytest.raises(TypeError) as context:
+        test_message.creator = 'new_tester'
+
+    assert 'frozen messages cannot be modified' in str(context.value)
+    assert test_message.creator == 'tester'
+
+
+def test_message_freeze_delete_message_attr():
+    test_message = Message(creator='tester', version=10)
+
+    test_message.freeze()
+
+    with pytest.raises(TypeError) as context:
+        del test_message.creator
+
+    assert 'frozen messages cannot be modified' in str(context.value)
+    assert test_message.creator == 'tester'
+
+
+def test_message_freeze_meta():
+    test_message = Message(creator='tester', version=10)
+
+    test_message.meta['first_value'] = 10
+
+    test_message.freeze()
+
+    with pytest.raises(TypeError) as context:
+        test_message.meta['first_value'] = 20
+
+    assert "'mappingproxy' object does not support item assignment" in str(context.value)
+    assert test_message.meta['first_value'] == 10
+
+
+def test_message_freeze_timers():
+    test_message = Message(creator='tester', version=10)
+
+    test_message.freeze()
+
+    with pytest.raises(TypeError) as context:
+        with test_message.timeit('not_allowed'):
+            time.sleep(1)
+
+    assert 'frozen messages cannot be modified' in str(context.value)
+    assert len(test_message.timers.keys()) == 0
+
+
+def test_message_draft_payload():
+    test_message = Message(creator='tester', version=7)
+
+    test_message.open(AudioPayload)
+    test_message.draft('sampling_rate', 1001)
+    test_message.draft('channels', 12)
+
+    test_message.freeze()
+
+    assert isinstance(test_message.payload, AudioPayload)
+    assert test_message.payload.sampling_rate == 1001
+    assert test_message.payload.channels == 12
+
+
+def test_message_draft_payload_object():
+    test_message = Message(creator='tester', version=7)
+
+    test_message.open(ObjectPayload)
+    test_message.draft({'first_key', 10})
+    # test_message.draft('second_key', 'value')
+    # test_message.draft('third_key', False)
+
+    test_message.freeze()
+
+    assert isinstance(test_message.payload, ObjectPayload)
+    assert test_message.payload['first_key'] == 10
+    # assert test_message.payload['second_key'] == 'value'
+    # assert test_message.payload['third_key'] == False
+
+
+# def test_message_freeze_payload():
+#     test_payload = AudioPayload(
+#         audio=np.ndarray(10),
+#         sampling_rate=10,
+#         channels=2,
+#         start=0,
+#         end=5
+#     )
+
+#     test_message = Message(creator='tester', version=7, payload=test_payload)
+
+#     test_message.freeze()
+
+#     with pytest.raises(TypeError) as context:
+#         test_message.payload.channels = 1
+
+#     assert "'mappingproxy' object does not support item assignment" in str(context.value)
+#     assert test_message.payload.channels == 2

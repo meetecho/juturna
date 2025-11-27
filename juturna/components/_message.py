@@ -2,6 +2,8 @@ import typing
 import time
 import json
 
+from types import MappingProxyType
+
 
 class Message[T_Input]:
     """
@@ -10,15 +12,18 @@ class Message[T_Input]:
     """
 
     __slots__ = [
-        '_creator',
-        '_version',
+        'created_at',
+        'creator',
+        'version',
+        'meta',
+        'timers',
         '_payload',
         '_current_timer',
         '_start_timer',
         '_stop_timer',
-        'created_at',
-        'meta',
-        'timers',
+        '_is_frozen',
+        '_payload_type',
+        '_draft'
     ]
 
     def __init__(
@@ -45,21 +50,38 @@ class Message[T_Input]:
 
         """
         self.created_at = time.time()
+        self.creator = creator
+        self.version = version
         self.meta = dict()
         self.timers = (
             dict() if timers_from is None else timers_from.timers.copy()
         )
 
-        self._creator = creator
-        self._version = version
         self._payload = payload
 
         self._current_timer = None
         self._start_timer = None
         self._stop_timer = None
 
+        self._payload_type = None
+        self._draft = dict()
+
+        object.__setattr__(self, '_is_frozen', False)
+
     def __repr__(self):
-        return f'<Message from {self._creator}, v. {self._version}>'
+        return f'<Message from {self.creator}, v. {self.version}>'
+
+    def __setattr__(self, key, value):
+        if getattr(self, '_is_frozen', False):
+            raise TypeError('frozen messages cannot be modified')
+
+        object.__setattr__(self, key, value)
+
+    def __delattr__(self, key):
+        if getattr(self, '_is_frozen', False):
+            raise TypeError('frozen messages cannot be modified')
+
+        object.__delattr__(self, key)
 
     def __enter__(self) -> typing.Self:
         self._start_timer = time.time()
@@ -124,23 +146,26 @@ class Message[T_Input]:
             indent=indent,
         )
 
-    @property
-    def creator(self) -> str | None:
-        """Returns the creator of the message."""
-        return self._creator
+    def open(self, payload_type: type):
+        self._payload_type = payload_type
 
-    @creator.setter
-    def creator(self, creator: str | None):
-        self._creator = creator
+    def draft(self, key, value):
+        self._draft[key] = value
 
-    @property
-    def version(self) -> int:
-        """Returns the version of the message."""
-        return self._version
+    def freeze(self):
+        if self._is_frozen:
+            return
 
-    @version.setter
-    def version(self, data_version: int):
-        self._version = data_version
+        if self._payload_type:
+            self.payload = self._payload_type(**self._draft)
+
+        del self._draft
+        del self._payload_type
+
+        self.meta = MappingProxyType(self.meta)
+        self.timers = MappingProxyType(self.timers)
+
+        object.__setattr__(self, '_is_frozen', True)
 
     @property
     def payload(self) -> T_Input:
