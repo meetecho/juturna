@@ -4,6 +4,8 @@ import json
 
 from types import MappingProxyType
 
+from juturna.payloads import PayloadDraft
+
 
 class Message[T_Input]:
     """
@@ -22,8 +24,7 @@ class Message[T_Input]:
         '_start_timer',
         '_stop_timer',
         '_is_frozen',
-        '_payload_type',
-        '_draft'
+        '_draft',
     ]
 
     def __init__(
@@ -63,8 +64,7 @@ class Message[T_Input]:
         self._start_timer = None
         self._stop_timer = None
 
-        self._payload_type = None
-        self._draft = dict()
+        self._draft = PayloadDraft()
 
         object.__setattr__(self, '_is_frozen', False)
 
@@ -110,8 +110,8 @@ class Message[T_Input]:
             'creator': self.creator,
             'version': self.version,
             'payload': self.payload,
-            'meta': self.meta,
-            'timers': self.timers,
+            'meta': dict(self.meta),
+            'timers': dict(self.timers),
         }
 
     def to_json(
@@ -146,21 +146,41 @@ class Message[T_Input]:
             indent=indent,
         )
 
-    def open(self, payload_type: type):
-        self._payload_type = payload_type
+    def open_draft(self, payload_type: type):
+        """
+        Open a payload draft in the message.
 
-    def draft(self, key, value):
-        self._draft[key] = value
+        Parameters
+        ----------
+        payload_type : type
+            The type of payload that will be included in the message.
+
+        """
+        self._draft.open(payload_type)
+
+    def draft(self, key: str, value: typing.Any):
+        """
+        Add an item to the message payload draft.
+
+        Parameters
+        ----------
+        key : str
+            The name of the item to add to the payload draft.
+        value : Any
+            The value of the item to add to the payload draft.
+
+        """
+        self._draft.add(key, value)
 
     def freeze(self):
+        """Freeze the message, making it immutable."""
         if self._is_frozen:
             return
 
-        if self._payload_type:
-            self.payload = self._payload_type(**self._draft)
+        if self._draft.is_open():
+            self.payload = self._draft.compile()
 
         del self._draft
-        del self._payload_type
 
         self.meta = MappingProxyType(self.meta)
         self.timers = MappingProxyType(self.timers)

@@ -1,4 +1,4 @@
-import copy
+# import copy
 
 from collections import deque
 
@@ -52,8 +52,10 @@ class VadSilero(Node[AudioPayload, AudioPayload]):
             payload=AudioPayload.clone(message.payload),
             timers_from=message)
 
-        to_send.meta = copy.deepcopy(message.meta)
-        to_send.timers = copy.deepcopy(message.timers)
+        to_send.meta = dict(message.meta)
+        to_send.open_draft(AudioPayload)
+        # to_send.timers = copy.deepcopy(message.timers)
+        # to_send.meta = copy.deepcopy(message.meta)
 
         to_send.meta['silence'] = False
         to_send.meta['size'] = block_size
@@ -64,7 +66,8 @@ class VadSilero(Node[AudioPayload, AudioPayload]):
             speech_timestamps, clip, duration_after_vad = \
                 self.run_vad(waveform)
 
-        to_send.payload.audio = clip
+        # to_send.payload.audio = clip
+        to_send.draft('audio', clip)
         to_send.meta['duration_after_vad'] = duration_after_vad
 
         if duration_after_vad == 0.0:

@@ -7,8 +7,6 @@ from dataclasses import field
 
 import numpy as np
 
-from juturna.components import Message
-
 
 @dataclass(frozen=True, slots=True)
 class BasePayload:
@@ -88,7 +86,7 @@ class BytesPayload(BasePayload):
 
 @dataclass(frozen=True)
 class Batch(BasePayload):
-    messages: list[Message] = field(default_factory=lambda: list())
+    messages: list = field(default_factory=lambda: list())
 
     @staticmethod
     def serialize(obj) -> list:
@@ -97,6 +95,9 @@ class Batch(BasePayload):
 
 @dataclass(frozen=True)
 class ObjectPayload(dict, BasePayload):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
     @staticmethod
     def from_dict(origin: dict):
         obj = ObjectPayload()

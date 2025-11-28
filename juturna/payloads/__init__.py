@@ -8,6 +8,8 @@ from juturna.payloads._payloads import Batch
 from juturna.payloads._generics import T_Input
 from juturna.payloads._generics import T_Output
 
+from juturna.payloads._draft import PayloadDraft
+
 
 __all__ = [
     'AudioPayload',
@@ -18,5 +20,7 @@ __all__ = [
     'Batch',
 
     'T_Input',
-    'T_Output'
+    'T_Output',
+
+    'PayloadDraft'
 ]

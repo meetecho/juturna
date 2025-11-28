@@ -6,6 +6,8 @@ from juturna.payloads._payloads import VideoPayload
 from juturna.payloads._payloads import BytesPayload
 from juturna.payloads._payloads import ObjectPayload
 
+from juturna.payloads._draft import PayloadDraft
+
 
 def test_audio_empty_init():
     payload = AudioPayload()
@@ -106,3 +108,21 @@ def test_serialize_image():
     assert serialized['height'] == 3
     assert serialized['depth'] == 1
     assert serialized['pixel_format'] == 'test_format'
+
+
+def test_payload_draft():
+    test_draft = PayloadDraft()
+    
+    test_draft.open(ImagePayload)
+
+    assert test_draft.is_open()
+
+    test_draft.add('image', np.ndarray((3, 2, 3)))
+    test_draft.add('width', 3)
+    test_draft.add('height', 2)
+    test_draft.add('depth', 3)
+    test_draft.add('pixel_format', 'test_format')
+
+    test_payload = test_draft.compile()
+
+    assert isinstance(test_payload, ImagePayload)

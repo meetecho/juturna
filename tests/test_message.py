@@ -1,5 +1,6 @@
 import time
 import json
+import dataclasses
 
 import pytest
 import numpy as np
@@ -252,7 +253,7 @@ def test_message_freeze_timers():
 def test_message_draft_payload():
     test_message = Message(creator='tester', version=7)
 
-    test_message.open(AudioPayload)
+    test_message.open_draft(AudioPayload)
     test_message.draft('sampling_rate', 1001)
     test_message.draft('channels', 12)
 
@@ -266,34 +267,34 @@ def test_message_draft_payload():
 def test_message_draft_payload_object():
     test_message = Message(creator='tester', version=7)
 
-    test_message.open(ObjectPayload)
-    test_message.draft({'first_key', 10})
-    # test_message.draft('second_key', 'value')
-    # test_message.draft('third_key', False)
+    test_message.open_draft(ObjectPayload)
+    test_message.draft('first_key', 10)
+    test_message.draft('second_key', 'value')
+    test_message.draft('third_key', False)
 
     test_message.freeze()
 
     assert isinstance(test_message.payload, ObjectPayload)
     assert test_message.payload['first_key'] == 10
-    # assert test_message.payload['second_key'] == 'value'
-    # assert test_message.payload['third_key'] == False
+    assert test_message.payload['second_key'] == 'value'
+    assert test_message.payload['third_key'] == False
 
 
-# def test_message_freeze_payload():
-#     test_payload = AudioPayload(
-#         audio=np.ndarray(10),
-#         sampling_rate=10,
-#         channels=2,
-#         start=0,
-#         end=5
-#     )
+def test_message_freeze_payload():
+    test_payload = AudioPayload(
+        audio=np.ndarray(10),
+        sampling_rate=10,
+        channels=2,
+        start=0,
+        end=5
+    )
 
-#     test_message = Message(creator='tester', version=7, payload=test_payload)
+    test_message = Message(creator='tester', version=7, payload=test_payload)
 
-#     test_message.freeze()
+    test_message.freeze()
 
-#     with pytest.raises(TypeError) as context:
-#         test_message.payload.channels = 1
+    with pytest.raises(dataclasses.FrozenInstanceError) as context:
+        test_message.payload.channels = 1
 
-#     assert "'mappingproxy' object does not support item assignment" in str(context.value)
-#     assert test_message.payload.channels == 2
+    assert "cannot assign to field 'channels'" in str(context.value)
+    assert test_message.payload.channels == 2
