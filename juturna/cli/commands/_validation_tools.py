@@ -1,3 +1,4 @@
+from collections import deque
 import warnings
 import json
 import typing
@@ -39,7 +40,7 @@ class ValidationPipe:
         for check, args, kwargs in self._checks:
             self.results.append((check.name, check(*args, **kwargs)))
 
-            print(f'\N{check mark} {check.name}')
+            print(f'\N{CHECK MARK} {check.name}')
 
     def to_dict(self) -> dict[str, typing.Any]:
         return {
@@ -104,9 +105,35 @@ class DAG:
 
         return deg
 
+    def BFS(self) -> list[list[str]]:
+        in_deg: dict[str, int] = self.in_degree()
+        queue: deque[str] = deque(
+            [node for node in self._adj if in_deg[node] == 0]
+        )
+        layers: list[list[str]] = []
+
+        while queue:
+            current_level: list[str] = []
+            level_size: int = len(queue)
+
+            for _ in range(level_size):
+                node = queue.popleft()
+                current_level.append(node)
+
+                for neighbor in self._adj[node]:
+                    in_deg[neighbor] -= 1
+
+                    if in_deg[neighbor] == 0:
+                        queue.append(neighbor)
+
+            layers.append(current_level)
+
+        return layers
+
     def as_dict(self) -> dict[str, typing.Any]:
         return {
             'edges': self.edges,
             'in_degree': self.in_degree(),
             'out_degree': self.out_degree(),
+            'layers': self.BFS(),
         }
