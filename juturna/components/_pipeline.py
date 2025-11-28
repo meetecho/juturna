@@ -92,6 +92,10 @@ class Pipeline:
             else dict(),
         }
 
+    @property
+    def DAG(self) -> DAG:
+        return self._dag
+
     def warmup(self):
         """
         Prepare the pipeline and all its nodes.
