@@ -178,17 +178,11 @@ class Pipeline:
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
-        # experimental starting order based on DAG layers
         for layer in self._dag.BFS()[::-1]:
             for node_name in layer:
                 self._logger.info(f'starting node {node_name}')
 
                 self._nodes[node_name].start()
-
-        # for node_name in list(self._nodes.keys())[::-1]:
-        #     self._logger.info(f'starting node {node_name}')
-
-        #     self._nodes[node_name].start()
 
         self._status = PipelineStatus.RUNNING
 
