@@ -132,15 +132,7 @@ def _update_local_with_remote(local: dict, remote: dict) -> dict:
     dict
         Merged configuration. Parameters in remote that aren't present in local are discarded.
     """
-    merged_config = {}
-    
-    for key, default_value in local.items():
-        if key in remote:
-            merged_config[key] = remote[key]
-        else:
-            merged_config[key] = default_value
-    
-    return merged_config
+    return {k: remote.get(k, v) for k, v in local.items()}
 
 
 def _log_import_exception(exception):
