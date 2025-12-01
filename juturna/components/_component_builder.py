@@ -117,22 +117,9 @@ def component_lookup_args(
 
 
 def _update_local_with_remote(local: dict, remote: dict) -> dict:
-    """
-    Merge local (TOML defaults) and remote (pipeline config) configurations.
-    
-    Parameters
-    ----------
-    local : dict
-        Local configuration from TOML file (defaults with types).
-    remote : dict
-        Remote configuration from pipeline config file.
-    
-    Returns
-    -------
-    dict
-        Merged configuration. Parameters in remote that aren't present in local are discarded.
-    """
-    return {k: remote.get(k, v) for k, v in local.items()}
+    merged_config = {k: remote.get(k, v) for k, v in local.items()}
+
+    return merged_config
 
 
 def _log_import_exception(exception):
