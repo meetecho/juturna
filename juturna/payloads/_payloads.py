@@ -2,6 +2,7 @@ import copy
 import json
 
 from typing import Self
+from typing import Any
 from dataclasses import dataclass
 from dataclasses import field
 
@@ -86,7 +87,7 @@ class BytesPayload(BasePayload):
 
 @dataclass(frozen=True)
 class Batch(BasePayload):
-    messages: list = field(default_factory=lambda: list())
+    messages: tuple = field(default_factory=tuple)
 
     @staticmethod
     def serialize(obj) -> list:
@@ -98,11 +99,19 @@ class ObjectPayload(dict, BasePayload):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+    def __setitem__(self, key: str, value: Any):
+        raise TypeError(
+            f"'{type(self).__name__}' object does not support item assignment"
+        )
+
+    def __getattr__(self, key: str) -> Any:
+        return self[key]
+
+    def __delitem__(self, key):
+        raise TypeError(
+            f"'{type(self).__name__}' object does not support item deletion"
+        )
+
     @staticmethod
     def from_dict(origin: dict):
-        obj = ObjectPayload()
-
-        for k, v in origin.items():
-            obj[k] = v
-
-        return obj
+        return ObjectPayload(**origin)

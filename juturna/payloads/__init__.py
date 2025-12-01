@@ -8,7 +8,7 @@ from juturna.payloads._payloads import Batch
 from juturna.payloads._generics import T_Input
 from juturna.payloads._generics import T_Output
 
-from juturna.payloads._draft import PayloadDraft
+from juturna.payloads._draft import Draft
 
 
 __all__ = [
@@ -22,5 +22,5 @@ __all__ = [
     'T_Input',
     'T_Output',
 
-    'PayloadDraft'
+    'Draft'
 ]

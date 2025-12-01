@@ -350,7 +350,6 @@ class Node[T_Input, T_Output]:
         _ = message.freeze() if message else None
 
         for node_name in self._destinations:
-            self.logger.info(f'sending message to {node_name}')
             self._destinations[node_name].put(message)
 
     def start(self):

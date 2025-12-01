@@ -2,9 +2,10 @@ import typing
 import time
 import json
 
+from contextlib import contextmanager
 from types import MappingProxyType
 
-from juturna.payloads import PayloadDraft
+from juturna.payloads import Draft
 
 
 class Message[T_Input]:
@@ -20,11 +21,7 @@ class Message[T_Input]:
         'meta',
         'timers',
         '_payload',
-        '_current_timer',
-        '_start_timer',
-        '_stop_timer',
         '_is_frozen',
-        '_draft',
     ]
 
     def __init__(
@@ -58,13 +55,7 @@ class Message[T_Input]:
             dict() if timers_from is None else timers_from.timers.copy()
         )
 
-        self._payload = payload
-
-        self._current_timer = None
-        self._start_timer = None
-        self._stop_timer = None
-
-        self._draft = PayloadDraft()
+        self.payload = payload
 
         object.__setattr__(self, '_is_frozen', False)
 
@@ -82,18 +73,6 @@ class Message[T_Input]:
             raise TypeError('frozen messages cannot be modified')
 
         object.__delattr__(self, key)
-
-    def __enter__(self) -> typing.Self:
-        self._start_timer = time.time()
-
-        return self
-
-    def __exit__(self, exec_type, exec_val, exec_tb):
-        self._stop_timer = time.time()
-        elapsed = self._stop_timer - self._start_timer
-        self.timer(f'{self._current_timer}', elapsed)
-
-        self._current_timer = None
 
     def to_dict(self) -> dict:
         """
@@ -146,41 +125,13 @@ class Message[T_Input]:
             indent=indent,
         )
 
-    def open_draft(self, payload_type: type):
-        """
-        Open a payload draft in the message.
-
-        Parameters
-        ----------
-        payload_type : type
-            The type of payload that will be included in the message.
-
-        """
-        self._draft.open(payload_type)
-
-    def draft(self, key: str, value: typing.Any):
-        """
-        Add an item to the message payload draft.
-
-        Parameters
-        ----------
-        key : str
-            The name of the item to add to the payload draft.
-        value : Any
-            The value of the item to add to the payload draft.
-
-        """
-        self._draft.add(key, value)
-
     def freeze(self):
         """Freeze the message, making it immutable."""
         if self._is_frozen:
             return
 
-        if self._draft.is_open():
-            self.payload = self._draft.compile()
-
-        del self._draft
+        if isinstance(self.payload, Draft):
+            self.payload = self.payload.compile()
 
         self.meta = MappingProxyType(self.meta)
         self.timers = MappingProxyType(self.timers)
@@ -209,10 +160,14 @@ class Message[T_Input]:
             The value of the timer. If None, the current time is used.
 
         """
+        if getattr(self, '_is_frozen', False):
+            raise TypeError('frozen messages cannot be modified')
+
         timer_value = timer_value or time.time()
 
         self.timers[timer_name] = timer_value
 
+    @contextmanager
     def timeit(self, timer_name: str) -> typing.Self:
         """
         Start a timer with the given name.
@@ -230,6 +185,11 @@ class Message[T_Input]:
             The current instance of the Message class.
 
         """
-        self._current_timer = timer_name
+        start = time.time()
 
-        return self
+        try:
+            yield
+        finally:
+            elapsed = time.time() - start
+
+            self.timer(timer_name, elapsed)

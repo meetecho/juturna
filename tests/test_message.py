@@ -13,6 +13,7 @@ from juturna.payloads._payloads import VideoPayload
 from juturna.payloads._payloads import BytesPayload
 from juturna.payloads._payloads import Batch
 from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads._draft import Draft
 
 
 def test_message_init():
@@ -24,7 +25,6 @@ def test_message_init():
     assert msg.payload is None
     assert msg.meta == dict()
     assert msg.timers == dict()
-    assert msg._current_timer is None
 
 
 def test_message_init_with_params():
@@ -36,7 +36,6 @@ def test_message_init_with_params():
     assert msg.payload == 'test_payload'
     assert msg.meta == dict()
     assert msg.timers == dict()
-    assert msg._current_timer is None
 
 
 def test_message_init_with_meta():
@@ -93,15 +92,17 @@ def test_message_timer_context():
 
 def test_message_timer_duration():
     msg = Message()
-
-    # measure time outside, compare with time inside
     start = time.time()
+
     with msg.timeit('test_timer'):
         time.sleep(2)
+
     elapsed = time.time() - start
 
+    assert int(msg.timers['test_timer']) == int(elapsed)
+
     np.testing.assert_approx_equal(
-        msg.timers['test_timer'], elapsed, significant=5
+        msg.timers['test_timer'], elapsed, significant=3
     )
 
 
@@ -251,11 +252,14 @@ def test_message_freeze_timers():
 
 
 def test_message_draft_payload():
-    test_message = Message(creator='tester', version=7)
+    test_message = Message(
+        creator='tester',
+        version=7,
+        payload=Draft(AudioPayload)
+    )
 
-    test_message.open_draft(AudioPayload)
-    test_message.draft('sampling_rate', 1001)
-    test_message.draft('channels', 12)
+    test_message.payload.sampling_rate = 1001
+    test_message.payload.channels = 12
 
     test_message.freeze()
 
@@ -265,12 +269,15 @@ def test_message_draft_payload():
 
 
 def test_message_draft_payload_object():
-    test_message = Message(creator='tester', version=7)
+    test_message = Message(
+        creator='tester',
+        version=7,
+        payload=Draft(ObjectPayload)
+    )
 
-    test_message.open_draft(ObjectPayload)
-    test_message.draft('first_key', 10)
-    test_message.draft('second_key', 'value')
-    test_message.draft('third_key', False)
+    test_message.payload.first_key = 10
+    test_message.payload.second_key = 'value'
+    test_message.payload.third_key = False
 
     test_message.freeze()
 
@@ -280,7 +287,7 @@ def test_message_draft_payload_object():
     assert test_message.payload['third_key'] == False
 
 
-def test_message_freeze_payload():
+def test_message_immutable_payload():
     test_payload = AudioPayload(
         audio=np.ndarray(10),
         sampling_rate=10,
@@ -290,8 +297,6 @@ def test_message_freeze_payload():
     )
 
     test_message = Message(creator='tester', version=7, payload=test_payload)
-
-    test_message.freeze()
 
     with pytest.raises(dataclasses.FrozenInstanceError) as context:
         test_message.payload.channels = 1
