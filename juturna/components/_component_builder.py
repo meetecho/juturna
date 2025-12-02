@@ -8,7 +8,7 @@ from juturna.components import _mapper as mapper
 from juturna.utils.log_utils import jt_logger
 from juturna.components._synchronisers import _SYNCHRONISERS
 from juturna.utils.jt_utils._get_env_var import get_env_var
-from juturna.meta._constants import ENV_VAR_PREFIX
+from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
 
 
 _logger = jt_logger('builder')
@@ -46,7 +46,7 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
     items_to_process = [
         (key, value) for key, value in operational_config.items()
         if isinstance(value, str)
-        and value.startswith(ENV_VAR_PREFIX)
+        and value.startswith(JUTURNA_ENV_VAR_PREFIX)
         and key in _node_local_config['arguments']
     ]
 
@@ -111,7 +111,7 @@ def _update_local_with_remote(local: dict, remote: dict) -> dict:
 
 
 def _resolve_env_var(key: str, value: str, node_name: str, local_arguments: dict) -> str:
-    env_var_name = value[len(ENV_VAR_PREFIX):]
+    env_var_name = value[len(JUTURNA_ENV_VAR_PREFIX):]
     default_value = local_arguments[key]
     
     if env_var_name not in os.environ:
