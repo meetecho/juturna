@@ -7,11 +7,11 @@ import typing
 
 from juturna.components import _component_builder
 from juturna.components._node import Node
+from juturna.components import DAG
 from juturna.utils.log_utils import jt_logger
 
 from juturna.names import ComponentStatus
 from juturna.names import PipelineStatus
-from juturna.cli.commands._validation_tools import DAG
 
 
 class Pipeline:
