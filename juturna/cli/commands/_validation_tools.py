@@ -2,7 +2,7 @@ import warnings
 import json
 import typing
 
-from juturna.components import DAG
+from juturna.components._dag import DAG
 
 
 class Check:

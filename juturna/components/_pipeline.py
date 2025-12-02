@@ -6,8 +6,8 @@ import gc
 import typing
 
 from juturna.components import _component_builder
-from juturna.components._node import Node
-from juturna.components import DAG
+from juturna.components import Node
+from juturna.components._dag import DAG
 from juturna.utils.log_utils import jt_logger
 
 from juturna.names import ComponentStatus
