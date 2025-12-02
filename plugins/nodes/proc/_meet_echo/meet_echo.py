@@ -14,7 +14,8 @@ import typing
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads import ObjectPayload
+from juturna.payloads import Draft
 
 
 class MeetEcho(Node[ObjectPayload, ObjectPayload]):
@@ -100,15 +101,14 @@ class MeetEcho(Node[ObjectPayload, ObjectPayload]):
             self._accumulating = False
             self._messages = list()
 
-            payload = ObjectPayload()
-            payload['input_query'] = full_query
-
             to_send = Message[ObjectPayload](
                 creator=self.name,
                 version=self._sent,
-                payload=payload,
+                payload=Draft(ObjectPayload),
                 timers_from=message,
             )
+
+            to_send.payload['input_query'] = full_query
 
             self.transmit(to_send)
             self._sent += 1

@@ -16,7 +16,9 @@ from websockets.sync.server import serve
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads import BytesPayload, ObjectPayload
+from juturna.payloads import BytesPayload
+from juturna.payloads import ObjectPayload
+from juturna.payloads import Draft
 
 
 class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
@@ -76,16 +78,14 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
 
             return
 
-        payload = ObjectPayload()
-
-        for k, v in json_content.items():
-            payload[k] = v
-
         to_send = Message[ObjectPayload](
             creator=self.name,
             version=self._sent,
-            payload=payload
+            payload=Draft(ObjectPayload)
         )
+
+        for k, v in json_content.items():
+            to_send.payload[k] = v
 
         self.logger.info('ws source transmitting...')
         self.transmit(to_send)

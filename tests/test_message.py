@@ -287,6 +287,25 @@ def test_message_draft_payload_object():
     assert test_message.payload['third_key'] == False
 
 
+def test_message_draft_payload_object_attr():
+    test_message = Message(
+        creator='tester',
+        version=7,
+        payload=Draft(ObjectPayload)
+    )
+
+    test_message.payload['first_key'] = 10
+    test_message.payload['second_key'] = 'value'
+    test_message.payload['third_key'] = False
+
+    test_message.freeze()
+
+    assert isinstance(test_message.payload, ObjectPayload)
+    assert test_message.payload['first_key'] == 10
+    assert test_message.payload['second_key'] == 'value'
+    assert test_message.payload['third_key'] == False
+
+
 def test_message_immutable_payload():
     test_payload = AudioPayload(
         audio=np.ndarray(10),

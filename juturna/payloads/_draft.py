@@ -62,6 +62,14 @@ class Draft[T]:
 
         self._draft[key] = value
 
+    def __setitem__(self, key: str, value: Any):
+        if self._valid_fields is not None and key not in self._valid_fields:
+            raise AttributeError(
+                f'{key} not allowed in {self._payload_type.__name__}'
+            )
+
+        self._draft[key] = value
+
     def __getattr__(self, key: str) -> Any:
         return self._draft[key]
 

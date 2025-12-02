@@ -3,7 +3,7 @@ import typing
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads._payloads import BasePayload
+from juturna.payloads import BasePayload
 
 
 class LoggerProperty(Node[BasePayload, BasePayload]):
