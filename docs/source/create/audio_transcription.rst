@@ -56,10 +56,29 @@ during the pipe creation.
    (.venv) $ pip install -U "juturna[pipebuilder]"
 
 We can then acquire all the plugin nodes available in the repository (the VAD
-node and the transcriber node are not included in the package installation).
+node and the transcriber node are not included in the package installation). To
+do so, we will do a sparse checkout to only obtaint the plugins.
 
 .. code-block:: console
 
-   (.venv) $ git clone https://github.com/meetecho/juturna
-   (.venv) $ cp -r juturna/plugins ./
+   (.venv) $ git clone --no-checkout --filter=blob:none https://github.com/meetecho/juturna
+   (.venv) $ cd juturna
+   (.venv) $ git sparse-checkout set plugins
+   (.venv) $ git checkout main
+   (.venv) $ cd ..
+   (.venv) $ mv juturna/plugins ./
    (.venv) $ rm -rf juturna
+
+.. admonition:: Get plugins with the hub (|version|-|release|)
+    :class: :WARNING:
+
+    Plugins can be obtained in many different ways. An experimental feature in
+    the Juturna library allows you to directly download target plugins from the
+    GitHub repository, but it could quickly burn through your GitHub API quota.
+    For more details, run:
+
+    ``python -m juturna.hub download --help``
+
+Pipeline configuration
+----------------------
+
