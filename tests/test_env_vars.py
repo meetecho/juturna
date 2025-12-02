@@ -19,7 +19,6 @@ def run_around_tests():
     """Setup and teardown for pipeline tests."""
     pathlib.Path(test_pipeline_folder).mkdir(exist_ok=True, parents=True)
     
-    # Set up test environment variables
     os.environ['TEST_DELAY'] = '2'
     os.environ['TEST_API_KEY'] = 'secret_api_key_12345'
     os.environ['TEST_HOST'] = 'api.example.com'
@@ -27,13 +26,11 @@ def run_around_tests():
     
     yield
     
-    # Cleanup
     try:
         shutil.rmtree(test_pipeline_folder)
     except:
         ...
     
-    # Clean up environment variables
     for key in ['TEST_DELAY', 'TEST_API_KEY', 'TEST_HOST', 'TEST_PORT', 
                 'MISSING_ENV_VAR', 'INT_DELAY']:
         if key in os.environ:
@@ -69,17 +66,12 @@ def test_pipeline_with_env_var_in_configuration():
     assert pipeline.status['self'] == 'pipeline_ready'
     assert 'test_node' in pipeline.status['nodes']
     
-    # Verify the pipeline was created successfully (env var was resolved)
-    # The actual delay value is stored in the node's internal state (_delay attribute)
-    # but we can verify the pipeline warmup succeeded, which means env var resolution worked
-    
     saved_config_path = pathlib.Path(test_pipeline_folder, 'env_test_pipeline', 'config.json')
     assert saved_config_path.exists()
     
     with open(saved_config_path, 'r') as f:
         saved_config = json.load(f)
     
-    # Saved config should still have the $JT_ENV_ syntax (env vars are resolved in memory, not in saved file)
     assert saved_config['pipeline']['nodes'][0]['configuration']['delay'] == '$JT_ENV_TEST_DELAY'
 
 
@@ -123,7 +115,6 @@ def test_pipeline_with_missing_env_var():
 
 def test_type_casting_from_env_var():
     """Test that environment variables are cast to correct types based on TOML defaults."""
-    # Test integer casting (delay is int in TOML)
     os.environ['INT_DELAY'] = '5'
     
     config = {
@@ -153,13 +144,5 @@ def test_type_casting_from_env_var():
     assert pipeline.status['self'] == 'pipeline_ready'
     node = pipeline._nodes['test_node']
     
-    # Verify the pipeline was created successfully (env var was resolved and cast to int)
-    # The actual delay value is stored in the node's internal state (_delay attribute)
-    # If warmup succeeded without errors, it means:
-    # 1. The env var was found
-    # 2. It was cast to int (since delay default is int in TOML)
-    # 3. The node was instantiated successfully
-    
-    # Cleanup
     if 'INT_DELAY' in os.environ:
         del os.environ['INT_DELAY']
