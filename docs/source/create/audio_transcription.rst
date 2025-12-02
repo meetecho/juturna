@@ -41,3 +41,25 @@ Here we have:
 #. a websocket notifier of type ``notifier_websocket``, that will send all the
    transcription objects from both streams to a remote destination;
 #. a websocket endpoint that receives the trnascriptions.
+
+Environment setup
+-----------------
+
+We begin by installing Juturna in a virtual environment. When doing so, we also
+include the ``pipebuilder`` extension, a small utility that will come in handy
+during the pipe creation.
+
+.. code-block:: console
+
+   $ python3 -m venv .venv
+   $ source .venv/bin/activate
+   (.venv) $ pip install -U "juturna[pipebuilder]"
+
+We can then acquire all the plugin nodes available in the repository (the VAD
+node and the transcriber node are not included in the package installation).
+
+.. code-block:: console
+
+   (.venv) $ git clone https://github.com/meetecho/juturna
+   (.venv) $ cp -r juturna/plugins ./
+   (.venv) $ rm -rf juturna
