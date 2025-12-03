@@ -1,12 +1,24 @@
+"""
+TrackerYolo
+
+@ Author: Antonio Bevilacqua
+@ Email: abevilacqua@meetecho.com
+
+Annotate frames using YOLO models.
+For more info about the models, see here: https://github.com/ultralytics/ultralytics
+"""
+
 from ultralytics import YOLO
 
 from juturna.components import Message
 from juturna.components import Node
 
-from juturna.payloads._payloads import ImagePayload
+from juturna.payloads import ImagePayload
 
 
 class TrackerYolo(Node[ImagePayload, ImagePayload]):
+    """Node implementation class"""
+
     def __init__(
         self,
         model: str,
@@ -16,6 +28,23 @@ class TrackerYolo(Node[ImagePayload, ImagePayload]):
         half: bool,
         **kwargs,
     ):
+        """
+        Parameters
+        ----------
+        model : str
+            Name of the model to use
+        device : str
+            Where to run inference (cpu or cuda).
+        targets : list
+            List of class to target during inference.
+        confidence : float
+            Minimum confidence to mark a positive.
+        half : bool
+            Enable half precision to speed up inference time.
+        kwargs : dict
+            Supernode arguments.
+
+        """
         super().__init__(**kwargs)
 
         self.logger.info(f'received extras: {kwargs}')
@@ -30,6 +59,7 @@ class TrackerYolo(Node[ImagePayload, ImagePayload]):
         self._classes = None
 
     def warmup(self):
+        """Warmup the node"""
         self._model = YOLO(self._model_name)
         self._model.to(self._device)
         self._classes = [
@@ -40,8 +70,7 @@ class TrackerYolo(Node[ImagePayload, ImagePayload]):
         self.logger.info('tracker ready')
 
     def update(self, message: Message[ImagePayload]):
-        assert self._model != None
-
+        """Receive a message, transmit a message"""
         image = message.payload.image
         results = self._model.predict(
             image,

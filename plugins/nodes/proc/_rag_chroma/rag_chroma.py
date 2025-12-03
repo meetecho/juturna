@@ -15,7 +15,8 @@ import chromadb
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads import ObjectPayload
+from juturna.payloads import Draft
 
 
 class RagChroma(Node[ObjectPayload, ObjectPayload]):
@@ -95,14 +96,14 @@ class RagChroma(Node[ObjectPayload, ObjectPayload]):
         )
 
         documents = results['documents'][0]
-        payload = ObjectPayload()
-        payload['documents'] = documents
 
         to_send = Message[ObjectPayload](
             creator=self.name,
             version=message.version,
             timers_from=message,
-            payload=payload,
+            payload=Draft(ObjectPayload),
         )
+
+        to_send.payload['documents'] = documents
 
         self.transmit(to_send)

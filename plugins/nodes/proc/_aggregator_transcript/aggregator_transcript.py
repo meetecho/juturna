@@ -15,7 +15,8 @@ import typing
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads import ObjectPayload
+from juturna.payloads import Draft
 
 
 class AggregatorTranscript(Node[ObjectPayload, ObjectPayload]):
@@ -80,7 +81,7 @@ class AggregatorTranscript(Node[ObjectPayload, ObjectPayload]):
         to_send = Message[ObjectPayload](
             creator=self.name,
             version=message.version,
-            payload=ObjectPayload(),
+            payload=Draft(ObjectPayload),
             timers_from=message,
         )
 

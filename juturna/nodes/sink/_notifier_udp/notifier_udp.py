@@ -1,3 +1,12 @@
+"""
+NotifierUDP
+
+@ Author: Antonio Bevilacqua
+@ Email: abevilacqua@meetecho.com
+
+Transmit message to a UDP socket.
+"""
+
 import socket
 import json
 import base64
@@ -6,7 +15,7 @@ import typing
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads import ObjectPayload
 
 
 class NotifierUDP(Node[ObjectPayload, None]):
@@ -67,27 +76,23 @@ class NotifierUDP(Node[ObjectPayload, None]):
 
         self._data_size = self._payload_size - self._meta_overhead
 
-    def configure(self): ...
-
-    def warmup(self): ...
-
     def set_on_config(self, prop: str, value: typing.Any):
+        """Change node configuration"""
         if prop == 'endpoint':
             self._address[0] = value
         elif prop == 'port':
             self._address[1] = value
 
-    def destroy(self): ...
-
     def update(self, message: Message[ObjectPayload]):
-        chunks = self.prepare_chunks(message.payload, message.version)
+        """Receive a message, transmit a message"""
+        chunks = self._prepare_chunks(message, message.version)
 
         for chunk in chunks:
             self._socket.sendto(chunk, tuple(self._address))
 
-    def prepare_chunks(self, data: dict, version: int) -> typing.List[bytes]:
+    def _prepare_chunks(self, message: Message, version: int) -> list[bytes]:
         chunks = list()
-        json_bytes = json.dumps(data).encode(self._encoding)
+        json_bytes = message.to_json().encode(self._encoding)
 
         if self._encode_b64:
             json_bytes = base64.b64encode(json_bytes).decode('ascii')

@@ -1,3 +1,12 @@
+"""
+NotifierMongo
+
+@author: Antonio Bevilacqua
+@email: abevilacqua@meetecho.com
+
+Transmit messages to a Mongo endpoint.
+"""
+
 import threading
 
 import pymongo
@@ -5,11 +14,24 @@ import pymongo
 from juturna.components import Message
 from juturna.components import Node
 
-from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads import ObjectPayload
 
 
 class NotifierMongo(Node[ObjectPayload, None]):
+    """Node implementation class"""
+
     def __init__(self, endpoint: str, database: str, collection: str):
+        """
+        Parameters
+        ----------
+        endpoint : str
+            The full mongo endpoint.
+        database : str
+            The destination datablase.
+        collection : str
+            The destination collection.
+
+        """
         super().__init__('sink')
 
         self._endpoint = endpoint
@@ -20,9 +42,11 @@ class NotifierMongo(Node[ObjectPayload, None]):
         self._t = None
 
     def warmup(self):
+        """Warmup the node"""
         self.logger.info(f'[{self.name}] set to endpoint {self._endpoint}')
 
     def update(self, message: Message[ObjectPayload]):
+        """Receive a message, transmit a message"""
         message = message.to_dict()
         message['session_id'] = self.pipe_id
 
@@ -30,7 +54,8 @@ class NotifierMongo(Node[ObjectPayload, None]):
             name='_notify_mongo',
             target=self._send_message,
             args=(message,),
-            daemon=True)
+            daemon=True,
+        )
 
         self._t.start()
 
@@ -45,5 +70,6 @@ class NotifierMongo(Node[ObjectPayload, None]):
                 self.logger.info(e)
 
     def destroy(self):
+        """Destroy the node"""
         if self._t:
             self._t.join()

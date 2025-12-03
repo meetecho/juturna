@@ -1,3 +1,5 @@
+import pytest
+
 import numpy as np
 
 from juturna.payloads._payloads import AudioPayload
@@ -5,6 +7,8 @@ from juturna.payloads._payloads import ImagePayload
 from juturna.payloads._payloads import VideoPayload
 from juturna.payloads._payloads import BytesPayload
 from juturna.payloads._payloads import ObjectPayload
+
+from juturna.payloads._draft import Draft
 
 
 def test_audio_empty_init():
@@ -106,3 +110,66 @@ def test_serialize_image():
     assert serialized['height'] == 3
     assert serialized['depth'] == 1
     assert serialized['pixel_format'] == 'test_format'
+
+
+def test_payload_draft():
+    test_draft = Draft(ImagePayload)
+
+    test_draft.image = np.ndarray((3, 2, 3))
+    test_draft.width = 3
+    test_draft.height = 2
+    test_draft.depth = 3
+    test_draft.pixel_format = 'test_format'
+
+    test_payload = test_draft.compile()
+
+    assert isinstance(test_payload, ImagePayload)
+
+
+def test_immutable_object_payload_draft():
+    test_draft = Draft(ObjectPayload)
+
+    test_draft.prop_a = 'value'
+    test_draft.prop_b = 10
+
+    test_payload = test_draft.compile()
+
+    with pytest.raises(TypeError) as context:
+        test_payload['prop_c'] = 20
+
+    assert "'ObjectPayload' object does not support item assignment" in str(context.value)
+
+
+def test_draft_invalid_fields():
+    test_draft = Draft(AudioPayload)
+
+    with pytest.raises(AttributeError) as context:
+        test_draft.invalid_field = 10
+
+    assert 'invalid_field not allowed in AudioPayload' in str(context.value)
+
+
+def test_draft_copy_from():
+    pl = AudioPayload(channels=11, sampling_rate=11_000)
+    test_draft = Draft(AudioPayload, copy_from=pl)
+
+    assert test_draft.channels == 11
+    assert test_draft.sampling_rate == 11_000
+
+    test_payload = test_draft.compile()
+
+    assert test_payload.channels == 11
+    assert test_payload.sampling_rate == 11_000
+
+
+def test_draft_copy_from_object():
+    test_content = ObjectPayload(prop_a=10, prop_b='value')
+    test_draft = Draft(ObjectPayload, copy_from=test_content)
+
+    assert test_draft.prop_a == 10
+    assert test_draft.prop_b == 'value'
+
+    test_payload = test_draft.compile()
+
+    assert test_payload['prop_a'] == 10
+    assert test_payload.prop_b == 'value'

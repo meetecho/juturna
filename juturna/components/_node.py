@@ -4,7 +4,6 @@ import string
 import logging
 import threading
 import queue
-import copy
 import time
 
 from collections.abc import Callable
@@ -55,7 +54,8 @@ class Node[T_Input, T_Output]:
         self._logger.propagate = True
 
         # TODO: use LIFO to prevent message loss
-        # FIX: The use of LIFO caused message misordering in certain scenarios (https://github.com/meetecho/juturna/issues/36)
+        # FIX: The use of LIFO caused message misordering in certain scenarios
+        # (https://github.com/meetecho/juturna/issues/36)
         # Replace with FIFO queue for now
         self._queue = queue.Queue(maxsize=JUTURNA_MAX_QUEUE_SIZE)
         self._worker_thread: threading.Thread | None = None
@@ -335,20 +335,22 @@ class Node[T_Input, T_Output]:
 
             self.put(message)
 
-    def transmit(self, message: Message[T_Output]):
+    def transmit(self, message: Message[T_Output] | None):
         """
         Transmit a message. This method is used to send data from the node to
-        its destinations.
+        its destinations. Messages are frozen before transmission, so that
+        immutability is ensured.
 
         Parameters
         ----------
-        message : Message
+        message : Message | None
             The message to be transmitted.
 
         """
+        _ = message.freeze() if message else None
+
         for node_name in self._destinations:
-            self.logger.info(f'sending message to {node_name}')
-            self._destinations[node_name].put(copy.deepcopy(message))
+            self._destinations[node_name].put(message)
 
     def start(self):
         """

@@ -27,8 +27,8 @@ from watchdog.observers import Observer
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads._payloads import ObjectPayload
-from juturna.payloads._payloads import ImagePayload
+from juturna.payloads import ObjectPayload
+from juturna.payloads import ImagePayload
 
 
 class ImageLoader(Node[ObjectPayload, ImagePayload]):
