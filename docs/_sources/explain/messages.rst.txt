@@ -35,7 +35,7 @@ As said, a message is just a simple data container. It carries a payload, plus
 some extra fields that can be useful to determine who generated it, when, and in
 which order comared to other messages.
 
-Other than its basic properties, such as `creator`, `version`, `paylaod`, `meta`
+Other than its basic properties, such as `creator`, `version`, `payload`, `meta`
 and `timers`, a message offers a few methods that can help with managing its
 content and representation:
 

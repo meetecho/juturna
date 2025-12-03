@@ -320,65 +320,68 @@ them available to the pipe in a real-time fashion.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.clear_source">
 <span class="sig-name descname"><span class="pre">clear_source</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.clear_source" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Clear any source functions defined on the node</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.configuration">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">configuration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#juturna.nodes.source.AudioRTP.configuration" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fetch node configuration</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.configure">
 <span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.configure" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Configure the node</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.destroy">
 <span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.destroy" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Destroy the node</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.ffmpeg_launcher">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ffmpeg_launcher</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#juturna.nodes.source.AudioRTP.ffmpeg_launcher" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fetch the FFmpeg launcher script</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.monitor_process">
 <span class="sig-name descname"><span class="pre">monitor_process</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">proc</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Popen</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.monitor_process" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Monitor underlying subprocess for unintentional stops</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.sdp_descriptor">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sdp_descriptor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#juturna.nodes.source.AudioRTP.sdp_descriptor" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fetch the SDP descriptor file</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.start">
 <span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.start" title="Link to this definition">¶</a></dt>
-<dd><p>Start the node and begin processing. This method is called automatically
-when the parent pipeline is started. If you override this method in
-your custom node class, make sure to call the parent method to ensure
-the bridge is started correctly.</p>
+<dd><p>Start the node</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.stop">
 <span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.stop" title="Link to this definition">¶</a></dt>
-<dd><p>Stop the node and begin processing. This method is called automatically
-when the parent pipeline is stopped. If you override this method in
-your custom node class, make sure to call the parent method to ensure
-the bridge is stopped correctly.</p>
+<dd><p>Stop the node</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.update">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="juturna.components.html#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="juturna.payloads.html#juturna.payloads.BytesPayload" title="juturna.payloads._payloads.BytesPayload"><span class="pre">BytesPayload</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.update" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Read a message, return a message</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.AudioRTP.warmup">
 <span class="sig-name descname"><span class="pre">warmup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.AudioRTP.warmup" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Warmup the node</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -390,55 +393,56 @@ the bridge is stopped correctly.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.configuration">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">configuration</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#juturna.nodes.source.VideoRTP.configuration" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fetch node configuration</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.configure">
 <span class="sig-name descname"><span class="pre">configure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.configure" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Configure the node</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.destroy">
 <span class="sig-name descname"><span class="pre">destroy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.destroy" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Destroy the node</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.ffmpeg_launcher">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ffmpeg_launcher</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#juturna.nodes.source.VideoRTP.ffmpeg_launcher" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fetch the FFmpeg launcher script</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.sdp_descriptor">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sdp_descriptor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Path</span></em><a class="headerlink" href="#juturna.nodes.source.VideoRTP.sdp_descriptor" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fetch the SDP descriptor file</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.start">
 <span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.start" title="Link to this definition">¶</a></dt>
-<dd><p>Start the node and begin processing. This method is called automatically
-when the parent pipeline is started. If you override this method in
-your custom node class, make sure to call the parent method to ensure
-the bridge is started correctly.</p>
+<dd><p>Start the node</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.stop">
 <span class="sig-name descname"><span class="pre">stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.stop" title="Link to this definition">¶</a></dt>
-<dd><p>Stop the node and begin processing. This method is called automatically
-when the parent pipeline is stopped. If you override this method in
-your custom node class, make sure to call the parent method to ensure
-the bridge is stopped correctly.</p>
+<dd><p>Stop the node</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.update">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="juturna.components.html#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="juturna.payloads.html#juturna.payloads.BytesPayload" title="juturna.payloads._payloads.BytesPayload"><span class="pre">BytesPayload</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.update" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Receive a message, transmit a message</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.nodes.source.VideoRTP.warmup">
 <span class="sig-name descname"><span class="pre">warmup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.nodes.source.VideoRTP.warmup" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Warmup the node</p>
+</dd></dl>
 
 </dd></dl>
 

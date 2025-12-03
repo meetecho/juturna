@@ -105,7 +105,7 @@ you need:
    through GitHub, the Juturna Hub facility, or any other tool you can think of
 #. implement your own **custom nodes** (this is the fun solution!)
 
-Messages and paylaods
+Messages and payloads
 ---------------------
 
 Nodes within a pipeline pass data around using messages. A message is just a
