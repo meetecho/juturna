@@ -186,7 +186,7 @@ def test_message_to_json_custom_encoder():
 
     assert recoded['payload'] == 'custom_serialised'
 
-def test_message_serialisation():
+def test_message_serialisation_audio():
     test_payload = AudioPayload(
         audio=np.ndarray(10),
         sampling_rate=10,
@@ -197,7 +197,41 @@ def test_message_serialisation():
 
     test_message = Message(creator='tester', version=7, payload=test_payload)
 
-    serialized = test_message.to_json()
+    serialised = test_message.to_json()
+    decoded = json.loads(serialised)
+
+    assert isinstance(decoded['payload'], dict)
+    assert isinstance(decoded['payload']['audio'], list)
+    assert len(decoded['payload']['audio']) == 10
+    assert decoded['payload']['sampling_rate'] == 10
+    assert decoded['payload']['channels'] == 2
+    assert decoded['payload']['start'] == 0
+    assert decoded['payload']['end'] == 5
+
+
+def test_message_serialisation_image():
+    test_payload = ImagePayload(
+        image=np.ndarray((10, 10, 3)),
+        width=10,
+        height=10,
+        depth=3,
+        pixel_format='test_format',
+        timestamp=111.11
+    )
+
+    test_message = Message(creator='tester', version=7, payload=test_payload)
+
+    serialised = test_message.to_json()
+    decoded = json.loads(serialised)
+
+    assert isinstance(decoded['payload'], dict)
+    assert isinstance(decoded['payload']['image'], list)
+    assert len(decoded['payload']['image']) == 10
+    assert decoded['payload']['width'] == 10
+    assert decoded['payload']['height'] == 10
+    assert decoded['payload']['depth'] == 3
+    assert decoded['payload']['pixel_format'] == 'test_format'
+    assert decoded['payload']['timestamp'] == 111.11
 
 
 def test_message_freeze_modify_message():
