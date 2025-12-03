@@ -58,10 +58,10 @@ class NotifierWebsocket(Node[ObjectPayload, None]):
 
         self._sent += 1
 
-    def _send_message(self, message: Message):
+    def _send_message(self, message_dict: dict):
         with connect(self._endpoint) as ws:
             try:
-                ws.send(json.dumps(message.to_json()))
+                ws.send(json.dumps(message_dict))
             except Exception as e:
                 self.logger.warning(e)
 
