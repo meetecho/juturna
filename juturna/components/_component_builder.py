@@ -1,11 +1,14 @@
 import pathlib
 import typing
+import os
 import traceback
 
 from juturna.components import _mapper as mapper
 
 from juturna.utils.log_utils import jt_logger
 from juturna.components._synchronisers import _SYNCHRONISERS
+from juturna.utils.jt_utils._get_env_var import get_env_var
+from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
 
 
 _logger = jt_logger('builder')
@@ -39,6 +42,18 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
     operational_config = _update_local_with_remote(
         _node_local_config['arguments'], node_remote_config
     )
+
+    items_to_process = [
+        (key, value) for key, value in operational_config.items()
+        if isinstance(value, str)
+        and value.startswith(JUTURNA_ENV_VAR_PREFIX)
+        and key in _node_local_config['arguments']
+    ]
+
+    operational_config.update({
+        key: _resolve_env_var(key, value, node_name, _node_local_config['arguments'])
+        for key, value in items_to_process
+    })
 
     synchroniser = _SYNCHRONISERS.get(node_sync)
     concrete_node = _node_module(
@@ -93,6 +108,21 @@ def _update_local_with_remote(local: dict, remote: dict) -> dict:
     merged_config = {k: remote.get(k, v) for k, v in local.items()}
 
     return merged_config
+
+
+def _resolve_env_var(key: str, value: str, node_name: str, local_arguments: dict) -> str:
+    env_var_name = value[len(JUTURNA_ENV_VAR_PREFIX):]
+    default_value = local_arguments[key]
+    
+    if env_var_name not in os.environ:
+        error_msg = (
+            f'Environment variable "{env_var_name}" is not set in node "{node_name}" '
+            f'for config key "{key}". Referenced in configuration but not found in environment.'
+        )
+        _logger.error(error_msg)
+        raise ValueError(error_msg)
+    
+    return get_env_var(env_var_name, default_value)
 
 
 def _log_import_exception(exception):
