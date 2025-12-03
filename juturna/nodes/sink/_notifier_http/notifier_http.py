@@ -72,7 +72,7 @@ class NotifierHTTP(Node[ObjectPayload, None]):
             creator=message.creator,
             version=message.version,
             timers_from=message,
-            paylaod=message.payload
+            payload=message.payload
         )
 
         to_send.meta['session_id'] = self.pipe_id
@@ -81,7 +81,7 @@ class NotifierHTTP(Node[ObjectPayload, None]):
         t = threading.Thread(
             name=f'{self.name}_thread',
             target=self._send_chunk,
-            args=(message,),
+            args=(to_send,),
             daemon=True,
         )
 
