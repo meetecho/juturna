@@ -7,10 +7,15 @@ class DAG:
         self._adj: dict[str, set[str]] = {}
         self.edges: list[tuple[str, str]] = []
 
+    def add_node(self, node: str) -> None:
+        self._adj.setdefault(node, set())
+
     def add_edge(self, src: str, dst: str) -> None:
+        if src not in self._adj or dst not in self._adj:
+            raise ValueError(
+                f"Source node '{src}' or destination node '{dst}' not in DAG"
+            )
         self.edges.append((src, dst))
-        self._adj.setdefault(src, set())
-        self._adj.setdefault(dst, set())
         self._adj[src].add(dst)
 
     def has_cycle(self) -> bool:
