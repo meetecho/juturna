@@ -52,8 +52,11 @@ sphinx-design = { version = "^0.6.1", optional = true, extras = ["dev"] }
 sphinx-new-tab-link = {version = "^0.8.0", optional = true, extras = ["dev"] }
 
 [tool.poetry]
-package-mode = true
-packages = [
+name = "juturna"
+version = "1.0.2"
+description = "Juturna core library"
+authors = [ "dev@meetecho.com" ]
+ packages = [
     { include = "juturna" }
 ]
 

@@ -68,6 +68,10 @@ def test_bfs_layers():
     dag.add_edge('node_a', 'node_c')
 
     layers = dag.BFS()
+
+    for layer in layers:
+        layer.sort()
+        
     assert layers == [['node_a'], ['node_b', 'node_c']]
 
 def test_bfs_isolated_node():
@@ -78,6 +82,10 @@ def test_bfs_isolated_node():
     dag.add_edge('node_a', 'node_b')
 
     layers = dag.BFS()
+
+    for layer in layers:
+        layer.sort()
+
     assert layers == [['node_a', 'node_c'], ['node_b']]
     
 def test_in_degree():
