@@ -130,6 +130,7 @@ class Pipeline:
             _node.status = ComponentStatus.NEW
 
             self._nodes[node_name] = _node
+            self._dag.add_node(node_name)
 
         for link in links:
             from_node = link['from']
