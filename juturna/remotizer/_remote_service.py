@@ -64,28 +64,6 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
     def __init__(self):
         self.handler = MessageHandler()
 
-    def SendMessage(self, request: ProtoEnvelope, context):
-        """Handle incoming message and return acknowledgment"""
-        try:
-            # Log incoming message
-            logger.info(f'Received envelope {request.id} from {request.sender}')
-
-            # Deserialize the envelope
-            envelope_dict = deserialize_envelope(request)
-
-            # Log details
-            logger.info(
-                f'Message type: {envelope_dict["message"]["payload_type"]}'
-            )
-            logger.info(f'Creator: {envelope_dict["message"]["creator"]}')
-            logger.info(f'Correlation ID: {envelope_dict["correlation_id"]}')
-
-            # Handle the message
-            result = self.handler.handle(envelope_dict)
-
-        except Exception as e:
-            logger.error(f'Error processing message: {e}', exc_info=True)
-
     def SendAndReceive(self, request: ProtoEnvelope, context):
         """Handle request-response pattern"""
         # Process the incoming message
