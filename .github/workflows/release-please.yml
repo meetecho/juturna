@@ -3,17 +3,9 @@ name: Release Please
 on:
   workflow_dispatch:
     inputs:
-      release-type:
-        description: "Type of release"
+      release-as:
+        description: "Force exact version (e.g. 1.4.0)"
         required: false
-        default: "auto"
-        type: choice
-        options:
-          - auto
-          - patch
-          - minor
-          - major
-
 permissions:
   contents: write
   pull-requests: write
@@ -25,4 +17,4 @@ jobs:
       - uses: googleapis/release-please-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          release-type: ${{ inputs.release-type != 'auto' && inputs.release-type || '' }}
+          release-as: ${{ inputs.release-as }}
