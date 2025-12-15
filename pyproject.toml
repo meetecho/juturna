@@ -42,7 +42,6 @@ rich = { version = "^13.8.1", optional = true, extras = ["pipebuilder"] }
 
 # dev dependencies
 ruff = { version = "^0.14.8", optional = true, extras = ["dev"] }
-poethepoet = { version = "^0.38.0", optional = true, extras = ["dev"] }
 bandit = { version = "^1.9.2", optional = true, extras = ["dev"] }
 pre-commit = { version = "^3.4.0", optional = true, extras = ["dev"] }
 conventional-pre-commit = { version = "^4.3.0", optional = true, extras = ["dev"] }
@@ -66,7 +65,6 @@ packages = [
 httpwrapper = ["fastapi", "fastapi-cli"]
 pipebuilder = ["prompt_toolkit", "rich"]
 dev = ["pytest",
-       "poethepoet",
        "pre-commit",
        "bandit",
        "conventional-pre-commit",
@@ -85,7 +83,6 @@ optional = true
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
-poethepoet = "^0.38.0"
 bandit = "^1.9.2"
 pre-commit = "^3.4.0"
 ruff = "^0.14.8"
@@ -97,10 +94,6 @@ sphinx-autoapi = "^3.6.0"
 sphinx-autobuild = "^2024.10.3"
 furo = "^2025.9.25"
 sphinx-design = "^0.6.1"
-
-[tool.poe.tasks]
-bandit = "pre-commit run bandit --hook-stage manual"
-install-pre-commit = "pre-commit install && pre-commit install --hook-type commit-msg"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
