@@ -1,0 +1,38 @@
+name: Commits Linting
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install conventional-pre-commit
+
+      - name: Validate all commits in PR
+        run: |
+          base="${{ github.event.pull_request.base.sha }}"
+          head="${{ github.event.pull_request.head.sha }}"
+
+          commits=$(git rev-list $base..$head)
+
+          echo "$commits" | while read commit; do
+            echo "Validating commit: $commit"
+            message=$(git log -1 --format=%B $commit)
+            tmpfile=$(mktemp)
+            echo "$message" > "$tmpfile"
+            conventional-pre-commit "$tmpfile" || exit 1
+            rm "$tmpfile"
+          done

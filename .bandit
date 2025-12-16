@@ -1,0 +1,4 @@
+[bandit]
+targets = juturna,plugins,tests
+skips = B101
+recursive = true

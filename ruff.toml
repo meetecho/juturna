@@ -60,9 +60,13 @@ select = [
 ]
 
 ignore = [
+    "D203",
     "D205",
     "D212",
     "D400",
     "D401",
     "D415"
 ]
+
+[lint.per-file-ignores]
+"docs/source/conf.py" = ["D100", "E501"]
