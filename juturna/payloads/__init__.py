@@ -1,3 +1,4 @@
+# noqa: D104
 from juturna.payloads._payloads import AudioPayload
 from juturna.payloads._payloads import ImagePayload
 from juturna.payloads._payloads import VideoPayload
@@ -18,9 +19,7 @@ __all__ = [
     'ObjectPayload',
     'BytesPayload',
     'Batch',
-
     'T_Input',
     'T_Output',
-
-    'Draft'
+    'Draft',
 ]

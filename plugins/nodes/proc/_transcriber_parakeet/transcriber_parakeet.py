@@ -84,8 +84,8 @@ class TranscriberParakeet(Node[AudioPayload, ObjectPayload]):
                     )
                 )
             else:
-                self._model.cfg.decoding.confidence_cfg.preserve_frame_confidence = True
-                self._model.cfg.decoding.confidence_cfg.preserve_word_confidence = True
+                self._model.cfg.decoding.confidence_cfg.preserve_frame_confidence = True  # noqa: E501
+                self._model.cfg.decoding.confidence_cfg.preserve_word_confidence = True  # noqa: E501
 
         self._model.change_decoding_strategy(self._model.cfg.decoding)
 

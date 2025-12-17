@@ -5,7 +5,8 @@ TranscriberParakeet
 @ Email: abevilacqua@meetecho.com
 
 Transcribe audio packets using whisper models.
-For a full list of available models, see here: https://github.com/SYSTRAN/faster-whisper
+For a full list of available models, see here:
+https://github.com/SYSTRAN/faster-whisper
 """
 
 import gc

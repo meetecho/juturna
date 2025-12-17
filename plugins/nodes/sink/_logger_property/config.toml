@@ -1,7 +1,0 @@
-[arguments]
-target = ''
-value = true
-match_any = false
-in_meta = true
-
-[meta]
