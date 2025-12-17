@@ -49,9 +49,11 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
     def warmup(self):
         """Prepare node for execution"""
         self._server = serve(self._ws_handler, self._rtx_host, self._rtx_port)
-        self._thread = threading.Thread(target=self._server.serve_forever,
-                                        daemon=True,
-                                        name=f'{self.name}_ws')
+        self._thread = threading.Thread(
+            target=self._server.serve_forever,
+            daemon=True,
+            name=f'{self.name}_ws',
+        )
 
         self.logger.info('ws server created')
 
@@ -62,13 +64,13 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
 
         super().start()
 
-    def stop(self): #noqa: D102
+    def stop(self):  # noqa: D102
         if self._server:
             self._server.shutdown()
         if self._thread:
             self._thread.join(timeout=2)
 
-    def update(self, message: Message[BytesPayload]): #noqa: D102
+    def update(self, message: Message[BytesPayload]):  # noqa: D102
         self.logger.info(f'ws server message received: {message.payload.cnt}')
 
         try:
@@ -79,9 +81,7 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
             return
 
         to_send = Message[ObjectPayload](
-            creator=self.name,
-            version=self._sent,
-            payload=Draft(ObjectPayload)
+            creator=self.name, version=self._sent, payload=Draft(ObjectPayload)
         )
 
         for k, v in json_content.items():
@@ -97,9 +97,7 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
                 payload = BytesPayload(cnt=raw)
 
                 msg = Message[ObjectPayload](
-                    creator=self.name,
-                    version=self._sent,
-                    payload=payload
+                    creator=self.name, version=self._sent, payload=payload
                 )
 
                 self._queue.put(msg)

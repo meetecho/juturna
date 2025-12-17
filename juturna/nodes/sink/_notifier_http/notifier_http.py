@@ -6,6 +6,7 @@ NotifierHTTP
 
 Transmit message to a HTTP endpoint.
 """
+
 import threading
 
 import requests
@@ -72,7 +73,7 @@ class NotifierHTTP(Node[ObjectPayload, None]):
             creator=message.creator,
             version=message.version,
             timers_from=message,
-            payload=message.payload
+            payload=message.payload,
         )
 
         to_send.meta['session_id'] = self.pipe_id

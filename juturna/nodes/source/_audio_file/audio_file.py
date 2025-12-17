@@ -6,6 +6,7 @@ AudioFile
 
 Read an audio file and chunk it into smaller audio messages.
 """
+
 import io
 import itertools
 
@@ -53,7 +54,7 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         self._audio_chunks = list()
         self._transmitted = 0
 
-    def warmup(self): #noqa: D102
+    def warmup(self):  # noqa: D102
         resampler = av.audio.resampler.AudioResampler(
             format='s16', layout='mono', rate=self._rate
         )
@@ -119,7 +120,7 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
 
         return chunks
 
-    def update(self, message: Message[AudioPayload]): #noqa: D102
+    def update(self, message: Message[AudioPayload]):  # noqa: D102
         if message is None:
             self.logger.info('audio file done, stopping...')
 

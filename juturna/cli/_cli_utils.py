@@ -2,7 +2,6 @@ import argparse
 import pathlib
 
 
-
 def _is_file_ok(file_path: str) -> str:
     if not pathlib.Path(file_path).exists():
         raise argparse.ArgumentTypeError(f'{file_path} does not exists')
