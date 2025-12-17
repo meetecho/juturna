@@ -66,9 +66,7 @@ class Buffer:
         self._out_queue.put(Batch(messages=to_send))
 
     def flush(self):
-        """
-        Flush the buffer content
-        """
+        """Flush the buffer content"""
         with self._data_lock:
             self._data = dict()
             while not self._out_queue.empty():

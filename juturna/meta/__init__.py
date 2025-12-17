@@ -1,3 +1,4 @@
+# noqa: D104
 from juturna.meta._constants import (
     JUTURNA_BASE_REPO,
     JUTURNA_HUB_URL,

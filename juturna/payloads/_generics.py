@@ -16,7 +16,8 @@ T_Input = TypeVar(
     VideoPayload,
     BytesPayload,
     ObjectPayload,
-    None)
+    None,
+)
 
 T_Output = TypeVar(
     'T_Output',
@@ -26,4 +27,5 @@ T_Output = TypeVar(
     VideoPayload,
     BytesPayload,
     ObjectPayload,
-    None)
+    None,
+)

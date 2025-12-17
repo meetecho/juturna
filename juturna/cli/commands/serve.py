@@ -8,6 +8,7 @@ pipelines, and log level, format, and destination file.
 Serving the Juturna manager requires Juturna to be installed with the
 `httpwrapper` dependency group.
 """
+
 from juturna.cli.commands._juturna_service import run
 
 

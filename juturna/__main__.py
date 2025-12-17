@@ -1,3 +1,14 @@
+"""
+Juturna CLI entrypoint
+
+This module initializes the argument parser, registers all available subcommands
+via the ``juturna.cli.commands`` registry, and dispatches execution to the
+appropriate handler based on user input.
+
+The Juturna CLI provides utilities to manage pipeline configuration files and
+pipeline lifecycles.
+"""
+
 import argparse
 import sys
 
@@ -10,11 +21,12 @@ parser = argparse.ArgumentParser(
     description=(
         'Collection of simple CLI utilities to manage pipeline configuration '
         'files and pipeline lifecycles.'
-    ))
+    ),
+)
 
 subparsers = parser.add_subparsers(
-    dest='command',
-    description='List of commands included in the juturna CLI')
+    dest='command', description='List of commands included in the juturna CLI'
+)
 
 commands.register_all(subparsers)
 _ret = 0

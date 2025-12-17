@@ -44,16 +44,21 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
     )
 
     items_to_process = [
-        (key, value) for key, value in operational_config.items()
+        (key, value)
+        for key, value in operational_config.items()
         if isinstance(value, str)
         and value.startswith(JUTURNA_ENV_VAR_PREFIX)
         and key in _node_local_config['arguments']
     ]
 
-    operational_config.update({
-        key: _resolve_env_var(key, value, node_name, _node_local_config['arguments'])
-        for key, value in items_to_process
-    })
+    operational_config.update(
+        {
+            key: _resolve_env_var(
+                key, value, node_name, _node_local_config['arguments']
+            )
+            for key, value in items_to_process
+        }
+    )
 
     synchroniser = _SYNCHRONISERS.get(node_sync)
     concrete_node = _node_module(
@@ -110,18 +115,20 @@ def _update_local_with_remote(local: dict, remote: dict) -> dict:
     return merged_config
 
 
-def _resolve_env_var(key: str, value: str, node_name: str, local_arguments: dict) -> str:
-    env_var_name = value[len(JUTURNA_ENV_VAR_PREFIX):]
+def _resolve_env_var(
+    key: str, value: str, node_name: str, local_arguments: dict
+) -> str:
+    env_var_name = value[len(JUTURNA_ENV_VAR_PREFIX) :]
     default_value = local_arguments[key]
-    
+
     if env_var_name not in os.environ:
         error_msg = (
-            f'Environment variable "{env_var_name}" is not set in node "{node_name}" '
-            f'for config key "{key}". Referenced in configuration but not found in environment.'
+            f'env variable "{env_var_name}" is not set in node "{node_name}" '
+            f'for config key "{key}" (found in config but not in environment)'
         )
         _logger.error(error_msg)
         raise ValueError(error_msg)
-    
+
     return get_env_var(env_var_name, default_value)
 
 

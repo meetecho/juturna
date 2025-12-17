@@ -75,13 +75,12 @@ class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
             creator=self.name,
             version=message.version,
             payload=Draft(ObjectPayload),
-            timers_from=message
+            timers_from=message,
         )
 
         with to_send.timeit(self.name):
             response = self._client.chat(
-                model=self._model_name,
-                messages=ollama_query
+                model=self._model_name, messages=ollama_query
             )
 
         to_send.payload['ollama_response'] = response.model_dump()
