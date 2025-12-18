@@ -8,6 +8,8 @@ improving documentation, or submitting a pull request — you're welcome here.
 We expect everyone to be respectful and constructive. If you're a jerk, your PR
 will be closed. Simple as that.
 
+See our [CODE OF CONDUCT](CODE_OF_CONDUCT.md) for further details
+
 ## How to Contribute
 
 1. **Fork the repository**
@@ -355,4 +357,6 @@ pre-commit autoupdate
 - **Ruff Documentation**: https://docs.astral.sh/ruff/
 - **Conventional Commits**: https://www.conventionalcommits.org/
 - **Bandit Documentation**: https://bandit.readthedocs.io/
+
+
 Open an issue and describe what you're trying to do — we're usually friendly and helpful.
