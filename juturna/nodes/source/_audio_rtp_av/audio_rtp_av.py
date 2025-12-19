@@ -8,12 +8,10 @@ AudioRtpAv
 Consume RTP audio streams using PyAv.
 """
 
-import typing
 import threading
 import pathlib
 
 import av
-import numpy as np
 
 from juturna.components import Node
 from juturna.components import Message
@@ -42,10 +40,9 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
         port: int,
         payload_type: int,
         encoding_clock_chan: str,
-        in_rate: int,
         out_rate: int,
-        in_channels: int,
         out_channels: int,
+        resampler_format: str,
         block_size: int,
         **kwargs,
     ):
@@ -62,14 +59,13 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
             encoding name/clock rate[/channels] for the RTP stream as defined
             in RFC 4566 (SDP) and in RFC 3555 (MIME type registration for RTP
             payload formats).
-        in_rate : int
-            Sampling rate of incoming audio.
         out_rate : int
             Sampling rate of output audio.
-        in_channels : int
-            Audio channels of incoming stream.
         out_channels : int
             Audio channels of output chunks.
+        resampler_format : str
+            Output format of the audio resampler. Full list here:
+            https://github.com/PyAV-Org/PyAV/blob/main/av/audio/frame.py#L16
         block_size : int
             Size of the audio block to sample, in seconds.
         kwargs : dict
@@ -82,11 +78,10 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
         self._port = port
         self._payload_type = payload_type
         self._encoding_clock_chan = encoding_clock_chan
-        self._in_rate = in_rate
         self._out_rate = out_rate
-        self._in_channels = in_channels
         self._out_channels = out_channels
         self._block_size = block_size
+        self._resampler_format = resampler_format
 
         self._samples_per_block = int(self._out_rate * self._block_size)
         self._container = None
@@ -109,10 +104,6 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
         self._t = threading.Thread(
             target=self._generate_chunks, args=(), daemon=True
         )
-
-    def set_on_config(self, prop: str, value: typing.Any):
-        """Hot-swap node properties"""
-        ...
 
     def start(self):
         """Start the node"""
@@ -144,7 +135,7 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
 
             self._fifo = av.audio.fifo.AudioFifo()
             self._resampler = av.AudioResampler(
-                format='s16' if self._out_channels == 1 else 's16p',
+                format=self._resampler_format,
                 layout='mono' if self._out_channels == 1 else 'stereo',
                 rate=self._out_rate,
             )
@@ -171,7 +162,7 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
                     if self._stop_event.is_set():
                         break
 
-                    audio_data = chunk.to_ndarray().astype(np.float32) / 32768.0
+                    audio_data = chunk.to_ndarray()
 
                     self.put(
                         Message[AudioPayload](
