@@ -7,10 +7,10 @@
         <link rel="prefetch" href="../_static/img/logo_light_alt.svg" as="image">
         <link rel="prefetch" href="../_static/img/logo_dark_alt.svg" as="image">
 
-    <link rel="shortcut icon" href="../_static/logo_dark.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.09.25 -->
+    <link rel="shortcut icon" href="../_static/logo_dark.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>juturna.payloads package - Juturna</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=02ca0aaa" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
     <link rel="stylesheet" type="text/css" href="../_static/css/meetecho_style.css?v=83603a25" />
@@ -296,11 +296,16 @@
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.payloads" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.payloads.AudioPayload">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">AudioPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio:</span> <span class="pre">numpy.ndarray</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.AudioPayload" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">AudioPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">audio:</span> <span class="pre">numpy.ndarray</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sampling_rate:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_format:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels:</span> <span class="pre">int</span> <span class="pre">=</span> <span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.AudioPayload" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">BasePayload</span></code></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.AudioPayload.audio">
 <span class="sig-name descname"><span class="pre">audio</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.audio" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.payloads.AudioPayload.audio_format">
+<span class="sig-name descname"><span class="pre">audio_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">''</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.audio_format" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -547,6 +552,7 @@ once it is compiled an actual payload will be generated.</p>
 <li><a class="reference internal" href="#module-juturna.payloads">Module contents</a><ul>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload"><code class="docutils literal notranslate"><span class="pre">AudioPayload</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.audio"><code class="docutils literal notranslate"><span class="pre">AudioPayload.audio</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.AudioPayload.audio_format"><code class="docutils literal notranslate"><span class="pre">AudioPayload.audio_format</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.channels"><code class="docutils literal notranslate"><span class="pre">AudioPayload.channels</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.end"><code class="docutils literal notranslate"><span class="pre">AudioPayload.end</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.sampling_rate"><code class="docutils literal notranslate"><span class="pre">AudioPayload.sampling_rate</span></code></a></li>
