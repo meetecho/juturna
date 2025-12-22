@@ -1,4 +1,5 @@
 tests/running_pipelines/
+remote_pipes/
 .idea/
 .vscode/
 
