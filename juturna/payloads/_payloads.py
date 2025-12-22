@@ -23,6 +23,7 @@ class BasePayload:
 class AudioPayload(BasePayload):
     audio: np.ndarray = field(default_factory=lambda: np.ndarray(0))
     sampling_rate: int = -1
+    audio_format: str = ''
     channels: int = -1
     start: float = -1.0
     end: float = -1.0

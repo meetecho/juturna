@@ -1,0 +1,9 @@
+v=0
+o=- 0 0 IN IP4 $_remote_rtp_host
+s=No Name
+c=IN IP4 $_remote_rtp_host
+t=0 0
+a=tool:libavformat 58.76.100
+m=audio $_remote_rtp_port RTP/AVP $_remote_payload_type
+a=rtpmap:$_remote_payload_type $_encoding_clock_chan
+a=fmtp:$_remote_payload_type sprop-stereo=1

@@ -1,0 +1,11 @@
+[arguments]
+host = "127.0.0.1"
+port = 8888
+payload_type = 97
+encoding_clock_chan = "opus/48000/2"
+out_rate = 16000
+out_channels = 1
+resampler_format = "dblp"
+block_size = 3
+
+[meta]
