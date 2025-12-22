@@ -16,6 +16,10 @@ class BasePayload:
     def clone(self) -> Self:
         return copy.deepcopy(self)
 
+    @staticmethod
+    def serialize(obj):
+        return json.JSONEncoder.default(obj)
+
 
 @dataclass(frozen=True)
 class ControlPayload(BasePayload):
@@ -52,6 +56,17 @@ class ImagePayload(BasePayload):
     pixel_format: str = ''
     timestamp: float = -1.0
 
+    @staticmethod
+    def serialize(obj) -> dict:
+        return {
+            'image': obj.image.tolist(),
+            'width': obj.width,
+            'height': obj.height,
+            'depth': obj.depth,
+            'pixel_format': obj.pixel_format,
+            'timestamp': obj.timestamp,
+        }
+
 
 @dataclass(frozen=True)
 class VideoPayload(BasePayload):
@@ -60,10 +75,23 @@ class VideoPayload(BasePayload):
     start: float = -1.0
     end: float = -1.0
 
+    @staticmethod
+    def serialize(obj) -> dict:
+        return {
+            'video': [img.serialize() for img in obj.video],
+            'frames_per_second': obj.frames_per_second,
+            'start': obj.start,
+            'end': obj.end,
+        }
+
 
 @dataclass(frozen=True)
 class BytesPayload(BasePayload):
     cnt: bytes = field(default_factory=lambda: b'')
+
+    @staticmethod
+    def serialize(obj) -> dict:
+        return {'cnt': obj.cnt.decode('utf-8')}
 
 
 @dataclass(frozen=True)
