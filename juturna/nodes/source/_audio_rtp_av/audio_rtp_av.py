@@ -172,6 +172,7 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
                                 audio=audio_data,
                                 sampling_rate=self._out_rate,
                                 channels=self._out_channels,
+                                audio_format=self._resampler_format,
                                 start=self._block_size * self._abs_recv,
                                 end=self._block_size * (self._abs_recv + 1),
                             ),
