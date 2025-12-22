@@ -4,10 +4,11 @@ Supports all payload types: Audio, Image, Video, Bytes, Object, Batch
 """
 
 import grpc
-import numpy as np
 import logging
+import queue
+import argparse
+import threading
 from concurrent import futures
-from typing import Any
 
 from juturna.remotizer.utils import (
     deserialize_envelope,
@@ -15,10 +16,8 @@ from juturna.remotizer.utils import (
     message_to_proto,
 )
 
-from juturna.components import Message
-from juturna.payloads import (
-    ObjectPayload,
-)
+from juturna.components import Message, Node
+from juturna.remotizer._remote_builder import _remote_builder
 
 # Import generated protobuf code
 from generated.payloads_pb2 import (
@@ -28,29 +27,26 @@ from generated import messaging_service_pb2_grpc
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('remote_service')
 
 
 # ============================================================================
-# MESSAGE HANDLER REGISTRY
+# HELPER CLASSES
 # ============================================================================
 
 
-class MessageHandler:
-    """Registry for handling different message types"""
+class ReceiverQueue:
+    """
+    Wrapper around a queue to act as a Node destination.
+    Nodes expect destinations to have a 'put' method.
+    """
 
-    def __init__(self): ...
+    def __init__(self, q: queue.Queue):
+        self.q = q
 
-    def handle(self, envelope_dict: dict[str, Any]) -> Any:
-        """Route message to appropriate handler"""
-        payload_type = envelope_dict['message']['payload_type']
-
-        if payload_type not in self.handlers:
-            logger.warning(f'No handler registered for {payload_type}')
-            return None
-
-        handler = self.handlers[payload_type]
-        return handler(envelope_dict)
+    def put(self, message: Message):
+        """Put message into the underlying queue"""
+        self.q.put(message)
 
 
 # ============================================================================
@@ -59,53 +55,147 @@ class MessageHandler:
 
 
 class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
-    """Implementation of the gRPC Messaging Service"""
+    """Implementation of the gRPC Messaging Service (Async/Concurrent)"""
 
-    def __init__(self):
-        self.handler = MessageHandler()
+    def __init__(self, node: Node):
+        self.node = node
+
+        # Queue for Node output
+        self.output_queue = queue.Queue()
+
+        # Attach to Node
+        self.receiver = ReceiverQueue(self.output_queue)
+        self.node.add_destination('remote_client_return', self.receiver)
+
+        # Pending requests: correlation_id -> Future
+        self.pending_requests: dict[str, futures.Future] = {}
+        self.requests_lock = (
+            threading.Lock()
+        )  # Protects access to pending_requests dict
+
+        # Start background dispatcher thread
+        self._stop_event = threading.Event()
+        self._dispatcher_thread = threading.Thread(
+            target=self._dispatcher_loop,
+            name='RemoteServiceDispatcher',
+            daemon=True,
+        )
+        self._dispatcher_thread.start()
+
+        logger.info(f'Async Service initialized for node {node.name}')
+
+    def _dispatcher_loop(self):
+        """
+        Background loop that reads from output_queue,
+        and resolves pending futures.
+        """
+        while not self._stop_event.is_set():
+            try:
+                # Wait for a message from the Node
+                message: Message = self.output_queue.get(timeout=1.0)
+
+                # Check for correlation_id in metadata
+                correlation_id = message.meta.get('correlation_id')
+
+                if not correlation_id:
+                    logger.warning(
+                        f'Received message from {message.creator}',
+                        'but no correlation_id found in metadata.',
+                    )
+                    continue
+
+                # Find and resolve the future
+                with self.requests_lock:
+                    future = self.pending_requests.pop(correlation_id, None)
+
+                if future:
+                    if not future.done():
+                        future.set_result(message)
+                else:
+                    logger.warning(
+                        f'Received response for unknown correlation_id: {correlation_id}'  # noqa: E501
+                    )
+
+            except queue.Empty:
+                continue
+            except Exception as e:
+                logger.error(f'Error in dispatcher loop: {e}', exc_info=True)
 
     def SendAndReceive(self, request: ProtoEnvelope, context):
-        """Handle request-response pattern"""
-        # Process the incoming message
-        # Log incoming message
-        logger.info(f'Received envelope {request.id} from {request.sender}')
+        """Handle request-response pattern asynchronously"""
+        try:
+            # 1. Deserialize
+            envelope_dict = deserialize_envelope(request)
+            request_message = envelope_dict['message']
 
-        # Deserialize the envelope
-        envelope_dict = deserialize_envelope(request)
-        request_message = envelope_dict['message']
+            # 2. Extract/Generate Correlation ID
+            # The client SHOULD send a correlation_id in the envelope.
+            # We map the envelope's correlation_id
+            # (which might be the request_id from client perspective)
+            # to our internal tracking.
 
-        # Log details
-        logger.info(f'Message type: {envelope_dict["message"]["payload_type"]}')
-        logger.info(f'Creator: {envelope_dict["message"]["creator"]}')
-        logger.info(f'Correlation ID: {envelope_dict["correlation_id"]}')
+            # Use the envelope's correlation_id or id if available
+            cid = envelope_dict.get('correlation_id') or envelope_dict.get('id')
 
-        #        response_message = self.handler.handle(request_message)
-        response_message = Message[ObjectPayload](
-            creator='mock-creator',
-            version=envelope_dict['message']['version'],
-            payload=ObjectPayload.from_dict({'result': 'ok'}),
-            timers_from=request_message.timers,
-        )
+            if not cid:
+                logger.warning(
+                    'Request missing correlation_id',
+                    'generating one but client might fail match.',
+                )
+                import uuid
 
-        proto_response = message_to_proto(response_message)
+                cid = str(uuid.uuid4())
 
-        response_envelope = create_envelope(
-            message=proto_response,
-            creator='response_handler',
-            request_type=envelope_dict['response_type'],
-            priority=0,
-            timeout=30,
-            response_type=envelope_dict['request_type'],
-            correlation_id=envelope_dict['id'],
-            id=envelope_dict['correlation_id'],
-        )
-        return response_envelope
+            # 3. Prepare Future
+            future = futures.Future()
+            with self.requests_lock:
+                self.pending_requests[cid] = future
 
-    # def StreamMessages(self, request_iterator, context):
-    #     """Handle streaming messages"""
-    #     for envelope in request_iterator:
-    #         response = self.SendMessage(envelope, context)
-    #         yield response
+            # 4. Inject Correlation ID into Message Meta
+            # This is CRITICAL: The Node MUST propagate this metadata!
+            request_message.meta['correlation_id'] = cid
+
+            # 5. Inject into Node
+            self.node.put(request_message)
+
+            # 6. Wait for Future
+            timeout = request.ttl if request.ttl > 0 else 30
+            try:
+                response_message = future.result(timeout=timeout)
+            except futures.TimeoutError:
+                # Cleanup
+                with self.requests_lock:
+                    self.pending_requests.pop(cid, None)
+
+                logger.error(f'Node processing timed out for cid={cid}')
+                context.abort(
+                    grpc.StatusCode.DEADLINE_EXCEEDED,
+                    'Node processing timed out',
+                )
+                return ProtoEnvelope()
+
+            # 7. Serialize Response
+            proto_response = message_to_proto(response_message)
+
+            response_envelope = create_envelope(
+                message=proto_response,
+                creator='remote_service',
+                configuration={},
+                metadata={},
+                request_type=envelope_dict['response_type'],
+                priority=0,
+                timeout=30,
+                response_type=envelope_dict['request_type'],
+                correlation_id=cid,
+                id=cid,  # ID of this response envelope
+            )
+
+            return response_envelope
+
+        except Exception as e:
+            logger.error(f'Error processing request: {e}', exc_info=True)
+            context.abort(grpc.StatusCode.INTERNAL, str(e))
+            return ProtoEnvelope()
 
 
 # ============================================================================
@@ -113,31 +203,83 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
 # ============================================================================
 
 
-def serve(port: int = 50051, max_workers: int = 10):
-    """Start the gRPC server"""
+def serve():
+    parser = argparse.ArgumentParser(description='Juturna Remote Node Service')
+    parser.add_argument(
+        '--node-name', required=True, help='Name of the node to run'
+    )
+    parser.add_argument(
+        '--node-mark', required=True, help='Mark of the node to run'
+    )
+    parser.add_argument(
+        '--plugins-dir', required=True, help='Path to plugins directory'
+    )
+    parser.add_argument(
+        '--pipe-name', default='remote_pipe', help='Pipeline name context'
+    )
+    parser.add_argument(
+        '--port', type=int, default=50051, help='Port to listen on'
+    )
+    parser.add_argument(
+        '--config',
+        help='Optional configuration string (JSON/TOML) - placeholder for now',
+    )  # Simplification
+
+    args = parser.parse_args()
+
+    # 1. Build the node
+    logger.info(f"Building node '{args.node_name}'...")
+
+    # We use _remote_builder.
+    # Note: _remote_builder signature:
+    #  - name,
+    #  - plugins_dir,
+    #  - context_runtime_path,
+    #  - config=None
+    # It returns (node, runtime_folder)
+
+    try:
+        node_instance, _ = _remote_builder(
+            name=args.node_name,
+            plugins_dir=args.plugins_dir,
+            node_mark=args.node_mark,
+            context_runtime_path=args.pipe_name,
+            config={},
+        )
+
+        if node_instance is None:
+            logger.error('Failed to build node.')
+            return
+
+        logger.info(f"Node '{node_instance.name}' built successfully.")
+
+    except Exception as e:
+        logger.error(f'Failed to instantiate node: {e}', exc_info=True)
+        return
+
+    # 2. Start gRPC Server
     server = grpc.server(
-        futures.ThreadPoolExecutor(max_workers=max_workers),
+        futures.ThreadPoolExecutor(max_workers=10),
         options=[
-            ('grpc.max_send_message_length', 100 * 1024 * 1024),  # 100MB
-            ('grpc.max_receive_message_length', 100 * 1024 * 1024),  # 100MB
+            ('grpc.max_send_message_length', 100 * 1024 * 1024),
+            ('grpc.max_receive_message_length', 100 * 1024 * 1024),
         ],
     )
 
-    # Add the service
     messaging_service_pb2_grpc.add_MessagingServiceServicer_to_server(
-        MessagingServiceImpl(), server
+        MessagingServiceImpl(node_instance), server
     )
 
-    # Bind to port
-    server.add_insecure_port(f'[::]:{port}')
+    server.add_insecure_port(f'[::]:{args.port}')
 
-    logger.info(f'Starting gRPC server on port {port}')
+    logger.info(f'Starting gRPC server on port {args.port}')
     server.start()
 
     try:
         server.wait_for_termination()
     except KeyboardInterrupt:
         logger.info('Shutting down server...')
+        node_instance.stop()
         server.stop(0)
 
 

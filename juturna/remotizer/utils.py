@@ -1,3 +1,15 @@
+"""
+Utility functions for converting between Python objects and Protobuf messages.
+
+This module provides helper functions to:
+- Convert internal `juturna.components.Message` and its Payloads
+  to their corresponding Protobuf representations in `protos/payloads.proto`.
+- Deserialize `ProtoMessage` and `ProtoPayload` back into Python objects.
+- Create/deserialize `ProtoEnvelope` for wrapping messages in the wire protocol.
+
+These utilities are essential for the serialization layer of the Remotizer.
+"""
+
 import numpy as np
 import uuid
 import time
@@ -195,40 +207,40 @@ def deserialize_message(message: ProtoMessage) -> Message:
         Python Message object with appropriate payload type
 
     """
-    message = Message(
-        created_at=message.created_at,
+    message_obj = Message(
         creator=message.creator,
         version=message.version,
-        meta=dict(message.meta),
-        timers=dict(message.timers),
         payload=None,  # to be filled below
     )
+    message_obj.created_at = message.created_at
+    message_obj.meta.update(dict(message.meta))
+    message_obj.timers.update(dict(message.timers))
 
     # Deserialize payload based on type
     if message.payload.Is(AudioProtoPayload.DESCRIPTOR):
         audio = AudioProtoPayload()
         message.payload.Unpack(audio)
-        message.payload = _deserialize_audio_payload(audio)
+        message_obj.payload = _deserialize_audio_payload(audio)
 
     elif message.payload.Is(ImageProtoPayload.DESCRIPTOR):
         image = ImageProtoPayload()
         message.payload.Unpack(image)
-        message.payload = _deserialize_image_payload(image)
+        message_obj.payload = _deserialize_image_payload(image)
 
     elif message.payload.Is(VideoProtoPayload.DESCRIPTOR):
         video = VideoProtoPayload()
         message.payload.Unpack(video)
-        message.payload = _deserialize_video_payload(video)
+        message_obj.payload = _deserialize_video_payload(video)
 
     elif message.payload.Is(BytesProtoPayload.DESCRIPTOR):
         bytes_payload = BytesProtoPayload()
         message.payload.Unpack(bytes_payload)
-        message.payload = _deserialize_bytes_payload(bytes_payload)
+        message_obj.payload = _deserialize_bytes_payload(bytes_payload)
 
     elif message.payload.Is(ObjectProtoPayload.DESCRIPTOR):
         obj = ObjectProtoPayload()
         message.payload.Unpack(obj)
-        message.payload = _deserialize_object_payload(obj)
+        message_obj.payload = _deserialize_object_payload(obj)
 
     # ! actually we do not unpack Batch properly.
     # ! the batch message is a container of messages, so we need to
@@ -237,7 +249,7 @@ def deserialize_message(message: ProtoMessage) -> Message:
     # ! it is a Payload _and_ a messages list (with their own payloads).
     # ! probably the Batch should be removed in favor of a Messages array?
 
-    return message  # add finalize here?
+    return message_obj  # add finalize here?
 
 
 def _deserialize_audio_payload(payload: AudioProtoPayload) -> AudioPayload:
@@ -276,7 +288,7 @@ def _deserialize_image_payload(payload: ImageProtoPayload) -> ImagePayload:
 
 
 def _deserialize_video_payload(payload: VideoProtoPayload) -> VideoPayload:
-    """Deserialize VideoProtoPayload to VideoPayload with list of numpy arrays"""
+    """Deserialize VideoProtoPayload to VideoPayload with numpy arrays list"""
     frames = [_deserialize_image_payload(frame) for frame in payload.frames]
 
     return VideoPayload(
@@ -298,7 +310,8 @@ def _deserialize_bytes_payload(payload: BytesProtoPayload) -> BytesPayload:
 
 def _deserialize_object_payload(payload: ObjectProtoPayload) -> ObjectPayload:
     """Deserialize ObjectProtoPayload (Struct) to ObjectPayload (dict)"""
-    return ObjectPayload(**MessageToDict(payload))  # ! TEST ME
+    proto_dict = MessageToDict(payload)
+    return ObjectPayload.from_dict(proto_dict.get('data', {}))
 
 
 def create_envelope(
@@ -343,6 +356,8 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
         'correlation_id': envelope.correlation_id,
         'response_to': envelope.response_to,
         'ttl': envelope.ttl,
+        'request_type': envelope.request_type,
+        'response_type': envelope.response_type,
         'message': message,
     }
     return envelope_dict

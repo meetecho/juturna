@@ -10,25 +10,28 @@ import "google/protobuf/struct.proto";
 message AudioProtoPayload {
   // Raw audio samples as bytes (use numpy.tobytes() for serialization)
   bytes audio_data = 1;
-  
+
   // Data type of audio samples (e.g., "float32", "int16", "float64")
   string dtype = 2;
-  
+
   // Shape of the audio array [samples, channels]
   // For mono: [samples], for stereo: [samples, 2]
   repeated int32 shape = 3;
-  
+
   // Sampling rate in Hz (e.g., 44100, 48000)
   int32 sampling_rate = 4;
-  
+
   // Number of audio channels (1 for mono, 2 for stereo, etc.)
   int32 channels = 5;
-  
+
   // Start timestamp in seconds
   double start = 6;
-  
+
   // End timestamp in seconds
   double end = 7;
+
+  // Audio format
+  string audio_format = 8;
 }
 
 // ImageProtoPayload represents a single frame/image
@@ -37,22 +40,22 @@ message ImageProtoPayload {
   // Raw pixel data as bytes (flattened array)
   // Reshape using: image_data.reshape(height, width, depth)
   bytes image_data = 1;
-  
+
   // Data type of pixels (e.g., "uint8", "float32", "uint16")
   string dtype = 2;
-  
+
   // Image width in pixels
   int32 width = 3;
-  
+
   // Image height in pixels
   int32 height = 4;
-  
+
   // Color depth (e.g., 1 for grayscale, 3 for RGB, 4 for RGBA)
   int32 depth = 5;
-  
+
   // Pixel format (e.g., "RGB", "RGBA", "BGR", "GRAY", "HSV")
   string pixel_format = 6;
-  
+
   // Frame timestamp in seconds
   double timestamp = 7;
 }
@@ -61,16 +64,16 @@ message ImageProtoPayload {
 message VideoProtoPayload {
   // Sequence of image frames
   repeated ImageProtoPayload frames = 1;
-  
+
   // Frame rate in frames per second (fps)
   double frames_per_second = 2;
-  
+
   // Video start timestamp in seconds
   double start = 3;
-  
+
   // Video end timestamp in seconds
   double end = 4;
-  
+
   // Optional: video codec information
   string codec = 5;
 }
@@ -79,7 +82,7 @@ message VideoProtoPayload {
 message BytesProtoPayload {
   // Raw binary content
   bytes content = 1;
-    
+
   // Optional: size in bytes (can be computed from content.length)
   int64 size = 2;
 }
@@ -88,16 +91,16 @@ message BytesProtoPayload {
 message BatchProto {
   // List of messages in the batch
   repeated ProtoMessage messages = 1;
-  
+
   // Batch metadata as key-value pairs
   map<string, string> metadata = 2;
-  
+
   // Batch creation timestamp
   double created_at = 3;
-  
+
   // Unique batch identifier
   string batch_id = 4;
-  
+
   // Optional: total size of batch in bytes
   int64 total_size = 5;
 }
@@ -107,7 +110,7 @@ message BatchProto {
 message ObjectProtoPayload {
   // Arbitrary structured data using protobuf Struct
   // Supports nested objects, arrays, strings, numbers, booleans, null
-  google.protobuf.Struct data = 1;  
+  google.protobuf.Struct data = 1;
 }
 
 // ProtoMessage represents a single message in the system
@@ -115,19 +118,19 @@ message ObjectProtoPayload {
 message ProtoMessage {
   // ProtoMessage creation timestamp (Unix epoch in seconds)
   double created_at = 1;
-  
+
   // Creator node name (identifies which node created this message)
   string creator = 2;
-  
+
   // ProtoMessage version (indicates version of the data contained)
   int32 version = 3;
-  
+
   // ProtoPayload can be any of the payload types (AudioProtoPayload, ImageProtoPayload, etc.)
   google.protobuf.Any payload = 4;
-  
+
   // Metadata as key-value pairs (flexible metadata storage)
   map<string, string> meta = 5;
-  
+
   // Timers for performance tracking
   // Key: timer name, Value: elapsed time in seconds
   map<string, double> timers = 6;
@@ -138,43 +141,43 @@ message ProtoMessage {
 message ProtoEnvelope {
   // Unique envelope identifier (UUID recommended)
   string id = 1;
-  
+
   // The actual message being transported
   ProtoMessage message = 2;
-  
+
   // Sender identifier
   string sender = 3;
-  
+
   // Intended receiver identifier
   string receiver = 4;
-  
+
   // Correlation ID for request/response coupling
   // Use the same correlation_id for related request/response pairs
   string correlation_id = 5;
-  
+
   // Response-to field: ID of the envelope this is responding to
   // Enables explicit request/response tracking
   string response_to = 6;
-  
+
   // Time-to-live in seconds
   // After this duration, the message may be considered stale/expired
   int64 ttl = 7;
-  
+
   // Envelope creation timestamp (Unix epoch in seconds)
   double created_at = 8;
-  
+
   // Configuration parameters as key-value pairs
   // these message are used to the set_on_config call
   map<string, string> configuration = 9;
-  
+
   // Envelope metadata as key-value pairs
   // Different from message.meta - this is envelope-level metadata
   map<string, string> metadata = 10;
-  
+
   // message priority (0 = lowest, higher = more urgent)
   // for future use
   int32 priority = 11;
-  
+
   // request payload type hint for faster routing/dispatching
   // e.g., "juturna.proto.payloads.AudioProtoPayload"
   string request_type = 12;
@@ -189,16 +192,16 @@ message ProtoEnvelope {
 message CompressedProtoPayload {
   // Compression algorithm used (e.g., "gzip", "zstd", "lz4")
   string compression = 1;
-  
+
   // Compressed data
   bytes compressed_data = 2;
-  
+
   // Original uncompressed size in bytes
   int64 original_size = 3;
-  
+
   // Compressed size in bytes (can be computed from compressed_data.length)
   int64 compressed_size = 4;
-  
+
   // Original payload type before compression
   string original_type = 5;
 }

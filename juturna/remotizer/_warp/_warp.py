@@ -27,7 +27,7 @@ T_Input = TypeVar('T_Input')
 T_Output = TypeVar('T_Output')
 
 
-class Warp[T_Input, T_Output](Node(T_Input, T_Output)):
+class Warp[T_Input, T_Output](Node[T_Input, T_Output]):
     """
     Type Parameters
     ---------------
@@ -73,7 +73,7 @@ class Warp[T_Input, T_Output](Node(T_Input, T_Output)):
         """Warmup the node"""
         # Setup gRPC channel and stub
         self.channel = grpc.insecure_channel(
-            f' {self._grpc_host}:{self._grpc_port}',
+            f'{self._grpc_host}:{self._grpc_port}',
             options=[
                 ('grpc.max_send_message_length', 100 * 1024 * 1024),  # 100MB
                 ('grpc.max_receive_message_length', 100 * 1024 * 1024),  # 100MB
@@ -112,7 +112,7 @@ class Warp[T_Input, T_Output](Node(T_Input, T_Output)):
                 message=message_proto,
                 creator=self.name,
                 request_type=type(message.payload).__name__,
-                response_type=type(self).T_Output.__name__,
+                response_type='Any',
                 priority=0,
                 timeout=self._timeout,
                 configuration={},

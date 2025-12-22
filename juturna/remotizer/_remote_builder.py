@@ -10,6 +10,7 @@ REMOTE_PIPE_ID = 'remote_pipe'
 
 def _remote_builder(
     name: str,
+    node_mark: str,
     plugins_dir: str,
     context_runtime_path: str,
     config: dict = None,
@@ -26,6 +27,8 @@ def _remote_builder(
     ----------
     name : str
         The name of the node to be deployed.
+    node_mark : str
+        The mark of the node to be deployed.
     plugins_dir : str
         The directory where plugins are located.
     context_runtime_path : str
@@ -43,11 +46,11 @@ def _remote_builder(
     node = {
         'name': name,
         'type': 'proc',
-        'mark': 'local',
+        'mark': node_mark,
         'configuration': config,
     }
     node_runtime_folder = pathlib.Path(REMOTE_PIPE_FOLDER, context_runtime_path)
-    node_runtime_folder.mkdir(exist_ok=True)
+    node_runtime_folder.mkdir(exist_ok=True, parents=True)
 
     # build the node
     _node: Node = _component_builder.build_component(
@@ -61,8 +64,9 @@ def _remote_builder(
     _node.status = ComponentStatus.NEW
 
     # attach to remote_in and remote_out pipes
-    _node.add_destination()
-    _node.origins.append()
+    # attach to remote_in and remote_out pipes
+    # _node.add_destination()
+    # _node.origins.append()
 
     # warmup the node
     _node.warmup()
