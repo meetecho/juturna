@@ -13,6 +13,8 @@ from juturna.utils.log_utils import jt_logger
 from juturna.names import ComponentStatus
 from juturna.names import PipelineStatus
 
+from juturna.payloads import ControlSignal
+
 
 class Pipeline:
     """
@@ -210,6 +212,24 @@ class Pipeline:
             node.stop()
 
         self._status = PipelineStatus.READY
+
+    def suspend_node(self, node_name: str):
+        """
+        Suspend a node in the pipeline.
+        A pipeline node can be suspended, so it won't process any data until it
+        is resumed. A suspended node will keep forwarding received messages to
+        its destinations.
+        """
+        if node := self._nodes.get(node_name):
+            node.put(ControlSignal.SUSPEND)
+
+    def resume_node(self, node_name: str):
+        """
+        Resume a node in the pipeline.
+        A suspended node can be resumed, so it will start processing data again.
+        """
+        if node := self._nodes.get(node_name):
+            node.put(ControlSignal.RESUME)
 
     def destroy(self):
         """
