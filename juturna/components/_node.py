@@ -11,6 +11,9 @@ from collections.abc import Callable
 from typing import Any
 
 from juturna.components import Message
+from juturna.payloads import ControlPayload
+from juturna.payloads import ControlSignal
+
 from juturna.names import ComponentStatus
 from juturna.utils.log_utils import jt_logger
 from juturna.components._buffer import Buffer
@@ -65,6 +68,8 @@ class Node[T_Input, T_Output]:
         self._stop_worker_event = threading.Event()
         self._stop_source_event = threading.Event()
         self._stop_update_event = threading.Event()
+
+        self._suspended = False
 
         # buffer stores messages, policy manages them
         # if the synchroniser is not provided, get local one or default
@@ -291,51 +296,7 @@ class Node[T_Input, T_Output]:
     def clear_buffer(self):
         self._buffer.flush()
 
-    def _worker(self):
-        while not self._stop_worker_event.is_set():
-            message = self._queue.get()
-
-            if message is None:
-                self.transmit(None)
-                self._stop_worker_event.set()
-
-                return
-
-            self._buffer.put(message)
-
-    def _update(self):
-        while not self._stop_update_event.is_set():
-            batch = self._buffer.get()
-
-            if batch is None:
-                self._stop_update_event.set()
-
-                return
-
-            self.update(batch)
-
-    def _source(self):
-        while not self._stop_source_event.is_set():
-            if self._source_mode == 'pre':
-                time.sleep(self._source_sleep)
-
-            message = self._source_f()
-
-            if message is None:
-                self.put(message)
-                self._stop_source_event.set()
-
-                return
-
-            if self._stop_source_event.is_set():
-                return
-
-            if self._source_mode == 'post':
-                time.sleep(self._source_sleep)
-
-            self.put(message)
-
-    def transmit(self, message: Message[T_Output] | None):
+    def transmit(self, message: Message[T_Output] | ControlSignal):
         """
         Transmit a message. This method is used to send data from the node to
         its destinations. Messages are frozen before transmission, so that
@@ -347,7 +308,7 @@ class Node[T_Input, T_Output]:
             The message to be transmitted.
 
         """
-        _ = message.freeze() if message else None
+        _ = message.freeze() if isinstance(message, Message) else None
 
         for node_name in self._destinations:
             self._destinations[node_name].put(message)
@@ -400,23 +361,30 @@ class Node[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the bridge is stopped correctly.
         """
+        if self._status == ComponentStatus.STOPPED:
+            return
+
         self._stop_worker_event.set()
-
-        if self._source_f or len(self.destinations) == 0:
-            self._queue.put(None)
-
         self._stop_source_event.set()
+        self._stop_update_event.set()
+
+        self._queue.put(None)
+        self._buffer.put(None)
 
         for _t in [
             self._source_thread,
             self._worker_thread,
+            self._update_thread,
         ]:
             if _t and _t.is_alive:
                 _t.join(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
 
         self._worker_thread = None
         self._source_thread = None
+        self._update_thread = None
         self._status = ComponentStatus.STOPPED
+
+        self._logger.info('node stopped')
 
     def configure(self): ...
 
@@ -427,3 +395,101 @@ class Node[T_Input, T_Output]:
     def warmup(self): ...
 
     def destroy(self): ...
+
+    def _worker(self):
+        while not self._stop_worker_event.is_set():
+            message = self._queue.get()
+
+            if message is None:
+                self._stop_worker_event.set()
+
+                continue
+
+            if isinstance(message.payload, ControlPayload):
+                if message.payload.signal < 0:
+                    self._logger.info('stop signal received')
+                    self._stop_worker_event.set()
+                    self._buffer.put(None)
+
+                self._handle_control(message)
+
+                continue
+
+            if self._suspended:
+                self.transmit(message)
+
+                continue
+
+            self._buffer.put(message)
+
+    def _update(self):
+        while not self._stop_update_event.is_set():
+            batch = self._buffer.get()
+
+            if batch is None:
+                self._stop_update_event.set()
+
+                continue
+
+            self.update(batch)
+
+    def _source(self):
+        while not self._stop_source_event.is_set():
+            if self._source_mode == 'pre':
+                time.sleep(self._source_sleep)
+
+            message = self._source_f()
+
+            if (
+                isinstance(message.payload, ControlPayload)
+                and message.payload.signal < 0
+            ):
+                self._stop_source_event.set()
+                self.put(message)
+
+                continue
+
+            if self._stop_source_event.is_set():
+                return
+
+            if self._source_mode == 'post':
+                time.sleep(self._source_sleep)
+
+            self.put(message)
+
+    def _handle_control(self, message: Message):
+        _control_thread = threading.Thread(
+            target=self._control,
+            args=(message,),
+            daemon=True,
+        )
+
+        _control_thread.start()
+
+    def _control(self, message: Message):
+        if message.payload.signal < 0:
+            self.stop()
+
+        match message.payload.signal:
+            case ControlSignal.STOP_PROPAGATE:
+                self.transmit(message)
+
+                return
+            case ControlSignal.STOP:
+                return
+            case ControlSignal.START:
+                self.start()
+
+                return
+            case ControlSignal.SUSPEND:
+                self._suspended = True
+                self._logger.info('node suspended')
+
+                return
+            case ControlSignal.RESUME:
+                self._suspended = False
+                self._logger.info('node resumed')
+
+                return
+            case None:
+                return
