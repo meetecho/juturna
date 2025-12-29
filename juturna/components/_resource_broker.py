@@ -1,10 +1,8 @@
 from juturna.utils.net_utils import get_available_port
 
 
-_RESOURCES = {
-    'port': get_available_port,
-    'gpu': lambda: None
-}
+_RESOURCES = {'port': get_available_port, 'gpu': lambda: None}
+
 
 def resources() -> list:
     return list(_RESOURCES.keys())

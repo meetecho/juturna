@@ -2,6 +2,11 @@ import typing
 import time
 import json
 
+from contextlib import contextmanager
+from types import MappingProxyType
+
+from juturna.payloads import Draft
+
 
 class Message[T_Input]:
     """
@@ -10,15 +15,13 @@ class Message[T_Input]:
     """
 
     __slots__ = [
-        '_creator',
-        '_version',
-        '_payload',
-        '_current_timer',
-        '_start_timer',
-        '_stop_timer',
         'created_at',
+        'creator',
+        'version',
         'meta',
         'timers',
+        '_payload',
+        '_is_frozen',
     ]
 
     def __init__(
@@ -45,33 +48,31 @@ class Message[T_Input]:
 
         """
         self.created_at = time.time()
+        self.creator = creator
+        self.version = version
         self.meta = dict()
         self.timers = (
             dict() if timers_from is None else timers_from.timers.copy()
         )
 
-        self._creator = creator
-        self._version = version
-        self._payload = payload
+        self.payload = payload
 
-        self._current_timer = None
-        self._start_timer = None
-        self._stop_timer = None
+        object.__setattr__(self, '_is_frozen', False)
 
     def __repr__(self):
-        return f'<Message from {self._creator}, v. {self._version}>'
+        return f'<Message from {self.creator}, v. {self.version}>'
 
-    def __enter__(self) -> typing.Self:
-        self._start_timer = time.time()
+    def __setattr__(self, key, value):
+        if getattr(self, '_is_frozen', False):
+            raise TypeError('frozen messages cannot be modified')
 
-        return self
+        object.__setattr__(self, key, value)
 
-    def __exit__(self, exec_type, exec_val, exec_tb):
-        self._stop_timer = time.time()
-        elapsed = self._stop_timer - self._start_timer
-        self.timer(f'{self._current_timer}', elapsed)
+    def __delattr__(self, key):
+        if getattr(self, '_is_frozen', False):
+            raise TypeError('frozen messages cannot be modified')
 
-        self._current_timer = None
+        object.__delattr__(self, key)
 
     def to_dict(self) -> dict:
         """
@@ -88,8 +89,8 @@ class Message[T_Input]:
             'creator': self.creator,
             'version': self.version,
             'payload': self.payload,
-            'meta': self.meta,
-            'timers': self.timers,
+            'meta': dict(self.meta),
+            'timers': dict(self.timers),
         }
 
     def to_json(
@@ -124,23 +125,18 @@ class Message[T_Input]:
             indent=indent,
         )
 
-    @property
-    def creator(self) -> str | None:
-        """Returns the creator of the message."""
-        return self._creator
+    def freeze(self):
+        """Freeze the message, making it immutable."""
+        if self._is_frozen:
+            return
 
-    @creator.setter
-    def creator(self, creator: str | None):
-        self._creator = creator
+        if isinstance(self.payload, Draft):
+            self.payload = self.payload.compile()
 
-    @property
-    def version(self) -> int:
-        """Returns the version of the message."""
-        return self._version
+        self.meta = MappingProxyType(self.meta)
+        self.timers = MappingProxyType(self.timers)
 
-    @version.setter
-    def version(self, data_version: int):
-        self._version = data_version
+        object.__setattr__(self, '_is_frozen', True)
 
     @property
     def payload(self) -> T_Input:
@@ -164,10 +160,14 @@ class Message[T_Input]:
             The value of the timer. If None, the current time is used.
 
         """
+        if getattr(self, '_is_frozen', False):
+            raise TypeError('frozen messages cannot be modified')
+
         timer_value = timer_value or time.time()
 
         self.timers[timer_name] = timer_value
 
+    @contextmanager
     def timeit(self, timer_name: str) -> typing.Self:
         """
         Start a timer with the given name.
@@ -185,6 +185,11 @@ class Message[T_Input]:
             The current instance of the Message class.
 
         """
-        self._current_timer = timer_name
+        start = time.time()
 
-        return self
+        try:
+            yield
+        finally:
+            elapsed = time.time() - start
+
+            self.timer(timer_name, elapsed)

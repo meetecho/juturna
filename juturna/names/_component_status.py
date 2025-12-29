@@ -17,7 +17,7 @@ class ComponentStatus(StrEnum):
       stopped, so ``stop()`` was invoked on it
     """
 
-    NEW            = 'component_created'
-    CONFIGURED     = 'component_configured'
-    RUNNING        = 'component_running'
-    STOPPED        = 'component_stopped'
+    NEW = 'component_created'
+    CONFIGURED = 'component_configured'
+    RUNNING = 'component_running'
+    STOPPED = 'component_stopped'

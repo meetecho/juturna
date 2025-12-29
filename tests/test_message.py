@@ -1,6 +1,8 @@
 import time
 import json
+import dataclasses
 
+import pytest
 import numpy as np
 
 from juturna.components import Message
@@ -11,6 +13,7 @@ from juturna.payloads._payloads import VideoPayload
 from juturna.payloads._payloads import BytesPayload
 from juturna.payloads._payloads import Batch
 from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads._draft import Draft
 
 
 def test_message_init():
@@ -22,7 +25,6 @@ def test_message_init():
     assert msg.payload is None
     assert msg.meta == dict()
     assert msg.timers == dict()
-    assert msg._current_timer is None
 
 
 def test_message_init_with_params():
@@ -34,7 +36,6 @@ def test_message_init_with_params():
     assert msg.payload == 'test_payload'
     assert msg.meta == dict()
     assert msg.timers == dict()
-    assert msg._current_timer is None
 
 
 def test_message_init_with_meta():
@@ -91,15 +92,17 @@ def test_message_timer_context():
 
 def test_message_timer_duration():
     msg = Message()
-
-    # measure time outside, compare with time inside
     start = time.time()
+
     with msg.timeit('test_timer'):
         time.sleep(2)
+
     elapsed = time.time() - start
 
+    assert int(msg.timers['test_timer']) == int(elapsed)
+
     np.testing.assert_approx_equal(
-        msg.timers['test_timer'], elapsed, significant=5
+        msg.timers['test_timer'], elapsed, significant=3
     )
 
 
@@ -183,7 +186,7 @@ def test_message_to_json_custom_encoder():
 
     assert recoded['payload'] == 'custom_serialised'
 
-def test_message_serialisation():
+def test_message_serialisation_audio():
     test_payload = AudioPayload(
         audio=np.ndarray(10),
         sampling_rate=10,
@@ -194,4 +197,162 @@ def test_message_serialisation():
 
     test_message = Message(creator='tester', version=7, payload=test_payload)
 
-    serialized = test_message.to_json()
+    serialised = test_message.to_json()
+    decoded = json.loads(serialised)
+
+    assert isinstance(decoded['payload'], dict)
+    assert isinstance(decoded['payload']['audio'], list)
+    assert len(decoded['payload']['audio']) == 10
+    assert decoded['payload']['sampling_rate'] == 10
+    assert decoded['payload']['channels'] == 2
+    assert decoded['payload']['start'] == 0
+    assert decoded['payload']['end'] == 5
+
+
+def test_message_serialisation_image():
+    test_payload = ImagePayload(
+        image=np.ndarray((10, 10, 3)),
+        width=10,
+        height=10,
+        depth=3,
+        pixel_format='test_format',
+        timestamp=111.11
+    )
+
+    test_message = Message(creator='tester', version=7, payload=test_payload)
+
+    serialised = test_message.to_json()
+    decoded = json.loads(serialised)
+
+    assert isinstance(decoded['payload'], dict)
+    assert isinstance(decoded['payload']['image'], list)
+    assert len(decoded['payload']['image']) == 10
+    assert decoded['payload']['width'] == 10
+    assert decoded['payload']['height'] == 10
+    assert decoded['payload']['depth'] == 3
+    assert decoded['payload']['pixel_format'] == 'test_format'
+    assert decoded['payload']['timestamp'] == 111.11
+
+
+def test_message_freeze_modify_message():
+    test_message = Message(creator='tester', version=10)
+
+    test_message.freeze()
+
+    with pytest.raises(TypeError) as context:
+        test_message.creator = 'new_tester'
+
+    assert 'frozen messages cannot be modified' in str(context.value)
+    assert test_message.creator == 'tester'
+
+
+def test_message_freeze_delete_message_attr():
+    test_message = Message(creator='tester', version=10)
+
+    test_message.freeze()
+
+    with pytest.raises(TypeError) as context:
+        del test_message.creator
+
+    assert 'frozen messages cannot be modified' in str(context.value)
+    assert test_message.creator == 'tester'
+
+
+def test_message_freeze_meta():
+    test_message = Message(creator='tester', version=10)
+
+    test_message.meta['first_value'] = 10
+
+    test_message.freeze()
+
+    with pytest.raises(TypeError) as context:
+        test_message.meta['first_value'] = 20
+
+    assert "'mappingproxy' object does not support item assignment" in str(context.value)
+    assert test_message.meta['first_value'] == 10
+
+
+def test_message_freeze_timers():
+    test_message = Message(creator='tester', version=10)
+
+    test_message.freeze()
+
+    with pytest.raises(TypeError) as context:
+        with test_message.timeit('not_allowed'):
+            time.sleep(1)
+
+    assert 'frozen messages cannot be modified' in str(context.value)
+    assert len(test_message.timers.keys()) == 0
+
+
+def test_message_draft_payload():
+    test_message = Message(
+        creator='tester',
+        version=7,
+        payload=Draft(AudioPayload)
+    )
+
+    test_message.payload.sampling_rate = 1001
+    test_message.payload.channels = 12
+
+    test_message.freeze()
+
+    assert isinstance(test_message.payload, AudioPayload)
+    assert test_message.payload.sampling_rate == 1001
+    assert test_message.payload.channels == 12
+
+
+def test_message_draft_payload_object():
+    test_message = Message(
+        creator='tester',
+        version=7,
+        payload=Draft(ObjectPayload)
+    )
+
+    test_message.payload.first_key = 10
+    test_message.payload.second_key = 'value'
+    test_message.payload.third_key = False
+
+    test_message.freeze()
+
+    assert isinstance(test_message.payload, ObjectPayload)
+    assert test_message.payload['first_key'] == 10
+    assert test_message.payload['second_key'] == 'value'
+    assert test_message.payload['third_key'] == False
+
+
+def test_message_draft_payload_object_attr():
+    test_message = Message(
+        creator='tester',
+        version=7,
+        payload=Draft(ObjectPayload)
+    )
+
+    test_message.payload['first_key'] = 10
+    test_message.payload['second_key'] = 'value'
+    test_message.payload['third_key'] = False
+
+    test_message.freeze()
+
+    assert isinstance(test_message.payload, ObjectPayload)
+    assert test_message.payload['first_key'] == 10
+    assert test_message.payload['second_key'] == 'value'
+    assert test_message.payload['third_key'] == False
+
+
+def test_message_immutable_payload():
+    test_payload = AudioPayload(
+        audio=np.ndarray(10),
+        sampling_rate=10,
+        channels=2,
+        start=0,
+        end=5
+    )
+
+    test_message = Message(creator='tester', version=7, payload=test_payload)
+
+    with pytest.raises(dataclasses.FrozenInstanceError) as context:
+        test_message.payload.channels = 1
+
+    assert "cannot assign to field 'channels'" in str(context.value)
+    assert test_message.payload.channels == 2

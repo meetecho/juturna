@@ -5,10 +5,11 @@ This command creates a node skeleton, starting from basic pieces of information
 such as node name, node type, and node class if it cannot be automatically
 inferred from the name. Author info also included.
 """
+
 from juturna.cli.commands import _node_stub
 
 
-def setup_parser(subparsers): # noqa: D103
+def setup_parser(subparsers):  # noqa: D103
     parser = subparsers.add_parser(
         'stub',
         help='create a custom node skeleton',

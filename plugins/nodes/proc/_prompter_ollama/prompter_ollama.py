@@ -15,7 +15,8 @@ import ollama
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads import ObjectPayload
+from juturna.payloads import Draft
 
 
 class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
@@ -73,14 +74,13 @@ class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
         to_send = Message[ObjectPayload](
             creator=self.name,
             version=message.version,
-            payload=ObjectPayload(),
-            timers_from=message
+            payload=Draft(ObjectPayload),
+            timers_from=message,
         )
 
         with to_send.timeit(self.name):
             response = self._client.chat(
-                model=self._model_name,
-                messages=ollama_query
+                model=self._model_name, messages=ollama_query
             )
 
         to_send.payload['ollama_response'] = response.model_dump()

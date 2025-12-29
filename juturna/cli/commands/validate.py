@@ -69,9 +69,7 @@ def _execute(args):
         except ValidationError:
             return False
 
-    validation_pipe.add_check(
-        Check('JSON well formed', _check_json), cfg_path
-    )
+    validation_pipe.add_check(Check('JSON well formed', _check_json), cfg_path)
 
     data = _load_pipeline(cfg_path)
 
@@ -158,19 +156,12 @@ def _check_links_well_formed(links: list[dict[str, typing.Any]]) -> None:
 
 def _build_dag(nodes: list[dict], links: list[dict]) -> DAG:
     dag = DAG()
-    name_to_type = {n['name']: n['type'] for n in nodes}
+
+    for n in nodes:
+        dag.add_node(n['name'])
 
     for link in links:
         dag.add_edge(link['from'], link['to'])
-
-    for src, dst in dag.edges:
-        if src not in name_to_type:
-            raise ValidationError(f"Link source '{src}' is not a declared node")
-
-        if dst not in name_to_type:
-            raise ValidationError(
-                f"Link destination '{dst}' is not a declared node"
-            )
 
     return dag
 

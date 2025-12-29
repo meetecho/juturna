@@ -27,7 +27,6 @@ class Buffer:
         return self._out_queue.get()
 
     def put(self, message: Message):
-        self._logger.debug('message received in buffer')
         if message.creator not in self._data:
             self._data[message.creator] = list()
 
@@ -67,9 +66,7 @@ class Buffer:
         self._out_queue.put(Batch(messages=to_send))
 
     def flush(self):
-        """
-        Flush the buffer content
-        """
+        """Flush the buffer content"""
         with self._data_lock:
             self._data = dict()
             while not self._out_queue.empty():

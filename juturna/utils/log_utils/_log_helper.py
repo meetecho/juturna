@@ -54,9 +54,11 @@ def formatter(formatter_name: str = '') -> str | None:
 def add_handler(
     handler: logging.Handler, formatter: str | logging.Formatter = ''
 ):
-    formatter = _formatters._FORMATTERS[
-        formatter or _JT_LOGGER._root_formatter_name
-    ] if isinstance(formatter, str) else formatter
+    formatter = (
+        _formatters._FORMATTERS[formatter or _JT_LOGGER._root_formatter_name]
+        if isinstance(formatter, str)
+        else formatter
+    )
 
     handler.setFormatter(formatter)
     jt_logger().addHandler(handler)

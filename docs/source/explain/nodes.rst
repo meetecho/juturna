@@ -82,12 +82,13 @@ upstream.
 .. admonition:: The inbound queue (|version|-|release|)
    :class: :NOTE:
 
-   Node currently use LIFO queues as inbound message receptors. Whilst this
-   should not really have an impact on the node's workings (the inbound queue is
-   expected to always contain only the last message transmitted by the upstream
-   nodes), there is still the chance to acquire messages out of order compared
-   with their actual transmission times. Further refinements to the inbound
-   queue might come in the future.
+   Nodes and Buffer classes now use FIFO (First-In, First-Out) queues. This
+   ensures messages are processed in the order they are produced, even when a
+   source node generates data faster than its descendants can consume it. The
+   previous LIFO-based design could reorder messages during such bursts, leading
+   to incorrect processing. Further refinements to the inbound queue may be
+   introduced in the future.
+
 
 The ``_update`` thread represents the node's processing engine. It consumes
 messages from the buffer in batches, not individually. This batching is where

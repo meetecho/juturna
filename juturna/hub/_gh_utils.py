@@ -21,8 +21,7 @@ def _gh_node_list(url: str, authenticate: bool = False) -> dict:
     return content
 
 
-def _gh_download_file(file_url: str,
-                      authenticate: bool):
+def _gh_download_file(file_url: str, authenticate: bool):
     file_content = _get_req(file_url, authenticate).text
 
     return file_content
@@ -54,10 +53,14 @@ def _gh_dir_content(url: str, authenticate: bool = False) -> list | None:
         return None
 
     return {
-        'dirs': [(i['path'], i['url']) for i in dir_content \
-                 if i['type'] == 'dir'],
-        'files': [(i['path'], i['download_url']) for i in dir_content \
-                 if i['type'] == 'file']
+        'dirs': [
+            (i['path'], i['url']) for i in dir_content if i['type'] == 'dir'
+        ],
+        'files': [
+            (i['path'], i['download_url'])
+            for i in dir_content
+            if i['type'] == 'file'
+        ],
     }
 
 

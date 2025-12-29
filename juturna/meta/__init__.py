@@ -1,3 +1,4 @@
+# noqa: D104
 from juturna.meta._constants import (
     JUTURNA_BASE_REPO,
     JUTURNA_HUB_URL,
@@ -6,6 +7,7 @@ from juturna.meta._constants import (
     JUTURNA_LOCAL_PLUGIN_DIR,
     JUTURNA_THREAD_JOIN_TIMEOUT,
     JUTURNA_MAX_QUEUE_SIZE,
+    JUTURNA_ENV_VAR_PREFIX,
 )
 
 
@@ -17,4 +19,5 @@ __all__ = [
     'JUTURNA_LOCAL_PLUGIN_DIR',
     'JUTURNA_THREAD_JOIN_TIMEOUT',
     'JUTURNA_MAX_QUEUE_SIZE',
+    'JUTURNA_ENV_VAR_PREFIX',
 ]

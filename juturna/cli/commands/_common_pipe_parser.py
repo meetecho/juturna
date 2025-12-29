@@ -12,7 +12,7 @@ def common_parser():
         type=str,
         default='DEBUG',
         choices=['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR'],
-        help='set log level during pipeline execution'
+        help='set log level during pipeline execution',
     )
 
     parser.add_argument(

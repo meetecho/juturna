@@ -1,3 +1,12 @@
+"""
+AudioFile
+
+@ Author: Antonio Bevilacqua
+@ Email: abevilacqua@meetecho.com
+
+Read an audio file and chunk it into smaller audio messages.
+"""
+
 import io
 import itertools
 
@@ -19,11 +28,9 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
     them available to the pipe in a real-time fashion.
     """
 
-    def __init__(self,
-                 file_source: str,
-                 block_size: int,
-                 audio_rate: int,
-                 **kwargs):
+    def __init__(
+        self, file_source: str, block_size: int, audio_rate: int, **kwargs
+    ):
         """
         Parameter
         ---------
@@ -47,18 +54,17 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         self._audio_chunks = list()
         self._transmitted = 0
 
-    def warmup(self):
+    def warmup(self):  # noqa: D102
         resampler = av.audio.resampler.AudioResampler(
-            format='s16',
-            layout="mono",
-            rate=self._rate)
+            format='s16', layout='mono', rate=self._rate
+        )
 
         raw_buffer = io.BytesIO()
         dtype = None
 
-        with av.open(self._file_source,
-                     mode='r',
-                     metadata_errors='ignore') as container:
+        with av.open(
+            self._file_source, mode='r', metadata_errors='ignore'
+        ) as container:
             frames = container.decode(audio=0)
             frames = AudioFile._ignore_invalid_frames(frames)
             frames = AudioFile._group_frames(frames, 500000)
@@ -89,7 +95,9 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
                     sampling_rate=self._rate,
                     channels=1,
                     start=self._block_size * self._transmitted,
-                    end=self._block_size * self._transmitted + self._block_size))
+                    end=self._block_size * self._transmitted + self._block_size,
+                ),
+            )
         except IndexError:
             self.logger.info('sending None')
 
@@ -102,14 +110,17 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         for chunk in AudioFile._chunker(self._audio, wave_len):
             if len(chunk) < wave_len:
                 chunk = np.pad(
-                    chunk, (0, wave_len - len(chunk)),
-                    mode='constant', constant_values=0)
+                    chunk,
+                    (0, wave_len - len(chunk)),
+                    mode='constant',
+                    constant_values=0,
+                )
 
             chunks.append(chunk)
 
         return chunks
 
-    def update(self, message: Message[AudioPayload]):
+    def update(self, message: Message[AudioPayload]):  # noqa: D102
         if message is None:
             self.logger.info('audio file done, stopping...')
 
@@ -125,7 +136,6 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         self.transmit(message)
         self._transmitted += 1
 
-
     @staticmethod
     def _ignore_invalid_frames(frames):
         iterator = iter(frames)
@@ -140,7 +150,7 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
 
     @staticmethod
     def _chunker(seq, size):
-        return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+        return (seq[pos : pos + size] for pos in range(0, len(seq), size))
 
     @staticmethod
     def _group_frames(frames, num_samples=None):

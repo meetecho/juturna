@@ -5,6 +5,8 @@ TranscriberParakeet
 @ Email: abevilacqua@meetecho.com
 
 Transcribe audio packets using whisper models.
+For a full list of available models, see here:
+https://github.com/SYSTRAN/faster-whisper
 """
 
 import gc
@@ -19,8 +21,9 @@ from faster_whisper import WhisperModel
 from juturna.components import Message
 from juturna.components import Node
 
-from juturna.payloads._payloads import AudioPayload
-from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads import AudioPayload
+from juturna.payloads import ObjectPayload
+from juturna.payloads import Draft
 
 
 class TranscriberWhispy(Node[AudioPayload, ObjectPayload]):
@@ -82,6 +85,7 @@ class TranscriberWhispy(Node[AudioPayload, ObjectPayload]):
         self.logger.info(f'trx created, model id {id(self._model)}')
 
     def warmup(self):
+        """Warmup the node"""
         self._data = {
             k: collections.deque(maxlen=self._buffer_size) for k in self.origins
         }
@@ -97,7 +101,7 @@ class TranscriberWhispy(Node[AudioPayload, ObjectPayload]):
         to_send = Message[ObjectPayload](
             creator=self.name,
             version=message.version,
-            payload=ObjectPayload(),
+            payload=Draft(ObjectPayload),
             timers_from=message,
         )
 

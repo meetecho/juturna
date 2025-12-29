@@ -12,7 +12,7 @@ import time
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads._payloads import BasePayload
+from juturna.payloads import BasePayload
 
 
 class PassthroughIdentity(Node[BasePayload, BasePayload]):
@@ -34,6 +34,7 @@ class PassthroughIdentity(Node[BasePayload, BasePayload]):
         self._transmitted = 0
 
     def update(self, message: Message[BasePayload]):
+        """Receive a message from downstream, transmit a message upstream"""
         self.logger.info(
             f'message {message.version} received from: {message.creator}'
         )
@@ -53,6 +54,7 @@ class PassthroughIdentity(Node[BasePayload, BasePayload]):
         self.transmit(to_send)
 
     def next_batch(self, sources: dict) -> dict:
+        """Synchronisation policy"""
         self.logger.info('using custom policy')
         self.logger.info(f'expected sources: {self.origins}')
 

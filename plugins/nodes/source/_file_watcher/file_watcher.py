@@ -13,6 +13,7 @@ handlers write directly on the node inbound queue.
 """
 
 import pathlib
+import queue
 import typing
 
 from watchdog.events import FileSystemEvent
@@ -22,7 +23,7 @@ from watchdog.observers import Observer
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads import ObjectPayload
 
 
 class FileWatcher(Node[ObjectPayload, ObjectPayload]):
@@ -61,6 +62,7 @@ class FileWatcher(Node[ObjectPayload, ObjectPayload]):
 
         self._location = location
         self._handler = _Handler(
+            self.name,
             self._queue,
             self.logger,
             ignore_directories=ignore_directories,
@@ -72,8 +74,6 @@ class FileWatcher(Node[ObjectPayload, ObjectPayload]):
         self._observer.schedule(
             self._handler, self._location, recursive=recursive
         )
-
-        self._sent = 0
 
     def configure(self):
         """Configure the node"""
@@ -108,12 +108,7 @@ class FileWatcher(Node[ObjectPayload, ObjectPayload]):
 
     def update(self, message: Message[ObjectPayload]):
         """Receive data from upstream, transmit data downstream"""
-        message.version = self._sent
-        message.creator = self.name
-
         self.transmit(message)
-
-        self._sent += 1
 
 
 class _Handler(PatternMatchingEventHandler):
@@ -121,35 +116,49 @@ class _Handler(PatternMatchingEventHandler):
 
     def __init__(  # noqa
         self,
-        q,
+        creator: str,
+        q: queue.Queue,
         logger,
         ignore_directories: bool,
         ignore_updates: bool,
         ignore_deletions: bool,
     ):
         super().__init__(ignore_directories=ignore_directories)
+        self._creator = creator
         self._q = q
         self._logger = logger
 
         self._ignore_updates = ignore_updates
         self._ignore_deletions = ignore_deletions
 
+        self._events = 0
+
     def on_created(self, event: FileSystemEvent):
         """Catch creation events"""
         self._q.put(self._new_message(event))
+
+        self._events += 1
 
     def on_deleted(self, event: FileSystemEvent):
         """Catch deletion events"""
         if not self._ignore_deletions:
             self._q.put(self._new_message(event))
 
+            self._events += 1
+
     def on_modified(self, event: FileSystemEvent):
         """Catch update events"""
         if not self._ignore_updates:
             self._q.put(self._new_message(event))
 
+            self._events += 1
+
     def _new_message(self, event: FileSystemEvent) -> Message[ObjectPayload]:
         evt = event.__dict__
         evt['src_path'] = pathlib.Path(evt['src_path']).resolve()
 
-        return Message(payload=ObjectPayload.from_dict(evt))
+        return Message(
+            creator=self._creator,
+            version=self._events,
+            payload=ObjectPayload.from_dict(evt),
+        )

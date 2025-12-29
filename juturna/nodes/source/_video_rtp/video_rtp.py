@@ -63,14 +63,17 @@ class VideoRTP(Node[BytesPayload, ImagePayload]):
         self._sent = 0
 
     def configure(self):
+        """Configure the node"""
         if self._rec_port == 'auto':
             self._rec_port = rb.get('port')
 
     def warmup(self):
+        """Warmup the node"""
         self._sdp_file_path = self.sdp_descriptor
         self._ffmpeg_launcher_path = self.ffmpeg_launcher
 
     def start(self):
+        """Start the node"""
         self._ffmpeg_proc = subprocess.Popen(
             ['sh', self.ffmpeg_launcher],
             stdin=subprocess.PIPE,
@@ -92,6 +95,7 @@ class VideoRTP(Node[BytesPayload, ImagePayload]):
         super().start()
 
     def stop(self):
+        """Stop the node"""
         try:
             assert self._ffmpeg_proc is not None
             assert self._ffmpeg_proc.stdin is not None
@@ -111,16 +115,19 @@ class VideoRTP(Node[BytesPayload, ImagePayload]):
         super().stop()
 
     def destroy(self):
+        """Destroy the node"""
         self.stop()
 
     @property
     def configuration(self) -> dict:
+        """Fetch node configuration"""
         base_config = super().configuration
         base_config['port'] = self._rec_port
 
         return base_config
 
     def update(self, message: Message[BytesPayload]):
+        """Receive a message, transmit a message"""
         try:
             full_frame = np.frombuffer(message.payload.cnt, np.uint8).reshape(
                 (self._height, self._width, 3)
@@ -145,6 +152,7 @@ class VideoRTP(Node[BytesPayload, ImagePayload]):
 
     @property
     def sdp_descriptor(self) -> pathlib.Path:
+        """Fetch the SDP descriptor file"""
         return self._sdp_file_path or self.prepare_template(
             'remote_source.sdp.template',
             '_session_in.sdp',
@@ -158,6 +166,7 @@ class VideoRTP(Node[BytesPayload, ImagePayload]):
 
     @property
     def ffmpeg_launcher(self) -> pathlib.Path:
+        """Fetch the FFmpeg launcher script"""
         return self._ffmpeg_launcher_path or self.prepare_template(
             'ffmpeg_launcher.sh.template',
             '_ffmpeg_launcher.sh',

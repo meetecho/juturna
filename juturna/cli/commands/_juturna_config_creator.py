@@ -3,6 +3,7 @@ Easily create pipeline configuration files
 
 Build a pipeline from the command line and save it to file.
 """
+
 import json
 import sys
 

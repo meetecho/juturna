@@ -1,3 +1,12 @@
+"""
+NotifierHTTP
+
+@ Author: Antonio Bevilacqua
+@ Email: abevilacqua@meetecho.com
+
+Transmit message to a HTTP endpoint.
+"""
+
 import threading
 
 import requests
@@ -5,7 +14,7 @@ import requests
 from juturna.components import Message
 from juturna.components import Node
 
-from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads import ObjectPayload
 
 
 class NotifierHTTP(Node[ObjectPayload, None]):
@@ -41,28 +50,39 @@ class NotifierHTTP(Node[ObjectPayload, None]):
 
     @property
     def configuration(self) -> dict:
+        """Fetch node configuration"""
         base_config = super().configuration
         base_config['endpoint'] = self._endpoint
 
         return base_config
 
     def warmup(self):
+        """Warmup the node"""
         self.logger.info(f'[{self.name}] set to endpoint {self._endpoint}')
 
     def set_on_config(self, prop: str, value: str):
+        """Change the node configuration"""
         if prop == 'endpoint':
             self.logger.info(f'updating endpoint to {value}')
 
             self._endpoint = value
 
     def update(self, message: Message[ObjectPayload]):
-        message.meta['session_id'] = self.pipe_id
-        message = NotifierHTTP._CNT_CB[self._content_type](message)
+        """Receive a message, transmit a message"""
+        to_send = Message[ObjectPayload](
+            creator=message.creator,
+            version=message.version,
+            timers_from=message,
+            payload=message.payload,
+        )
+
+        to_send.meta['session_id'] = self.pipe_id
+        to_send = NotifierHTTP._CNT_CB[self._content_type](message)
 
         t = threading.Thread(
             name=f'{self.name}_thread',
             target=self._send_chunk,
-            args=(message,),
+            args=(to_send,),
             daemon=True,
         )
 

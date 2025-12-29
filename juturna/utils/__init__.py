@@ -1,3 +1,4 @@
+# noqa: D104
 from juturna.utils import net_utils
 from juturna.utils import proc_utils
 from juturna.utils import jt_utils

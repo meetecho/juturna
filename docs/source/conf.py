@@ -10,7 +10,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.doctest',
     'sphinx_design',
-    'sphinx_new_tab_link'
+    'sphinx_new_tab_link',
 ]
 
 templates_path = ['_templates']
@@ -36,24 +36,18 @@ pygments_dark_style = 'nord-darker'
 
 html_static_path = ['_static']
 
-html_css_files = [
-    'css/meetecho_style.css',
-    'css/fa-6.7.2.all.min.css'
-]
+html_css_files = ['css/meetecho_style.css', 'css/fa-6.7.2.all.min.css']
 
-html_js_files = [
-    'js/fa-6.7.2.all.min.js',
-    'js/meetecho-icon.js'
-]
+html_js_files = ['js/fa-6.7.2.all.min.js', 'js/meetecho-icon.js']
 
 html_theme_options = {
     'globaltoc_collapse': False,
-    "light_logo": "img/logo_light_alt.svg",
-    "dark_logo": "img/logo_dark_alt.svg",
-    "footer_icons": [
+    'light_logo': 'img/logo_light_alt.svg',
+    'dark_logo': 'img/logo_dark_alt.svg',
+    'footer_icons': [
         {
             'name': 'GitHub',
-            'url': "https://github.com/meetecho/juturna",
+            'url': 'https://github.com/meetecho/juturna',
             'html': '',
             'class': 'fa-brands fa-solid fa-github fa-2x',
         },
@@ -66,7 +60,7 @@ html_theme_options = {
                 </svg>
             """,
             'class': '',
-        }
+        },
     ],
 }
 

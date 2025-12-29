@@ -20,9 +20,9 @@ class ColoredFormatter(logging.Formatter):
         original_levelname = record.levelname
 
         if record.levelname in self.COLORS:
-            padded_level = f"{record.levelname:<8}"
-            colored_levelname = \
-                f'{self.COLORS[record.levelname]}{self.BOLD}{padded_level}{self.RESET}'
+            ln = record.levelname
+            pl = f'{record.levelname:<8}'
+            colored_levelname = f'{self.COLORS[ln]}{self.BOLD}{pl}{self.RESET}'
             record.levelname = colored_levelname
 
         formatted = super().format(record)
@@ -37,7 +37,8 @@ class JsonFormatter(logging.Formatter):
 
         log_obj = {
             'timestamp': datetime.datetime.fromtimestamp(
-                record.created).isoformat(),
+                record.created
+            ).isoformat(),
             'level': record.levelname,
             'logger': record.name,
             'message': record.getMessage(),
@@ -54,19 +55,26 @@ class JsonFormatter(logging.Formatter):
 
 _FORMATTERS = {
     'simple': logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'),
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    ),
     'colored': ColoredFormatter(
-        '%(asctime)s | %(levelname)s | %(name)-23s | %(message)s'),
+        '%(asctime)s | %(levelname)s | %(name)-23s | %(message)s'
+    ),
     'full': logging.Formatter(
         fmt='%(asctime)s | %(levelname)-8s | %(name)-23s | %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'),
+        datefmt='%Y-%m-%d %H:%M:%S',
+    ),
     'compact': logging.Formatter(
         '%(asctime)s | %(levelname).1s | %(name)-23s | %(message)s',
-        datefmt='%H:%M:%S'),
+        datefmt='%H:%M:%S',
+    ),
     'development': logging.Formatter(
-        ('%(asctime)s | %(levelname)-8s |'
-         '%(name)s:%(lineno)d | %(funcName)s() | %(message)s'),
-        datefmt='%H:%M:%S'),
+        (
+            '%(asctime)s | %(levelname)-8s |'
+            '%(name)s:%(lineno)d | %(funcName)s() | %(message)s'
+        ),
+        datefmt='%H:%M:%S',
+    ),
     'minimal': logging.Formatter('%(levelname)s: %(message)s'),
     'json': JsonFormatter(),
 }

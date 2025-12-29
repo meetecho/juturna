@@ -32,30 +32,35 @@ class RTPDatagram:
 
     @datagram.setter
     def datagram(self, data):
-        ver_p_x_cc, \
-            m_pt, \
-            self.sequence_number, \
-            self.timestamp, \
-            self.sync_source_id = unpack('!BBHII', data[:12])
-        self.version =     (ver_p_x_cc & 0b11000000) >> 6
-        self.padding =     (ver_p_x_cc & 0b00100000) >> 5
-        self.extension =   (ver_p_x_cc & 0b00010000) >> 4
-        self.csrc_count =   ver_p_x_cc & 0b00001111
-        self.marker =      (m_pt & 0b10000000) >> 7
+        (
+            ver_p_x_cc,
+            m_pt,
+            self.sequence_number,
+            self.timestamp,
+            self.sync_source_id,
+        ) = unpack('!BBHII', data[:12])
+        self.version = (ver_p_x_cc & 0b11000000) >> 6
+        self.padding = (ver_p_x_cc & 0b00100000) >> 5
+        self.extension = (ver_p_x_cc & 0b00010000) >> 4
+        self.csrc_count = ver_p_x_cc & 0b00001111
+        self.marker = (m_pt & 0b10000000) >> 7
         self.payload_type = m_pt & 0b01111111
 
         i = 0
 
         for i in range(0, self.csrc_count, 4):
-            self.csrs.append(unpack('!I', data[12+i:16+i]))
+            self.csrs.append(unpack('!I', data[12 + i : 16 + i]))
 
         if self.extension:
             i = self.csrc_count * 4
-            (self.extension_header_id, self.extension_header_len) = \
-                unpack('!HH', data[12+i:16+i])
-            self.extension_header = data[16+i:16+i+self.extension_header_len]
+            (self.extension_header_id, self.extension_header_len) = unpack(
+                '!HH', data[12 + i : 16 + i]
+            )
+            self.extension_header = data[
+                16 + i : 16 + i + self.extension_header_len
+            ]
 
             i += 4 + self.extension_header_len
 
-        self.payload = data[12+i:]
+        self.payload = data[12 + i :]
         self.__datagram = data
