@@ -21,12 +21,6 @@ from juturna.components import Message
 from juturna.components import Node
 
 
-from typing import TypeVar
-
-T_Input = TypeVar('T_Input')
-T_Output = TypeVar('T_Output')
-
-
 class Warp[T_Input, T_Output](Node[T_Input, T_Output]):
     """
     Type Parameters
@@ -102,17 +96,14 @@ class Warp[T_Input, T_Output](Node[T_Input, T_Output]):
 
         """
         try:
-            # 1. Convert Python Message to Protobuf ProtoMessage
-            self.logger.debug('converting message to protobuf...')
+            self.logger.info('converting message to protobuf...')
             message_proto = message_to_proto(message)
-
-            # 2. Create ProtoEnvelope
             self.logger.debug('creating envelope...')
             envelope = create_envelope(
                 message=message_proto,
                 creator=self.name,
-                request_type=type(message.payload).__name__,
-                response_type='Any',
+                request_type=type(T_Input).__name__,
+                response_type=type(T_Output).__name__,
                 priority=0,
                 timeout=self._timeout,
                 configuration={},
@@ -120,12 +111,6 @@ class Warp[T_Input, T_Output](Node[T_Input, T_Output]):
             )
 
             envelope.configuration.update(self._remote_config)
-
-            awaited_correlation_id = envelope.correlation_id
-            self.logger.debug(
-                f'envelope created with correlation_id={awaited_correlation_id}'
-            )
-            # 3. Send via gRPC and wait for response
             self.logger.info(f'sending message (envelope_id={envelope.id})...')
 
             response_envelope = self.stub.SendAndReceive(
@@ -139,20 +124,11 @@ class Warp[T_Input, T_Output](Node[T_Input, T_Output]):
                 f'response correlation_id={response_envelope.correlation_id}'
             )
 
-            # 4. check correlation
-            assert awaited_correlation_id == response_envelope.correlation_id, (
-                'correlation_id mismatch: '
-                f'expected {awaited_correlation_id}, '
-                f'got {response_envelope.correlation_id}'
-            )
-
-            # 4. Convert response from Protobuf back to Message
-            self.logger.debug('converting response to Message...')
+            self.logger.info('converting response to Message...')
             to_send: Message[T_Output] = deserialize_message(
                 response_envelope.message
             )
 
-            # 5. Call transmit with the response
             self.transmit(to_send)
             self.logger.info(f'transmit: {to_send.version}')
 

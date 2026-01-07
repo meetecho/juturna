@@ -14,10 +14,6 @@ sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "juturna" / "remotizer"))
 sys.path.insert(0, str(PROJECT_ROOT / "juturna" / "remotizer" / "generated"))
 
-# print("DEBUG: sys.path:")
-# for p in sys.path:
-#     print(p)
-
 from juturna.remotizer._warp._warp import Warp
 from juturna.components import Message
 from juturna.payloads import ObjectPayload
@@ -48,6 +44,7 @@ class TestRemoteIntegration(unittest.TestCase):
             "--plugins-dir", self.plugins_dir,
             "--pipe-name", self.pipe_name,
             "--node-mark", self.node_mark,
+            "--default-config", '{"default_key": "default_val"}',
             "--port", str(self.port)
         ]
 
@@ -60,6 +57,8 @@ class TestRemoteIntegration(unittest.TestCase):
             stderr=subprocess.PIPE,
             text=True
         )
+
+        print(f"Started server process with PID {self.server_process.pid}")
 
         # Wait a bit for server to start
         time.sleep(2)
@@ -78,13 +77,19 @@ class TestRemoteIntegration(unittest.TestCase):
             except subprocess.TimeoutExpired:
                 self.server_process.kill()
 
+            # Print server output for debugging
+            out, err = self.server_process.communicate()
+            if out or err:
+                print(f"--- Server STDOUT ---\n{out}")
+                print(f"--- Server STDERR ---\n{err}")
+
     def test_end_to_end_echo(self):
         # Instantiate the Client (Warp)
         client = Warp(
             grpc_host="127.0.0.1",
             grpc_port=self.port,
             timeout=5,
-            remote_config={},
+            remote_config={"foo": "bar"},
             node_name="client_node",
             pipe_name=self.pipe_name
         )

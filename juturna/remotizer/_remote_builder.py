@@ -8,7 +8,7 @@ REMOTE_PIPE_FOLDER = 'remote_pipes'
 REMOTE_PIPE_ID = 'remote_pipe'
 
 
-def _remote_builder(
+def _standalone_builder(
     name: str,
     node_mark: str,
     plugins_dir: str,
@@ -62,11 +62,6 @@ def _remote_builder(
     _node.pipe_id = context_runtime_path
     _node.pipe_path = node_runtime_folder
     _node.status = ComponentStatus.NEW
-
-    # attach to remote_in and remote_out pipes
-    # attach to remote_in and remote_out pipes
-    # _node.add_destination()
-    # _node.origins.append()
 
     # warmup the node
     _node.warmup()

@@ -168,22 +168,22 @@ message ProtoEnvelope {
 
   // Configuration parameters as key-value pairs
   // these message are used to the set_on_config call
-  map<string, string> configuration = 9;
+  google.protobuf.Struct configuration = 9;
 
   // Envelope metadata as key-value pairs
   // Different from message.meta - this is envelope-level metadata
-  map<string, string> metadata = 10;
+  google.protobuf.Struct metadata = 10;
 
   // message priority (0 = lowest, higher = more urgent)
   // for future use
   int32 priority = 11;
 
-  // request payload type hint for faster routing/dispatching
-  // e.g., "juturna.proto.payloads.AudioProtoPayload"
+  // request payload (not proto) type hint for faster routing/dispatching
+  // e.g., "AudioPayload"
   string request_type = 12;
 
-  // response payload type hint for faster serialization
-  // e.g., "juturna.proto.payloads.ImageProtoPayload"
+  // response payload (not proto) type hint for faster serialization
+  // e.g., "ImagePayload"
   string response_type = 13;
 
 }
