@@ -23,10 +23,8 @@ def run_around_tests():
     except:
         ...
 
-    for key in ['TEST_DELAY', 'TEST_API_KEY', 'TEST_HOST', 'TEST_PORT',
-                'MISSING_ENV_VAR', 'INT_DELAY']:
-        if key in os.environ:
-            del os.environ[key]
+    if 'TEST_DELAY' in os.environ:
+        del os.environ['TEST_DELAY']
 
 
 def test_pipeline_with_env_var_in_configuration():
