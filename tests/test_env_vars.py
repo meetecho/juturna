@@ -15,9 +15,6 @@ def run_around_tests():
     pathlib.Path(test_pipeline_folder).mkdir(exist_ok=True, parents=True)
 
     os.environ['TEST_DELAY'] = '2'
-    # os.environ['TEST_API_KEY'] = 'secret_api_key_12345'
-    # os.environ['TEST_HOST'] = 'api.example.com'
-    # os.environ['TEST_PORT'] = '8080'
 
     yield
 
@@ -26,7 +23,7 @@ def run_around_tests():
     except:
         ...
 
-    for key in ['TEST_DELAY', 'TEST_API_KEY', 'TEST_HOST', 'TEST_PORT', 
+    for key in ['TEST_DELAY', 'TEST_API_KEY', 'TEST_HOST', 'TEST_PORT',
                 'MISSING_ENV_VAR', 'INT_DELAY']:
         if key in os.environ:
             del os.environ[key]
