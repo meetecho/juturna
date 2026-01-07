@@ -1,4 +1,5 @@
 # noqa: D104
+from juturna.payloads._payloads import BasePayload
 from juturna.payloads._payloads import AudioPayload
 from juturna.payloads._payloads import ImagePayload
 from juturna.payloads._payloads import VideoPayload
@@ -13,6 +14,7 @@ from juturna.payloads._draft import Draft
 
 
 __all__ = [
+    'BasePayload',
     'AudioPayload',
     'ImagePayload',
     'VideoPayload',
