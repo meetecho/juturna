@@ -1,3 +1,14 @@
+"""
+Control signals
+
+A control signal is an integer enum that can be used as field within a control
+payload. Control signals derive from IntEnum, which allows for easy
+straightforward serialisation.
+
+**Note**: any control signal with a value less than zero will be associated
+with a stop call.
+"""
+
 from enum import IntEnum
 
 
