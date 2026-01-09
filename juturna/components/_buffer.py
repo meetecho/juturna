@@ -7,7 +7,7 @@ from collections.abc import Callable
 from juturna.components import Message
 from juturna.utils.log_utils import jt_logger
 
-from juturna.payloads._payloads import Batch
+from juturna.payloads import Batch
 from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
 
 
@@ -27,6 +27,11 @@ class Buffer:
         return self._out_queue.get()
 
     def put(self, message: Message):
+        if message is None:
+            self._out_queue.put(None)
+
+            return
+
         if message.creator not in self._data:
             self._data[message.creator] = list()
 
