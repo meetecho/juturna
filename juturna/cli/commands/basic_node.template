@@ -61,5 +61,5 @@ class $_node_class_name(Node[BasePayload, BasePayload]):
         ...
 
     # uncomment next_batch to design custom synchronisation policy
-    # def next_batch(sources: dict) -> dict:
+    # def next_batch(sources: dict[str, list[Message]]) -> dict[str, list[int]]:
     #     ...
