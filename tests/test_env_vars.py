@@ -2,6 +2,8 @@ import os
 import pathlib
 import json
 import shutil
+import logging
+
 import pytest
 
 import juturna as jt
@@ -66,7 +68,9 @@ def test_pipeline_with_env_var_in_configuration():
     assert pipeline._nodes['test_node']._delay == 2
 
 
-def test_pipeline_with_missing_env_var():
+def test_pipeline_with_missing_env_var(caplog):
+    caplog.set_level(logging.CRITICAL, logger='jt.builder')
+
     if 'MISSING_ENV_VAR' in os.environ:
         del os.environ['MISSING_ENV_VAR']
 
