@@ -93,7 +93,7 @@ class Batch(BasePayload):
 
     @staticmethod
     def serialize(obj) -> list:
-        return [msg.serialize() for msg in obj.messages]
+        return [msg.to_dict() for msg in obj.messages]
 
 
 @dataclass(frozen=True)

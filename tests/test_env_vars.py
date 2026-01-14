@@ -1,7 +1,6 @@
 import os
 import pathlib
 import json
-import shutil
 import logging
 
 import pytest
@@ -14,29 +13,22 @@ test_pipeline_folder = './tests/running_pipelines'
 
 @pytest.fixture(autouse=True)
 def run_around_tests():
-    pathlib.Path(test_pipeline_folder).mkdir(exist_ok=True, parents=True)
-
     os.environ['TEST_DELAY'] = '2'
 
     yield
-
-    try:
-        shutil.rmtree(test_pipeline_folder)
-    except:
-        ...
 
     if 'TEST_DELAY' in os.environ:
         del os.environ['TEST_DELAY']
 
 
-def test_pipeline_with_env_var_in_configuration():
+def test_pipeline_with_env_var_in_configuration(test_config):
     config = {
         'version': '0.1.0',
         'plugins': ['./plugins'],
         'pipeline': {
             'name': 'test_env_pipeline',
             'id': '9999999999',
-            'folder': './tests/running_pipelines/env_test_pipeline',
+            'folder': str(pathlib.Path(test_config["test_pipeline_folder"], 'env_test_pipeline')),
             'nodes': [
                 {
                     'name': 'test_node',
@@ -68,7 +60,7 @@ def test_pipeline_with_env_var_in_configuration():
     assert pipeline._nodes['test_node']._delay == 2
 
 
-def test_pipeline_with_missing_env_var(caplog):
+def test_pipeline_with_missing_env_var(test_config, caplog):
     caplog.set_level(logging.CRITICAL, logger='jt.builder')
 
     if 'MISSING_ENV_VAR' in os.environ:
@@ -101,6 +93,7 @@ def test_pipeline_with_missing_env_var(caplog):
         pipeline.warmup()
 
     error_message = str(exc_info.value)
+
     assert 'MISSING_ENV_VAR' in error_message
     assert 'not set' in error_message.lower()
     assert 'test_node' in error_message or 'node "test_node"' in error_message
