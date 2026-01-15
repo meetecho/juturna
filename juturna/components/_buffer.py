@@ -28,6 +28,11 @@ class Buffer:
         return self._out_queue.get()
 
     def put(self, message: Message):
+        if message is None:
+            self._out_queue.put(None)
+
+            return
+
         if message.creator not in self._data:
             self._data[message.creator] = list()
 
