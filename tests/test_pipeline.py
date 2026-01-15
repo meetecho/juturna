@@ -17,18 +17,6 @@ with open(pathlib.Path(test_pipelines, 'test_audio_pipeline.json'), 'r') as f:
     audio_config = json.load(f)
 
 
-@pytest.fixture(autouse=True)
-def run_around_tests():
-    pathlib.Path(test_pipeline_folder).mkdir(exist_ok=True, parents=True)
-
-    yield
-
-    try:
-        shutil.rmtree(test_pipeline_folder)
-    except:
-        ...
-
-
 def test_pipeline_base():
     test_pipeline = jt.components.Pipeline(empty_config)
 

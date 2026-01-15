@@ -34,6 +34,7 @@ class AudioPayload(BasePayload):
             'audio': obj.audio.tolist(),
             'sampling_rate': obj.sampling_rate,
             'channels': obj.channels,
+            'audio_format': obj.audio_format,
             'start': obj.start,
             'end': obj.end,
         }
@@ -92,7 +93,7 @@ class Batch(BasePayload):
 
     @staticmethod
     def serialize(obj) -> list:
-        return [msg.serialize() for msg in obj.messages]
+        return [msg.to_dict() for msg in obj.messages]
 
 
 @dataclass(frozen=True)
