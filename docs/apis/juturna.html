@@ -356,9 +356,11 @@
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.name"><code class="docutils literal notranslate"><span class="pre">Pipeline.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.pipe_id"><code class="docutils literal notranslate"><span class="pre">Pipeline.pipe_id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.pipe_path"><code class="docutils literal notranslate"><span class="pre">Pipeline.pipe_path</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.resume_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.resume_node()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.start"><code class="docutils literal notranslate"><span class="pre">Pipeline.start()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.status"><code class="docutils literal notranslate"><span class="pre">Pipeline.status</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.stop"><code class="docutils literal notranslate"><span class="pre">Pipeline.stop()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.suspend_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.suspend_node()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.update_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.update_node()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.warmup"><code class="docutils literal notranslate"><span class="pre">Pipeline.warmup()</span></code></a></li>
 </ul>
@@ -436,6 +438,11 @@
 <li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.AudioPayload.start"><code class="docutils literal notranslate"><span class="pre">AudioPayload.start</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.BasePayload"><code class="docutils literal notranslate"><span class="pre">BasePayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.BasePayload.clone"><code class="docutils literal notranslate"><span class="pre">BasePayload.clone()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.BasePayload.serialize"><code class="docutils literal notranslate"><span class="pre">BasePayload.serialize()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.Batch"><code class="docutils literal notranslate"><span class="pre">Batch</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.Batch.messages"><code class="docutils literal notranslate"><span class="pre">Batch.messages</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.Batch.serialize"><code class="docutils literal notranslate"><span class="pre">Batch.serialize()</span></code></a></li>
@@ -444,6 +451,20 @@
 <li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.BytesPayload"><code class="docutils literal notranslate"><span class="pre">BytesPayload</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.BytesPayload.cnt"><code class="docutils literal notranslate"><span class="pre">BytesPayload.cnt</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.BytesPayload.serialize"><code class="docutils literal notranslate"><span class="pre">BytesPayload.serialize()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlPayload"><code class="docutils literal notranslate"><span class="pre">ControlPayload</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlPayload.signal"><code class="docutils literal notranslate"><span class="pre">ControlPayload.signal</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal"><code class="docutils literal notranslate"><span class="pre">ControlSignal</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.RESUME"><code class="docutils literal notranslate"><span class="pre">ControlSignal.RESUME</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.START"><code class="docutils literal notranslate"><span class="pre">ControlSignal.START</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.START_PROPAGATE"><code class="docutils literal notranslate"><span class="pre">ControlSignal.START_PROPAGATE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.STOP"><code class="docutils literal notranslate"><span class="pre">ControlSignal.STOP</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.STOP_PROPAGATE"><code class="docutils literal notranslate"><span class="pre">ControlSignal.STOP_PROPAGATE</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.SUSPEND"><code class="docutils literal notranslate"><span class="pre">ControlSignal.SUSPEND</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.WARMUP"><code class="docutils literal notranslate"><span class="pre">ControlSignal.WARMUP</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.Draft"><code class="docutils literal notranslate"><span class="pre">Draft</span></code></a><ul>

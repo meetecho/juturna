@@ -643,7 +643,7 @@ the bridge is stopped correctly.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.transmit">
-<span class="sig-name descname"><span class="pre">transmit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.transmit" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">transmit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal" title="juturna.payloads._control_signal.ControlSignal"><span class="pre">ControlSignal</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.transmit" title="Link to this definition">¶</a></dt>
 <dd><p>Transmit a message. This method is used to send data from the node to
 its destinations. Messages are frozen before transmission, so that
 immutability is ensured.</p>
@@ -723,6 +723,13 @@ rather than from the actual configuration content.</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.Pipeline.resume_node">
+<span class="sig-name descname"><span class="pre">resume_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline.resume_node" title="Link to this definition">¶</a></dt>
+<dd><p>Resume a node in the pipeline.
+A suspended node can be resumed, so it will start processing data again.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Pipeline.start">
 <span class="sig-name descname"><span class="pre">start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline.start" title="Link to this definition">¶</a></dt>
 <dd><p>Start the pipeline and all its nodes.
@@ -747,6 +754,15 @@ processing any further data. The nodes are stopped in reverse order of
 their configuration, ensuring that the source node is the last one to be
 stopped. This is important to ensure that the data flow is properly
 terminated and that all nodes are safely stopped.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.Pipeline.suspend_node">
+<span class="sig-name descname"><span class="pre">suspend_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline.suspend_node" title="Link to this definition">¶</a></dt>
+<dd><p>Suspend a node in the pipeline.
+A pipeline node can be suspended, so it won’t process any data until it
+is resumed. A suspended node will keep forwarding received messages to
+its destinations.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -890,9 +906,11 @@ their required resources.</p>
 <li><a class="reference internal" href="#juturna.components.Pipeline.name"><code class="docutils literal notranslate"><span class="pre">Pipeline.name</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.pipe_id"><code class="docutils literal notranslate"><span class="pre">Pipeline.pipe_id</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.pipe_path"><code class="docutils literal notranslate"><span class="pre">Pipeline.pipe_path</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.Pipeline.resume_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.resume_node()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.start"><code class="docutils literal notranslate"><span class="pre">Pipeline.start()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.status"><code class="docutils literal notranslate"><span class="pre">Pipeline.status</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.stop"><code class="docutils literal notranslate"><span class="pre">Pipeline.stop()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.Pipeline.suspend_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.suspend_node()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.update_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.update_node()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.warmup"><code class="docutils literal notranslate"><span class="pre">Pipeline.warmup()</span></code></a></li>
 </ul>
