@@ -89,6 +89,7 @@ class ImagePayload(BasePayload):
 class VideoPayload(BasePayload):
     video: list[ImagePayload] = field(default_factory=lambda: list())
     frames_per_second: float = -1.0
+    codec: str = ''
     start: float = -1.0
     end: float = -1.0
 
@@ -97,6 +98,7 @@ class VideoPayload(BasePayload):
         return {
             'video': [img.serialize() for img in obj.video],
             'frames_per_second': obj.frames_per_second,
+            'codec': obj.codec,
             'start': obj.start,
             'end': obj.end,
         }

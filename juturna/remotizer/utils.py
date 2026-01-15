@@ -22,6 +22,7 @@ from juturna.payloads import (
     VideoPayload,
     BytesPayload,
     ObjectPayload,
+    Batch,
 )
 
 
@@ -33,6 +34,7 @@ from generated.payloads_pb2 import (
     VideoProtoPayload,
     BytesProtoPayload,
     ObjectProtoPayload,
+    BatchProto,
 )
 from google.protobuf.struct_pb2 import Struct
 from google.protobuf.json_format import MessageToDict
@@ -91,6 +93,7 @@ def _video_to_proto(video: VideoPayload) -> VideoProtoPayload:
     # Copy metadata
     proto.frames_per_second = video.frames_per_second
     proto.start = video.start
+    proto.codec = video.codec
     proto.end = video.end
 
     return proto
@@ -99,7 +102,8 @@ def _video_to_proto(video: VideoPayload) -> VideoProtoPayload:
 def _bytes_to_proto(bytes_payload: BytesPayload) -> BytesProtoPayload:
     """Convert Python BytesPayload to Protobuf BytesProtoPayload"""
     proto = BytesProtoPayload()
-    proto.content = bytes_payload.cnt
+    proto.cnt = bytes_payload.cnt
+    proto.size = len(bytes_payload.cnt)
     return proto
 
 
@@ -115,6 +119,15 @@ def _object_to_proto(obj: ObjectPayload) -> ObjectProtoPayload:
     return proto
 
 
+def _batch_to_proto(batch: Batch) -> BatchProto:
+    """Convert Python Batch to Protobuf BatchProto"""
+    proto = BatchProto()
+    for message in batch.messages:
+        message_proto = message_to_proto(message)
+        proto.messages.append(message_proto)
+    return proto
+
+
 def message_to_proto(message: Message) -> ProtoMessage:
     """
     Convert Python Message to Protobuf ProtoMessage
@@ -125,6 +138,7 @@ def message_to_proto(message: Message) -> ProtoMessage:
     - VideoPayload → VideoProtoPayload
     - BytesPayload → BytesProtoPayload
     - ObjectPayload → ObjectProtoPayload
+    - Batch → BatchProto
 
     Parameters
     ----------
@@ -170,6 +184,10 @@ def message_to_proto(message: Message) -> ProtoMessage:
             payload_proto = _object_to_proto(message.payload)
             proto.payload.Pack(payload_proto)
 
+        elif isinstance(message.payload, Batch):
+            payload_proto = _batch_to_proto(message.payload)
+            proto.payload.Pack(payload_proto)
+
     # TODO: do not rely on this elifs, several aternatives:
     # - 1 use a method defined on the payload classes?
     # like message.payload.to_proto()
@@ -195,6 +213,7 @@ def deserialize_message(message: ProtoMessage) -> Message:
     - VideoProtoPayload → VideoPayload
     - BytesProtoPayload → BytesPayload
     - ObjectProtoPayload → ObjectPayload
+    - BatchProto → Batch
 
     Parameters
     ----------
@@ -241,6 +260,11 @@ def deserialize_message(message: ProtoMessage) -> Message:
         obj = ObjectProtoPayload()
         message.payload.Unpack(obj)
         message_obj.payload = _deserialize_object_payload(obj)
+
+    elif message.payload.Is(BatchProto.DESCRIPTOR):
+        batch = BatchProto()
+        message.payload.Unpack(batch)
+        message_obj.payload = _deserialize_batch_payload(batch)
 
     # ! actually we do not unpack Batch properly.
     # ! the batch message is a container of messages, so we need to
@@ -294,6 +318,7 @@ def _deserialize_video_payload(payload: VideoProtoPayload) -> VideoPayload:
     return VideoPayload(
         video=frames,
         frames_per_second=payload.frames_per_second,
+        codec=payload.codec,
         start=payload.start,
         end=payload.end,
     )
@@ -302,9 +327,7 @@ def _deserialize_video_payload(payload: VideoProtoPayload) -> VideoPayload:
 def _deserialize_bytes_payload(payload: BytesProtoPayload) -> BytesPayload:
     """Deserialize BytesProtoPayload to BytesPayload"""
     return BytesPayload(
-        content=payload.content,
-        content_type=payload.content_type,
-        filename=payload.filename,
+        cnt=payload.cnt,
     )
 
 
@@ -312,6 +335,11 @@ def _deserialize_object_payload(payload: ObjectProtoPayload) -> ObjectPayload:
     """Deserialize ObjectProtoPayload (Struct) to ObjectPayload (dict)"""
     proto_dict = MessageToDict(payload)
     return ObjectPayload.from_dict(proto_dict.get('data', {}))
+
+
+def _deserialize_batch_payload(payload: BatchProto) -> Batch:
+    """Deserialize BatchProto to Batch"""
+    return Batch(messages=tuple(payload.messages))
 
 
 # ! FIXME: probably we should change the request_type and response_type

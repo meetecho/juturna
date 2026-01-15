@@ -6,6 +6,7 @@ from juturna.payloads._payloads import ImagePayload
 from juturna.payloads._payloads import VideoPayload
 from juturna.payloads._payloads import ObjectPayload
 from juturna.payloads._payloads import BytesPayload
+from juturna.payloads._payloads import BasePayload
 from juturna.payloads._payloads import Batch
 
 from juturna.payloads._generics import T_Input
@@ -19,6 +20,7 @@ __all__ = [
     'BasePayload',
     'ControlSignal',
     'ControlPayload',
+    'BasePayload',
     'AudioPayload',
     'ImagePayload',
     'VideoPayload',
