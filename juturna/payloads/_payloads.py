@@ -1,10 +1,9 @@
 import copy
 import json
-import dataclasses
+
 from typing import Self
 from typing import Any
-from dataclasses import dataclass
-from dataclasses import field
+from dataclasses import field, fields, is_dataclass, dataclass
 
 import numpy as np
 
@@ -25,8 +24,8 @@ class BasePayload:
         kwargs = {}
 
         # Handle dataclass fields
-        if dataclasses.is_dataclass(self):
-            for f in dataclasses.fields(self):
+        if is_dataclass(self):
+            for f in fields(self):
                 value = getattr(self, f.name)
                 kwargs[f.name] = copy.deepcopy(value, memo)
 
