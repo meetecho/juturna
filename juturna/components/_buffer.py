@@ -71,8 +71,6 @@ class Buffer:
             )
         )
 
-        to_send.freeze()
-
         self._out_queue.put(to_send)
 
     def flush(self):
