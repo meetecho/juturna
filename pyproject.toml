@@ -27,7 +27,7 @@ Issues = "https://github.com/meetecho/juturna/issues"
 Changelog = "https://github.com/meetecho/juturna/blob/main/CHANGELOG.md"
 
 [tool.poetry.dependencies]
-av = "^14.2.0"
+av = "^16.0.0"
 numpy = "2.2.3,<3.0.0"
 requests = "2.32.3,<3.0.0"
 websockets = "^15.0.1"
