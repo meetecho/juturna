@@ -20,6 +20,7 @@ class Buffer:
         # out queue can be built based on the synchronisation policy
         self._out_queue = queue.Queue(maxsize=JUTURNA_MAX_QUEUE_SIZE)
 
+        self._creator = creator
         self._logger = jt_logger(creator)
         self._logger.propagate = True
 
@@ -42,7 +43,7 @@ class Buffer:
 
             self._consume(next_batch)
 
-    def _consume(self, marks: dict):
+    def _consume(self, marks: dict[str, list[int]]):
         """
         Consume sent data
 
@@ -53,7 +54,7 @@ class Buffer:
 
         Parameters
         ----------
-        marks: dict
+        marks: dict[str, list[int]]
             A dictionary of indexes of messages to send for every source.
 
         """
@@ -63,20 +64,29 @@ class Buffer:
             for pop_idx in marks[mark][::-1]:
                 to_send.append(self._data[mark].pop(pop_idx))
 
-        if len(to_send) == 1:
-            self._out_queue.put(to_send[0])
-
+        if len(to_send) == 0:
             return
 
-        self._out_queue.put(Batch(messages=to_send))
+        to_send = (
+            to_send[0]
+            if len(to_send) == 1
+            else Message[Batch](
+                creator=f'{self._creator}_sync',
+                payload=Batch(messages=tuple(to_send)),
+            )
+        )
+
+        self._out_queue.put(to_send)
 
     def flush(self):
         """Flush the buffer content"""
         with self._data_lock:
             self._data = dict()
+
             while not self._out_queue.empty():
                 try:
                     self._out_queue.get_nowait()
                 except queue.Empty:
                     break
+
             self._logger.debug('buffer flushed')

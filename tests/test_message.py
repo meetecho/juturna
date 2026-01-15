@@ -188,9 +188,10 @@ def test_message_to_json_custom_encoder():
 
 def test_message_serialisation_audio():
     test_payload = AudioPayload(
-        audio=np.ndarray(10),
+        audio=np.asarray([1, 2, 3, 4, 5, 6, 7, 8, 9, 0]),
         sampling_rate=10,
         channels=2,
+        audio_format='int32',
         start=0,
         end=5
     )
@@ -203,8 +204,10 @@ def test_message_serialisation_audio():
     assert isinstance(decoded['payload'], dict)
     assert isinstance(decoded['payload']['audio'], list)
     assert len(decoded['payload']['audio']) == 10
+    assert decoded['payload']['audio'] == [1, 2, 3, 4, 5, 6, 7, 8, 9, 0]
     assert decoded['payload']['sampling_rate'] == 10
     assert decoded['payload']['channels'] == 2
+    assert decoded['payload']['audio_format'] == 'int32'
     assert decoded['payload']['start'] == 0
     assert decoded['payload']['end'] == 5
 

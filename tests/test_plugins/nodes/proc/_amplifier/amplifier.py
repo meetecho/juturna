@@ -1,9 +1,9 @@
 """
-$_node_class_name
+Amplifier
 
-@author: $_node_author_name
-@email: $_node_author_email
-@created_at: $_creation_datetime
+@author: not provided
+@email: not provided
+@created_at: 2026-01-08 17:18:37
 
 Automatically generated with jt.utils.node_utils.node_stub
 """
@@ -14,10 +14,10 @@ from juturna.components import Message
 
 # BasePayload type is intended to be a placehoder for the input-output types
 # you intend to use in the node implementation
-from juturna.payloads import BasePayload
+from juturna.payloads._payloads import BasePayload
 
 
-class $_node_class_name(Node[BasePayload, BasePayload]):
+class Amplifier(Node[BasePayload, BasePayload]):
     """Node implementation class"""
 
     def __init__(self, **kwargs):
@@ -61,5 +61,5 @@ class $_node_class_name(Node[BasePayload, BasePayload]):
         ...
 
     # uncomment next_batch to design custom synchronisation policy
-    # def next_batch(sources: dict[str, list[Message]]) -> dict[str, list[int]]:
+    # def next_batch(sources: dict) -> dict:
     #     ...

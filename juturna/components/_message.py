@@ -115,9 +115,16 @@ class Message[T_Input]:
             The JSON string representation of the message.
 
         """
-        use_encoder = encoder or (
-            self.payload.serialize if self.payload is not None else None
-        )
+
+        def default_serializer(obj):
+            if hasattr(obj, 'serialize'):
+                return obj.serialize(obj)
+
+            raise TypeError(
+                f'type {obj.__class__.__name__} is not JSON serializable'
+            )
+
+        use_encoder = encoder or default_serializer
 
         return json.dumps(
             self.to_dict(),

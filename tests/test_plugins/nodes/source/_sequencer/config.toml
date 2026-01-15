@@ -1,0 +1,9 @@
+[arguments]
+sample_length_sec = 2
+sample_rate = 16000
+sample_tone = 440
+audio_format = 'int16'
+channels = 1
+rate = 1
+
+[meta]
