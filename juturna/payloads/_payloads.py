@@ -1,5 +1,6 @@
 import copy
 import json
+import sys
 
 from typing import Self
 from typing import Any
@@ -35,6 +36,9 @@ class AudioPayload(BasePayload):
     start: float = -1.0
     end: float = -1.0
 
+    def __post_init__(self):
+        object.__setattr__(self, 'size_bytes', self.audio.nbytes)
+
     @staticmethod
     def serialize(obj) -> dict:
         return {
@@ -56,6 +60,9 @@ class ImagePayload(BasePayload):
     pixel_format: str = ''
     timestamp: float = -1.0
 
+    def __post_init__(self):
+        object.__setattr__(self, 'size_bytes', self.image.nbytes)
+
     @staticmethod
     def serialize(obj) -> dict:
         return {
@@ -75,6 +82,11 @@ class VideoPayload(BasePayload):
     start: float = -1.0
     end: float = -1.0
 
+    def __post_init__(self):
+        object.__setattr__(
+            self, 'size_bytes', sum([f.nbytes for f in self.video])
+        )
+
     @staticmethod
     def serialize(obj) -> dict:
         return {
@@ -89,6 +101,9 @@ class VideoPayload(BasePayload):
 class BytesPayload(BasePayload):
     cnt: bytes = field(default_factory=lambda: b'')
 
+    def __post_init__(self):
+        object.__setattr__(self, 'size_bytes', len(self.cnt))
+
     @staticmethod
     def serialize(obj) -> dict:
         return {'cnt': obj.cnt.decode('utf-8')}
@@ -97,6 +112,13 @@ class BytesPayload(BasePayload):
 @dataclass(frozen=True)
 class Batch(BasePayload):
     messages: tuple = field(default_factory=tuple)
+
+    def __post_init__(self):
+        object.__setattr__(
+            self,
+            'size_bytes',
+            sum([m.payload.size_bytes for m in self.messages]),
+        )
 
     @staticmethod
     def serialize(obj) -> list:
@@ -107,6 +129,10 @@ class Batch(BasePayload):
 class ObjectPayload(dict, BasePayload):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        object.__setattr__(self, 'size_bytes', sys.getsizeof(self))
+
+    # def __post_init__(self):
+    #     object.__setattr__(self, 'size_bytes', sys.getsizeof(self))
 
     def __setitem__(self, key: str, value: Any):
         raise TypeError(

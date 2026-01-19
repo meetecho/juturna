@@ -5,10 +5,13 @@ import logging
 import threading
 import queue
 import time
+import weakref
+import itertools
 
 from collections.abc import Callable
 
 from typing import Any
+from typing import TYPE_CHECKING
 
 from juturna.components import Message
 from juturna.payloads import ControlPayload
@@ -18,8 +21,14 @@ from juturna.names import ComponentStatus
 from juturna.utils.log_utils import jt_logger
 from juturna.components._buffer import Buffer
 from juturna.components._synchronisers import _SYNCHRONISERS
+
 from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
+from juturna.meta import JUTURNA_TELEMETRY_BATCH_SIZE
+
+
+if TYPE_CHECKING:
+    from juturna.components._pipeline import Pipeline
 
 
 class Node[T_Input, T_Output]:
@@ -49,6 +58,7 @@ class Node[T_Input, T_Output]:
         self._name = node_name
         self._status: ComponentStatus | None = None
         self._session_id: str | None = None
+        self._pipe_link: str | None = None
         self._pipe_path: str | None = None
         self._pipe_name: str | None = pipe_name
 
@@ -86,6 +96,10 @@ class Node[T_Input, T_Output]:
 
         self._destinations: dict[str, queue.Queue] = dict()
         self._origins: list = list()
+
+        self.telemetry = False
+        self._telemetry_buffer = list()
+        self._id_gen = itertools.count()
 
     def __del__(self): ...
 
@@ -172,6 +186,12 @@ class Node[T_Input, T_Output]:
     @property
     def destinations(self) -> list:
         return list(self._destinations.keys())
+
+    def link_pipeline(self, pipeline: 'Pipeline'):
+        self._pipe_link = weakref.proxy(pipeline)
+
+    def get_next_id(self) -> int:
+        return next(self._id_gen)
 
     def put(self, message: Message):
         self._queue.put(message)
@@ -313,6 +333,8 @@ class Node[T_Input, T_Output]:
         for node_name in self._destinations:
             self._destinations[node_name].put(message)
 
+        self._rec_telemetry(message, 'tx')
+
     def start(self):
         """
         Start the node and begin processing. This method is called automatically
@@ -421,6 +443,7 @@ class Node[T_Input, T_Output]:
                 continue
 
             self._buffer.put(message)
+            self._rec_telemetry(message, 'rx')
 
     def _update(self):
         while not self._stop_update_event.is_set():
@@ -493,3 +516,22 @@ class Node[T_Input, T_Output]:
                 return
             case None:
                 return
+
+    def _rec_telemetry(self, message: Message, event: str):
+        if not self.telemetry:
+            return
+
+        telemetry_entry = (
+            time.time(),
+            event,
+            self.name,
+            message.creator,
+            message.id,
+            message.payload.size_bytes,
+        )
+
+        self._telemetry_buffer.append(telemetry_entry)
+
+        if len(self._telemetry_buffer) >= JUTURNA_TELEMETRY_BATCH_SIZE:
+            self._pipe_link.telemetry_record(self._telemetry_buffer)
+            self._telemetry_buffer = list()
