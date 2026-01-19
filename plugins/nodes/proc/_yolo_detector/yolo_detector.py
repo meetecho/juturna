@@ -102,17 +102,6 @@ class YoloDetector(Node[ImagePayload, ImagePayload]):
             timers_from=message,
         )
 
-        with to_send.timeit(self.name + '_image_preprocessing_branching'):
-            if image.shape[2] == 4:
-                if image_format == 'RGB':
-                    normalized_image = image[:, :, 2::-1]
-                else:
-                    normalized_image = image[:, :, :3]
-            elif image_format == 'RGB':
-                normalized_image = image[:, :, ::-1]
-            else:
-                normalized_image = image
-
         with to_send.timeit(self.name + '_image_preprocessing_numpy'):
             if image.shape[2] == 4 and image_format == 'RGB':
                 normalized_image = image[
