@@ -339,6 +339,11 @@ buffers, plus offering few extra utilities.</p>
 </dd></dl>
 
 <dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.components.Message.id">
+<span class="sig-name descname"><span class="pre">id</span></span><a class="headerlink" href="#juturna.components.Message.id" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.components.Message.meta">
 <span class="sig-name descname"><span class="pre">meta</span></span><a class="headerlink" href="#juturna.components.Message.meta" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -507,6 +512,16 @@ in the derived classes.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.dump_json">
 <span class="sig-name descname"><span class="pre">dump_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#juturna.components.Node.dump_json" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.Node.get_next_id">
+<span class="sig-name descname"><span class="pre">get_next_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#juturna.components.Node.get_next_id" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.Node.link_pipeline">
+<span class="sig-name descname"><span class="pre">link_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Pipeline" title="juturna.components.Pipeline"><span class="pre">Pipeline</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.link_pipeline" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py property">
@@ -766,6 +781,11 @@ its destinations.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.Pipeline.telemetry_record">
+<span class="sig-name descname"><span class="pre">telemetry_record</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">tuple</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline.telemetry_record" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Pipeline.update_node">
 <span class="sig-name descname"><span class="pre">update_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline.update_node" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -858,6 +878,7 @@ their required resources.</p>
 <li><a class="reference internal" href="#juturna.components.Message.created_at"><code class="docutils literal notranslate"><span class="pre">Message.created_at</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Message.creator"><code class="docutils literal notranslate"><span class="pre">Message.creator</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Message.freeze"><code class="docutils literal notranslate"><span class="pre">Message.freeze()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.Message.id"><code class="docutils literal notranslate"><span class="pre">Message.id</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Message.meta"><code class="docutils literal notranslate"><span class="pre">Message.meta</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Message.payload"><code class="docutils literal notranslate"><span class="pre">Message.payload</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Message.timeit"><code class="docutils literal notranslate"><span class="pre">Message.timeit()</span></code></a></li>
@@ -880,6 +901,8 @@ their required resources.</p>
 <li><a class="reference internal" href="#juturna.components.Node.destinations"><code class="docutils literal notranslate"><span class="pre">Node.destinations</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.destroy"><code class="docutils literal notranslate"><span class="pre">Node.destroy()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.dump_json"><code class="docutils literal notranslate"><span class="pre">Node.dump_json()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.Node.get_next_id"><code class="docutils literal notranslate"><span class="pre">Node.get_next_id()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.Node.link_pipeline"><code class="docutils literal notranslate"><span class="pre">Node.link_pipeline()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.logger"><code class="docutils literal notranslate"><span class="pre">Node.logger</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.name"><code class="docutils literal notranslate"><span class="pre">Node.name</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.origins"><code class="docutils literal notranslate"><span class="pre">Node.origins</span></code></a></li>
@@ -911,6 +934,7 @@ their required resources.</p>
 <li><a class="reference internal" href="#juturna.components.Pipeline.status"><code class="docutils literal notranslate"><span class="pre">Pipeline.status</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.stop"><code class="docutils literal notranslate"><span class="pre">Pipeline.stop()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.suspend_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.suspend_node()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.Pipeline.telemetry_record"><code class="docutils literal notranslate"><span class="pre">Pipeline.telemetry_record()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.update_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.update_node()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Pipeline.warmup"><code class="docutils literal notranslate"><span class="pre">Pipeline.warmup()</span></code></a></li>
 </ul>
