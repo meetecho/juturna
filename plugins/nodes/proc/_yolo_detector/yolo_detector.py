@@ -1,8 +1,8 @@
 """
 DetectorYolo
 
-@ Author: Paolo Saviano
-@ Email: psaviano@meetecho.com
+@ Author: Paolo Saviano, Antonio Bevilacqua
+@ Email: psaviano@meetecho.com, abevilacqua@meetecho.com
 
 Prepare image and annotate detections using a custom YOLO model.
 It can plot the annotations on the image or just pass them as metadata.
