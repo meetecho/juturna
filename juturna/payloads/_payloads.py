@@ -3,7 +3,7 @@ import json
 
 from typing import Self
 from typing import Any
-from dataclasses import field, fields, is_dataclass, dataclass
+from dataclasses import field, dataclass
 
 import numpy as np
 
@@ -18,23 +18,6 @@ class BasePayload:
     @staticmethod
     def serialize(obj):
         return json.JSONEncoder.default(obj)
-
-    def __deepcopy__(self, memo) -> Self:
-        cls = self.__class__
-        kwargs = {}
-
-        # Handle dataclass fields
-        if is_dataclass(self):
-            for f in fields(self):
-                value = getattr(self, f.name)
-                kwargs[f.name] = copy.deepcopy(value, memo)
-
-        # Handle dict items (for ObjectPayload)
-        if isinstance(self, dict):
-            for k, v in self.items():
-                kwargs[k] = copy.deepcopy(v, memo)
-
-        return cls(**kwargs)
 
 
 @dataclass(frozen=True)
@@ -138,6 +121,16 @@ class ObjectPayload(dict, BasePayload):
         raise TypeError(
             f"'{type(self).__name__}' object does not support item deletion"
         )
+
+    def __deepcopy__(self, memo) -> Self:
+        cls = self.__class__
+        kwargs = {}
+
+        if isinstance(self, dict):
+            for k, v in self.items():
+                kwargs[k] = copy.deepcopy(v, memo)
+
+        return cls(**kwargs)
 
     @staticmethod
     def from_dict(origin: dict):

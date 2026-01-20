@@ -4,5 +4,5 @@ grpc_port = "50080",
 timeout = 30,
 
   [arguments.remote_config]
-  
+
 [meta]

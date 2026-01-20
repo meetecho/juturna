@@ -14,7 +14,7 @@ sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "juturna" / "remotizer"))
 sys.path.insert(0, str(PROJECT_ROOT / "juturna" / "remotizer" / "generated"))
 
-from juturna.remotizer._warp._warp import Warp
+from juturna.nodes.proc import Warp
 from juturna.components import Message
 from juturna.payloads import ObjectPayload
 

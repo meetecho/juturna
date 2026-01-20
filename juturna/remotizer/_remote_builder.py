@@ -42,7 +42,6 @@ def _standalone_builder(
         A tuple containing the node instance and its runtime folder path.
 
     """
-    # construct a node dictionary to pass to the component builder
     node = {
         'name': name,
         'type': 'proc',
@@ -52,7 +51,6 @@ def _standalone_builder(
     node_runtime_folder = pathlib.Path(REMOTE_PIPE_FOLDER, context_runtime_path)
     node_runtime_folder.mkdir(exist_ok=True, parents=True)
 
-    # build the node
     _node: Node = _component_builder.build_component(
         node,
         plugin_dirs=[plugins_dir],
@@ -63,11 +61,9 @@ def _standalone_builder(
     _node.pipe_path = node_runtime_folder
     _node.status = ComponentStatus.NEW
 
-    # warmup the node
     _node.warmup()
     _node.status = ComponentStatus.CONFIGURED
 
-    # start the node
     _node.start()
     _node.status = ComponentStatus.RUNNING
 

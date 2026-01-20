@@ -25,7 +25,6 @@ from juturna.payloads import (
     Batch,
 )
 
-
 from generated.payloads_pb2 import (
     ProtoMessage,
     ProtoEnvelope,
@@ -128,6 +127,16 @@ def _batch_to_proto(batch: Batch) -> BatchProto:
     return proto
 
 
+PROTOBUF_PAYLOAD_TYPE_MAP = {
+    AudioPayload: _audio_to_proto,
+    ImagePayload: _image_to_proto,
+    VideoPayload: _video_to_proto,
+    BytesPayload: _bytes_to_proto,
+    ObjectPayload: _object_to_proto,
+    Batch: _batch_to_proto,
+}
+
+
 def message_to_proto(message: Message) -> ProtoMessage:
     """
     Convert Python Message to Protobuf ProtoMessage
@@ -153,48 +162,19 @@ def message_to_proto(message: Message) -> ProtoMessage:
     """
     proto = ProtoMessage()
 
-    # Copy basic fields
     proto.created_at = message.created_at
     proto.creator = message.creator
     proto.version = message.version
 
-    # Copy metadata
     proto.meta.update(message.meta)
     proto.timers.update(message.timers)
 
-    # Convert payload based on type
     if message.payload is not None:
-        if isinstance(message.payload, AudioPayload):
-            payload_proto = _audio_to_proto(message.payload)
-            proto.payload.Pack(payload_proto)
-
-        elif isinstance(message.payload, ImagePayload):
-            payload_proto = _image_to_proto(message.payload)
-            proto.payload.Pack(payload_proto)
-
-        elif isinstance(message.payload, VideoPayload):
-            payload_proto = _video_to_proto(message.payload)
-            proto.payload.Pack(payload_proto)
-
-        elif isinstance(message.payload, BytesPayload):
-            payload_proto = _bytes_to_proto(message.payload)
-            proto.payload.Pack(payload_proto)
-
-        elif isinstance(message.payload, (ObjectPayload, dict)):
-            payload_proto = _object_to_proto(message.payload)
-            proto.payload.Pack(payload_proto)
-
-        elif isinstance(message.payload, Batch):
-            payload_proto = _batch_to_proto(message.payload)
-            proto.payload.Pack(payload_proto)
-
-    # TODO: do not rely on this elifs, several aternatives:
-    # - 1 use a method defined on the payload classes?
-    # like message.payload.to_proto()
-    # will this add gprc deps to the core?
-    # - 2 use a registry / mapping of payload types to converter functions
-    # to make it more extensible, declared outside this function
-
+        protocol_converter = PROTOBUF_PAYLOAD_TYPE_MAP.get(
+            type(message.payload)
+        )
+        payload_proto = protocol_converter(message.payload)
+        proto.payload.Pack(payload_proto)
     return proto
 
 
@@ -235,7 +215,6 @@ def deserialize_message(message: ProtoMessage) -> Message:
     message_obj.meta.update(dict(message.meta))
     message_obj.timers.update(dict(message.timers))
 
-    # Deserialize payload based on type
     if message.payload.Is(AudioProtoPayload.DESCRIPTOR):
         audio = AudioProtoPayload()
         message.payload.Unpack(audio)
@@ -266,14 +245,7 @@ def deserialize_message(message: ProtoMessage) -> Message:
         message.payload.Unpack(batch)
         message_obj.payload = _deserialize_batch_payload(batch)
 
-    # ! actually we do not unpack Batch properly.
-    # ! the batch message is a container of messages, so we need to
-    # ! unpack each message inside it.
-    # ! probably there is an issue with the Batch design:
-    # ! it is a Payload _and_ a messages list (with their own payloads).
-    # ! probably the Batch should be removed in favor of a Messages array?
-
-    return message_obj  # add finalize here?
+    return message_obj
 
 
 def _deserialize_audio_payload(payload: AudioProtoPayload) -> AudioPayload:

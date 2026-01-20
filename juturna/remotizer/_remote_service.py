@@ -11,7 +11,8 @@ import threading
 import json
 import time
 
-from typing import Any
+from juturna.remotizer._remote_context import RequestContext
+
 from concurrent import futures
 
 from juturna.remotizer.utils import (
@@ -23,13 +24,11 @@ from juturna.remotizer.utils import (
 from juturna.components import Message, Node
 from juturna.remotizer._remote_builder import _standalone_builder
 
-# Import generated protobuf code
 from generated.payloads_pb2 import (
     ProtoEnvelope,
 )
 from generated import messaging_service_pb2_grpc
 
-# Setup logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('remote_service')
 
@@ -37,74 +36,6 @@ logger = logging.getLogger('remote_service')
 # ============================================================================
 # HELPER CLASSES
 # ============================================================================
-
-
-class DispatchingQueue:
-    """
-    Wrapper around a queue to act as a Node destination.
-    Nodes expect destinations to have a 'put' method.
-    """
-
-    def __init__(self):
-        self.q = queue.Queue()
-
-    def put(self, message: Message):
-        """Put message into the underlying queue"""
-        self.q.put(message)
-
-    def get(self, timeout: float = 1.0) -> Any:
-        """Get message from the underlying queue"""
-        return self.q.get(timeout=timeout)
-
-
-class RequestContext:
-    """Context for tracking individual requests"""
-
-    def __init__(
-        self,
-        sender: str,
-        request_id: str,
-        correlation_id: str,
-        timeout: float,
-        response_type: str = None,
-    ):
-        self.sender = sender
-        self.request_id = request_id
-        self.correlation_id = correlation_id
-        self.future = futures.Future()
-        self.timeout = timeout
-        self.response_type = response_type
-        self.created_at = time.time()
-
-    def is_valid_response(self, message: Message | None) -> bool:
-        """Check if the inner payload type matches the expected response type"""
-        print(self.response_type, type(message))
-        if self.response_type is None or message is None:
-            return True
-        return type(message.payload).__name__ == self.response_type
-
-    def is_expired(self) -> bool:
-        """Check if request has exceeded its timeout"""
-        return (time.time() - self.created_at) > self.timeout
-
-    def cancel(self, reason: str):
-        """Cancel the request with a reason"""
-        if not self.future.done():
-            self.future.set_exception(TimeoutError(reason))
-
-    def done(self) -> bool:
-        """Check if the future is done"""
-        return self.future.done()
-
-    def set_result(self, result: Message | None):
-        """Set the result of the future"""
-        print(f'Setting result for {self.correlation_id}: {result}')
-        if not self.future.done() and self.is_valid_response(result):
-            self.future.set_result(result)
-
-    def result(self, timeout: float = None) -> Any:
-        """Get the result of the future, blocking until available or timeout"""
-        return self.future.result(timeout)
 
 
 # ============================================================================
@@ -117,12 +48,12 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
 
     DEFAULT_TIMEOUT = 30.0
     MAX_TIMEOUT = 300.0
-    CLEANUP_INTERVAL = 10.0  # Cleanup expired requests every 10 seconds
+    CLEANUP_INTERVAL = 10.0
 
     def __init__(self, node: Node, remote_name: str):
         self.node = node
         self.remote_name = remote_name
-        self.dispatching_queue = DispatchingQueue()
+        self.dispatching_queue = queue.Queue()
         self.node.add_destination(
             'grpc_messaging_service', self.dispatching_queue
         )
@@ -202,12 +133,11 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                     )
                     continue
 
-                # Find and resolve the future
                 with self.requests_lock:
                     req_ctx = self.pending_requests.pop(correlation_id, None)
 
                 if req_ctx:
-                    req_ctx.future.set_result(message)  # sets only if not done
+                    req_ctx.future.set_result(message)
                 else:
                     logger.warning(f'Unknown correlation_id: {correlation_id}')
 
@@ -217,7 +147,6 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 logger.error(f'Error in dispatcher loop: {e}', exc_info=True)
 
         logger.info('Dispatcher loop shutting down')
-        # self._shutdown_complete.set()
 
     def SendAndReceive(self, request: ProtoEnvelope, context):
         """Handle request-response pattern asynchronously"""
@@ -255,15 +184,14 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                     )
                 self.pending_requests[correlation_id] = request_context
 
-            # Inject correlation_id into message meta
             request_message.meta['correlation_id'] = correlation_id
 
-            # Inject Configuration for the Node Wrapper
             if envelope_dict.get('configuration'):
                 _configuration_to_be_applied = envelope_dict.get(
                     'configuration', {}
                 )
 
+            request_message.freeze()
             self.node.put(request_message)
 
             try:
@@ -383,14 +311,6 @@ def serve():
     logger.info(
         f"Building node '{args.node_name}' from '{args.plugins_dir}'..."
     )
-
-    # We use _remote_builder.
-    # Note: _remote_builder signature:
-    #  - name,
-    #  - plugins_dir,
-    #  - context_runtime_path,
-    #  - config=None
-    # It returns (node, runtime_folder)
 
     try:
         node_instance, _ = _standalone_builder(
