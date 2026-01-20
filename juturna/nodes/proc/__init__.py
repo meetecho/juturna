@@ -1,5 +1,7 @@
 # noqa: D104
-from juturna.nodes.proc._warp._warp import Warp
+try:
+    from juturna.nodes.proc._warp._warp import Warp
 
-
-__all__ = ['Warp']
+    __all__ = ['Warp']
+except ImportError:
+    pass
