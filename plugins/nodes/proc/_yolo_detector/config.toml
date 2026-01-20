@@ -6,6 +6,5 @@ confidence = 0.25
 warmup = [640, 720, 1280]
 half = true
 plot = false
-imgsz = 1280
 
 [meta]
