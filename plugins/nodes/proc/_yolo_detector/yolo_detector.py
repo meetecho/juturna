@@ -49,6 +49,8 @@ class YoloDetector(Node[ImagePayload, ImagePayload]):
             Whether to plot annotations on the image or not.
         warmup : list
             List of image sizes to use for warmup inferences.
+        imgsz : int
+            Image size to use for inference.
         kwargs : dict
             Supernode arguments.
 
@@ -121,6 +123,7 @@ class YoloDetector(Node[ImagePayload, ImagePayload]):
                 classes=self._classes,
                 conf=self._confidence,
                 half=self._half,
+                imgsz=max(image.shape[0], image.shape[1]),
             )
 
         annotated = None
