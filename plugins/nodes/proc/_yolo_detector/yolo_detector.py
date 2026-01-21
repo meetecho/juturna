@@ -121,6 +121,7 @@ class YoloDetector(Node[ImagePayload, ImagePayload]):
                 classes=self._classes,
                 conf=self._confidence,
                 half=self._half,
+                imgsz=max(image.shape[0], image.shape[1]),
             )
 
         annotated = None
@@ -142,9 +143,7 @@ class YoloDetector(Node[ImagePayload, ImagePayload]):
         if 'annotations' not in meta:
             meta['annotations'] = {}
 
-        meta['annotations'][self.name] = (
-            results[0] if len(results[0].boxes) > 0 else dict()
-        )
+        meta['annotations'][self.name] = results[0]
 
         to_send.meta = meta
 
