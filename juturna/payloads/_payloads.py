@@ -4,8 +4,7 @@ import sys
 
 from typing import Self
 from typing import Any
-from dataclasses import dataclass
-from dataclasses import field
+from dataclasses import field, dataclass
 
 import numpy as np
 
@@ -79,6 +78,7 @@ class ImagePayload(BasePayload):
 class VideoPayload(BasePayload):
     video: list[ImagePayload] = field(default_factory=lambda: list())
     frames_per_second: float = -1.0
+    codec: str = ''
     start: float = -1.0
     end: float = -1.0
 
@@ -92,6 +92,7 @@ class VideoPayload(BasePayload):
         return {
             'video': [img.serialize() for img in obj.video],
             'frames_per_second': obj.frames_per_second,
+            'codec': obj.codec,
             'start': obj.start,
             'end': obj.end,
         }
@@ -146,6 +147,16 @@ class ObjectPayload(dict, BasePayload):
         raise TypeError(
             f"'{type(self).__name__}' object does not support item deletion"
         )
+
+    def __deepcopy__(self, memo) -> Self:
+        cls = self.__class__
+        kwargs = {}
+
+        if isinstance(self, dict):
+            for k, v in self.items():
+                kwargs[k] = copy.deepcopy(v, memo)
+
+        return cls(**kwargs)
 
     @staticmethod
     def from_dict(origin: dict):
