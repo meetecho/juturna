@@ -47,10 +47,7 @@ warp = [
     "protobuf==6.33.1",
     "typing_extensions==4.15.0"
 ]
-dev = [
-    "pre-commit==4.5.0",
-    "bandit==1.9.2",
-    "conventional-pre-commit==4.3.0",
+doc = [
     "sphinx<9.0,>6.0",
     "sphinx-autoapi==3.6.0",
     "sphinx-autobuild==2025.8.25",
@@ -58,15 +55,27 @@ dev = [
     "sphinxcontrib-napoleon==0.7",
     "furo==2025.7.19",
     "sphinx-design==0.7.0",
-    "sphinx_new_tab_link==0.8.0"]
+    "sphinx_new_tab_link==0.8.0"
+]
+dev = [
+    "pre-commit==4.5.0",
+    "bandit==1.9.2",
+    "conventional-pre-commit==4.3.0"
+]
 lint = [
     "ruff>= 0.14.8"
 ]
 test = [
     "pytest==9.0.2"
 ]
-all = [
+full = [
     "juturna[httpwrapper,pipebuilder,warp]"
+]
+dev_full = [
+    "juturna[doc,dev,lint,test]"
+]
+all = [
+    "juturna[full,dev_full]"
 ]
 
 [build-system]

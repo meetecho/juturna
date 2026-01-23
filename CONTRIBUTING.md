@@ -36,29 +36,39 @@ This project enforces code quality standards through automated checks:
 3. **Pre-commit Hooks** - Standard checks for common issues
 4. **Bandit** - Security vulnerability scanning (optional, manual)
 
-All checks run automatically both locally (via pre-commit hooks) and in CI (via GitHub Actions).
+All checks run automatically both locally (via pre-commit hooks) and in CI (via
+GitHub Actions).
 
 ## Setup for Local Development
 
 ### 1. Install Development Dependencies
 
-Install the project with development dependencies:
+Install the project with full development dependencies:
 
 ```bash
 # If using pip
-pip install -e ".[dev]"
+pip install -U -e ".[dev_full]"
 
 # Or if using a virtual environment
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+pip install -U -e ".[dev_full]"
 ```
 
-This installs:
-- `pre-commit`: Git hook framework
-- `conventional-pre-commit`: Commit message validator
-- `ruff`: Fast Python linter and formatter
-- `bandit`: Security vulnerability scanner
+This will install Juturna including the following optional groups:
+
+- `doc`: contains `sphinx` and all its required packages for documentation
+- `dev`: contains `pre-commit`, `bandit`, and `conventional-pre-commit`
+- `lint`: contains `ruff`
+- `test`: contains `pytest`
+
+If you are planning to work on a feature that does not come shipped with the
+default juturna installation, make sure you install the relevant group. If you
+just want a full installation, just run:
+
+```bash
+pip install -U -e ".[full,dev_full]"
+```
 
 ### 2. Install Pre-commit Hooks
 
