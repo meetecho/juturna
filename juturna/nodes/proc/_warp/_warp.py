@@ -9,7 +9,7 @@ Generic gRPC remote node using Juturna's protobuf messaging.
 
 import grpc
 
-from generated import messaging_service_pb2_grpc
+from juturna.remotizer.c_protos import messaging_service_pb2_grpc
 
 from juturna.remotizer.utils import (
     message_to_proto,

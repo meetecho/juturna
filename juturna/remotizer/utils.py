@@ -25,7 +25,7 @@ from juturna.payloads import (
     Batch,
 )
 
-from generated.payloads_pb2 import (
+from juturna.remotizer.c_protos.payloads_pb2 import (
     ProtoMessage,
     ProtoEnvelope,
     AudioProtoPayload,
