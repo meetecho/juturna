@@ -25,6 +25,4 @@ protol\
   --python-out $OUT_DIR \
   protoc --proto-path=$PROTO_DIR payloads.proto messaging_service.proto
 
-# touch $OUT_DIR/__init__.py
-
 echo "protobuf compilation completed!"
