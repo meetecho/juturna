@@ -26,6 +26,7 @@ exclude = [
     "site-packages",
     "venv",
     "tests",
+    "juturna/remotizer/c_protos"
 ]
 
 line-length = 80

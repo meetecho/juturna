@@ -2,7 +2,7 @@
 # compile_protos.sh
 
 PROTO_DIR="./protos"
-OUT_DIR="./generated"
+OUT_DIR="./c_protos"
 
 mkdir -p $OUT_DIR
 
@@ -19,6 +19,12 @@ python -m grpc_tools.protoc \
   --grpc_python_out=$OUT_DIR \
   $PROTO_DIR/messaging_service.proto
 
-touch $OUT_DIR/__init__.py
+protol\
+  --create-package \
+  --in-place \
+  --python-out $OUT_DIR \
+  protoc --proto-path=$PROTO_DIR payloads.proto messaging_service.proto
+
+# touch $OUT_DIR/__init__.py
 
 echo "protobuf compilation completed!"
