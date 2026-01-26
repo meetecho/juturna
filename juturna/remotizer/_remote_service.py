@@ -24,10 +24,10 @@ from juturna.remotizer.utils import (
 from juturna.components import Message, Node
 from juturna.remotizer._remote_builder import _standalone_builder
 
-from generated.payloads_pb2 import (
+from c_protos.payloads_pb2 import (
     ProtoEnvelope,
 )
-from generated import messaging_service_pb2_grpc
+from c_protos import messaging_service_pb2_grpc
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('remote_service')

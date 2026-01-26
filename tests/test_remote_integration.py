@@ -12,7 +12,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).parent.parent.resolve()
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(PROJECT_ROOT / "juturna" / "remotizer"))
-sys.path.insert(0, str(PROJECT_ROOT / "juturna" / "remotizer" / "generated"))
+sys.path.insert(0, str(PROJECT_ROOT / "juturna" / "remotizer" / "c_protos"))
 
 from juturna.nodes.proc import Warp
 from juturna.components import Message
@@ -32,7 +32,7 @@ class TestRemoteIntegration(unittest.TestCase):
         env["PYTHONPATH"] = (
             str(PROJECT_ROOT) + os.pathsep +
             str(PROJECT_ROOT / "juturna" / "remotizer") + os.pathsep +
-            str(PROJECT_ROOT / "juturna" / "remotizer" / "generated") + os.pathsep +
+            str(PROJECT_ROOT / "juturna" / "remotizer" / "c_protos") + os.pathsep +
             env.get("PYTHONPATH", "")
         )
 
