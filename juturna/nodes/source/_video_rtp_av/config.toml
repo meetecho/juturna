@@ -1,0 +1,8 @@
+[arguments]
+rec_host = "127.0.0.1"
+rec_port = "auto"
+payload_type = 96
+codec = "vp8"
+encoding_clock_chan = 90000
+
+[meta]
