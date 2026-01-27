@@ -15,9 +15,9 @@ import pathlib
 import typing
 import time
 
-import PIL
 import numpy as np
 
+from PIL import UnidentifiedImageError
 from PIL import Image
 
 from watchdog.events import FileSystemEvent
@@ -41,6 +41,8 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
         recursive: bool,
         ignore_updates: bool,
         convert_rgb: bool,
+        reduce_by: int,
+        resize_by: list[int],
         **kwargs,
     ):
         """
@@ -56,6 +58,11 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
             Do not fire for updated files.
         convert_rgb : bool
             Force image format conversion into RGB.
+        reduce_by : int
+            Scaling factor for the input images. Will be ignored if also a
+            resizing factor is passed.
+        resize_by : list[int]
+            Desiderd dimensions of the output images.
         kwargs : dict
             Supernode arguments.
 
@@ -65,6 +72,8 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
         self._location = location
         self._patterns = patterns
         self._convert_rgb = convert_rgb
+        self._reduce_by = reduce_by
+        self._resize_by = resize_by
 
         self._handler = _Handler(
             self._queue,
@@ -120,24 +129,32 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
                 image = image.convert('RGB')
 
             image.load()
-        except PIL.UnidentifiedImageError:
+        except UnidentifiedImageError:
             self.logger.warn(f'cannot load image {message.payload["src_path"]}')
 
             return
 
-        image_arr = np.array(image)
-
         to_send = Message[ImagePayload](
             creator=self.name,
             version=self._sent,
-            payload=ImagePayload(
-                image=image_arr,
-                width=image.width,
-                height=image.height,
-                depth=image_arr.shape[2],
-                pixel_format=image.mode,
-                timestamp=time.time(),
-            ),
+        )
+
+        if self._resize_by[0] > 0:
+            with to_send.timeit(f'{self.name}_resize'):
+                image = image.resize(self._resize_by)
+        elif self._reduce_by > 0:
+            with to_send.timeit(f'{self.name}_reduce'):
+                image = image.reduce(self._reduce_by)
+
+        image_arr = np.array(image)
+
+        to_send.payload = ImagePayload(
+            image=image_arr,
+            width=image.width,
+            height=image.height,
+            depth=image_arr.shape[2],
+            pixel_format=image.mode,
+            timestamp=time.time(),
         )
 
         to_send.meta['src_path'] = message.payload['src_path']
