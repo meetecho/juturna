@@ -1,0 +1,10 @@
+[arguments]
+model = "yolo11n.pt"
+device = "cuda"
+targets = ["person"]
+confidence = 0.25
+warmup = [640, 720, 1280]
+half = true
+plot = false
+
+[meta]

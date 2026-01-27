@@ -6,6 +6,7 @@ import juturna.utils as utils
 import juturna.hub as hub
 import juturna.meta as meta
 import juturna.payloads as payloads
+import juturna.remotizer as remotizer
 
 import juturna.utils.log_utils as log
 
@@ -21,5 +22,6 @@ __all__ = [
     'log',
     'meta',
     'hub',
+    'remotizer',
     'payloads',
 ]

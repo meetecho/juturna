@@ -1,6 +1,7 @@
 import typing
 import time
 import json
+import itertools
 
 from contextlib import contextmanager
 from types import MappingProxyType
@@ -15,6 +16,7 @@ class Message[T_Input]:
     """
 
     __slots__ = [
+        'id',
         'created_at',
         'creator',
         'version',
@@ -23,6 +25,8 @@ class Message[T_Input]:
         '_payload',
         '_is_frozen',
     ]
+
+    _id_gen = itertools.count()
 
     def __init__(
         self,
@@ -47,6 +51,7 @@ class Message[T_Input]:
             When provided, timers will be copied from it into the new message.
 
         """
+        self.id = next(self.__class__._id_gen)
         self.created_at = time.time()
         self.creator = creator
         self.version = version
@@ -115,9 +120,16 @@ class Message[T_Input]:
             The JSON string representation of the message.
 
         """
-        use_encoder = encoder or (
-            self.payload.serialize if self.payload is not None else None
-        )
+
+        def default_serializer(obj):
+            if hasattr(obj, 'serialize'):
+                return obj.serialize(obj)
+
+            raise TypeError(
+                f'type {obj.__class__.__name__} is not JSON serializable'
+            )
+
+        use_encoder = encoder or default_serializer
 
         return json.dumps(
             self.to_dict(),

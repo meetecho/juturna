@@ -14,7 +14,7 @@ from juturna.components import Message
 
 # BasePayload type is intended to be a placehoder for the input-output types
 # you intend to use in the node implementation
-from juturna.payloads._payloads import BasePayload
+from juturna.payloads import BasePayload
 
 
 class $_node_class_name(Node[BasePayload, BasePayload]):
@@ -61,5 +61,5 @@ class $_node_class_name(Node[BasePayload, BasePayload]):
         ...
 
     # uncomment next_batch to design custom synchronisation policy
-    # def next_batch(sources: dict) -> dict:
+    # def next_batch(sources: dict[str, list[Message]]) -> dict[str, list[int]]:
     #     ...

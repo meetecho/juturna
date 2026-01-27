@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package juturna.proto.messaging;
+
+import "payloads.proto";
+
+service MessagingService {
+  // Send a message and get acknowledgment
+  rpc SendAndReceive(juturna.proto.payloads.ProtoEnvelope) returns (juturna.proto.payloads.ProtoEnvelope);
+}

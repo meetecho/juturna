@@ -5,18 +5,30 @@ import logging
 import threading
 import queue
 import time
+import weakref
+import itertools
 
 from collections.abc import Callable
 
 from typing import Any
+from typing import TYPE_CHECKING
 
 from juturna.components import Message
+from juturna.payloads import ControlPayload
+from juturna.payloads import ControlSignal
+
 from juturna.names import ComponentStatus
 from juturna.utils.log_utils import jt_logger
 from juturna.components._buffer import Buffer
 from juturna.components._synchronisers import _SYNCHRONISERS
+
 from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
+from juturna.meta import JUTURNA_TELEMETRY_BATCH_SIZE
+
+
+if TYPE_CHECKING:
+    from juturna.components._pipeline import Pipeline
 
 
 class Node[T_Input, T_Output]:
@@ -46,6 +58,7 @@ class Node[T_Input, T_Output]:
         self._name = node_name
         self._status: ComponentStatus | None = None
         self._session_id: str | None = None
+        self._pipe_link: str | None = None
         self._pipe_path: str | None = None
         self._pipe_name: str | None = pipe_name
 
@@ -66,6 +79,8 @@ class Node[T_Input, T_Output]:
         self._stop_source_event = threading.Event()
         self._stop_update_event = threading.Event()
 
+        self._suspended = False
+
         # buffer stores messages, policy manages them
         # if the synchroniser is not provided, get local one or default
         self._synchroniser = synchroniser or (
@@ -81,6 +96,10 @@ class Node[T_Input, T_Output]:
 
         self._destinations: dict[str, queue.Queue] = dict()
         self._origins: list = list()
+
+        self.telemetry = False
+        self._telemetry_buffer = list()
+        self._id_gen = itertools.count()
 
     def __del__(self): ...
 
@@ -167,6 +186,12 @@ class Node[T_Input, T_Output]:
     @property
     def destinations(self) -> list:
         return list(self._destinations.keys())
+
+    def link_pipeline(self, pipeline: 'Pipeline'):
+        self._pipe_link = weakref.proxy(pipeline)
+
+    def get_next_id(self) -> int:
+        return next(self._id_gen)
 
     def put(self, message: Message):
         self._queue.put(message)
@@ -291,51 +316,7 @@ class Node[T_Input, T_Output]:
     def clear_buffer(self):
         self._buffer.flush()
 
-    def _worker(self):
-        while not self._stop_worker_event.is_set():
-            message = self._queue.get()
-
-            if message is None:
-                self.transmit(None)
-                self._stop_worker_event.set()
-
-                return
-
-            self._buffer.put(message)
-
-    def _update(self):
-        while not self._stop_update_event.is_set():
-            batch = self._buffer.get()
-
-            if batch is None:
-                self._stop_update_event.set()
-
-                return
-
-            self.update(batch)
-
-    def _source(self):
-        while not self._stop_source_event.is_set():
-            if self._source_mode == 'pre':
-                time.sleep(self._source_sleep)
-
-            message = self._source_f()
-
-            if message is None:
-                self.put(message)
-                self._stop_source_event.set()
-
-                return
-
-            if self._stop_source_event.is_set():
-                return
-
-            if self._source_mode == 'post':
-                time.sleep(self._source_sleep)
-
-            self.put(message)
-
-    def transmit(self, message: Message[T_Output] | None):
+    def transmit(self, message: Message[T_Output] | ControlSignal):
         """
         Transmit a message. This method is used to send data from the node to
         its destinations. Messages are frozen before transmission, so that
@@ -347,10 +328,12 @@ class Node[T_Input, T_Output]:
             The message to be transmitted.
 
         """
-        _ = message.freeze() if message else None
+        _ = message.freeze() if isinstance(message, Message) else None
 
         for node_name in self._destinations:
             self._destinations[node_name].put(message)
+
+        self._rec_telemetry(message, 'tx')
 
     def start(self):
         """
@@ -400,23 +383,30 @@ class Node[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the bridge is stopped correctly.
         """
+        if self._status == ComponentStatus.STOPPED:
+            return
+
         self._stop_worker_event.set()
-
-        if self._source_f or len(self.destinations) == 0:
-            self._queue.put(None)
-
         self._stop_source_event.set()
+        self._stop_update_event.set()
+
+        self._queue.put(None)
+        self._buffer.put(None)
 
         for _t in [
             self._source_thread,
             self._worker_thread,
+            self._update_thread,
         ]:
             if _t and _t.is_alive:
                 _t.join(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
 
         self._worker_thread = None
         self._source_thread = None
+        self._update_thread = None
         self._status = ComponentStatus.STOPPED
+
+        self._logger.info('node stopped')
 
     def configure(self): ...
 
@@ -427,3 +417,121 @@ class Node[T_Input, T_Output]:
     def warmup(self): ...
 
     def destroy(self): ...
+
+    def _worker(self):
+        while not self._stop_worker_event.is_set():
+            message = self._queue.get()
+
+            if message is None:
+                self._stop_worker_event.set()
+
+                continue
+
+            if isinstance(message.payload, ControlPayload):
+                if message.payload.signal < 0:
+                    self._logger.info('stop signal received')
+                    self._stop_worker_event.set()
+                    self._buffer.put(None)
+
+                self._handle_control(message)
+
+                continue
+
+            if self._suspended:
+                self.transmit(message)
+
+                continue
+
+            self._buffer.put(message)
+            self._rec_telemetry(message, 'rx')
+
+    def _update(self):
+        while not self._stop_update_event.is_set():
+            batch = self._buffer.get()
+
+            if batch is None:
+                self._stop_update_event.set()
+
+                continue
+
+            self.update(batch)
+
+    def _source(self):
+        while not self._stop_source_event.is_set():
+            if self._source_mode == 'pre':
+                time.sleep(self._source_sleep)
+
+            message = self._source_f()
+
+            if (
+                isinstance(message.payload, ControlPayload)
+                and message.payload.signal < 0
+            ):
+                self._stop_source_event.set()
+                self.put(message)
+
+                continue
+
+            if self._stop_source_event.is_set():
+                return
+
+            if self._source_mode == 'post':
+                time.sleep(self._source_sleep)
+
+            self.put(message)
+
+    def _handle_control(self, message: Message):
+        _control_thread = threading.Thread(
+            target=self._control,
+            args=(message,),
+            daemon=True,
+        )
+
+        _control_thread.start()
+
+    def _control(self, message: Message):
+        if message.payload.signal < 0:
+            self.stop()
+
+        match message.payload.signal:
+            case ControlSignal.STOP_PROPAGATE:
+                self.transmit(message)
+
+                return
+            case ControlSignal.STOP:
+                return
+            case ControlSignal.START:
+                self.start()
+
+                return
+            case ControlSignal.SUSPEND:
+                self._suspended = True
+                self._logger.info('node suspended')
+
+                return
+            case ControlSignal.RESUME:
+                self._suspended = False
+                self._logger.info('node resumed')
+
+                return
+            case None:
+                return
+
+    def _rec_telemetry(self, message: Message, event: str):
+        if not self.telemetry:
+            return
+
+        telemetry_entry = (
+            time.time(),
+            event,
+            self.name,
+            message.creator,
+            message.id,
+            message.payload.size_bytes,
+        )
+
+        self._telemetry_buffer.append(telemetry_entry)
+
+        if len(self._telemetry_buffer) >= JUTURNA_TELEMETRY_BATCH_SIZE:
+            self._pipe_link.telemetry_record(self._telemetry_buffer)
+            self._telemetry_buffer = list()

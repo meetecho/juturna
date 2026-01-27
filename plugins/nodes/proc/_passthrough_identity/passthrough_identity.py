@@ -46,6 +46,8 @@ class PassthroughIdentity(Node[BasePayload, BasePayload]):
             timers_from=message,
         )
 
+        to_send.meta = dict(message.meta)
+
         self._transmitted += 1
 
         with to_send.timeit(f'{self.name}_delay'):
