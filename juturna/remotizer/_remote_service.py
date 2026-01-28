@@ -130,10 +130,6 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 message: Message = self.dispatching_queue.get(timeout=1.0)
                 tracking_id = message._data_source_id
 
-                logger.warning(
-                    f'Dispatching response for tracking_id: {message.to_json()}'
-                )
-
                 if not tracking_id:
                     logger.warning(
                         f'Received message from {message.creator} '
@@ -172,12 +168,6 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
 
             timeout = request.ttl if request.ttl > 0 else self.DEFAULT_TIMEOUT
             timeout = min(timeout, self.MAX_TIMEOUT)
-
-            logger.warning(
-                f'Unmarshalled message {request_message} '
-                f'with id {request_message.id}. '
-                f'Setting tracking_id {tracking_id}...'
-            )
 
             request_context = RequestContext(
                 message_id=request_message.id,
