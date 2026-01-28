@@ -24,6 +24,7 @@ class Message[T_Input]:
         'timers',
         '_payload',
         '_is_frozen',
+        '_data_source_id',
     ]
 
     _id_gen = itertools.count()
@@ -61,6 +62,7 @@ class Message[T_Input]:
         )
 
         self.payload = payload
+        self._data_source_id: int | None = None
 
         object.__setattr__(self, '_is_frozen', False)
 
@@ -78,6 +80,19 @@ class Message[T_Input]:
             raise TypeError('frozen messages cannot be modified')
 
         object.__delattr__(self, key)
+
+    def _freeze(self):
+        """Freeze the message, making it immutable."""
+        if self._is_frozen:
+            return
+
+        if isinstance(self.payload, Draft):
+            self.payload = self.payload.compile()
+
+        self.meta = MappingProxyType(self.meta)
+        self.timers = MappingProxyType(self.timers)
+
+        object.__setattr__(self, '_is_frozen', True)
 
     def to_dict(self) -> dict:
         """
@@ -136,19 +151,6 @@ class Message[T_Input]:
             default=use_encoder,
             indent=indent,
         )
-
-    def freeze(self):
-        """Freeze the message, making it immutable."""
-        if self._is_frozen:
-            return
-
-        if isinstance(self.payload, Draft):
-            self.payload = self.payload.compile()
-
-        self.meta = MappingProxyType(self.meta)
-        self.timers = MappingProxyType(self.timers)
-
-        object.__setattr__(self, '_is_frozen', True)
 
     @property
     def payload(self) -> T_Input:

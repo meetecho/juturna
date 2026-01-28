@@ -25,6 +25,7 @@ def test_message_init():
     assert msg.payload is None
     assert msg.meta == dict()
     assert msg.timers == dict()
+    assert msg._data_source_id == None
 
 
 def test_message_init_with_params():
@@ -240,7 +241,7 @@ def test_message_serialisation_image():
 def test_message_freeze_modify_message():
     test_message = Message(creator='tester', version=10)
 
-    test_message.freeze()
+    test_message._freeze()
 
     with pytest.raises(TypeError) as context:
         test_message.creator = 'new_tester'
@@ -252,7 +253,7 @@ def test_message_freeze_modify_message():
 def test_message_freeze_delete_message_attr():
     test_message = Message(creator='tester', version=10)
 
-    test_message.freeze()
+    test_message._freeze()
 
     with pytest.raises(TypeError) as context:
         del test_message.creator
@@ -266,7 +267,7 @@ def test_message_freeze_meta():
 
     test_message.meta['first_value'] = 10
 
-    test_message.freeze()
+    test_message._freeze()
 
     with pytest.raises(TypeError) as context:
         test_message.meta['first_value'] = 20
@@ -278,7 +279,7 @@ def test_message_freeze_meta():
 def test_message_freeze_timers():
     test_message = Message(creator='tester', version=10)
 
-    test_message.freeze()
+    test_message._freeze()
 
     with pytest.raises(TypeError) as context:
         with test_message.timeit('not_allowed'):
@@ -298,7 +299,7 @@ def test_message_draft_payload():
     test_message.payload.sampling_rate = 1001
     test_message.payload.channels = 12
 
-    test_message.freeze()
+    test_message._freeze()
 
     assert isinstance(test_message.payload, AudioPayload)
     assert test_message.payload.sampling_rate == 1001
@@ -316,7 +317,7 @@ def test_message_draft_payload_object():
     test_message.payload.second_key = 'value'
     test_message.payload.third_key = False
 
-    test_message.freeze()
+    test_message._freeze()
 
     assert isinstance(test_message.payload, ObjectPayload)
     assert test_message.payload['first_key'] == 10
@@ -335,7 +336,7 @@ def test_message_draft_payload_object_attr():
     test_message.payload['second_key'] = 'value'
     test_message.payload['third_key'] = False
 
-    test_message.freeze()
+    test_message._freeze()
 
     assert isinstance(test_message.payload, ObjectPayload)
     assert test_message.payload['first_key'] == 10

@@ -96,6 +96,7 @@ class Node[T_Input, T_Output]:
 
         self._destinations: dict[str, queue.Queue] = dict()
         self._origins: list = list()
+        self._last_data_source_evt_id: int | None = None
 
         self.telemetry = False
         self._telemetry_buffer = list()
@@ -328,7 +329,10 @@ class Node[T_Input, T_Output]:
             The message to be transmitted.
 
         """
-        _ = message.freeze() if isinstance(message, Message) else None
+        object.__setattr__(
+            message, '_data_source_id', self._last_data_source_evt_id
+        )
+        _ = message._freeze() if isinstance(message, Message) else None
 
         for node_name in self._destinations:
             self._destinations[node_name].put(message)
@@ -454,6 +458,7 @@ class Node[T_Input, T_Output]:
 
                 continue
 
+            self._last_data_source_evt_id = batch.id
             self.update(batch)
 
     def _source(self):
