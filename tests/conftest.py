@@ -1,7 +1,10 @@
 import pathlib
 import shutil
+import itertools
 
 import pytest
+
+import juturna as jt
 
 
 test_pipeline_folder = './tests/running_pipelines'
@@ -26,6 +29,14 @@ def test_config():
 
     ...
 
+
+@pytest.fixture(autouse=True)
+def reset_message_counter():
+    jt.components.Message._id_gen = itertools.count()
+
+    yield
+
+    ...
 
 @pytest.fixture(autouse=True, scope='session')
 def prepare_pipe_folder(request):
