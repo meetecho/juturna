@@ -10,14 +10,14 @@ class RequestContext:
     def __init__(
         self,
         sender: str,
-        request_id: str,
-        correlation_id: str,
+        envelope_id: str,
+        message_id: int,
         timeout: float,
         response_type: str = None,
     ):
         self.sender = sender
-        self.request_id = request_id
-        self.correlation_id = correlation_id
+        self.envelope_id = envelope_id
+        self.message_id = message_id
         self.future = futures.Future()
         self.timeout = timeout
         self.response_type = response_type

@@ -113,15 +113,14 @@ class Warp[T_Input, T_Output](Node[T_Input, T_Output]):
             envelope.configuration.update(self._remote_config)
             self.logger.info(f'sending message (envelope_id={envelope.id})...')
 
+            self.logger.info(f'sending message id {message.id}...')
+
             response_envelope = self.stub.SendAndReceive(
                 envelope, timeout=self._timeout
             )
 
             self.logger.info(
                 f'received response (envelope_id={response_envelope.id})'
-            )
-            self.logger.debug(
-                f'response correlation_id={response_envelope.correlation_id}'
             )
 
             self.logger.info('converting response to Message...')

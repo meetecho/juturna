@@ -122,6 +122,10 @@ message ProtoMessage {
   // Timers for performance tracking
   // Key: timer name, Value: elapsed time in seconds
   map<string, double> timers = 6;
+
+  // ProtoMessage id (indicates the id of the data contained)
+  int32 id = 10;
+
 }
 
 // ProtoEnvelope is the top-level message sent over the wire
@@ -138,10 +142,6 @@ message ProtoEnvelope {
 
   // Intended receiver identifier
   string receiver = 4;
-
-  // Correlation ID for request/response coupling
-  // Use the same correlation_id for related request/response pairs
-  string correlation_id = 5;
 
   // Response-to field: ID of the envelope this is responding to
   // Enables explicit request/response tracking

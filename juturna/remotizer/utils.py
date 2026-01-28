@@ -165,6 +165,7 @@ def message_to_proto(message: Message) -> ProtoMessage:
     proto.created_at = message.created_at
     proto.creator = message.creator
     proto.version = message.version
+    proto.id = message.id
 
     proto.meta.update(message.meta)
     proto.timers.update(message.timers)
@@ -214,6 +215,7 @@ def deserialize_message(message: ProtoMessage) -> Message:
     message_obj.created_at = message.created_at
     message_obj.meta.update(dict(message.meta))
     message_obj.timers.update(dict(message.timers))
+    message_obj.id = message.id
 
     if message.payload.Is(AudioProtoPayload.DESCRIPTOR):
         audio = AudioProtoPayload()
@@ -325,7 +327,6 @@ def create_envelope(
     id: str = str(uuid.uuid4()),
     priority: int = 1,
     timeout: int = 30,
-    correlation_id: str = str(uuid.uuid4()),
     response_to: str = None,
     response_type: str = '',
     request_type: str = '',
@@ -336,7 +337,6 @@ def create_envelope(
     envelope = ProtoEnvelope()
     envelope.id = id
     envelope.sender = creator
-    envelope.correlation_id = correlation_id
     envelope.created_at = time.time()
     envelope.ttl = int(timeout)
     envelope.request_type = request_type
@@ -356,7 +356,6 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
     envelope_dict = {
         'id': envelope.id,
         'sender': envelope.sender,
-        'correlation_id': envelope.correlation_id,
         'response_to': envelope.response_to,
         'ttl': envelope.ttl,
         'request_type': envelope.request_type,

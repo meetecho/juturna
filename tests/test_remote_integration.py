@@ -4,8 +4,6 @@ import time
 import subprocess
 import sys
 import os
-import shutil
-import threading
 from pathlib import Path
 
 # Add project root to sys.path
@@ -108,6 +106,7 @@ class TestRemoteIntegration(unittest.TestCase):
         # We need to capture the output of client.transmit
         # Since client.transmit puts into _destinations queues, we need to mock a destination
 
+        msg.id = 12345  # Assign an ID for tracking
         received_messages = []
 
         class MockDestination:
@@ -130,9 +129,6 @@ class TestRemoteIntegration(unittest.TestCase):
         # PassthroughIdentity echoes the payload
         self.assertEqual(response.payload["result"], "hello remote")
 
-        # Verify correlation_id loopback if possible?
-        # The client node (Warp) handles the correlation internally and returns the message.
-        # The fact that we got a response implies correlation worked!
 
         # PassthroughIdentity updates creator to its name
         self.assertEqual(response.creator, "test_remote_node")
