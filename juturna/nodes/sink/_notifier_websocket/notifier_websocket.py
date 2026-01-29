@@ -1,13 +1,12 @@
 """
 NotifierWebsocket
 
-@ Author: Antonio Bevilacqua
-@ Email: abevilacqua@meetecho.com
+@ Author: Antonio Bevilacqua, Paolo Saviano
+@ Email: abevilacqua@meetecho.com, psaviano@meetecho.com
 
 Transmit message to a websocket socket.
 """
 
-import json
 import threading
 
 from websockets.sync.client import connect
@@ -15,10 +14,10 @@ from websockets.sync.client import connect
 from juturna.components import Message
 from juturna.components import Node
 
-from juturna.payloads import ObjectPayload
+from juturna.payloads import AnyPayload
 
 
-class NotifierWebsocket(Node[ObjectPayload, None]):
+class NotifierWebsocket(Node[AnyPayload, None]):
     """Transmit data to a websocket endpoint"""
 
     def __init__(self, endpoint: str, **kwargs):
@@ -42,15 +41,22 @@ class NotifierWebsocket(Node[ObjectPayload, None]):
         """Warmup the node"""
         self.logger.info(f'[{self.name}] set to endpoint {self._endpoint}')
 
-    def update(self, message: Message[ObjectPayload]):
+    def update(self, message: Message[AnyPayload]):
         """Receive a message, transmit a message"""
-        message = message.to_dict()
-        message['session_id'] = self.pipe_id
+        meta = dict(message.meta)
+        to_send = Message[AnyPayload](
+            creator=message.creator,
+            version=message.version,
+            payload=message.payload,
+        )
+
+        meta['session_id'] = self.pipe_id
+        to_send.meta = meta
 
         self._t = threading.Thread(
             name='_post_transcript',
             target=self._send_message,
-            args=(message,),
+            args=(to_send,),
             daemon=True,
         )
 
@@ -58,10 +64,11 @@ class NotifierWebsocket(Node[ObjectPayload, None]):
 
         self._sent += 1
 
-    def _send_message(self, message_dict: dict):
+    def _send_message(self, message: Message[AnyPayload]):
         with connect(self._endpoint) as ws:
             try:
-                ws.send(json.dumps(message_dict))
+                message_json = message.to_json()
+                ws.send(message_json)
             except Exception as e:
                 self.logger.warning(e)
 

@@ -161,3 +161,14 @@ class ObjectPayload(dict, BasePayload):
     @staticmethod
     def from_dict(origin: dict):
         return ObjectPayload(**origin)
+
+
+AnyPayload = (
+    BasePayload
+    | AudioPayload
+    | ImagePayload
+    | VideoPayload
+    | BytesPayload
+    | Batch
+    | ObjectPayload
+)
