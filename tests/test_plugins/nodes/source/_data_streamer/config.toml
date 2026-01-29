@@ -1,0 +1,6 @@
+[arguments]
+bytes_per_message = 2
+rate = 1
+rate_variance = 0
+
+[meta]

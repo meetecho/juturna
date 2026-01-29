@@ -1,0 +1,44 @@
+{
+  "version": "0.1.0",
+  "plugins": [
+    "./plugins"
+  ],
+  "pipeline": {
+    "name": "test_bytestream_pipeline",
+    "id": "1234567890",
+    "folder": "./tests/running_pipelines/bytestream_pipeline",
+    "nodes": [
+      {
+        "name": "0_stream",
+        "type": "source",
+        "mark": "data_streamer",
+        "configuration": {
+        }
+      },
+      {
+        "name": "1_pass",
+        "type": "proc",
+        "mark": "passthrough_identity",
+        "configuration": {}
+      },
+      {
+        "name": "2_notifier",
+        "type": "sink",
+        "mark": "notifier_websocket",
+        "configuration": {
+          "endpoint": "ws://127.0.0.1:8081"
+        }
+      }
+    ],
+    "links": [
+      {
+        "from": "0_stream",
+        "to": "1_pass"
+      },
+      {
+        "from": "1_pass",
+        "to": "2_notifier"
+      }
+    ]
+  }
+}
