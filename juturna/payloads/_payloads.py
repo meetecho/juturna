@@ -1,3 +1,4 @@
+import base64
 import copy
 import json
 import sys
@@ -107,7 +108,7 @@ class BytesPayload(BasePayload):
 
     @staticmethod
     def serialize(obj) -> dict:
-        return {'cnt': obj.cnt.decode('utf-8')}
+        return {'cnt': base64.b64encode(obj.cnt).decode('ascii')}
 
 
 @dataclass(frozen=True)
@@ -161,14 +162,3 @@ class ObjectPayload(dict, BasePayload):
     @staticmethod
     def from_dict(origin: dict):
         return ObjectPayload(**origin)
-
-
-AnyPayload = (
-    BasePayload
-    | AudioPayload
-    | ImagePayload
-    | VideoPayload
-    | BytesPayload
-    | Batch
-    | ObjectPayload
-)

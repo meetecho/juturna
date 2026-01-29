@@ -1,5 +1,4 @@
 # noqa: D104
-from juturna.payloads._payloads import AnyPayload
 from juturna.payloads._payloads import BasePayload
 from juturna.payloads._payloads import ControlPayload
 from juturna.payloads._payloads import AudioPayload
@@ -17,7 +16,6 @@ from juturna.payloads._control_signal import ControlSignal
 
 
 __all__ = [
-    'AnyPayload',
     'BasePayload',
     'ControlSignal',
     'ControlPayload',

@@ -12,10 +12,10 @@ import time
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.payloads import AnyPayload
+from juturna.payloads import BasePayload
 
 
-class PassthroughIdentity(Node[AnyPayload, AnyPayload]):
+class PassthroughIdentity(Node[BasePayload, BasePayload]):
     """Node implementation class"""
 
     def __init__(self, delay: int, **kwargs):
@@ -33,13 +33,13 @@ class PassthroughIdentity(Node[AnyPayload, AnyPayload]):
         self._delay = delay
         self._transmitted = 0
 
-    def update(self, message: Message[AnyPayload]):
+    def update(self, message: Message[BasePayload]):
         """Receive a message from downstream, transmit a message upstream"""
         self.logger.info(
             f'message {message.version} received from: {message.creator}'
         )
 
-        to_send = Message[AnyPayload](
+        to_send = Message[BasePayload](
             creator=self.name,
             version=message.version,
             payload=message.payload.clone(),
