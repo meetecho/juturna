@@ -19,7 +19,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install "./[dev]"
+          pip install "./[doc]"
 
       # Run autodoc
       - name: Generate documentation
