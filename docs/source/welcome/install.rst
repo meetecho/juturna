@@ -1,10 +1,6 @@
 Install
 =======
 
-As of now (version |version|-|release|), Juturna is not yet published on the
-Python Package Index, so the installation requires fetching it from the
-`GitHub repository <https://github.com/meetecho/juturna>`_.
-
 A small group of system dependecies are required on your system before you
 start the installation process. If running Ubuntu or any Debian-based distros:
 
@@ -12,43 +8,63 @@ start the installation process. If running Ubuntu or any Debian-based distros:
 
     $ sudo apt install libsm6 libext6 ffmpeg
 
-Once this is done, you can clone the repository and install it using ``pip``.
-Assuming you are working within a virtual environment, simply run:
+The simplest way to install Juturna is to fetch it from the official Python
+Package Index (`PyPi <https://pypi.org/project/juturna/>`_). Assuming you are
+working within a virtual environment, simply run:
+
+.. code-block:: console
+
+    (venv) $ pip install juturna
+
+You can also fetch the Juturna source code from the
+`GitHub repository <https://github.com/meetecho/juturna>`_ and install it
+manually:
 
 .. code-block:: console
 
     (venv) $ git clone https://github.com/meetecho.juturna
     (venv) $ pip install ./juturna
 
-Alternatively, you can manually install the required Python dependencies, then
-import the ``juturna`` module from within the repository folder:
-
-.. code-block:: console
-
-    (venv) $ pip install av ffmpeg-python opencv-python numpy requests websockets
-    (venv) $ cd ./juturna
-    (venv) $ python
-    >>> import juturna as jt
-
-Optional dependencies
----------------------
+Extras
+------
 
 When installing Juturna, you can specify extra groups to include in the
-installation. Currently available groups are:
+installation. Groups that provide extra features are:
 
-- ``dev`` to get all the tools for testing and documentation,
-- ``httpwrapper`` to get CLI serving capabilities.
-- ``pipebuilder`` to get the interactive CLI pipeline builder
+- ``httpwrapper``: CLI serving capabilities
+- ``pipebuilder``: interactive CLI pipeline builder
+- ``warp``: remotisation tools
+
+Additionally, a number of extra groups are available to manage all the
+development dependencies:
+
+- ``doc``: Sphinx stuff, in case you want to compile the documentation
+- ``dev``: everything you need to properly contribute to Juturna
+- ``lint``: dependency to make sure your code is properly formatted
+- ``test``: Juturna testing packages
+
+.. admonition:: Warp tools are still experimental! (|version|-|release|)
+    :class: :WARNING:
+
+    There might be bits and pieces slightly out of place with the remotisation
+    architecture, so please use the ``warp`` group only if you are
+    experimenting!
 
 Extra groups can be selected during the installation proess.
 
 .. code-block:: console
 
     # only include a single optional group
-    (venv) $ pip install -U './juturna[dev]'
+    (venv) $ pip install -U 'juturna[dev]'
 
     # inclunde multiple optional groups
-    (venv) $ pip install -U './juturna[dev,httpwrapper]'
+    (venv) $ pip install -U 'juturna[dev,httpwrapper]'
+
+To simplify things, three meta-groups are also included:
+
+- ``full`` installs ``httpwrapper``, ``pipebuilder`` and ``warp``
+- ``dev_full`` installs ``doc``, ``dev``, ``lint``, and ``test``
+- ``all`` installs ``full`` and ``dev_full``
 
 Documentation building
 ----------------------

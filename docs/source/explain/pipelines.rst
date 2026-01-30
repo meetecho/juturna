@@ -1,3 +1,5 @@
+.. _explain_pipelines:
+
 Pipelines
 =========
 
@@ -6,9 +8,9 @@ knows when to start nodes, how to connect them, and where to store their state.
 It transforms a declarative configuration into a running, observable dataflow
 system.
 
-At its core, a Pipeline is a configuration interpreter. It doesn't contain
-business logic strictly speaking, so its only responsibility is to instantiate
-nodes, wire them together according to a graph definition, and manage their
+At its core, a Pipeline is a configuration interpreter. Strictly speaking, it
+doesn't contain business logic, so its only responsibility is to instantiate
+nodes, wire them together according to the graph definition, and manage their
 collective lifecycle. This separation of concerns is deliberate: the pipeline
 handles topology, while nodes handle data processing and transformation.
 
@@ -70,7 +72,7 @@ actual pipeline object.
 
     pipe = jt.components.Pipeline.from_json('path/to/config.json')
 
-The ``Pipeline`` class constructor accepts a dictionary object:
+The ``Pipeline`` class constructor also accepts dictionary objects:
 
 .. code-block:: python
 
@@ -93,7 +95,8 @@ nodes and linking them.
 
 A pipeline object can be in only three states:
 
-- a ``NEW`` pipeline is freshly created, and can't really do much;
+- a ``NEW`` pipeline is freshly created, but the nodes within the graph still
+  need to be instantiated;
 - a ``READY`` pipeline instantiated all the concrete nodes, and acquired
   system and external resources required for its functioning - as the state
   name says, this pipeline is ready to go;
@@ -120,7 +123,7 @@ node in the pipeline.
 ``stop()`` interrupts the pipeline execution, moving it from ``RUNNING`` to
 ``READY``. Again, this call is propagated to every node in the pipe.
 
-``destroy`` can be invoked if any kind of custom memory management should be
+``destroy()`` can be invoked if any kind of custom memory management should be
 performed by any of its composing nodes.
 
 Any call sequence that does not respect the state transitions here discussed

@@ -1,3 +1,5 @@
+.. _explain_nodes:
+
 Nodes
 =====
 
@@ -151,50 +153,20 @@ multiple upstream nodes feed into a single processor.
 Synchronising data
 ------------------
 
-When a node has multiple input sources, Juturna needs to know *when* to trigger
-the node processing. This is handled by a **synchroniser**.
+Unless differently specified in the node configuration, a buffer adopts the
+passthrough synchronisation policy, that simply lets every available message
+move into the outboud queue. However, if a node implements the ``next_batch()``
+method, that one will be picked as synchroniser. The synchroniser priority can
+be described as follows:
 
-A synchroniser is a policy that looks at the incoming message buffers from all
-connected sources and decides when a set of messages (a **batch**) is ready to
-be processed.
-
-You can specify the synchronisation policy for a node using the ``sync`` key in
-the node configuration object within the pipeline JSON.
-
-.. code-block:: json
-
-    {
-      "name": "my_node",
-      "type": "MyNode",
-      "mark": "my_node_1",
-      "sync": "passthrough",
-      "configuration": { }
-    }
-
-Supported policies:
-
-- ``passthrough`` (default): traces every message as soon as it arrives. This
-  effectively means no synchronisation; the node will be triggered individually
-  for every message from any source.
-- ``local``: delegates the decision to the node itself. The node class must
-  implement a ``next_batch`` method that inspects the buffers and returns the
-  batch to process.
-
-  .. code-block:: python
-
-      def next_batch(self, sources: dict[str, list[Message]]) -> dict[str, list[int]]:
-          if 'cam_front' not in sources or 'cam_rear' not in sources:
-              return {}
-
-          if not sources['cam_front'] or not sources['cam_rear']:
-              return {}
-
-          return {
-              'cam_front': [0],
-              'cam_rear': [0]
-          }
-
-If no ``sync`` policy is specified, ``passthrough`` is used.
+- the default synchroniser for a node is the ``passthrough`` (it will be applied
+  for every node without any ``sync`` value in its configuration, nor a
+  ``next_batch()`` method implementation);
+- if a ``next_batch()`` method is implemented on the node, it will be used
+  instead of the default synchroniser (no need to specify anything in the
+  configuration, but can be explicitly put there with ``"sync": "local"``).
+- any other built-in synchroniser can be set as ``sync`` value in the node
+  configuration, and will be used.
 
 .. admonition:: Built-in synchronisers (|version|-|release|)
    :class: :NOTE:

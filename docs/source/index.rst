@@ -40,6 +40,13 @@
 .. toctree::
     :maxdepth: 2
     :hidden:
+    :caption: Built-in nodes
+
+    built_in/overview.rst
+
+.. toctree::
+    :maxdepth: 2
+    :hidden:
     :caption: References
 
     apis/explore
@@ -119,7 +126,7 @@ execute and manipulate real-time pipelines in minutes!
 
             .. card::
                 :text-align: center
-                    
+
                 :fas:`meetecho`
 
                 Juturna is brewed with love by the awesome team of
