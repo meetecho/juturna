@@ -5,13 +5,10 @@ import logging
 import threading
 import queue
 import time
-import weakref
-import itertools
 
 from collections.abc import Callable
 
 from typing import Any
-from typing import TYPE_CHECKING
 
 from juturna.components import Message
 from juturna.payloads import ControlPayload
@@ -19,16 +16,14 @@ from juturna.payloads import ControlSignal
 
 from juturna.names import ComponentStatus
 from juturna.utils.log_utils import jt_logger
-from juturna.components._buffer import Buffer
-from juturna.components._synchronisers import _SYNCHRONISERS
 
 from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
 from juturna.meta import JUTURNA_TELEMETRY_BATCH_SIZE
 
-
-if TYPE_CHECKING:
-    from juturna.components._pipeline import Pipeline
+from juturna.components._buffer import Buffer
+from juturna.components._telemetry_manager import TelemetryManager
+from juturna.components._synchronisers import _SYNCHRONISERS
 
 
 class Node[T_Input, T_Output]:
@@ -58,7 +53,6 @@ class Node[T_Input, T_Output]:
         self._name = node_name
         self._status: ComponentStatus | None = None
         self._session_id: str | None = None
-        self._pipe_link: str | None = None
         self._pipe_path: str | None = None
         self._pipe_name: str | None = pipe_name
 
@@ -66,10 +60,6 @@ class Node[T_Input, T_Output]:
         self._logger = jt_logger(_logger_name)
         self._logger.propagate = True
 
-        # TODO: use LIFO to prevent message loss
-        # FIX: The use of LIFO caused message misordering in certain scenarios
-        # (https://github.com/meetecho/juturna/issues/36)
-        # Replace with FIFO queue for now
         self._queue = queue.Queue(maxsize=JUTURNA_MAX_QUEUE_SIZE)
         self._worker_thread: threading.Thread | None = None
         self._source_thread: threading.Thread | None = None
@@ -98,9 +88,8 @@ class Node[T_Input, T_Output]:
         self._origins: list = list()
         self._last_data_source_evt_id: int | None = None
 
-        self.telemetry = False
         self._telemetry_buffer = list()
-        self._id_gen = itertools.count()
+        self._telemetry_manager: TelemetryManager | None = None
 
     def __del__(self): ...
 
@@ -188,11 +177,8 @@ class Node[T_Input, T_Output]:
     def destinations(self) -> list:
         return list(self._destinations.keys())
 
-    def link_pipeline(self, pipeline: 'Pipeline'):
-        self._pipe_link = weakref.proxy(pipeline)
-
-    def get_next_id(self) -> int:
-        return next(self._id_gen)
+    def link_telemetry(self, manager: TelemetryManager):
+        self._telemetry_manager = manager
 
     def put(self, message: Message):
         self._queue.put(message)
@@ -523,7 +509,7 @@ class Node[T_Input, T_Output]:
                 return
 
     def _rec_telemetry(self, message: Message, event: str):
-        if not self.telemetry:
+        if self._telemetry_manager is None:
             return
 
         telemetry_entry = (
@@ -532,11 +518,12 @@ class Node[T_Input, T_Output]:
             self.name,
             message.creator,
             message.id,
+            message._data_source_id,
             message.payload.size_bytes,
         )
 
         self._telemetry_buffer.append(telemetry_entry)
 
         if len(self._telemetry_buffer) >= JUTURNA_TELEMETRY_BATCH_SIZE:
-            self._pipe_link.telemetry_record(self._telemetry_buffer)
+            self._telemetry_manager.record_telemetry(self._telemetry_buffer)
             self._telemetry_buffer = list()

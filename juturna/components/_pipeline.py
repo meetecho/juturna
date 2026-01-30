@@ -4,9 +4,6 @@ import json
 import pathlib
 import gc
 import typing
-import queue
-import threading
-import csv
 
 from juturna.components import _component_builder
 from juturna.components import Node
@@ -17,6 +14,8 @@ from juturna.names import ComponentStatus
 from juturna.names import PipelineStatus
 
 from juturna.payloads import ControlSignal
+
+from juturna.components._telemetry_manager import TelemetryManager
 
 
 class Pipeline:
@@ -46,10 +45,8 @@ class Pipeline:
         self._links: list = list()
         self._dag: DAG = DAG()
 
+        self._telemetry_manager: TelemetryManager | None = None
         self._telemetry = False
-        self._telemetry_queue = queue.SimpleQueue()
-        self._telemetry_evt = threading.Event()
-        self._telemetry_thread = None
         self._telemetry_file = None
 
         self._status = PipelineStatus.NEW
@@ -107,9 +104,6 @@ class Pipeline:
     def DAG(self) -> DAG:
         return self._dag
 
-    def telemetry_record(self, record: tuple):
-        self._telemetry_queue.put(record)
-
     def warmup(self):
         """
         Prepare the pipeline and all its nodes.
@@ -128,6 +122,7 @@ class Pipeline:
         if _tele_file := self._raw_config['pipeline'].get('telemetry', None):
             self._telemetry = True
             self._telemetry_file = pathlib.Path(self.pipe_path, _tele_file)
+            self._telemetry_manager = TelemetryManager(self._telemetry_file)
 
         nodes = self._raw_config['pipeline']['nodes']
         links = self._raw_config['pipeline']['links']
@@ -166,7 +161,10 @@ class Pipeline:
 
         for node_name, node in self._nodes.items():
             node.warmup()
-            node.link_pipeline(self)
+
+            if self._telemetry:
+                node.link_telemetry(self._telemetry_manager)
+
             node.status = ComponentStatus.CONFIGURED
 
             self._logger.info(f'warmed up node {node_name}')
@@ -187,6 +185,7 @@ class Pipeline:
     def start(self):
         """
         Start the pipeline and all its nodes.
+
         This method starts all the nodes in the pipeline, allowing them to
         process data. The nodes are started in reverse order of their
         configuration, ensuring that the source node is the last one to be
@@ -205,17 +204,8 @@ class Pipeline:
 
                 self._nodes[node_name].start()
 
-        if self._telemetry_thread is not None:
-            return
-
         if self._telemetry:
-            self._telemetry_thread = threading.Thread(
-                target=self._read_telemetry,
-                args=(),
-                daemon=True,
-            )
-
-            self._telemetry_thread.start()
+            self._telemetry_manager.start()
 
         self._status = PipelineStatus.RUNNING
 
@@ -224,6 +214,7 @@ class Pipeline:
     def stop(self):
         """
         Stop the pipeline and all its nodes.
+
         This method stops all the nodes in the pipeline, preventing them from
         processing any further data. The nodes are stopped in reverse order of
         their configuration, ensuring that the source node is the last one to be
@@ -242,15 +233,14 @@ class Pipeline:
             node.stop()
 
         if self._telemetry:
-            self._telemetry_evt.set()
-            self._telemetry_queue.put(ControlSignal.STOP)
-            self._telemetry_thread.join()
+            self._telemetry_manager.stop()
 
         self._status = PipelineStatus.READY
 
     def suspend_node(self, node_name: str):
         """
         Suspend a node in the pipeline.
+
         A pipeline node can be suspended, so it won't process any data until it
         is resumed. A suspended node will keep forwarding received messages to
         its destinations.
@@ -261,6 +251,7 @@ class Pipeline:
     def resume_node(self, node_name: str):
         """
         Resume a node in the pipeline.
+
         A suspended node can be resumed, so it will start processing data again.
         """
         if node := self._nodes.get(node_name):
@@ -269,6 +260,7 @@ class Pipeline:
     def destroy(self):
         """
         Destroy the pipeline and all its nodes.
+
         This method cleans up all the resources used by the pipeline and its
         nodes. It clears the source and destination buffers for each node,
         destroys the nodes, and removes them from the pipeline. This is
@@ -294,30 +286,3 @@ class Pipeline:
         gc.collect()
 
         self._logger.info('pipe destroyed')
-
-    def _read_telemetry(self):
-        self._logger.info(f'telemetry started: {self._telemetry_file}')
-
-        _telemetry_lock = threading.Lock()
-
-        with open(
-            self._telemetry_file,
-            'a',
-            newline='',
-            buffering=1,
-        ) as f:
-            _telemetry_writer = csv.writer(f)
-
-            while self._telemetry_evt:
-                telemetry_batch = self._telemetry_queue.get()
-
-                if telemetry_batch == ControlSignal.STOP:
-                    self._telemetry_evt.set()
-
-                    return
-
-                for entry in telemetry_batch:
-                    ts, evt_type, node, origin, msg_id, size = entry
-
-                    with _telemetry_lock:
-                        _telemetry_writer.writerow(entry)
