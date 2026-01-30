@@ -198,14 +198,14 @@ class Pipeline:
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
+        if self._telemetry:
+            self._telemetry_manager.start()
+
         for layer in self._dag.BFS()[::-1]:
             for node_name in layer:
                 self._logger.info(f'starting node {node_name}')
 
                 self._nodes[node_name].start()
-
-        if self._telemetry:
-            self._telemetry_manager.start()
 
         self._status = PipelineStatus.RUNNING
 
