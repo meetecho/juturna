@@ -19,10 +19,4 @@ python -m grpc_tools.protoc \
   --grpc_python_out=$OUT_DIR \
   $PROTO_DIR/messaging_service.proto
 
-protol\
-  --create-package \
-  --in-place \
-  --python-out $OUT_DIR \
-  protoc --proto-path=$PROTO_DIR payloads.proto messaging_service.proto
-
 echo "protobuf compilation completed!"
