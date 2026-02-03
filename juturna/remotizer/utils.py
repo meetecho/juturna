@@ -396,7 +396,6 @@ def to_primitive(obj: Any) -> Any:
         except UnicodeDecodeError:
             return None
 
-    # Dict
     if isinstance(obj, dict):
         result = {}
         for k, v in obj.items():
@@ -406,7 +405,6 @@ def to_primitive(obj: Any) -> Any:
                 result[key] = value
         return result
 
-    # List/tuple
     if isinstance(obj, (list, tuple)):
         result = []
         for item in obj:
