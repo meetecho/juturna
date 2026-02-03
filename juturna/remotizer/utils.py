@@ -435,7 +435,7 @@ def sanitize_struct_for_proto(meta: dict[str, Any]) -> dict[str, Any]:
     if not meta:
         return {}
 
-    logger.debug(f'sanitizing metadata with {len(meta)} entries')
+    logger.info(f'sanitizing metadata with {len(meta)} entries')
     sanitized = to_primitive(dict(meta))
 
     if sanitized is None:
