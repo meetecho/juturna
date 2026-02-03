@@ -11,10 +11,13 @@ import threading
 import json
 import time
 import itertools
+from concurrent import futures
+
+from juturna.components import Message, Node
+from juturna.payloads import ControlPayload, ControlSignal
 
 from juturna.remotizer._remote_context import RequestContext
-
-from concurrent import futures
+from juturna.remotizer._remote_builder import _standalone_builder
 
 from juturna.remotizer.utils import (
     deserialize_envelope,
@@ -22,8 +25,6 @@ from juturna.remotizer.utils import (
     message_to_proto,
 )
 
-from juturna.components import Message, Node
-from juturna.remotizer._remote_builder import _standalone_builder
 
 from c_protos.payloads_pb2 import (
     ProtoEnvelope,
@@ -185,9 +186,18 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             request_message.id = tracking_id
 
             if envelope_dict.get('configuration'):
-                _configuration_to_be_applied = envelope_dict.get(
+                configuration_to_be_applied = envelope_dict.get(
                     'configuration', {}
                 )
+                configuration_message = Message(
+                    creator=self.remote_name,
+                    version=request_message.version,
+                    payload=ControlPayload(
+                        signal=ControlSignal.CONFIGURE,
+                        data=configuration_to_be_applied,
+                    ),
+                )
+                self.node.put(configuration_message)
 
             request_message._freeze()
             self.node.put(request_message)
