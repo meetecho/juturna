@@ -173,7 +173,7 @@ def message_to_proto(message: Message) -> ProtoMessage:
     proto.id = message.id
 
     proto.meta.update(sanitize_meta_for_proto(message.meta))
-    proto.timers.update(message.timers)
+    proto.timers.update(dict(message.timers))
 
     if message.payload is not None:
         protocol_converter = PROTOBUF_PAYLOAD_TYPE_MAP.get(
@@ -413,7 +413,7 @@ def sanitize_for_struct(obj: Any, path: str = 'root') -> Any:
         try:
             return sanitize_for_struct(obj.tolist(), path)
         except Exception as e:
-            logger.warning(f'Cannot convert numpy array at {path}: {e}')
+            logger.warning(f'cannot convert numpy array at {path}: {e}')
             return None
 
     # Date/time → ISO string
@@ -429,7 +429,7 @@ def sanitize_for_struct(obj: Any, path: str = 'root') -> Any:
         try:
             return obj.decode('utf-8')
         except UnicodeDecodeError:
-            logger.warning(f'Cannot decode bytes at {path}, skipping')
+            logger.warning(f'cannot decode bytes at {path}, skipping')
             return None
 
     # Dict: sanitize recursively
@@ -438,7 +438,7 @@ def sanitize_for_struct(obj: Any, path: str = 'root') -> Any:
         for key, value in obj.items():
             if not isinstance(key, str):
                 logger.warning(
-                    f'Non-string dict key at {path}.{key}, converting to string'
+                    f'non-string dict key at {path}.{key}, converting to string'
                 )
                 key = str(key)
 
@@ -447,7 +447,7 @@ def sanitize_for_struct(obj: Any, path: str = 'root') -> Any:
                 sanitized[key] = sanitized_value
             else:
                 logger.warning(
-                    f'Dropping non-serializable value at {path}.{key}:'
+                    f'dropping non-serializable value at {path}.{key}:'
                     f' {type(value).__name__}'
                 )
 
@@ -462,7 +462,7 @@ def sanitize_for_struct(obj: Any, path: str = 'root') -> Any:
                 sanitized.append(sanitized_item)
             else:
                 logger.warning(
-                    f'Dropping non-serializable item at {path}[{i}]:'
+                    f'dropping non-serializable item at {path}[{i}]:'
                     f' {type(item).__name__}'
                 )
 
@@ -471,16 +471,15 @@ def sanitize_for_struct(obj: Any, path: str = 'root') -> Any:
     # Custom objects: try converting __dict__
     elif hasattr(obj, '__dict__'):
         logger.warning(
-            f'Converting custom object at {path}: {type(obj).__name__}'
+            f'converting custom object at {path}: {type(obj).__name__}'
         )
         return sanitize_for_struct(
             obj.__dict__, f'{path}.<{type(obj).__name__}>'
         )
 
-    # Not convertible: drop with warning
     else:
         logger.warning(
-            f'Dropping non-serializable object at {path}: {type(obj).__name__}'
+            f'dropping non-serializable object at {path}:{type(obj).__name__}'
         )
         return None
 
@@ -499,12 +498,12 @@ def sanitize_meta_for_proto(meta: dict[str, Any]) -> dict[str, Any]:
     if not meta:
         return {}
 
-    logger.debug(f'Sanitizing metadata with {len(meta)} entries')
-    sanitized = sanitize_for_struct(meta, 'meta')
+    logger.debug(f'sanitizing metadata with {len(meta)} entries')
+    sanitized = sanitize_for_struct(dict(meta), 'meta')
 
     if sanitized is None:
         logger.warning(
-            'Entire metadata is non-serializable, returning empty dict'
+            'entire metadata is non-serializable, returning empty dict'
         )
         return {}
 
