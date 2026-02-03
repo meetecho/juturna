@@ -360,6 +360,7 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
         'ttl': envelope.ttl,
         'request_type': envelope.request_type,
         'response_type': envelope.response_type,
+        'configuration': dict(envelope.configuration),
         'message': message,
     }
     return envelope_dict
