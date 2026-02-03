@@ -11,6 +11,7 @@ These utilities are essential for the serialization layer of the Remotizer.
 """
 
 import numpy as np
+import base64
 import uuid
 import time
 from typing import Any
@@ -375,28 +376,23 @@ def to_primitive(obj: Any) -> Any:
     Convert any object to JSON-compatible primitives.
     Returns None for non-convertible objects.
     """
-    # Already primitive
     if obj is None or isinstance(obj, (bool, int, float, str)):
         return obj
 
-    # NumPy
     if isinstance(obj, (np.integer, np.floating)):
         return obj.item()
     if isinstance(obj, np.ndarray):
         return obj.tolist()
 
-    # Dates
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
 
-    # Decimal
     if isinstance(obj, Decimal):
         return float(obj)
 
-    # Bytes
     if isinstance(obj, bytes):
         try:
-            return obj.decode('utf-8')
+            return base64.b64encode(obj).decode('ascii')
         except UnicodeDecodeError:
             return None
 
