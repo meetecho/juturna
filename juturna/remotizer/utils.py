@@ -417,7 +417,6 @@ def to_primitive(obj: Any) -> Any:
     if hasattr(obj, '__dict__'):
         return to_primitive(obj.__dict__)
 
-    # Can't convert
     logger.warning(f'dropping non-serializable object: {type(obj).__name__}')
     return None
 
@@ -444,5 +443,7 @@ def sanitize_struct_for_proto(meta: dict[str, Any]) -> dict[str, Any]:
             'entire metadata is non-serializable, returning empty dict'
         )
         return {}
+
+    logger.info(f'sanitized metadata: {sanitized}')
 
     return sanitized
