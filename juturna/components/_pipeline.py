@@ -109,7 +109,8 @@ class Pipeline:
         Prepare the pipeline and all its nodes.
 
         This method creates all the concrete nodes in the pipe, allocating
-        their required resources.
+        their required resources. If a node is flagged as to be deployed
+        remotely, that node will be replaced with a proc warp node.
         """
         if self._status != PipelineStatus.NEW:
             raise RuntimeError(f'pipeline {self.name} cannot be warmed up')
@@ -131,6 +132,16 @@ class Pipeline:
             node_name = node['name']
             node_folder = pathlib.Path(self.pipe_path, node_name)
             node_folder.mkdir(exist_ok=True)
+
+            if node.get('warped', False):
+                warped_node_cfg = node['configuration']
+                node['type'] = 'proc'
+                node['mark'] = 'warp'
+                node['configuration'] = node['warp_configuration']
+                node['configuration']['remote_config'] = warped_node_cfg
+
+                self._logger.info(f'{node_name} warped')
+                self._logger.info(node)
 
             _node: Node = _component_builder.build_component(
                 node,
