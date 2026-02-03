@@ -789,7 +789,8 @@ its destinations.</p>
 <span class="sig-name descname"><span class="pre">warmup</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline.warmup" title="Link to this definition">¶</a></dt>
 <dd><p>Prepare the pipeline and all its nodes.</p>
 <p>This method creates all the concrete nodes in the pipe, allocating
-their required resources.</p>
+their required resources. If a node is flagged as to be deployed
+remotely, that node will be replaced with a proc warp node.</p>
 </dd></dl>
 
 </dd></dl>
