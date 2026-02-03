@@ -172,7 +172,7 @@ def message_to_proto(message: Message) -> ProtoMessage:
     proto.version = message.version
     proto.id = message.id
 
-    proto.meta.update(sanitize_meta_for_proto(message.meta))
+    proto.meta.update(sanitize_struct_for_proto(message.meta))
     proto.timers.update(dict(message.timers))
 
     if message.payload is not None:
@@ -370,121 +370,65 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
     return envelope_dict
 
 
-def is_struct_compatible(obj: Any) -> bool:
+def to_primitive(obj: Any) -> Any:
     """
-    Check if an object is compatible with google.protobuf.Struct.
-    Struct supports only: None, bool, int, float, str, list, dict
+    Convert any object to JSON-compatible primitives.
+    Returns None for non-convertible objects.
     """
-    if obj is None or isinstance(obj, (bool, int, float, str)):
-        return True
-    elif isinstance(obj, dict):
-        return all(
-            isinstance(k, str) and is_struct_compatible(v)
-            for k, v in obj.items()
-        )
-    elif isinstance(obj, list):
-        return all(is_struct_compatible(item) for item in obj)
-    else:
-        return False
-
-
-def sanitize_for_struct(obj: Any, path: str = 'root') -> Any:
-    """
-    Recursively convert objects to types compatible with google.protobuf.Struct.
-    Removes or converts unsupported types.
-
-    Args:
-        obj: Object to sanitize
-        path: Current path (for logging)
-
-    Returns:
-        Sanitized object or None if not convertible
-
-    """
+    # Already primitive
     if obj is None or isinstance(obj, (bool, int, float, str)):
         return obj
 
-    # NumPy types
-    if isinstance(obj, np.integer):
-        return int(obj)
-    elif isinstance(obj, np.floating):
-        return float(obj)
-    elif isinstance(obj, np.ndarray):
-        try:
-            return sanitize_for_struct(obj.tolist(), path)
-        except Exception as e:
-            logger.warning(f'cannot convert numpy array at {path}: {e}')
-            return None
+    # NumPy
+    if isinstance(obj, (np.integer, np.floating)):
+        return obj.item()
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
 
-    # Date/time → ISO string
-    elif isinstance(obj, (datetime, date)):
+    # Dates
+    if isinstance(obj, (datetime, date)):
         return obj.isoformat()
 
-    # Decimal → float
-    elif isinstance(obj, Decimal):
+    # Decimal
+    if isinstance(obj, Decimal):
         return float(obj)
 
-    # Bytes → string (if possible)
-    elif isinstance(obj, bytes):
+    # Bytes
+    if isinstance(obj, bytes):
         try:
             return obj.decode('utf-8')
         except UnicodeDecodeError:
-            logger.warning(f'cannot decode bytes at {path}, skipping')
             return None
 
-    # Dict: sanitize recursively
-    elif isinstance(obj, dict):
-        sanitized = {}
-        for key, value in obj.items():
-            if not isinstance(key, str):
-                logger.warning(
-                    f'non-string dict key at {path}.{key}, converting to string'
-                )
-                key = str(key)
+    # Dict
+    if isinstance(obj, dict):
+        result = {}
+        for k, v in obj.items():
+            key = str(k) if not isinstance(k, str) else k
+            value = to_primitive(v)
+            if value is not None or v is None:
+                result[key] = value
+        return result
 
-            sanitized_value = sanitize_for_struct(value, f'{path}.{key}')
-            if sanitized_value is not None or value is None:
-                sanitized[key] = sanitized_value
-            else:
-                logger.warning(
-                    f'dropping non-serializable value at {path}.{key}:'
-                    f' {type(value).__name__}'
-                )
+    # List/tuple
+    if isinstance(obj, (list, tuple)):
+        result = []
+        for item in obj:
+            value = to_primitive(item)
+            if value is not None or item is None:
+                result.append(value)
+        return result
 
-        return sanitized
+    # Try __dict__ for custom objects
+    if hasattr(obj, '__dict__'):
+        return to_primitive(obj.__dict__)
 
-    # List/tuple: sanitize recursively
-    elif isinstance(obj, (list, tuple)):
-        sanitized = []
-        for i, item in enumerate(obj):
-            sanitized_item = sanitize_for_struct(item, f'{path}[{i}]')
-            if sanitized_item is not None or item is None:
-                sanitized.append(sanitized_item)
-            else:
-                logger.warning(
-                    f'dropping non-serializable item at {path}[{i}]:'
-                    f' {type(item).__name__}'
-                )
-
-        return sanitized
-
-    # Custom objects: try converting __dict__
-    elif hasattr(obj, '__dict__'):
-        logger.warning(
-            f'converting custom object at {path}: {type(obj).__name__}'
-        )
-        return sanitize_for_struct(
-            obj.__dict__, f'{path}.<{type(obj).__name__}>'
-        )
-
-    else:
-        logger.warning(
-            f'dropping non-serializable object at {path}:{type(obj).__name__}'
-        )
-        return None
+    # Can't convert
+    logger.warning(f'dropping non-serializable object: {type(obj).__name__}')
+    return None
 
 
-def sanitize_meta_for_proto(meta: dict[str, Any]) -> dict[str, Any]:
+def sanitize_struct_for_proto(meta: dict[str, Any]) -> dict[str, Any]:
     """
     Sanitize a metadata dictionary for protobuf Struct serialization.
 
@@ -499,7 +443,7 @@ def sanitize_meta_for_proto(meta: dict[str, Any]) -> dict[str, Any]:
         return {}
 
     logger.debug(f'sanitizing metadata with {len(meta)} entries')
-    sanitized = sanitize_for_struct(dict(meta), 'meta')
+    sanitized = to_primitive(dict(meta))
 
     if sanitized is None:
         logger.warning(
