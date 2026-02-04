@@ -20,3 +20,5 @@ class ControlSignal(IntEnum):
     WARMUP: int = 2
     SUSPEND: int = 3
     RESUME: int = 4
+    CONFIGURE: int = 5
+    RESET: int = 6

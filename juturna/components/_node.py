@@ -402,6 +402,10 @@ class Node[T_Input, T_Output]:
 
     def update(self, message: Message[T_Input]): ...
 
+    def update_config(self, config: dict): ...
+
+    def reset_config(self): ...
+
     def set_on_config(self, prop: str, value: Any): ...
 
     def warmup(self): ...
@@ -503,6 +507,16 @@ class Node[T_Input, T_Output]:
             case ControlSignal.RESUME:
                 self._suspended = False
                 self._logger.info('node resumed')
+
+                return
+            case ControlSignal.CONFIGURE:
+                self.update_config(message.payload.data)
+                self._logger.info('node reconfigured')
+
+                return
+            case ControlSignal.RESET:
+                self.reset_config()
+                self._logger.info('node reset')
 
                 return
             case None:
