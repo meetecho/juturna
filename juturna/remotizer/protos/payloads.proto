@@ -116,8 +116,8 @@ message ProtoMessage {
   // ProtoPayload can be any of the payload types (AudioProtoPayload, ImageProtoPayload, etc.)
   google.protobuf.Any payload = 4;
 
-  // Metadata as key-value pairs (flexible metadata storage)
-  map<string, string> meta = 5;
+  // Metadata (flexible metadata storage)
+  google.protobuf.Struct meta = 5;
 
   // Timers for performance tracking
   // Key: timer name, Value: elapsed time in seconds
