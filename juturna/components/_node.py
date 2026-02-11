@@ -56,6 +56,8 @@ class Node[T_Input, T_Output]:
         self._pipe_path: str | None = None
         self._pipe_name: str | None = pipe_name
 
+        self.pipe_id: str | None = None
+
         _logger_name = f'{self.pipe_name}.{self._name}'
         self._logger = jt_logger(_logger_name)
         self._logger.propagate = True
@@ -78,13 +80,14 @@ class Node[T_Input, T_Output]:
             if hasattr(self, 'next_batch')
             else _SYNCHRONISERS['passthrough']
         )
+
         self._buffer = Buffer(_logger_name, self._synchroniser)
 
         self._source_f: Callable | None = None
         self._source_sleep = -1
         self._source_mode = ''
 
-        self._destinations: dict[str, queue.Queue] = dict()
+        self._destinations: dict[str, Node] = dict()
         self._origins: list = list()
         self._last_data_source_evt_id: int | None = None
 
@@ -95,17 +98,12 @@ class Node[T_Input, T_Output]:
 
     @property
     def name(self) -> str | None:
-        """
-        The node symbolic name. This name will also be assigned to the node
-        bridge component.
-
-        """
+        """The node symbolic name"""
         return self._name
 
     @name.setter
     def name(self, name: str):
         self._name = name
-        self._bridge.bridge_id = name
 
     @property
     def status(self) -> ComponentStatus | None:
@@ -180,7 +178,7 @@ class Node[T_Input, T_Output]:
     def link_telemetry(self, manager: TelemetryManager):
         self._telemetry_manager = manager
 
-    def put(self, message: Message):
+    def put(self, message: Message | ControlSignal):
         self._queue.put(message)
 
     def compile_template(self, template_name: str, arguments: dict) -> str:
@@ -323,14 +321,15 @@ class Node[T_Input, T_Output]:
         for node_name in self._destinations:
             self._destinations[node_name].put(message)
 
-        self._rec_telemetry(message, 'tx')
+        if isinstance(message, Message):
+            self._rec_telemetry(message, 'tx')
 
     def start(self):
         """
         Start the node and begin processing. This method is called automatically
         when the parent pipeline is started. If you override this method in
         your custom node class, make sure to call the parent method to ensure
-        the bridge is started correctly.
+        the node is started correctly.
         """
         if self._worker_thread is None:
             self._worker_thread = threading.Thread(
@@ -371,7 +370,7 @@ class Node[T_Input, T_Output]:
         Stop the node and begin processing. This method is called automatically
         when the parent pipeline is stopped. If you override this method in
         your custom node class, make sure to call the parent method to ensure
-        the bridge is stopped correctly.
+        the node is stopped correctly.
         """
         if self._status == ComponentStatus.STOPPED:
             return
@@ -433,7 +432,9 @@ class Node[T_Input, T_Output]:
                 continue
 
             self._buffer.put(message)
-            self._rec_telemetry(message, 'rx')
+
+            if isinstance(message, Message):
+                self._rec_telemetry(message, 'rx')
 
     def _update(self):
         while not self._stop_update_event.is_set():

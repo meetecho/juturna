@@ -27,7 +27,7 @@ class Buffer:
     def get(self) -> typing.Any:
         return self._out_queue.get()
 
-    def put(self, message: Message):
+    def put(self, message: Message | None):
         if message is None:
             self._out_queue.put(None)
 

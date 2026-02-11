@@ -1,3 +1,6 @@
+from collections.abc import Callable
+
+
 def passthrough(sources: dict) -> dict:
     """
     Relay every message as soon as it is available
@@ -8,4 +11,7 @@ def passthrough(sources: dict) -> dict:
     return {source: list(range(len(sources[source]))) for source in sources}
 
 
-_SYNCHRONISERS = {'passthrough': passthrough, 'local': None}
+_SYNCHRONISERS: dict[str, Callable | None] = {
+    'passthrough': passthrough,
+    'local': None,
+}
