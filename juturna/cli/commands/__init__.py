@@ -10,7 +10,8 @@ import importlib
 
 
 _MODULES = {
-    cmd: None for cmd in ['launch', 'validate', 'serve', 'create', 'stub']
+    cmd: None
+    for cmd in ['launch', 'validate', 'serve', 'create', 'stub', 'remotize']
 }
 
 
