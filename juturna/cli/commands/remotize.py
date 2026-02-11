@@ -5,6 +5,7 @@ This command can be used to instantiate concrete nodes that can be invoked
 through the remote juturna service.
 """
 
+from juturna.cli import _cli_utils
 from juturna.cli.commands._juturna_remote_service import serve
 
 
@@ -37,9 +38,10 @@ def setup_parser(subparsers):  # noqa: D103
     parser.add_argument(
         '--default-config',
         '-c',
-        type=str,
+        metavar='FILE',
+        type=_cli_utils._is_file_ok,
+        required=False,
         help='default configuration as JSON string',
-        default='{}',
     )
 
     parser.add_argument(

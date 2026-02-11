@@ -246,11 +246,11 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
 
 
 def serve(args):
-    try:
-        default_config = json.loads(args.default_config)
-    except json.JSONDecodeError as e:
-        logger.error(f'Failed to parse default config: {e}')
-        return
+    if args.default_config:
+        with open(args.default_config) as f:
+            default_config = json.load(f)
+    else:
+        default_config = dict()
 
     logger.info(f"Building node '{args.node_name}' from '{args.plugin_dir}'...")
 
