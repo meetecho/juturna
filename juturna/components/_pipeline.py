@@ -123,7 +123,9 @@ class Pipeline:
         if _tele_file := self._raw_config['pipeline'].get('telemetry', None):
             self._telemetry = True
             self._telemetry_file = pathlib.Path(self.pipe_path, _tele_file)
-            self._telemetry_manager = TelemetryManager(self._telemetry_file)
+            self._telemetry_manager = TelemetryManager(
+                str(self._telemetry_file)
+            )
 
         nodes = self._raw_config['pipeline']['nodes']
         links = self._raw_config['pipeline']['links']
