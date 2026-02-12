@@ -28,7 +28,7 @@ multiple pipelines simultaneously, or be made redundant and masked by a load
 balancer.
 
 .. admonition:: Remotisation features might be unstable (|version|-|release|)
-    :class: :ATTENTION:
+    :class: :WARNING:
 
     The infrastructure to deploy juturna nodes remotely is still under
     active development. We do not recommend using it in production scenarios, or

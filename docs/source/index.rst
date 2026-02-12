@@ -29,6 +29,7 @@
     how_to/use_cli
     how_to/environment
     how_to/remotise_node
+    how_to/observe
 
 .. toctree::
     :maxdepth: 2
