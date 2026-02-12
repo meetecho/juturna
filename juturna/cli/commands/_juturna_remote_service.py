@@ -1,20 +1,17 @@
-"""
-gRPC Server endpoint that receives and deserializes ProtoEnvelopes
-Supports all payload types: Audio, Image, Video, Bytes, Object, Batch
-"""
-
-import grpc
+import json
 import logging
 import queue
-import argparse
 import threading
-import json
 import time
 import itertools
 
-from juturna.remotizer._remote_context import RequestContext
-
 from concurrent import futures
+
+import grpc
+
+from juturna.components import Message, Node
+from juturna.remotizer._remote_context import RequestContext
+from juturna.remotizer._remote_builder import _standalone_builder
 
 from juturna.remotizer.utils import (
     deserialize_envelope,
@@ -22,26 +19,12 @@ from juturna.remotizer.utils import (
     message_to_proto,
 )
 
-from juturna.components import Message, Node
-from juturna.remotizer._remote_builder import _standalone_builder
+from juturna.remotizer.c_protos.payloads_pb2 import ProtoEnvelope
+from juturna.remotizer.c_protos import messaging_service_pb2_grpc
 
-from c_protos.payloads_pb2 import (
-    ProtoEnvelope,
-)
-from c_protos import messaging_service_pb2_grpc
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('remote_service')
-
-
-# ============================================================================
-# HELPER CLASSES
-# ============================================================================
-
-
-# ============================================================================
-# gRPC SERVICE IMPLEMENTATION
-# ============================================================================
 
 
 class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
@@ -262,56 +245,19 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             return self.stats.copy()
 
 
-# ============================================================================
-# SERVER STARTUP
-# ============================================================================
+def serve(args):
+    if args.default_config:
+        with open(args.default_config) as f:
+            default_config = json.load(f)
+    else:
+        default_config = dict()
 
-
-def serve():
-    parser = argparse.ArgumentParser(description='Juturna Remote Node Service')
-    parser.add_argument(
-        '--node-name', required=True, help='Name of the node to run'
-    )
-    parser.add_argument(
-        '--node-mark', required=True, help='Mark of the node to run'
-    )
-    parser.add_argument(
-        '--plugins-dir', required=True, help='Path to plugins directory'
-    )
-    parser.add_argument(
-        '--pipe-name', default='warped_node', help='Pipeline name context'
-    )
-    parser.add_argument(
-        '--port', type=int, default=50051, help='Port to listen on'
-    )
-    parser.add_argument(
-        '--default-config',
-        help='Default configuration as JSON string',
-        default='{}',
-    )
-    parser.add_argument(
-        '--max-workers',
-        type=int,
-        default=10,
-        help='Maximum number of worker threads',
-    )
-
-    args = parser.parse_args()
-
-    try:
-        default_config = json.loads(args.default_config)
-    except json.JSONDecodeError as e:
-        logger.error(f'Failed to parse default config: {e}')
-        return
-
-    logger.info(
-        f"Building node '{args.node_name}' from '{args.plugins_dir}'..."
-    )
+    logger.info(f"Building node '{args.node_name}' from '{args.plugin_dir}'...")
 
     try:
         node_instance, _ = _standalone_builder(
             name=args.node_name,
-            plugins_dir=args.plugins_dir,
+            plugin_dir=args.plugin_dir,
             node_mark=args.node_mark,
             context_runtime_path=args.pipe_name,
             config=default_config.copy(),
@@ -356,7 +302,3 @@ def serve():
         node_instance.stop()
         server.stop(grace=5.0)
         logger.info('gRPC server stopped gracefully')
-
-
-if __name__ == '__main__':
-    serve()

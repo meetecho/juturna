@@ -11,7 +11,7 @@ REMOTE_PIPE_ID = 'remote_pipe'
 def _standalone_builder(
     name: str,
     node_mark: str,
-    plugins_dir: str,
+    plugin_dir: str,
     context_runtime_path: str,
     config: dict = None,
 ) -> tuple[Node | None, dict]:
@@ -29,7 +29,7 @@ def _standalone_builder(
         The name of the node to be deployed.
     node_mark : str
         The mark of the node to be deployed.
-    plugins_dir : str
+    plugin_dir : str
         The directory where plugins are located.
     context_runtime_path : str
         The runtime path for the context.
@@ -53,7 +53,7 @@ def _standalone_builder(
 
     _node: Node = _component_builder.build_component(
         node,
-        plugin_dirs=[plugins_dir],
+        plugin_dirs=[plugin_dir],
         pipe_name=context_runtime_path,
     )
 
