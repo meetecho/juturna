@@ -258,9 +258,11 @@ class Node[T_Input, T_Output]:
 
         dump_path = pathlib.Path(self.pipe_path, file_name)
 
-        if isinstance(message, Message):
+        try:
             with open(dump_path, 'w') as f:
                 f.write(message.to_json())
+        except Exception:
+            self._logger.warning('message cannot be dumped')
 
         return str(dump_path)
 
