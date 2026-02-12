@@ -153,6 +153,7 @@ class Pipeline:
             _node.pipe_path = node_folder
             _node.status = ComponentStatus.NEW
             _node.telemetry = self._telemetry
+            _node._auto_dump = node.get('auto_dump', False)
 
             self._nodes[node_name] = _node
             self._dag.add_node(node_name)

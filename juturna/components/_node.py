@@ -70,6 +70,7 @@ class Node[T_Input, T_Output]:
         self._stop_update_event = threading.Event()
 
         self._suspended = False
+        self._auto_dump = False
 
         # buffer stores messages, policy manages them
         # if the synchroniser is not provided, get local one or default
@@ -257,8 +258,9 @@ class Node[T_Input, T_Output]:
 
         dump_path = pathlib.Path(self.pipe_path, file_name)
 
-        with open(dump_path, 'w') as f:
-            f.write(message.to_json())
+        if isinstance(message, Message):
+            with open(dump_path, 'w') as f:
+                f.write(message.to_json())
 
         return str(dump_path)
 
@@ -324,6 +326,9 @@ class Node[T_Input, T_Output]:
             self._destinations[node_name].put(message)
 
         self._rec_telemetry(message, 'tx')
+
+        if self._auto_dump:
+            self.dump_json(message, f'auto_{message.id}.json')
 
     def start(self):
         """
