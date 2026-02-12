@@ -16,6 +16,7 @@
    explain/pipelines
    explain/nodes
    explain/messages
+   explain/remote
 
 .. toctree::
     :maxdepth: 2
@@ -27,6 +28,7 @@
     how_to/create_pipelines
     how_to/use_cli
     how_to/environment
+    how_to/remotise_node
 
 .. toctree::
     :maxdepth: 2

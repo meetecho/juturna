@@ -29,7 +29,6 @@ The full list of commands (available with the groups ``httpwrapper`` and
         create              interactively create new pipeline configuration files
         stub                create a custom node skeleton
 
-
 Pipe launcher
 -------------
 
@@ -78,6 +77,32 @@ Check a pipeline configuration file for validity.
       --report FILE, -r FILE
                             save json report of the validation test
 
+Node stub creator
+-----------------
+
+:bdg-success:`built-in`
+
+Create a custom node stub.
+
+.. code-block:: console
+
+    (.venv) user:~/$ python -m juturna stub --help
+    usage: juturna stub [-h] --node-name NODE_NAME [--node-type NODE_TYPE] [--node-class NODE_CLASS] [--author AUTHOR] [--email EMAIL] [--destination-folder DESTINATION_FOLDER]
+
+    options:
+      -h, --help            show this help message and exit
+      --node-name NODE_NAME, -n NODE_NAME
+                            node name, used for folder and module
+      --node-type NODE_TYPE, -t NODE_TYPE
+                            node type
+      --node-class NODE_CLASS, -N NODE_CLASS
+                            node class name, used for class name
+      --author AUTHOR, -a AUTHOR
+                            node author name
+      --email EMAIL, -e EMAIL
+                            node author email
+      --destination-folder DESTINATION_FOLDER, -d DESTINATION_FOLDER
+                            destination folder for the plugin (defaulted to ./plugins)
 
 Pipe creator
 ------------
@@ -96,7 +121,6 @@ plugin folders.
       -h, --help            show this help message and exit
       --plugins PLUGINS, -p PLUGINS
                             juturna service pipeline folder
-
 
 Pipe service manager
 --------------------
@@ -124,31 +148,31 @@ allows pipeline manipulation.
       --log-file LOG_FILE, -L LOG_FILE
                             log file destination
 
+Remote service
+--------------
 
+:bdg-primary:`warp`
 
-Node stub creator
------------------
-
-:bdg-success:`built-in`
-
-Create a custom node stub.
+Launch the remote service to expose a node for delocalised pipelines to use.
 
 .. code-block:: console
 
-    (.venv) user:~/$ python -m juturna stub --help
-    usage: juturna stub [-h] --node-name NODE_NAME [--node-type NODE_TYPE] [--node-class NODE_CLASS] [--author AUTHOR] [--email EMAIL] [--destination-folder DESTINATION_FOLDER]
+    (.venv) user:~/$ python -m juturna remotize --help
+    usage: juturna remotize [-h] --node-name NODE_NAME --node-mark NODE_MARK --plugin-dir PLUGIN_DIR [--pipe-name PIPE_NAME] [--port PORT]
+                            [--default-config FILE] [--max-workers MAX_WORKERS]
 
     options:
       -h, --help            show this help message and exit
       --node-name NODE_NAME, -n NODE_NAME
-                            node name, used for folder and module
-      --node-type NODE_TYPE, -t NODE_TYPE
-                            node type
-      --node-class NODE_CLASS, -N NODE_CLASS
-                            node class name, used for class name
-      --author AUTHOR, -a AUTHOR
-                            node author name
-      --email EMAIL, -e EMAIL
-                            node author email
-      --destination-folder DESTINATION_FOLDER, -d DESTINATION_FOLDER
-                            destination folder for the plugin (defaulted to ./plugins)
+                            name of the node to run
+      --node-mark NODE_MARK, -m NODE_MARK
+                            mark of the node to run
+      --plugin-dir PLUGIN_DIR, -P PLUGIN_DIR
+                            path to plugins directory
+      --pipe-name PIPE_NAME, -N PIPE_NAME
+                            pipeline name context
+      --port PORT, -p PORT  port to listen on
+      --default-config FILE, -c FILE
+                            default configuration as JSON string
+      --max-workers MAX_WORKERS, -w MAX_WORKERS
+                            maximum number of worker threads
