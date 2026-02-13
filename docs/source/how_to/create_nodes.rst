@@ -21,7 +21,7 @@ installed alongside all the extra dependencies you need for your node.
     (.venv) user:~/prj$ pip install juturna
     (.venv) user:~/prj$ mkdir plugins
 
-With the last command, we created the ``plugin`` folder where we are going to
+With the last command, we created the ``plugins`` folder where we are going to
 store our custom node.
 
 Create the node skeleton

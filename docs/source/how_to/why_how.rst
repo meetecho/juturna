@@ -18,3 +18,4 @@ You will see:
 - how to :doc:`deploy components remotely <remotise_node>` and use them as if
   they were local
 - how to :doc:`use the CLI tools <use_cli>` offered by juturna
+- how to :doc:`observe juturna pipelines <observe>`
