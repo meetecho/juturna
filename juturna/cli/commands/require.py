@@ -1,3 +1,11 @@
+"""
+Aggregate requirements for a pipeline
+
+Collect all the requirements for plugin nodes in a pipeline. The command gives
+the option to dump the package list in a file, or even store them within the
+pipeline configuration file, under the `requirements` field.
+"""
+
 import json
 
 
@@ -26,7 +34,7 @@ def setup_parser(subparsers):  # noqa: D103
         '--add-extra',
         '-a',
         action='store_true',
-        help='add collected dependencies to configuration file'
+        help='add collected dependencies to configuration file',
     )
 
     parser.add_argument(
