@@ -4,7 +4,7 @@
 <img src="https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge">
 </p>
 
-## :seedling: Important to know
+## Important to know
 Juturna is actively evolving with exciting new features and improvements being
 added regularly. We're using semantic versioning to clearly communicate any
 breaking changes between releases, so you can upgrade with confidence. Juturna
@@ -21,110 +21,48 @@ well as exploring and testing AI models, in a modular and flexible fashion.
 
 Among its many features, there are a few keypoints to highligh about Juturna:
 
-* :zap: **Real-Time Streaming:** continuouusly process audio, video and
+* **Real-Time Streaming:** continuouusly process audio, video and
   arbitrary data streams
-* :electric_plug: **Modularity:** create your own nodes and share them through
+* **Modularity:** create your own nodes and share them through
   the Juturna hub
-* :link: **Composable workloads:** design pipelines to solve complex tasks in
+* **Composable workloads:** design pipelines to solve complex tasks in
   minutes
-* 🚀 **Parallelism & Batching:** parallel, non-blocking execution for high
+* **Parallelism & Batching:** parallel, non-blocking execution for high
   throughput
-* 📊 **Observability:** built-in logging and metrics support
+* **Observability:** built-in logging and metrics support
 
-[documentation](https://meetecho.github.io/juturna/index.html) | [contribute](https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md) | [meetecho](https://www.meetecho.com/en/)
+Documentation: [https://meetecho.github.io/juturna/index.html](https://meetecho.github.io/juturna/index.html)
 
-## Overview
+Contribute: [https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md](https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md)
 
-A **pipeline** can simply be defined as a collection of **nodes**.
-
-Each **node** acquires a piece of data from its parents and, after performing a
-single task, provide its output to its children. In this sense, a Juturna
-pipeline is nothing else but a DAG, where root nodes have an in-degree of 0
-(this is not technically the case, but we’ll skip it for now), and every other
-node has an in-degree of 1 or more.
-
-An example of one of our pipelines, currently in use for live audio
-transcription and summarisation is shown here.
-
-<p align="center"><img src="https://raw.githubusercontent.com/meetecho/juturna/main/assets/img/pipeline_example.png"></p>
-
-Whilst Juturna ships with a number of built-in nodes (mainly source and sink
-nodes), you can implement your own nodes with ease, and share them so others
-can use them too.
-
-To know more about the Juturna internals, please refer to the full
-documentation.
-
-## Installation
-
-The following dependencies are required to use Juturna:
-
-- ``python >= 3.12``
-- system libraries ``libsm6``, ``libext6``, ``ffmpeg``
-
-:information_source: Current Python building version is 3.12. The library still
-has to be tested on Python 3.13 and later with GIL disabled.
-
-
-Juturna is currently available as a opensource codebase, but not yet published
-on PyPi.  To install it on your system, first clone the repository, then use
-pip to install it (assuming you are working in a virtual environment):
-
-```
-(venv) $ git clone https://github.com/meetecho/juturna
-(venv) $ pip install ./juturna
-```
-
-In case you want to include all the development dependencies in the
-installation, specify the ``dev`` group:
-
-```
-(venv) $ pip install "./juturna[dev]"
-```
-
-To include the Juturna HTTP wrapper, include the ``httpwrapper``:
-
-```
-(venv) $ pip install "./juturna[httpwrapper]"
-```
-
-Alternatively, you can manually install the required dependencies, and just
-import the juturna module from within the repository folder:
-
-```
-(venv) $ pip install av ffmpeg-python opencv-python numpy requests websockets
-(venv) $ python
->>> import juturna as jt
-```
-
-### Dockerfile
-
-In the Juturna repository you will find a Dockerfile that can be used to create
-a base Juturna image. To build it, symply navigate within the repo folder and
-run:
-
-```
-$ docker build -t juturna:latest .
-```
+Meetecho: [https://www.meetecho.com/en/](https://www.meetecho.com/en/)
 
 ## Contributing
 
-Please read [`CONTRIBUTING.md`](https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md) for:
+We are so glad you decided to contribute! We truly value your time and help in
+making Juturna better, and look forward to every single PR, whether you are
+fixing typos, proposing the next big feature, or extending the documentation.
 
-* Branching & PR workflow 
-* Code style & linting
-* Issue triage (TBD)
-* Issue & PR templates and a Code of Conduct are provided (TBD)
-* Signing CRA
+To make sure we’re all on the same page and to get your changes merged as
+quickly as possible, please take a peek at our
+[`CONTRIBUTING.md`](https://github.com/meetecho/juturna/blob/main/CONTRIBUTING.md)
+guide. It covers the essentials, including:
+
+* branching & PR workflow
+* code style & linting
+* issue triage (TBD)
+* issue & PR templates and a Code of Conduct are provided (TBD)
+* signing CRA
+
+If you are not sure where to start, feel free to open an issue to discuss your
+ideas first. We’re happy to help guide you through the process!
 
 ## Changelog
 
-All notable changes are documented in [`CHANGELOG.md`](https://github.com/meetecho/juturna/blob/main/CHANGELOG.md)
-following [Semantic Versioning](https://semver.org).
-
-## External Docs & Support
-
-Coming soon!
+All notable changes are documented in
+[`CHANGELOG.md`](https://github.com/meetecho/juturna/blob/main/CHANGELOG.md) - we
+follow [Semantic Versioning](https://semver.org), so you'll always know how
+exactly updates affect your setup.
 
 ## License
 
