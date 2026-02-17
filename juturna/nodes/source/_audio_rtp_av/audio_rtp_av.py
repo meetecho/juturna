@@ -169,7 +169,7 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
                             creator=self.name,
                             version=self._abs_recv,
                             payload=AudioPayload(
-                                audio=audio_data,
+                                audio=audio_data[0],
                                 sampling_rate=self._out_rate,
                                 channels=self._out_channels,
                                 audio_format=self._resampler_format,
