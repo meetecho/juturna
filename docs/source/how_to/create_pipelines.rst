@@ -180,6 +180,17 @@ install them.
 
     (.venv) user:~/prj$ pip install faster-whisper ctranslate2
 
+Juturna also offers a way of collecting all the dependencies defined across
+plugin nodes. This can be done from the command line:
+
+.. code-block:: console
+
+  (.venv) user:~/prj$ python -m juturna require \
+                             -c test_pipe.json \
+                             -p ./plugins \
+                             -s ./requirements.txt
+  (.venv) user:~/prj$ pip install -r requirements.txt
+
 Launch the pipe
 ---------------
 

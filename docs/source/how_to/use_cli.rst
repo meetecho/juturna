@@ -28,6 +28,35 @@ The full list of commands (available with the groups ``httpwrapper`` and
         serve               launch the Juturna pipeline manager service
         create              interactively create new pipeline configuration files
         stub                create a custom node skeleton
+        remotize            start the remote node service
+        require             collect all the required packages for a pipeline
+
++--------------+----------------------------+-----------------------------+------------------------------+
+| command      | group                      | description                 | dependencies                 |
++==============+============================+=============================+==============================+
+| ``launch``   | :bdg-success:`built-in`    | run a target pipeline       | --                           |
++--------------+----------------------------+-----------------------------+------------------------------+
+| ``validate`` | :bdg-success:`built-in`    | validate a target pipeline  | --                           |
++--------------+----------------------------+-----------------------------+------------------------------+
+| ``create``   | :bdg-primary:`pipebuilder` | create a new pipeline       | ``prompt_toolkit`` |br|      |
+|              |                            |                             | ``rich``                     |
++--------------+----------------------------+-----------------------------+------------------------------+
+| ``serve``    | :bdg-primary:`httpwrapper` | pipeline manager service    | ``fastapi`` |br|             |
+|              |                            |                             | ``fastapi-cli``              |
++--------------+----------------------------+-----------------------------+------------------------------+
+| ``stub``     | :bdg-success:`built-in`    | create a custom node stub   | --                           |
++--------------+----------------------------+-----------------------------+------------------------------+
+| ``remotize`` | :bdg-primary:`warp`        | remote node service         | ``grpcio`` |br|              |
+|              |                            |                             | ``grpcio-tools`` |br|        |
+|              |                            |                             | ``protobuf`` |br|            |
+|              |                            |                             | ``typing_extensions``        |
++--------------+----------------------------+-----------------------------+------------------------------+
+| ``require``  | :bdg-success:`built-in`    | aggregate node requirements | --                           |
++--------------+----------------------------+-----------------------------+------------------------------+
+
+.. |br| raw:: html
+
+     <br>
 
 Pipe launcher
 -------------
@@ -62,7 +91,7 @@ Check a pipeline configuration file for validity.
 
 .. code-block:: console
 
-    (.venv) user:~/$ python -m juturna launch --help
+    (.venv) user:~/$ python -m juturna validate --help
     usage: juturna validate [-h] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}] --config FILE [--deep] [--plugin-folder DIR] [--report FILE]
 
     options:
@@ -103,6 +132,30 @@ Create a custom node stub.
                             node author email
       --destination-folder DESTINATION_FOLDER, -d DESTINATION_FOLDER
                             destination folder for the plugin (defaulted to ./plugins)
+
+Dependency aggregator
+---------------------
+
+:bdg-success:`built-in`
+
+Aggregate external dependencies of plugin nodes.
+
+.. code-block:: console
+
+    (.venv) user:~/$ python -m juturna require --help
+    usage: juturna require [-h] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}] --config FILE
+                       --plugin-dir PLUGIN_DIR [PLUGIN_DIR ...] [--add-extra] [--save SAVE]
+
+    options:
+      -h, --help            show this help message and exit
+      --log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}, -l {NOTSET,DEBUG,INFO,WARNING,ERROR}
+                            set log level during pipeline execution
+      --config FILE, -c FILE
+                            pipeline json configuration file
+      --plugin-dir PLUGIN_DIR [PLUGIN_DIR ...], -p PLUGIN_DIR [PLUGIN_DIR ...]
+                            plugin folders (at least one is required)
+      --add-extra, -a       add collected dependencies to configuration file
+      --save SAVE, -s SAVE  where to save the collected dependencies
 
 Pipe creator
 ------------
