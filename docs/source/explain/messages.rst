@@ -1,3 +1,5 @@
+.. _explain_messages:
+
 Messages and payloads
 =====================
 
@@ -35,9 +37,9 @@ As said, a message is just a simple data container. It carries a payload, plus
 some extra fields that can be useful to determine who generated it, when, and in
 which order comared to other messages.
 
-Other than its basic properties, such as `creator`, `version`, `payload`, `meta`
-and `timers`, a message offers a few methods that can help with managing its
-content and representation:
+Other than its basic properties, such as ``creator``, ``version``, ``payload``,
+``meta`` and ``timers``, a message offers a few methods that can help with
+managing its content and representation:
 
 ``message.to_dict()`` and ``message.to_json(encoder)`` offer serialisation
 options for when a message needs to be converted, stored, or transmitted to a
@@ -77,3 +79,68 @@ Juturna offers a number of built-in media and structural payloads.
   buffer whenever its synchroniser marked multiple messages for processing.
 - ``ObjectPayload`` is a subclass of ``dict`` design to hold arbitrary key-value
   pairs.
+
+Immutability
+------------
+
+The key aspect of both messages and payloads is **immutability**. In short:
+
+- received messages within a node are immutable;
+- playloads are always immutable, so they cannot be modified once created;
+- messages can be `drafted`, so they can be modified before being finalised for
+  transmission.
+
+Aside from its payload, a freshly created message can be modified, just like any
+other object.
+
+.. code-block:: python
+
+  from juturna.components import Message
+  from juturna.payloads import AudioPayload
+
+
+  message = Message(
+    creator='creator_name',
+    version=1,
+    payload=AudioPayload()
+  )
+
+  # this is allowed
+  message.version = 2
+
+  # this will throw an error!
+  message.payload.channels = 2
+
+  Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+  File "<string>", line 4, in __setattr__
+  dataclasses.FrozenInstanceError: cannot assign to field 'channels'
+
+There are situations where it might be conveniente to iteratively create a
+payload, without the need to store its attribute values somewhere and assign
+them only once. In this case, a message can be created with a payload draft. A
+payload draft accepts the type of payload it will eventually be turned into as
+argument. Other than that, it behaves exactly like a normal payload.
+
+.. code-block:: python
+
+  from juturna.components import Message
+  from juturna.payloads import Draft, AudioPayload
+
+
+  message = Message(
+    creator='creator_name',
+    version=1,
+    payload=Draft(AudioPayload)
+  )
+
+  # this is allowed now
+  message.payload.channels = 2
+
+Messages can be explicitly made immutable by calling ``message.freeze()``.
+However, nodes take care of that internally before sending out messages.
+
+Message and payload immutability is a powerful feature: it allows for zero-copy
+transmission of every bit of data flowing through a pipeline, ensuring integrity
+and consistency (multiple nodes receiving the same message can be sure the data
+within that message were not modified by any other node).

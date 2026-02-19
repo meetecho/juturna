@@ -15,14 +15,17 @@ So, let's take a look at:
 Pipeline
 --------
 
-A pipeline is a processing structure that receives data from a source,
-transforms them, and produces the transformed data as output.
+A :ref:`pipeline <explain_pipelines>` is a processing structure that
+instantiates and aggregates nodes, managing their links and lifecycle. Pipelines
+can be seen as multi-input, multi-output entities, where the underlying data
+consumption and generation are of course performed by the constructing nodes.
 
-A basic, minimal Juturna pipeline can be seen as a
+A basic, minimal Juturna pipeline can be somehow seen as a
 `DAG <https://en.wikipedia.org/wiki/Directed_acyclic_graph>`_, a graph with a
 single root node with in-degree of 0 (of course, this is not *technically* true,
 as the root node of a pipeline still receives data from somewhere), and every
-other node with an in-degree of 1 or more.
+other node with an in-degree of 1 or more. Nodes can have as many outbound
+connections as the pipeline structure requires.
 
 If you look at the picture below, you should see: an external source feeding
 the root node of our pipeline, a bunch of nodes moving forward processed and
@@ -51,10 +54,10 @@ for which 2 source nodes are defined.
 Node
 ----
 
-A node is a component that receives data from one or more sources (a node source
-can be external, like we saw earlier, or it can be an upstream edge to another
-node), processes them, and makes the produced data available to all its
-downstream destinations.
+A :ref:`node <explain_nodes>` is a component that receives data from one or more
+sources (a node source can be external, like we saw earlier, or it can be an
+upstream edge to another node), processes them, and makes the produced data
+available to all its downstream destinations.
 
 So, a node receives data, and spits out data.
 
@@ -99,8 +102,8 @@ destination you need to reach, you can still create a custom node for it!
 When designing a pipeline, there are some alternatives for how to get the nodes
 you need:
 
-#. use Juturna **built-in nodes**, that are, all those nodes that are available within the
-   Juturna library itself
+#. use Juturna **built-in nodes**, that are, all those nodes that are available
+   within the Juturna library itself
 #. use community **plugin nodes**, that are, nodes that can be distributed
    through GitHub, the Juturna Hub facility, or any other tool you can think of
 #. implement your own **custom nodes** (this is the fun solution!)
@@ -108,9 +111,9 @@ you need:
 Messages and payloads
 ---------------------
 
-Nodes within a pipeline pass data around using messages. A message is just a
-data container with some utilities attached to it. Also, messages can be created
-with the definition of the type of data they are going to encapsulate (a
-**payload**). This comes especially helpful when nodes are defined, so that
-users can have an idea of what kinda of data a node expects at the input, and
-produces at the output.
+Nodes within a pipeline pass data around using
+:ref:`messages <explain_messages>`. A message is just a data container with some
+utilities attached to it. Also, messages can be created with the definition of
+the type of data they are going to encapsulate (a **payload**). This comes
+especially helpful when nodes are defined, so that users can have an idea of
+what kinda of data a node expects at the input, and produces at the output.
