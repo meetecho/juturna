@@ -12,7 +12,7 @@ import juturna.utils.log_utils as log
 
 
 __app_name__ = 'juturna'
-__version__ = '0.1.0'
+__version__ = '2.0.0'
 
 __all__ = [
     'names',
