@@ -106,7 +106,7 @@ install juturna on the remote side making sure to:
 - include the ``warp`` group in the installation
 - have the remotised node available in the ``./plugin`` folder
 
-Assumin you already copied the plugins in the remote location, we can proceed:
+Assuming you already copied the plugins in the remote location, we can proceed:
 
 .. code-block:: bash
 

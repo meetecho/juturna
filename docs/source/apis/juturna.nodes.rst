@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   juturna.nodes.proc
    juturna.nodes.sink
    juturna.nodes.source
 

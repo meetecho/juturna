@@ -3,6 +3,10 @@ body {
     color: gray;
 }
 
+html {
+  font-size: 1em;
+}
+
 .content {
     width: 40em;
     padding-left: 10em;

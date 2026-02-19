@@ -46,6 +46,7 @@
     :caption: Built-in nodes
 
     built_in/overview.rst
+    built_in/builtin
 
 .. toctree::
     :maxdepth: 2
