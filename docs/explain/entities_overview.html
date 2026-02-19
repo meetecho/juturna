@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/meetecho_style.css?v=83603a25" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/meetecho_style.css?v=09766e91" />
     <link rel="stylesheet" type="text/css" href="../_static/css/fa-6.7.2.all.min.css?v=b7e0f7cc" />
     
     
@@ -218,6 +218,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pipelines.html">Pipelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="messages.html">Messages and payloads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote.html">Remote components</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How To</span></p>
 <ul>
@@ -226,6 +227,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../how_to/create_pipelines.html">Create pipelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../how_to/use_cli.html">Use Juturna CLI tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../how_to/environment.html">Constants and environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/remotise_node.html">Remotise a node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/observe.html">Observability in Juturna</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Create</span></p>
 <ul>
@@ -233,23 +236,52 @@
 <li class="toctree-l1"><a class="reference internal" href="../create/audio_transcription.html">Audio transcription with Whisper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../create/video_yolo.html">Video annotation with YOLO</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Built-in nodes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../built_in/overview.html">Zero-dependency collection</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../built_in/builtin.html">Built-in nodes</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Built-in nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.source.html">Source nodes</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Source nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_file.html"><code class="docutils literal notranslate"><span class="pre">AudioFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp.html"><code class="docutils literal notranslate"><span class="pre">AudioRTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">AudioRTPAv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_http.html"><code class="docutils literal notranslate"><span class="pre">HttpJson</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_websocket.html"><code class="docutils literal notranslate"><span class="pre">JsonWebsocket</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_file.html"><code class="docutils literal notranslate"><span class="pre">VideoFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp.html"><code class="docutils literal notranslate"><span class="pre">VideoRTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">VideoRTPAv</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.proc.html">Proc nodes</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Proc nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.proc.warp.html"><code class="docutils literal notranslate"><span class="pre">Warp</span></code> (auto)</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.sink.html">Sink nodes</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Sink nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_http.html"><code class="docutils literal notranslate"><span class="pre">NotifierHTTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_udp.html"><code class="docutils literal notranslate"><span class="pre">NotifierUDP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_websocket.html"><code class="docutils literal notranslate"><span class="pre">NotifierWebsocket</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.videostream_ffmpeg.html"><code class="docutils literal notranslate"><span class="pre">VideostreamFFMPEG</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../apis/explore.html">Explore the APIs</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of juturna</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of juturna package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of juturna</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of juturna package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.components.html">juturna.components package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.hub.html">juturna.hub package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.meta.html">juturna.meta package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.names.html">juturna.names package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.nodes.html">juturna.nodes package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of juturna.nodes package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.nodes.html">juturna.nodes package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of juturna.nodes package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.proc.html">juturna.nodes.proc package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.sink.html">juturna.nodes.sink package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.source.html">juturna.nodes.source package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.payloads.html">juturna.payloads package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of juturna.utils package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of juturna.utils package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.jt_utils.html">juturna.utils.jt_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
@@ -314,13 +346,16 @@ customise them as you see fit.</p>
 </ul>
 <section id="pipeline">
 <h2>Pipeline<a class="headerlink" href="#pipeline" title="Link to this heading">¶</a></h2>
-<p>A pipeline is a processing structure that receives data from a source,
-transforms them, and produces the transformed data as output.</p>
-<p>A basic, minimal Juturna pipeline can be seen as a
+<p>A <a class="reference internal" href="pipelines.html#explain-pipelines"><span class="std std-ref">pipeline</span></a> is a processing structure that
+instantiates and aggregates nodes, managing their links and lifecycle. Pipelines
+can be seen as multi-input, multi-output entities, where the underlying data
+consumption and generation are of course performed by the constructing nodes.</p>
+<p>A basic, minimal Juturna pipeline can be somehow seen as a
 <a class="reference external" href="https://en.wikipedia.org/wiki/Directed_acyclic_graph" rel="noreferrer" target="_blank">DAG <svg version="1.1" width="1.0em" height="1.0em" viewBox="0 0 16 16" aria-hidden="true" style="display: inline-block; vertical-align: middle; fill: currentColor;"><path d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z"></path></svg></a>, a graph with a
 single root node with in-degree of 0 (of course, this is not <em>technically</em> true,
 as the root node of a pipeline still receives data from somewhere), and every
-other node with an in-degree of 1 or more.</p>
+other node with an in-degree of 1 or more. Nodes can have as many outbound
+connections as the pipeline structure requires.</p>
 <p>If you look at the picture below, you should see: an external source feeding
 the root node of our pipeline, a bunch of nodes moving forward processed and
 transformed data, and some destination (local or remote, it does not really
@@ -340,10 +375,10 @@ for which 2 source nodes are defined.</p>
 </section>
 <section id="node">
 <h2>Node<a class="headerlink" href="#node" title="Link to this heading">¶</a></h2>
-<p>A node is a component that receives data from one or more sources (a node source
-can be external, like we saw earlier, or it can be an upstream edge to another
-node), processes them, and makes the produced data available to all its
-downstream destinations.</p>
+<p>A <a class="reference internal" href="nodes.html#explain-nodes"><span class="std std-ref">node</span></a> is a component that receives data from one or more
+sources (a node source can be external, like we saw earlier, or it can be an
+upstream edge to another node), processes them, and makes the produced data
+available to all its downstream destinations.</p>
 <p>So, a node receives data, and spits out data.</p>
 <p>Broadly speaking, nodes can be split into three logical categories, depending on
 the task they are programmed to performed:</p>
@@ -373,8 +408,8 @@ destination you need to reach, you can still create a custom node for it!</p>
 <p>When designing a pipeline, there are some alternatives for how to get the nodes
 you need:</p>
 <ol class="arabic simple">
-<li><p>use Juturna <strong>built-in nodes</strong>, that are, all those nodes that are available within the
-Juturna library itself</p></li>
+<li><p>use Juturna <strong>built-in nodes</strong>, that are, all those nodes that are available
+within the Juturna library itself</p></li>
 <li><p>use community <strong>plugin nodes</strong>, that are, nodes that can be distributed
 through GitHub, the Juturna Hub facility, or any other tool you can think of</p></li>
 <li><p>implement your own <strong>custom nodes</strong> (this is the fun solution!)</p></li>
@@ -382,12 +417,12 @@ through GitHub, the Juturna Hub facility, or any other tool you can think of</p>
 </section>
 <section id="messages-and-payloads">
 <h2>Messages and payloads<a class="headerlink" href="#messages-and-payloads" title="Link to this heading">¶</a></h2>
-<p>Nodes within a pipeline pass data around using messages. A message is just a
-data container with some utilities attached to it. Also, messages can be created
-with the definition of the type of data they are going to encapsulate (a
-<strong>payload</strong>). This comes especially helpful when nodes are defined, so that
-users can have an idea of what kinda of data a node expects at the input, and
-produces at the output.</p>
+<p>Nodes within a pipeline pass data around using
+<a class="reference internal" href="messages.html#explain-messages"><span class="std std-ref">messages</span></a>. A message is just a data container with some
+utilities attached to it. Also, messages can be created with the definition of
+the type of data they are going to encapsulate (a <strong>payload</strong>). This comes
+especially helpful when nodes are defined, so that users can have an idea of
+what kinda of data a node expects at the input, and produces at the output.</p>
 </section>
 </section>
 

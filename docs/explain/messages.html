@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Why and how" href="../how_to/why_how.html" /><link rel="prev" title="Nodes" href="nodes.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Remote components" href="remote.html" /><link rel="prev" title="Nodes" href="nodes.html" />
         <link rel="prefetch" href="../_static/img/logo_light_alt.svg" as="image" />
         <link rel="prefetch" href="../_static/img/logo_dark_alt.svg" as="image" />
 
@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/meetecho_style.css?v=83603a25" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/meetecho_style.css?v=09766e91" />
     <link rel="stylesheet" type="text/css" href="../_static/css/fa-6.7.2.all.min.css?v=b7e0f7cc" />
     
     
@@ -218,6 +218,7 @@
 <li class="toctree-l1"><a class="reference internal" href="pipelines.html">Pipelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="nodes.html">Nodes</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Messages and payloads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remote.html">Remote components</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How To</span></p>
 <ul>
@@ -226,6 +227,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../how_to/create_pipelines.html">Create pipelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../how_to/use_cli.html">Use Juturna CLI tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../how_to/environment.html">Constants and environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/remotise_node.html">Remotise a node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/observe.html">Observability in Juturna</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Create</span></p>
 <ul>
@@ -233,23 +236,52 @@
 <li class="toctree-l1"><a class="reference internal" href="../create/audio_transcription.html">Audio transcription with Whisper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../create/video_yolo.html">Video annotation with YOLO</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Built-in nodes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../built_in/overview.html">Zero-dependency collection</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../built_in/builtin.html">Built-in nodes</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Built-in nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.source.html">Source nodes</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Source nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_file.html"><code class="docutils literal notranslate"><span class="pre">AudioFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp.html"><code class="docutils literal notranslate"><span class="pre">AudioRTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">AudioRTPAv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_http.html"><code class="docutils literal notranslate"><span class="pre">HttpJson</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_websocket.html"><code class="docutils literal notranslate"><span class="pre">JsonWebsocket</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_file.html"><code class="docutils literal notranslate"><span class="pre">VideoFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp.html"><code class="docutils literal notranslate"><span class="pre">VideoRTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">VideoRTPAv</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.proc.html">Proc nodes</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Proc nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.proc.warp.html"><code class="docutils literal notranslate"><span class="pre">Warp</span></code> (auto)</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.sink.html">Sink nodes</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Sink nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_http.html"><code class="docutils literal notranslate"><span class="pre">NotifierHTTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_udp.html"><code class="docutils literal notranslate"><span class="pre">NotifierUDP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_websocket.html"><code class="docutils literal notranslate"><span class="pre">NotifierWebsocket</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.videostream_ffmpeg.html"><code class="docutils literal notranslate"><span class="pre">VideostreamFFMPEG</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../apis/explore.html">Explore the APIs</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of juturna</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of juturna package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of juturna</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of juturna package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.components.html">juturna.components package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.hub.html">juturna.hub package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.meta.html">juturna.meta package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.names.html">juturna.names package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.nodes.html">juturna.nodes package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of juturna.nodes package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.nodes.html">juturna.nodes package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of juturna.nodes package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.proc.html">juturna.nodes.proc package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.sink.html">juturna.nodes.sink package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.source.html">juturna.nodes.source package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.payloads.html">juturna.payloads package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of juturna.utils package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of juturna.utils package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.jt_utils.html">juturna.utils.jt_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
@@ -301,7 +333,7 @@
         </div>
         <article role="main" id="furo-main-content">
           <section id="messages-and-payloads">
-<h1>Messages and payloads<a class="headerlink" href="#messages-and-payloads" title="Link to this heading">¶</a></h1>
+<span id="explain-messages"></span><h1>Messages and payloads<a class="headerlink" href="#messages-and-payloads" title="Link to this heading">¶</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">Message</span></code> class is Juturna’s fundamental unit of data transfer. Messages
 are designed to carry data payloads decorated with versioning, timing, and
 arbitrary metadata. Every byte that flows through a pipeline flows inside a
@@ -329,9 +361,9 @@ context).</p></li>
 <p>As said, a message is just a simple data container. It carries a payload, plus
 some extra fields that can be useful to determine who generated it, when, and in
 which order comared to other messages.</p>
-<p>Other than its basic properties, such as <cite>creator</cite>, <cite>version</cite>, <cite>payload</cite>, <cite>meta</cite>
-and <cite>timers</cite>, a message offers a few methods that can help with managing its
-content and representation:</p>
+<p>Other than its basic properties, such as <code class="docutils literal notranslate"><span class="pre">creator</span></code>, <code class="docutils literal notranslate"><span class="pre">version</span></code>, <code class="docutils literal notranslate"><span class="pre">payload</span></code>,
+<code class="docutils literal notranslate"><span class="pre">meta</span></code> and <code class="docutils literal notranslate"><span class="pre">timers</span></code>, a message offers a few methods that can help with
+managing its content and representation:</p>
 <p><code class="docutils literal notranslate"><span class="pre">message.to_dict()</span></code> and <code class="docutils literal notranslate"><span class="pre">message.to_json(encoder)</span></code> offer serialisation
 options for when a message needs to be converted, stored, or transmitted to a
 destination that requires serialised content (these are also used by nodes
@@ -368,6 +400,65 @@ buffer whenever its synchroniser marked multiple messages for processing.</p></l
 pairs.</p></li>
 </ul>
 </section>
+<section id="immutability">
+<h2>Immutability<a class="headerlink" href="#immutability" title="Link to this heading">¶</a></h2>
+<p>The key aspect of both messages and payloads is <strong>immutability</strong>. In short:</p>
+<ul class="simple">
+<li><p>received messages within a node are immutable;</p></li>
+<li><p>playloads are always immutable, so they cannot be modified once created;</p></li>
+<li><p>messages can be <cite>drafted</cite>, so they can be modified before being finalised for
+transmission.</p></li>
+</ul>
+<p>Aside from its payload, a freshly created message can be modified, just like any
+other object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">juturna.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">juturna.payloads</span><span class="w"> </span><span class="kn">import</span> <span class="n">AudioPayload</span>
+
+
+<span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
+  <span class="n">creator</span><span class="o">=</span><span class="s1">&#39;creator_name&#39;</span><span class="p">,</span>
+  <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+  <span class="n">payload</span><span class="o">=</span><span class="n">AudioPayload</span><span class="p">()</span>
+<span class="p">)</span>
+
+<span class="c1"># this is allowed</span>
+<span class="n">message</span><span class="o">.</span><span class="n">version</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># this will throw an error!</span>
+<span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+<span class="n">File</span> <span class="s2">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="n">File</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="fm">__setattr__</span>
+<span class="n">dataclasses</span><span class="o">.</span><span class="n">FrozenInstanceError</span><span class="p">:</span> <span class="n">cannot</span> <span class="n">assign</span> <span class="n">to</span> <span class="n">field</span> <span class="s1">&#39;channels&#39;</span>
+</pre></div>
+</div>
+<p>There are situations where it might be conveniente to iteratively create a
+payload, without the need to store its attribute values somewhere and assign
+them only once. In this case, a message can be created with a payload draft. A
+payload draft accepts the type of payload it will eventually be turned into as
+argument. Other than that, it behaves exactly like a normal payload.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">juturna.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">juturna.payloads</span><span class="w"> </span><span class="kn">import</span> <span class="n">Draft</span><span class="p">,</span> <span class="n">AudioPayload</span>
+
+
+<span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
+  <span class="n">creator</span><span class="o">=</span><span class="s1">&#39;creator_name&#39;</span><span class="p">,</span>
+  <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+  <span class="n">payload</span><span class="o">=</span><span class="n">Draft</span><span class="p">(</span><span class="n">AudioPayload</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># this is allowed now</span>
+<span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="mi">2</span>
+</pre></div>
+</div>
+<p>Messages can be explicitly made immutable by calling <code class="docutils literal notranslate"><span class="pre">message.freeze()</span></code>.
+However, nodes take care of that internally before sending out messages.</p>
+<p>Message and payload immutability is a powerful feature: it allows for zero-copy
+transmission of every bit of data flowing through a pipeline, ensuring integrity
+and consistency (multiple nodes receiving the same message can be sure the data
+within that message were not modified by any other node).</p>
+</section>
 </section>
 
         </article>
@@ -375,12 +466,12 @@ pairs.</p></li>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../how_to/why_how.html">
+          <a class="next-page" href="remote.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Why and how</div>
+                <div class="title">Remote components</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -436,6 +527,7 @@ pairs.</p></li>
 <li><a class="reference internal" href="#">Messages and payloads</a><ul>
 <li><a class="reference internal" href="#messages">Messages</a></li>
 <li><a class="reference internal" href="#payloads">Payloads</a></li>
+<li><a class="reference internal" href="#immutability">Immutability</a></li>
 </ul>
 </li>
 </ul>

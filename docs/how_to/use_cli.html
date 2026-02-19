@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/meetecho_style.css?v=83603a25" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/meetecho_style.css?v=09766e91" />
     <link rel="stylesheet" type="text/css" href="../_static/css/fa-6.7.2.all.min.css?v=b7e0f7cc" />
     
     
@@ -218,6 +218,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../explain/pipelines.html">Pipelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../explain/nodes.html">Nodes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../explain/messages.html">Messages and payloads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/remote.html">Remote components</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How To</span></p>
 <ul class="current">
@@ -226,6 +227,8 @@
 <li class="toctree-l1"><a class="reference internal" href="create_pipelines.html">Create pipelines</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Use Juturna CLI tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">Constants and environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remotise_node.html">Remotise a node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observe.html">Observability in Juturna</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Create</span></p>
 <ul>
@@ -233,23 +236,52 @@
 <li class="toctree-l1"><a class="reference internal" href="../create/audio_transcription.html">Audio transcription with Whisper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../create/video_yolo.html">Video annotation with YOLO</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Built-in nodes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../built_in/overview.html">Zero-dependency collection</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../built_in/builtin.html">Built-in nodes</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Built-in nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.source.html">Source nodes</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Source nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_file.html"><code class="docutils literal notranslate"><span class="pre">AudioFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp.html"><code class="docutils literal notranslate"><span class="pre">AudioRTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">AudioRTPAv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_http.html"><code class="docutils literal notranslate"><span class="pre">HttpJson</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_websocket.html"><code class="docutils literal notranslate"><span class="pre">JsonWebsocket</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_file.html"><code class="docutils literal notranslate"><span class="pre">VideoFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp.html"><code class="docutils literal notranslate"><span class="pre">VideoRTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">VideoRTPAv</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.proc.html">Proc nodes</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Proc nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.proc.warp.html"><code class="docutils literal notranslate"><span class="pre">Warp</span></code> (auto)</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.sink.html">Sink nodes</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Sink nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_http.html"><code class="docutils literal notranslate"><span class="pre">NotifierHTTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_udp.html"><code class="docutils literal notranslate"><span class="pre">NotifierUDP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_websocket.html"><code class="docutils literal notranslate"><span class="pre">NotifierWebsocket</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.videostream_ffmpeg.html"><code class="docutils literal notranslate"><span class="pre">VideostreamFFMPEG</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../apis/explore.html">Explore the APIs</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of juturna</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of juturna package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of juturna</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of juturna package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.components.html">juturna.components package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.hub.html">juturna.hub package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.meta.html">juturna.meta package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.names.html">juturna.names package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.nodes.html">juturna.nodes package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of juturna.nodes package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.nodes.html">juturna.nodes package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of juturna.nodes package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.proc.html">juturna.nodes.proc package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.sink.html">juturna.nodes.sink package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.source.html">juturna.nodes.source package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.payloads.html">juturna.payloads package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of juturna.utils package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of juturna.utils package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.jt_utils.html">juturna.utils.jt_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
@@ -325,7 +357,62 @@ to be installed with specific dependency groups.</p>
 <span class="go">    serve               launch the Juturna pipeline manager service</span>
 <span class="go">    create              interactively create new pipeline configuration files</span>
 <span class="go">    stub                create a custom node skeleton</span>
+<span class="go">    remotize            start the remote node service</span>
+<span class="go">    require             collect all the required packages for a pipeline</span>
 </pre></div>
+</div>
+<div class="table-wrapper docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>command</p></th>
+<th class="head"><p>group</p></th>
+<th class="head"><p>description</p></th>
+<th class="head"><p>dependencies</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">launch</span></code></p></td>
+<td><p><span class="sd-sphinx-override sd-badge sd-bg-success sd-bg-text-success">built-in</span></p></td>
+<td><p>run a target pipeline</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">validate</span></code></p></td>
+<td><p><span class="sd-sphinx-override sd-badge sd-bg-success sd-bg-text-success">built-in</span></p></td>
+<td><p>validate a target pipeline</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">create</span></code></p></td>
+<td><p><span class="sd-sphinx-override sd-badge sd-bg-primary sd-bg-text-primary">pipebuilder</span></p></td>
+<td><p>create a new pipeline</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">prompt_toolkit</span></code> <br>
+<code class="docutils literal notranslate"><span class="pre">rich</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">serve</span></code></p></td>
+<td><p><span class="sd-sphinx-override sd-badge sd-bg-primary sd-bg-text-primary">httpwrapper</span></p></td>
+<td><p>pipeline manager service</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">fastapi</span></code> <br>
+<code class="docutils literal notranslate"><span class="pre">fastapi-cli</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stub</span></code></p></td>
+<td><p><span class="sd-sphinx-override sd-badge sd-bg-success sd-bg-text-success">built-in</span></p></td>
+<td><p>create a custom node stub</p></td>
+<td><p>–</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">remotize</span></code></p></td>
+<td><p><span class="sd-sphinx-override sd-badge sd-bg-primary sd-bg-text-primary">warp</span></p></td>
+<td><p>remote node service</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">grpcio</span></code> <br>
+<code class="docutils literal notranslate"><span class="pre">grpcio-tools</span></code> <br>
+<code class="docutils literal notranslate"><span class="pre">protobuf</span></code> <br>
+<code class="docutils literal notranslate"><span class="pre">typing_extensions</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">require</span></code></p></td>
+<td><p><span class="sd-sphinx-override sd-badge sd-bg-success sd-bg-text-success">built-in</span></p></td>
+<td><p>aggregate node requirements</p></td>
+<td><p>–</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 <section id="pipe-launcher">
 <h2>Pipe launcher<a class="headerlink" href="#pipe-launcher" title="Link to this heading">¶</a></h2>
@@ -352,7 +439,7 @@ after warming up (<code class="docutils literal notranslate"><span class="pre">-
 <h2>Pipe validator<a class="headerlink" href="#pipe-validator" title="Link to this heading">¶</a></h2>
 <p><span class="sd-sphinx-override sd-badge sd-bg-success sd-bg-text-success">built-in</span></p>
 <p>Check a pipeline configuration file for validity.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/$ </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>launch<span class="w"> </span>--help
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/$ </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>validate<span class="w"> </span>--help
 <span class="go">usage: juturna validate [-h] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}] --config FILE [--deep] [--plugin-folder DIR] [--report FILE]</span>
 
 <span class="go">options:</span>
@@ -366,6 +453,51 @@ after warming up (<code class="docutils literal notranslate"><span class="pre">-
 <span class="go">                        directory where node plugin nodes are stored</span>
 <span class="go">  --report FILE, -r FILE</span>
 <span class="go">                        save json report of the validation test</span>
+</pre></div>
+</div>
+</section>
+<section id="node-stub-creator">
+<h2>Node stub creator<a class="headerlink" href="#node-stub-creator" title="Link to this heading">¶</a></h2>
+<p><span class="sd-sphinx-override sd-badge sd-bg-success sd-bg-text-success">built-in</span></p>
+<p>Create a custom node stub.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/$ </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>stub<span class="w"> </span>--help
+<span class="go">usage: juturna stub [-h] --node-name NODE_NAME [--node-type NODE_TYPE] [--node-class NODE_CLASS] [--author AUTHOR] [--email EMAIL] [--destination-folder DESTINATION_FOLDER]</span>
+
+<span class="go">options:</span>
+<span class="go">  -h, --help            show this help message and exit</span>
+<span class="go">  --node-name NODE_NAME, -n NODE_NAME</span>
+<span class="go">                        node name, used for folder and module</span>
+<span class="go">  --node-type NODE_TYPE, -t NODE_TYPE</span>
+<span class="go">                        node type</span>
+<span class="go">  --node-class NODE_CLASS, -N NODE_CLASS</span>
+<span class="go">                        node class name, used for class name</span>
+<span class="go">  --author AUTHOR, -a AUTHOR</span>
+<span class="go">                        node author name</span>
+<span class="go">  --email EMAIL, -e EMAIL</span>
+<span class="go">                        node author email</span>
+<span class="go">  --destination-folder DESTINATION_FOLDER, -d DESTINATION_FOLDER</span>
+<span class="go">                        destination folder for the plugin (defaulted to ./plugins)</span>
+</pre></div>
+</div>
+</section>
+<section id="dependency-aggregator">
+<h2>Dependency aggregator<a class="headerlink" href="#dependency-aggregator" title="Link to this heading">¶</a></h2>
+<p><span class="sd-sphinx-override sd-badge sd-bg-success sd-bg-text-success">built-in</span></p>
+<p>Aggregate external dependencies of plugin nodes.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/$ </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>require<span class="w"> </span>--help
+<span class="go">usage: juturna require [-h] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}] --config FILE</span>
+<span class="go">                   --plugin-dir PLUGIN_DIR [PLUGIN_DIR ...] [--add-extra] [--save SAVE]</span>
+
+<span class="go">options:</span>
+<span class="go">  -h, --help            show this help message and exit</span>
+<span class="go">  --log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}, -l {NOTSET,DEBUG,INFO,WARNING,ERROR}</span>
+<span class="go">                        set log level during pipeline execution</span>
+<span class="go">  --config FILE, -c FILE</span>
+<span class="go">                        pipeline json configuration file</span>
+<span class="go">  --plugin-dir PLUGIN_DIR [PLUGIN_DIR ...], -p PLUGIN_DIR [PLUGIN_DIR ...]</span>
+<span class="go">                        plugin folders (at least one is required)</span>
+<span class="go">  --add-extra, -a       add collected dependencies to configuration file</span>
+<span class="go">  --save SAVE, -s SAVE  where to save the collected dependencies</span>
 </pre></div>
 </div>
 </section>
@@ -407,27 +539,29 @@ allows pipeline manipulation.</p>
 </pre></div>
 </div>
 </section>
-<section id="node-stub-creator">
-<h2>Node stub creator<a class="headerlink" href="#node-stub-creator" title="Link to this heading">¶</a></h2>
-<p><span class="sd-sphinx-override sd-badge sd-bg-success sd-bg-text-success">built-in</span></p>
-<p>Create a custom node stub.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/$ </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>stub<span class="w"> </span>--help
-<span class="go">usage: juturna stub [-h] --node-name NODE_NAME [--node-type NODE_TYPE] [--node-class NODE_CLASS] [--author AUTHOR] [--email EMAIL] [--destination-folder DESTINATION_FOLDER]</span>
+<section id="remote-service">
+<h2>Remote service<a class="headerlink" href="#remote-service" title="Link to this heading">¶</a></h2>
+<p><span class="sd-sphinx-override sd-badge sd-bg-primary sd-bg-text-primary">warp</span></p>
+<p>Launch the remote service to expose a node for delocalised pipelines to use.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/$ </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>remotize<span class="w"> </span>--help
+<span class="go">usage: juturna remotize [-h] --node-name NODE_NAME --node-mark NODE_MARK --plugin-dir PLUGIN_DIR [--pipe-name PIPE_NAME] [--port PORT]</span>
+<span class="go">                        [--default-config FILE] [--max-workers MAX_WORKERS]</span>
 
 <span class="go">options:</span>
 <span class="go">  -h, --help            show this help message and exit</span>
 <span class="go">  --node-name NODE_NAME, -n NODE_NAME</span>
-<span class="go">                        node name, used for folder and module</span>
-<span class="go">  --node-type NODE_TYPE, -t NODE_TYPE</span>
-<span class="go">                        node type</span>
-<span class="go">  --node-class NODE_CLASS, -N NODE_CLASS</span>
-<span class="go">                        node class name, used for class name</span>
-<span class="go">  --author AUTHOR, -a AUTHOR</span>
-<span class="go">                        node author name</span>
-<span class="go">  --email EMAIL, -e EMAIL</span>
-<span class="go">                        node author email</span>
-<span class="go">  --destination-folder DESTINATION_FOLDER, -d DESTINATION_FOLDER</span>
-<span class="go">                        destination folder for the plugin (defaulted to ./plugins)</span>
+<span class="go">                        name of the node to run</span>
+<span class="go">  --node-mark NODE_MARK, -m NODE_MARK</span>
+<span class="go">                        mark of the node to run</span>
+<span class="go">  --plugin-dir PLUGIN_DIR, -P PLUGIN_DIR</span>
+<span class="go">                        path to plugins directory</span>
+<span class="go">  --pipe-name PIPE_NAME, -N PIPE_NAME</span>
+<span class="go">                        pipeline name context</span>
+<span class="go">  --port PORT, -p PORT  port to listen on</span>
+<span class="go">  --default-config FILE, -c FILE</span>
+<span class="go">                        default configuration as JSON string</span>
+<span class="go">  --max-workers MAX_WORKERS, -w MAX_WORKERS</span>
+<span class="go">                        maximum number of worker threads</span>
 </pre></div>
 </div>
 </section>
@@ -499,9 +633,11 @@ allows pipeline manipulation.</p>
 <li><a class="reference internal" href="#">Use Juturna CLI tools</a><ul>
 <li><a class="reference internal" href="#pipe-launcher">Pipe launcher</a></li>
 <li><a class="reference internal" href="#pipe-validator">Pipe validator</a></li>
+<li><a class="reference internal" href="#node-stub-creator">Node stub creator</a></li>
+<li><a class="reference internal" href="#dependency-aggregator">Dependency aggregator</a></li>
 <li><a class="reference internal" href="#pipe-creator">Pipe creator</a></li>
 <li><a class="reference internal" href="#pipe-service-manager">Pipe service manager</a></li>
-<li><a class="reference internal" href="#node-stub-creator">Node stub creator</a></li>
+<li><a class="reference internal" href="#remote-service">Remote service</a></li>
 </ul>
 </li>
 </ul>

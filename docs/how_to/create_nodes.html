@@ -13,7 +13,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=25af2a20" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../_static/css/meetecho_style.css?v=83603a25" />
+    <link rel="stylesheet" type="text/css" href="../_static/css/meetecho_style.css?v=09766e91" />
     <link rel="stylesheet" type="text/css" href="../_static/css/fa-6.7.2.all.min.css?v=b7e0f7cc" />
     
     
@@ -218,6 +218,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../explain/pipelines.html">Pipelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../explain/nodes.html">Nodes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../explain/messages.html">Messages and payloads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/remote.html">Remote components</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How To</span></p>
 <ul class="current">
@@ -226,6 +227,8 @@
 <li class="toctree-l1"><a class="reference internal" href="create_pipelines.html">Create pipelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="use_cli.html">Use Juturna CLI tools</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">Constants and environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remotise_node.html">Remotise a node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observe.html">Observability in Juturna</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Create</span></p>
 <ul>
@@ -233,23 +236,52 @@
 <li class="toctree-l1"><a class="reference internal" href="../create/audio_transcription.html">Audio transcription with Whisper</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../create/video_yolo.html">Video annotation with YOLO</a></li>
 </ul>
+<p class="caption" role="heading"><span class="caption-text">Built-in nodes</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../built_in/overview.html">Zero-dependency collection</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../built_in/builtin.html">Built-in nodes</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Built-in nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.source.html">Source nodes</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Source nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_file.html"><code class="docutils literal notranslate"><span class="pre">AudioFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp.html"><code class="docutils literal notranslate"><span class="pre">AudioRTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">AudioRTPAv</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_http.html"><code class="docutils literal notranslate"><span class="pre">HttpJson</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_websocket.html"><code class="docutils literal notranslate"><span class="pre">JsonWebsocket</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_file.html"><code class="docutils literal notranslate"><span class="pre">VideoFile</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp.html"><code class="docutils literal notranslate"><span class="pre">VideoRTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">VideoRTPAv</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.proc.html">Proc nodes</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Proc nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.proc.warp.html"><code class="docutils literal notranslate"><span class="pre">Warp</span></code> (auto)</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.sink.html">Sink nodes</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Sink nodes</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_http.html"><code class="docutils literal notranslate"><span class="pre">NotifierHTTP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_udp.html"><code class="docutils literal notranslate"><span class="pre">NotifierUDP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_websocket.html"><code class="docutils literal notranslate"><span class="pre">NotifierWebsocket</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.videostream_ffmpeg.html"><code class="docutils literal notranslate"><span class="pre">VideostreamFFMPEG</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 <p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../apis/explore.html">Explore the APIs</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of juturna</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of juturna package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of juturna</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of juturna package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.components.html">juturna.components package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.hub.html">juturna.hub package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.meta.html">juturna.meta package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.names.html">juturna.names package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.nodes.html">juturna.nodes package</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of juturna.nodes package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.nodes.html">juturna.nodes package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of juturna.nodes package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.proc.html">juturna.nodes.proc package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.sink.html">juturna.nodes.sink package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.nodes.source.html">juturna.nodes.source package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.payloads.html">juturna.payloads package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of juturna.utils package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of juturna.utils package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.jt_utils.html">juturna.utils.jt_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
@@ -302,29 +334,24 @@
         <article role="main" id="furo-main-content">
           <section id="create-custom-nodes">
 <h1>Create custom nodes<a class="headerlink" href="#create-custom-nodes" title="Link to this heading">¶</a></h1>
-<p>This guide contains the basic instructions you can follow to create a custom
-node to use within Juturna pipelines. Other than an overview of how to assemble
-all the pieces to design useful custom components, this document will offer the
-required steps to create a custom processing node called <code class="docutils literal notranslate"><span class="pre">RedCatDetector</span></code>. a
-proc node in charge of using a custom YOLO model to detect the presence of a
-red cat in any input images.</p>
+<p>This guide contains the basic instructions you can follow to create custom nodes
+to use within Juturna pipelines. Other than an overview of how to assemble all
+the pieces to design useful custom components, this document will offer the
+required steps to create a node called <code class="docutils literal notranslate"><span class="pre">RedCatDetector</span></code>, a processing node in
+charge of using a custom YOLO model to detect the possible presence of red cats
+in any input image.</p>
 <section id="setup-the-environment">
 <h2>Setup the environment<a class="headerlink" href="#setup-the-environment" title="Link to this heading">¶</a></h2>
 <p>Make sure you are working on a virtual environment, and you have Juturna
 installed alongside all the extra dependencies you need for your node.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">user:~/prj$ </span>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>.venv
 <span class="gp">user:~/prj$ </span><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
-<span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/prj$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/meetecho/juturna
-<span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/prj$ </span>pip<span class="w"> </span>install<span class="w"> </span>./juturna
+<span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/prj$ </span>pip<span class="w"> </span>install<span class="w"> </span>juturna
+<span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/prj$ </span>mkdir<span class="w"> </span>plugins
 </pre></div>
 </div>
-<p>As we might be interested in using Juturna community plugins, the corresponding
-folder can be moved from the cloned Juturna repository to the root of the
-project:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/prj$ </span>cp<span class="w"> </span>-r<span class="w"> </span>./juturna/plugins<span class="w"> </span>./
-</pre></div>
-</div>
-<p>Nodes will then be available in <code class="docutils literal notranslate"><span class="pre">./juturna/plugins/nodes</span></code>.</p>
+<p>With the last command, we created the <code class="docutils literal notranslate"><span class="pre">plugins</span></code> folder where we are going to
+store our custom node.</p>
 </section>
 <section id="create-the-node-skeleton">
 <h2>Create the node skeleton<a class="headerlink" href="#create-the-node-skeleton" title="Link to this heading">¶</a></h2>
@@ -340,7 +367,7 @@ type <code class="docutils literal notranslate"><span class="pre">&lt;NODE_TYPE&
               └── readme.md
 </pre></div>
 </div>
-<p>Since <code class="docutils literal notranslate"><span class="pre">MyAwesomeNode</span></code> is a proc node, we can go ahead and create all the
+<p>Since <code class="docutils literal notranslate"><span class="pre">RedCatDetector</span></code> is a proc node, we can go ahead and create all the
 required files under <code class="docutils literal notranslate"><span class="pre">./plugins/nodes/proc/_red_cat_detector/</span></code>. Alternatively,
 we can let Juturna handle that for us with the CLI <code class="docutils literal notranslate"><span class="pre">stub</span></code> command:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/prj$ </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>stub<span class="w"> </span><span class="se">\</span>
@@ -357,7 +384,7 @@ we can let Juturna handle that for us with the CLI <code class="docutils literal
 <label class="sd-tab-label" for="sd-tab-item-0">
 red_cat_detector.py</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">RedCatDetector</span>
+<span class="sd">CatDetector</span>
 
 <span class="sd">@author: Cat Watcher</span>
 <span class="sd">@email: watch@cat.com</span>
@@ -436,13 +463,13 @@ config.toml</label><div class="sd-tab-content docutils">
 <input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-2">
 README.md</label><div class="sd-tab-content docutils">
-<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span><span class="gh"># red_cat_detector</span>
+<div class="highlight-markdown notranslate"><div class="highlight"><pre><span></span><span class="gh"># cat_detector</span>
 
 <span class="gu">## Node type: proc</span>
 
-<span class="gu">## Node class name: RedCatDetector</span>
+<span class="gu">## Node class name: CatDetector</span>
 
-<span class="gu">## Node name: red_cat_detector</span>
+<span class="gu">## Node name: cat_detector</span>
 </pre></div>
 </div>
 </div>
@@ -456,9 +483,12 @@ requirements.txt</label><div class="sd-tab-content docutils">
 </div>
 <p>If you decide to create your node files manually:</p>
 <ul class="simple">
-<li><p>make sure the node folder name starts with an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>)</p></li>
+<li><p>make sure the node folder name starts with an underscore (<code class="docutils literal notranslate"><span class="pre">_</span></code>) (in our
+example, the node code is in the folder
+<code class="docutils literal notranslate"><span class="pre">./plugins/nodes/proc/_red_cat_detector</span></code>)</p></li>
 <li><p>make sure the node class file has the same name of its parent folder, just
-without the underscore</p></li>
+without the underscore (in our example, the node class file is
+<code class="docutils literal notranslate"><span class="pre">./plugins/nodes/proc/_red_cat_detector/red_cat_detector.py</span></code>)</p></li>
 <li><p>keep in mind that a <code class="docutils literal notranslate"><span class="pre">README.md</span></code> file is not required, but <strong>higly
 recommended!</strong></p></li>
 </ul>
@@ -466,10 +496,14 @@ recommended!</strong></p></li>
 <section id="add-dependencies">
 <h2>Add dependencies<a class="headerlink" href="#add-dependencies" title="Link to this heading">¶</a></h2>
 <p>We know our node will use a custom <a class="reference external" href="https://docs.ultralytics.com/" rel="noreferrer" target="_blank">YOLO <svg version="1.1" width="1.0em" height="1.0em" viewBox="0 0 16 16" aria-hidden="true" style="display: inline-block; vertical-align: middle; fill: currentColor;"><path d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z"></path></svg></a> model
-to detect the presence of red cats, so when executing the pipeline we need to
+to detect the presence of cats, so when executing the pipeline we need to
 make sure all the YOLO dependencies are satisfied. We then install the
-<code class="docutils literal notranslate"><span class="pre">ultralytics</span></code> package, and make sure to include it in the requirement file.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ultralytics==8.3.79
+<code class="docutils literal notranslate"><span class="pre">ultralytics</span></code> package, and include it in the requirement file. We also install
+<code class="docutils literal notranslate"><span class="pre">opencv-python</span></code> to get a better support when checking alarmingly high levels
+of orangeness in our detected entities.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>.venv<span class="o">)</span><span class="w"> </span>user:~/prj$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ultralytics==8.3.79\n&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>plugins/nodes/proc/_red_cat_detector/requirements.txt
+<span class="o">(</span>.venv<span class="o">)</span><span class="w"> </span>user:~/prj$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;opencv-python==4.13.0.92&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>plugins/nodes/proc/_red_cat_detector/requirements.txt
+<span class="o">(</span>.venv<span class="o">)</span><span class="w"> </span>user:~/prj$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>plugins/nodes/proc/_red_cat_detector/requirements.txt
 </pre></div>
 </div>
 <div class="attention admonition">
@@ -483,19 +517,24 @@ nodes or create new ones!</p>
 </section>
 <section id="add-configuration-items">
 <h2>Add configuration items<a class="headerlink" href="#add-configuration-items" title="Link to this heading">¶</a></h2>
-<p>For our red cat detector, we want to specify a few arguments that will be
-available for the node implementation.</p>
-<p>First of all, we need to specify the name of the model to be used during
-inference. Being a custom model, it will very likely be local, stored somewhere
-on the filesystem. We can also specify the device the model will run on (it
-could be a CPU or a GPU), and the minimum threshold confidence we expect to
-achieve to mark something as a red cat.</p>
-<p>All this can be packed in the node configuration file, where we can define the
-node arguments and their corresponding default values.</p>
+<p>For our cat detector, we want to specify a few arguments that will be available
+for the node implementation. In juturna, this is done by declaring all the
+essential arguments the node accepts, alongside their default values, in the
+<code class="docutils literal notranslate"><span class="pre">config.toml</span></code> file. In our case, this is
+<code class="docutils literal notranslate"><span class="pre">./plugins/nodes/proc/_red_cat_detector/config.toml</span></code>.</p>
+<p>We can imagine the node needs to know:</p>
+<ul class="simple">
+<li><p>the inference model to use,</p></li>
+<li><p>the device to run inference on (whether on CPU or GPU),</p></li>
+<li><p>inference arguments such as confidence threshold and precision.</p></li>
+</ul>
+<p>We pack all this in the node configuration file, where we can define the node
+arguments and their corresponding default values.</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[arguments]</span>
-<span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;./red_cat.pt&quot;</span>
+<span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;yolo11x.pt&quot;</span>
 <span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;cuda&quot;</span>
-<span class="n">confidence</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.4</span>
+<span class="n">cat_min_confidence</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.4</span>
+<span class="n">orangeness_threshold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.6</span>
 </pre></div>
 </div>
 </section>
@@ -504,49 +543,98 @@ node arguments and their corresponding default values.</p>
 <p>The items specified in the node config file are also available to the node
 <code class="docutils literal notranslate"><span class="pre">__init__</span></code> method. We start implementing the node class:</p>
 <ul class="simple">
-<li><p>we import the node dependencies (in this case, only <code class="docutils literal notranslate"><span class="pre">ultralytics</span></code>),</p></li>
+<li><p>we import the node dependencies (in this case, <code class="docutils literal notranslate"><span class="pre">ultralytics</span></code>, <code class="docutils literal notranslate"><span class="pre">cv2</span></code> and
+<code class="docutils literal notranslate"><span class="pre">numpy</span></code>),</p></li>
 <li><p>we modify the constructor signature to include the node arguments,</p></li>
-<li><p>we change the input and output types for the node</p></li>
+<li><p>we change the input and output types for the node (we receive images to
+segment as input, and we produce annotated images as output)</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ultralytics</span><span class="w"> </span><span class="kn">import</span> <span class="n">YOLO</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ultralytics</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cv2</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">juturna.payloads._payloads</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImagePayload</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">juturna.payloads</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImagePayload</span>
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">RedCatDetector</span><span class="p">(</span><span class="n">Node</span><span class="p">[</span><span class="n">ImagePayload</span><span class="p">,</span> <span class="n">ImagePayload</span><span class="p">]):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
                  <span class="n">model</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
                  <span class="n">device</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-                 <span class="n">confidence</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">cat_min_confidence</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">orangeness_threshold</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># this automatically instantiates the base node</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">model</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">device</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">confidence</span> <span class="o">=</span> <span class="n">confidence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_min_confidence</span> <span class="o">=</span> <span class="n">cat_min_confidence</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orangeness_threshold</span> <span class="o">=</span> <span class="n">orangeness_threshold</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_target_class</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>Our node does not need much. It only instantiates a YOLO model, and that can be
-done in the <code class="docutils literal notranslate"><span class="pre">warmup</span></code> method:</p>
+<p>Our node doesn’t need much else. It only instantiates a YOLO model, and that can
+be done in the <code class="docutils literal notranslate"><span class="pre">warmup</span></code> method. Similarly, we isolate the key corresponding to
+the class <code class="docutils literal notranslate"><span class="pre">cat</span></code> among all the possible targets of the YOLO model (we are
+only interested in detecting cats), and store that in a list so that we can
+later pass it to the model directly.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">warmup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;model properly loaded&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_target_class</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;cat&#39;</span><span class="p">]</span>
+
+    <span class="c1"># we can use the built-in logger</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;model instantiated and ready&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The processing logic of the node is pretty simple, and should all be contained
-in the <code class="docutils literal notranslate"><span class="pre">update</span></code> method. Every image the node receives needs to go through the
-model, annotated, and sent upstream to all the listening destinations. Code-wise
-this looks like this:</p>
+<p>The processing logic of the node is pretty simple, and can be fully contained in
+the <code class="docutils literal notranslate"><span class="pre">update</span></code> method. What we want to do is:</p>
+<ul class="simple">
+<li><p>receive an image and run it through our model;</p></li>
+<li><p>check the YOLO results for the presence of cats;</p></li>
+<li><p>isolate orange cats among all other cats;</p></li>
+<li><p>transmit an alert whenever one of those little devils is found.</p></li>
+</ul>
+<a class="reference internal image-reference" href="../_images/tutorial_create_node_flow_diagram.svg"><img alt="node flow" class="align-center" src="../_images/tutorial_create_node_flow_diagram.svg" style="width: 100%;" />
+</a>
+<p>The <code class="docutils literal notranslate"><span class="pre">update</span></code> code might then look something like this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">ImagePayload</span><span class="p">]):</span>
-    <span class="n">image</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">image</span>
+    <span class="c1"># the image to segment is contained in the payload of the received</span>
+    <span class="c1"># message</span>
     <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
-        <span class="n">image</span><span class="p">,</span>
+        <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">image</span><span class="p">,</span>
         <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">conf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">confidence</span><span class="p">,</span>
+        <span class="n">conf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cat_min_confidence</span><span class="p">,</span>
+        <span class="n">classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_target_class</span><span class="p">,</span>
     <span class="p">)</span>
+
+    <span class="c1"># no cat was found, we can return</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">boxes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="n">orange_cats</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+    <span class="c1"># check all the crops for orangeness, we only want orange cats!</span>
+    <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">box</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">boxes</span><span class="p">):</span>
+        <span class="n">bx</span> <span class="o">=</span> <span class="n">box</span><span class="o">.</span><span class="n">xyxy</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">bx</span><span class="p">)</span>
+
+        <span class="n">crop</span> <span class="o">=</span> <span class="n">image_rgb</span><span class="p">[</span><span class="n">y1</span><span class="p">:</span><span class="n">y2</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span><span class="n">x2</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_cat_orange</span><span class="p">(</span><span class="n">crop</span><span class="p">)[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">orange_cats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+
+    <span class="c1"># cats were found, but none of them were orange enough</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">orange_cats</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="c1"># we drop all the other boxes and only keep the ones containing orange</span>
+    <span class="c1"># cats</span>
+    <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">boxes</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">boxes</span><span class="p">[</span><span class="n">orange_cats</span><span class="p">]</span>
 
     <span class="n">annotated</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 
@@ -569,13 +657,69 @@ this looks like this:</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">transmit</span><span class="p">(</span><span class="n">to_send</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>The utility function <code class="docutils literal notranslate"><span class="pre">_is_cat_orange</span></code> simply uses the HSV version of the
+cropped region to check the level of orangeness. This might fail under some
+specific circumstances (maybe you, just like me, have an orange wall), but for
+now we’ll make do.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">is_orange_cat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">crop_rgb</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">crop_rgb</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">:</span>
+        <span class="n">crop_rgb</span> <span class="o">=</span> <span class="p">(</span><span class="n">crop_rgb</span> <span class="o">*</span> <span class="mi">255</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+    <span class="n">hsv</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">crop_rgb</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_RGB2HSV</span><span class="p">)</span>
+
+    <span class="n">lower_orange</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">5</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">])</span>
+    <span class="n">upper_orange</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">25</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">255</span><span class="p">])</span>
+
+    <span class="n">mask</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">inRange</span><span class="p">(</span><span class="n">hsv</span><span class="p">,</span> <span class="n">lower_orange</span><span class="p">,</span> <span class="n">upper_orange</span><span class="p">)</span>
+
+    <span class="n">orange_pixel_count</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">mask</span><span class="p">)</span>
+    <span class="n">total_pixels</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">orange_fraction</span> <span class="o">=</span> <span class="n">orange_pixel_count</span> <span class="o">/</span> <span class="n">total_pixels</span>
+
+    <span class="k">return</span> <span class="n">orange_fraction</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">orangeness_threshold</span><span class="p">,</span> <span class="n">orange_fraction</span>
+</pre></div>
+</div>
+<p>Once this is done, we are all set to start using our custom node. Assuming we
+have a YOLO model readily available, we can place it in a <code class="docutils literal notranslate"><span class="pre">models</span></code> folder in
+our project, then fill in the node configuration in a pipeline JSON file.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>.venv<span class="o">)</span><span class="w"> </span>user:~/prj$<span class="w"> </span>mkdir<span class="w"> </span>models
+<span class="o">(</span>.venv<span class="o">)</span><span class="w"> </span>user:~/prj$<span class="w"> </span>cp<span class="w"> </span>path/to/model/yolo11x.pt<span class="w"> </span>./models
+</pre></div>
+</div>
+<p>In the pipeline configuration file, the node will be represented by the
+following:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;detector&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;proc&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;mark&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;red_cat_detector&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;configuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./models/yolo11x.pt&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;device&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;cat_min_confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;orangeness_threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </section>
-<section id="logging">
-<h2>Logging<a class="headerlink" href="#logging" title="Link to this heading">¶</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">Node</span></code> class comes shipped with a logger object that all nodes can use. A
-node logger is a child of the root logger, and will be named
-<code class="docutils literal notranslate"><span class="pre">jt.&lt;PIPE_NAME&gt;.&lt;NODE_NAME&gt;</span></code>. To use it, simply run:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;node-specific logging entry&#39;</span><span class="p">)</span>
+<section id="live-node-update">
+<h2>Live node update<a class="headerlink" href="#live-node-update" title="Link to this heading">¶</a></h2>
+<p>There might be cases where we need to tweak the node while the pipeline is
+running. For the red cat detector, this could mean changing the model used for
+inference, or making the inference itself stricter or looser. To do so, we can
+implement the <code class="docutils literal notranslate"><span class="pre">set_on_config</span></code> method. In here, we can specify what to do when
+a new value for a particular property needs to be set on the node.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">set_on_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">prop</span> <span class="o">==</span> <span class="s1">&#39;cat_min_confidence&#39;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cat_min_confidence</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">elif</span> <span class="n">prop</span> <span class="o">==</span> <span class="s1">&#39;orangeness_threshold&#39;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">orangeness_threshold</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">elif</span> <span class="n">prop</span> <span class="o">==</span> <span class="s1">&#39;model&#39;</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cannot update node with property </span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -650,7 +794,7 @@ node logger is a child of the root logger, and will be named
 <li><a class="reference internal" href="#add-dependencies">Add dependencies</a></li>
 <li><a class="reference internal" href="#add-configuration-items">Add configuration items</a></li>
 <li><a class="reference internal" href="#implement-the-node">Implement the node</a></li>
-<li><a class="reference internal" href="#logging">Logging</a></li>
+<li><a class="reference internal" href="#live-node-update">Live node update</a></li>
 </ul>
 </li>
 </ul>

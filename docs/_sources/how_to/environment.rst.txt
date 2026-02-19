@@ -113,4 +113,40 @@ You can customize the following variables in your environment.
 Working with env variables
 --------------------------
 
-:fas:`pen-to-square;sd-text-danger fa-xl` Section under construction
+Whenever a node should be configured with environment variables (imagine a node
+that works with a secret key set on the environment within a container), juturna
+is capable of filling in those configuration entries by picking up their values
+from the environment variables.
+
+Take for instance a sink node that requires in its configuration a secret token:
+
+.. code-block:: json
+
+    {
+      "name": "destination",
+      "type": "sink",
+      "mark": "authenticated_sink",
+      "configuration": {
+        "endpoint": "127.0.0.1",
+        "secret_token": "plain_token_is_dangerous!"
+      }
+    }
+
+To avoid this, we might want to use an environment variable called
+``AUTH_TOKEN``, provided from somewhere else. In this case, it is enough to
+replace the item in the configuration with:
+
+.. code-block:: json
+
+    {
+      "name": "destination",
+      "type": "sink",
+      "mark": "authenticated_sink",
+      "configuration": {
+        "endpoint": "127.0.0.1",
+        "secret_token": "$JT_ENV_AUTH_TOKEN"
+      }
+    }
+
+In short: environment variables used in configuration should be prefixed with
+``$JT_ENV``.
