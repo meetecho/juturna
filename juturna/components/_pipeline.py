@@ -123,7 +123,9 @@ class Pipeline:
         if _tele_file := self._raw_config['pipeline'].get('telemetry', None):
             self._telemetry = True
             self._telemetry_file = pathlib.Path(self.pipe_path, _tele_file)
-            self._telemetry_manager = TelemetryManager(self._telemetry_file)
+            self._telemetry_manager = TelemetryManager(
+                str(self._telemetry_file)
+            )
 
         nodes = self._raw_config['pipeline']['nodes']
         links = self._raw_config['pipeline']['links']
@@ -153,6 +155,7 @@ class Pipeline:
             _node.pipe_path = node_folder
             _node.status = ComponentStatus.NEW
             _node.telemetry = self._telemetry
+            _node._auto_dump = node.get('auto_dump', False)
 
             self._nodes[node_name] = _node
             self._dag.add_node(node_name)

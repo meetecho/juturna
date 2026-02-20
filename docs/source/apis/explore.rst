@@ -3,5 +3,5 @@
 Explore the APIs
 ================
 
-:fas:`pen-to-square;sd-text-danger fa-xl` Section under construction
---------------------------------------------------------------------
+This section contains the compiled docstrings for all the relevant bits of the
+juturna library.

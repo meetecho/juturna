@@ -1,3 +1,5 @@
+.. _explain_nodes:
+
 Nodes
 =====
 
@@ -19,12 +21,15 @@ records, or writes results to disk, it always conforms to this same conceptual
 shape.
 
 .. admonition:: Multi-input nodes and clashing types (|version|-|release|)
-    :class: :ATTENTION:
+    :class: :NOTE:
 
     Whilst node input type finds an easy match for single-input nodes, there
     might be cases where a node receives messages of heterogeneous types (think
-    of a node that needs to mix audio and video data). In this case, the message
-    typing could not be respected, so be aware when you design custom nodes.
+    of a node that needs to mix audio and video data). In this case, the node is
+    very likely to receive a ``Batch`` message, which is nothing but a container
+    of multiple messages. As a message batch represents a type of message
+    itself, it is not important that the messages within are of different types,
+    just as long as the node developer know what to do with them!
 
 In Juturna, a node can play three distinct roles, all shareing the same
 underlying implementation:

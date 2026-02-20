@@ -16,6 +16,7 @@
    explain/pipelines
    explain/nodes
    explain/messages
+   explain/remote
 
 .. toctree::
     :maxdepth: 2
@@ -27,6 +28,8 @@
     how_to/create_pipelines
     how_to/use_cli
     how_to/environment
+    how_to/remotise_node
+    how_to/observe
 
 .. toctree::
     :maxdepth: 2
@@ -36,6 +39,14 @@
     create/real_world
     create/audio_transcription
     create/video_yolo
+
+.. toctree::
+    :maxdepth: 2
+    :hidden:
+    :caption: Built-in nodes
+
+    built_in/overview.rst
+    built_in/builtin
 
 .. toctree::
     :maxdepth: 2
@@ -119,7 +130,7 @@ execute and manipulate real-time pipelines in minutes!
 
             .. card::
                 :text-align: center
-                    
+
                 :fas:`meetecho`
 
                 Juturna is brewed with love by the awesome team of

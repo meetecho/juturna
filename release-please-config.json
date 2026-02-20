@@ -8,7 +8,7 @@
       "extra-files": [
         "pyproject.toml",
         "juturna/__init__.py",
-        "docs/conf.py"
+        "docs/source/conf.py"
       ]
     }
   },
