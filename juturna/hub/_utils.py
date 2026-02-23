@@ -1,27 +1,21 @@
 import requests
 
-from juturna.meta._constants import JUTURNA_HUB_TOKEN
-from juturna.meta._constants import JUTURNA_HUB_URL
+from juturna.meta import JUTURNA_HUB_URL
 
 
-def api_request(
-    method: str, endpoint: str, body: dict, authenticate: bool = True
-):
+def api_request(method: str, endpoint: str, token: str, **kwargs):
     headers = dict()
 
-    if authenticate and JUTURNA_HUB_TOKEN:
-        headers['Authorization'] = JUTURNA_HUB_TOKEN
-
-    print(body)
-    print(headers)
+    if token:
+        headers['Authorization'] = token
 
     url = f'{JUTURNA_HUB_URL}/api/{endpoint}'
-    print(url)
-    res = requests.request(method, url, headers=headers, json=body)
-
-    print(res.status_code)
+    res = requests.request(method, url, headers=headers, **kwargs)
 
     if res.status_code == 401:
         print('unauthorised request')
 
-    return res.json()
+    try:
+        return res.json()
+    except Exception:
+        return res

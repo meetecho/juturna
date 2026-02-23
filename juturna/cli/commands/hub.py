@@ -12,9 +12,17 @@ registry. This includes:
 """
 
 from juturna.hub._auth import login
+from juturna.hub._search import search
+from juturna.hub._get import download
+from juturna.hub._publish import publish
 
 
-_HUB_CMDS = {'login': login, 'search': None, 'get': None, 'publish': None}
+_HUB_CMDS = {
+    'login': login,
+    'search': search,
+    'get': download,
+    'publish': publish,
+}
 
 
 def setup_parser(subparsers):  # noqa: D103
@@ -56,7 +64,10 @@ def setup_parser(subparsers):  # noqa: D103
         '--author', '-a', action='store_true', help='search for plugin author'
     )
     search_parser.add_argument(
-        '--all', '-A', action='store_true', help='show all results and versions'
+        '--all-versions',
+        '-A',
+        action='store_true',
+        help='show all results and versions',
     )
 
     get_parser = hub_subparsers.add_parser(
@@ -73,6 +84,10 @@ def setup_parser(subparsers):  # noqa: D103
 
     publish_parser = hub_subparsers.add_parser(
         'publish', help='publish a plugin or update an existing plugin'
+    )
+
+    publish_parser.add_argument(
+        'directory', type=str, help='directory of the plugin to publish'
     )
 
     publish_parser.add_argument(
@@ -103,22 +118,14 @@ def setup_parser(subparsers):  # noqa: D103
     publish_parser.add_argument(
         '--description', '-d', type=str, help='plugin description'
     )
+    publish_parser.add_argument('--about', '-a', type=str, help='plugin about')
     publish_parser.add_argument(
         '--contact', '-c', type=str, help='reference contact'
-    )
-    publish_parser.add_argument(
-        '--update', '-U', action='store_true', help='update existing plugin'
     )
 
 
 def _execute(args):
-    print('executing hub command')
-
-    print(args)
-    print(args.__dict__)
-
     if command := args.hub_command:
         delattr(args, 'hub_command')
 
-        print(f'calling {command}: {_HUB_CMDS[command]}')
         _HUB_CMDS[command](**args.__dict__)
