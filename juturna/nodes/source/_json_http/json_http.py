@@ -1,5 +1,5 @@
 """
-HttpJson
+JsonHttp
 
 @ Author: Antonio Bevilacqua
 @ Email: abevilacqua@meetecho.com
@@ -26,13 +26,13 @@ import requests
 from juturna.components import _resource_broker as rb
 from juturna.components import Node
 from juturna.components import Message
-from juturna.payloads import BytesPayload, ObjectPayload
+from juturna.payloads import ObjectPayload
 
 if TYPE_CHECKING:
     from typing import Any
 
 
-class HttpJson(Node[BytesPayload, ObjectPayload]):
+class JsonHttp(Node[ObjectPayload, ObjectPayload]):
     """HTTP JSON source node."""
 
     def __init__(
@@ -67,7 +67,7 @@ class HttpJson(Node[BytesPayload, ObjectPayload]):
         if self._port == 'auto':
             self._port = rb.get('port')
 
-        self.logger.info(f'configured, listening on port {self._port}')
+        self.logger.info(f'port {self._port} requested')
 
     def warmup(self) -> None:
         """Warm up the node"""
@@ -80,6 +80,10 @@ class HttpJson(Node[BytesPayload, ObjectPayload]):
         self._httpd.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._httpd.server_bind()
         self._httpd.server_activate()
+
+        self.logger.info(
+            f'server started on {self._endpoint}, port {self._port}'
+        )
 
         try:
             rsp = requests.get(
@@ -133,7 +137,7 @@ class HttpJson(Node[BytesPayload, ObjectPayload]):
             self._httpd.server_close()
             self._httpd = None
 
-    def update(self, message: Message[BytesPayload]) -> None:
+    def update(self, message: Message[ObjectPayload]) -> None:
         """Receive an update message"""
         self.logger.info(f'HTTP server received a message: {message}')
 
