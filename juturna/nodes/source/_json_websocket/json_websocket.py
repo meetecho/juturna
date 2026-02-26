@@ -12,6 +12,7 @@ import queue
 import threading
 
 from websockets.sync.server import serve
+from websockets.exceptions import ConnectionClosed
 
 from juturna.components import Node
 from juturna.components import Message
@@ -48,7 +49,13 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
 
     def warmup(self):
         """Prepare node for execution"""
-        self._server = serve(self._ws_handler, self._rtx_host, self._rtx_port)
+        self._server = serve(
+            self._ws_handler,
+            self._rtx_host,
+            self._rtx_port,
+            ping_interval=None,
+            ping_timeout=180,
+        )
         self._thread = threading.Thread(
             target=self._server.serve_forever,
             daemon=True,
@@ -71,12 +78,11 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
             self._thread.join(timeout=2)
 
     def update(self, message: Message[BytesPayload]):  # noqa: D102
-        self.logger.info(f'ws server message received: {message.payload.cnt}')
-
         try:
-            json_content = json.loads(message.payload.cnt.decode())
-        except Exception:
+            json_content = json.loads(message.payload.cnt)
+        except Exception as e:
             self.logger.warning('bad JSON, skipped')
+            self.logger.warning(e)
 
             return
 
@@ -101,5 +107,7 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
                 )
 
                 self._queue.put(msg)
+        except ConnectionClosed:
+            self.logger.info('client disconnected from socket')
         except Exception as exc:
             self.logger.warning('ws handler died: %s', exc)
