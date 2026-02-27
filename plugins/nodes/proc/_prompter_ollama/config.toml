@@ -1,5 +1,8 @@
 [arguments]
 endpoint = "http://127.0.0.1:11434"
 model_name = "llama3.2:latest"
+keep_alive = -1
+setup_file = "basic_setup.json"
+think = false
 
 [meta]
