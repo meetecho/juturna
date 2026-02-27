@@ -19,6 +19,7 @@ _MODULES = {
         'stub',
         'remotize',
         'require',
+        'hub',
     ]
 }
 
