@@ -5,13 +5,15 @@ JsonHttp
 @ Email: abevilacqua@meetecho.com
 @ Created at: 2025-10-03
 
-HTTP JSON source node.  Accepts POST /<endpoint> with JSON body.
+HTTP JSON source node.  Accepts POST /<endpoint> with JSON body. This is a
+sourceless node, in the sense that the source function itself only spawns the
+server handler and listens forever for incoming requests, while the handler
+writes on the node queue whenever a message is received.
 """
 
 from __future__ import annotations
 
 import json
-import queue
 import socket
 import threading
 import contextlib
@@ -19,17 +21,11 @@ import contextlib
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
 from http.server import HTTPServer
-from typing import TYPE_CHECKING
-
-import requests
 
 from juturna.components import _resource_broker as rb
 from juturna.components import Node
 from juturna.components import Message
 from juturna.payloads import ObjectPayload
-
-if TYPE_CHECKING:
-    from typing import Any
 
 
 class JsonHttp(Node[ObjectPayload, ObjectPayload]):
@@ -37,27 +33,30 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
 
     def __init__(
         self,
-        endpoint: str,
+        host: str,
         port: int | str,
+        endpoint: str,
         **kwargs,
     ) -> None:
         """
         Parameters
         ----------
-        endpoint : str
-            Listening endpoint.
+        host : str
+            Host address the node will listen on.
         port : int | str
             Listening port. If set to auto, the port will be assigned
             automatically by the resource broker.
+        endpoint : str
+            Listening endpoint.
         kwargs : dict
             Superclass arguments.
 
         """
         super().__init__(**kwargs)
 
+        self._host: str = host
         self._port: int | str = port
         self._endpoint: str = endpoint.lstrip('/')
-        self._queue: queue.Queue[Message[ObjectPayload]] = queue.Queue()
         self._httpd: HTTPServer | None = None
         self._thread: threading.Thread | None = None
         self._sent: int = 0
@@ -74,7 +73,7 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
         handler = self._make_handler()
 
         self._httpd = HTTPServer(
-            ('localhost', self._port), handler, bind_and_activate=False
+            (self._host, self._port), handler, bind_and_activate=False
         )
 
         self._httpd.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -82,26 +81,11 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
         self._httpd.server_activate()
 
         self.logger.info(
-            f'server started on {self._endpoint}, port {self._port}'
+            'HTTP JSON source ready on http://%s:%s/%s',
+            self._host,
+            self._port,
+            self._endpoint,
         )
-
-        try:
-            rsp = requests.get(
-                f'http://localhost:{self._port}/health',
-                timeout=2,
-            )
-
-            rsp.raise_for_status()
-
-            self.logger.info(
-                'HTTP JSON source ready on http://localhost:%s/%s',
-                self._port,
-                self._endpoint,
-            )
-        except Exception as exc:
-            self.logger.warning(
-                'Health-check failed (%s), continuing anyway', exc
-            )
 
     def start(self) -> None:
         """Start the node"""
@@ -115,7 +99,6 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
         )
 
         self._thread.start()
-        self.set_source(self._poll)
 
         super().start()
 
@@ -143,17 +126,10 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
 
         self.transmit(message)
 
-    def _poll(self) -> Message[ObjectPayload] | None:
-        """Return the next JSON message, or None if queue empty."""
-        return self._queue.get()
-
     def _make_handler(self) -> type[BaseHTTPRequestHandler]:
         node = self
 
         class _Handler(BaseHTTPRequestHandler):
-            def log_message(self, fmt: str, *args: Any) -> None:
-                node.logger.debug(fmt, *args)
-
             def do_POST(self) -> None:
                 node.logger.info('POST received')
 
@@ -186,15 +162,13 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
 
                     return
 
-                payload = ObjectPayload.from_dict(json_content)
-
                 msg = Message[ObjectPayload](
                     creator=node.name,
                     version=node._sent,
-                    payload=payload,
+                    payload=ObjectPayload.from_dict(json_content),
                 )
 
-                node._queue.put(msg)
+                node.put(msg)
                 node._sent += 1
 
                 self.send_response(HTTPStatus.ACCEPTED)
