@@ -1,5 +1,5 @@
 """
-HttpJson
+JsonHttp
 
 @ Author: Antonio Bevilacqua
 @ Email: abevilacqua@meetecho.com
@@ -66,7 +66,7 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
         if self._port == 'auto':
             self._port = rb.get('port')
 
-        self.logger.info(f'configured, listening on port {self._port}')
+        self.logger.info(f'port {self._port} requested')
 
     def warmup(self) -> None:
         """Warm up the node"""
