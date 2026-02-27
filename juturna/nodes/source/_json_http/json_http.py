@@ -25,10 +25,10 @@ from http.server import HTTPServer
 from juturna.components import _resource_broker as rb
 from juturna.components import Node
 from juturna.components import Message
-from juturna.payloads import BytesPayload, ObjectPayload
+from juturna.payloads import ObjectPayload
 
 
-class HttpJson(Node[BytesPayload, ObjectPayload]):
+class JsonHttp(Node[ObjectPayload, ObjectPayload]):
     """HTTP JSON source node."""
 
     def __init__(
@@ -120,7 +120,7 @@ class HttpJson(Node[BytesPayload, ObjectPayload]):
             self._httpd.server_close()
             self._httpd = None
 
-    def update(self, message: Message[BytesPayload]) -> None:
+    def update(self, message: Message[ObjectPayload]) -> None:
         """Receive an update message"""
         self.logger.info(f'HTTP server received a message: {message}')
 
