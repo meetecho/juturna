@@ -18,7 +18,14 @@ from juturna.payloads import ObjectPayload
 class NotifierMongo(Node[ObjectPayload, None]):
     """Node implementation class"""
 
-    def __init__(self, endpoint: str, database: str, collection: str, **kwargs):
+    def __init__(
+        self,
+        endpoint: str,
+        database: str,
+        collection: str,
+        timeout: int,
+        **kwargs,
+    ):
         """
         Parameters
         ----------
@@ -28,6 +35,8 @@ class NotifierMongo(Node[ObjectPayload, None]):
             The destination datablase.
         collection : str
             The destination collection.
+        timeout : int
+            The timeout before dropping a message transmission.
         kwargs : dict
             Superclass arguments.
 
@@ -37,6 +46,7 @@ class NotifierMongo(Node[ObjectPayload, None]):
         self._endpoint = endpoint
         self._database = database
         self._collection = collection
+        self._timeout = timeout
 
         self._client: pymongo.MongoClient | None = None
         self._db: pymongo.database.Database | None = None
@@ -54,9 +64,10 @@ class NotifierMongo(Node[ObjectPayload, None]):
         message = message.to_dict()
         message['session_id'] = self.pipe_id
 
-        _ = self._cl.insert_one(message)
+        with pymongo.timeout(self._timeout):
+            _ = self._cl.insert_one(message)
 
-        self.logger.info('message sent')
+            self.logger.info('message sent')
 
     def destroy(self):
         """Close the connection with mongo"""
