@@ -17,6 +17,8 @@ from juturna.components import Node
 
 from juturna.payloads._payloads import ImagePayload
 
+from juturna.names import PixelFormat
+
 
 class YoloDetector(Node[ImagePayload, ImagePayload]):
     """Node implementation class"""
@@ -89,7 +91,7 @@ class YoloDetector(Node[ImagePayload, ImagePayload]):
         assert self._model is not None
 
         image = message.payload.image
-        image_format = message.payload.pixel_format
+        image_format = PixelFormat._normalize_format(message.payload.pixel_format)
         meta = dict(message.meta)
 
         normalized_image = None
@@ -103,13 +105,13 @@ class YoloDetector(Node[ImagePayload, ImagePayload]):
         )
 
         with to_send.timeit(self.name + '_image_preprocessing_numpy'):
-            if image.shape[2] == 4 and image_format == 'RGB':
+            if image.shape[2] == 4 and image_format == PixelFormat.RGB:
                 normalized_image = image[
                     :, :, 2::-1
                 ]  # remove alpha and convert RGB→BGR
             elif image.shape[2] == 4:
                 normalized_image = image[:, :, :3]  # remove alpha only
-            elif image_format == 'RGB':
+            elif image_format == PixelFormat.RGB:
                 normalized_image = image[:, :, ::-1]  # only RGB→BGR
             else:
                 normalized_image = image  # no modification
@@ -129,7 +131,7 @@ class YoloDetector(Node[ImagePayload, ImagePayload]):
 
         with to_send.timeit(self.name + '_postprocessing'):
             annotated = results[0].plot() if self._plot else image
-            pixel_format = 'BGR' if self._plot else image_format
+            pixel_format = PixelFormat.BGR if self._plot else image_format
 
         to_send.payload = ImagePayload(
             image=annotated,

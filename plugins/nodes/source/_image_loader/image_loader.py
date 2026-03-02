@@ -30,6 +30,8 @@ from juturna.components import Message
 from juturna.payloads import ObjectPayload
 from juturna.payloads import ImagePayload
 
+from juturna.names import PixelFormat
+
 
 class ImageLoader(Node[ObjectPayload, ImagePayload]):
     """Node implementation class"""
@@ -126,7 +128,7 @@ class ImageLoader(Node[ObjectPayload, ImagePayload]):
             image = Image.open(message.payload['src_path'])
 
             if self._convert_rgb:
-                image = image.convert('RGB')
+                image = image.convert(PixelFormat.RGB)
 
             image.load()
         except UnidentifiedImageError:
