@@ -135,7 +135,7 @@ class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
                 response_dict = dict()
 
         to_send.payload['ollama_response'] = response.model_dump()
-        to_send.payload['prompt'] = message.payload['prompt']
+        to_send.payload['source'] = message.payload
         to_send.payload['structured_response'] = response_dict
 
         self.transmit(to_send)
