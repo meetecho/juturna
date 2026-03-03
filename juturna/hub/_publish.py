@@ -15,7 +15,6 @@ def publish(
     version: str,
     url: str,
     description: str,
-    about: str,
     contact: str,
 ):
     zip_path = f'{pathlib.Path(directory).name}_{version}'
@@ -31,15 +30,14 @@ def publish(
         digest = hashlib.file_digest(f, 'md5').hexdigest()
 
     publish_data = {
-        'created_by': user_id(),
         'name': name,
+        'owner': user_id(),
         'type': type,
         'version': version,
+        'contact': contact,
         'repository': url,
         'description': description,
         'checksum': digest,
-        'about': about,
-        'contact': contact,
     }
 
     with open(f'{zip_path}.zip', 'rb') as f:

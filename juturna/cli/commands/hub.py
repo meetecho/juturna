@@ -118,7 +118,6 @@ def setup_parser(subparsers):  # noqa: D103
     publish_parser.add_argument(
         '--description', '-d', type=str, help='plugin description'
     )
-    publish_parser.add_argument('--about', '-a', type=str, help='plugin about')
     publish_parser.add_argument(
         '--contact', '-c', type=str, help='reference contact'
     )

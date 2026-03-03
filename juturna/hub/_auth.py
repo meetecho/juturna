@@ -38,6 +38,8 @@ def login(
         'JT_HUB_ID': response['record']['id'],
     }
 
+    print('token acquired!')
+
     if store_credentials:
         auth_content['JT_HUB_EMAIL'] = email
         auth_content['JT_HUB_PASSWORD'] = password
@@ -48,8 +50,7 @@ def login(
     with open(_AUTH_PATH, 'w') as f:
         f.write('\n'.join([f'{k}={v}' for k, v in auth_content.items()]))
 
-    print('token acquired')
-    print(response)
+        print('credentials saved!')
 
 
 def token() -> str:
