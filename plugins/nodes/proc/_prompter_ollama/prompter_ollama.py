@@ -17,6 +17,7 @@ from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads import ObjectPayload
+from juturna.payloads import Batch
 from juturna.payloads import Draft
 
 
@@ -30,6 +31,7 @@ class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
         keep_alive: int,
         setup_file: str,
         think: bool,
+        every: int,
         **kwargs,
     ):
         """
@@ -47,6 +49,8 @@ class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
             model being used: output format, and system message.
         think : bool
             Enable / disable model thinking.
+        every : int
+            How many messages to buffer before querying the model.
         kwargs : dict
             Supernode arguments.
 
@@ -57,6 +61,7 @@ class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
         self._model_name = model_name
         self._keep_alive = keep_alive
         self._think = think
+        self._every = every
 
         with open(setup_file) as f:
             self._setup = json.load(f)
@@ -103,13 +108,21 @@ class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
         """Destroy the node"""
         ...
 
-    def update(self, message: Message[ObjectPayload]):
+    def update(self, message: Message[ObjectPayload | Batch]):
         """Receive data from upstream, transmit data downstream"""
-        self.logger.info(f'message received: {message}')
+        if isinstance(message.payload, Batch):
+            content = ' '.join(
+                m.payload['prompt'] for m in message.payload.messages
+            )
+            source = [m.payload for m in message.payload.messages]
+        else:
+            content = message.payload['prompt']
+            source = message.payload
+
         user_query = [
             {
                 'role': 'user',
-                'content': message.payload['prompt'],
+                'content': content,
             }
         ]
 
@@ -135,7 +148,31 @@ class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
                 response_dict = dict()
 
         to_send.payload['ollama_response'] = response.model_dump()
-        to_send.payload['source'] = message.payload
+        to_send.payload['source'] = source
         to_send.payload['structured_response'] = response_dict
 
         self.transmit(to_send)
+
+    def next_batch(  # noqa: D102
+        self, sources: dict[str, list[Message]]
+    ) -> dict[str, list[int]]:
+        """Mark messages to be transmitted in batch"""
+        marked = dict()
+        total_available = sum(len(msgs) for msgs in sources.values())
+
+        if self._every > total_available:
+            return dict()
+
+        remaining = self._every
+
+        for source, messages in sources.items():
+            if remaining == 0:
+                break
+
+            count_to_take = min(remaining, len(messages))
+
+            if count_to_take > 0:
+                marked[source] = list(range(count_to_take))
+                remaining -= count_to_take
+
+        return marked
