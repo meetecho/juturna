@@ -128,6 +128,20 @@ class PipelineManager:
 
         return SuccessfulResponse
 
+    def deploy_pipeline(
+        self, pipeline_config: PipelineConfig
+    ) -> PipelineCreatedResponse | UnsuccessfulResponse:
+        created_pipe_response = self.create_pipeline(pipeline_config)
+        if isinstance(created_pipe_response, UnsuccessfulResponse):
+            return created_pipe_response
+
+        for operation in [self.warmup_pipeline, self.start_pipeline]:
+            response = operation(created_pipe_response.pipeline_id)
+            if isinstance(response, UnsuccessfulResponse):
+                return response
+
+        return created_pipe_response
+
     def stop_pipeline(
         self, pipeline_id: str
     ) -> SuccessfulResponse | UnsuccessfulResponse:
