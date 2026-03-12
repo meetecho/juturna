@@ -4,5 +4,6 @@ model_name = "llama3.2:latest"
 keep_alive = -1
 setup_file = "basic_setup.json"
 think = false
+every = 0
 
 [meta]
