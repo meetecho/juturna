@@ -53,6 +53,15 @@ def start_pipeline(pipeline_id: str):
     return PipelineManager().pipeline_status(pipeline_id)
 
 
+@app.post('/pipelines/deploy')
+def deploy_pipeline(pipeline_config: PipelineConfig):
+    response = PipelineManager().deploy_pipeline(pipeline_config)
+    if isinstance(response, UnsuccessfulResponse):
+        raise_on_unsuccessful_response(response)
+
+    return PipelineManager().pipeline_status(response.pipeline_id)
+
+
 @app.post('/pipelines/{pipeline_id}/stop')
 def stop_pipeline(pipeline_id: str):
     response = PipelineManager().stop_pipeline(pipeline_id)
