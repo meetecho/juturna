@@ -2,22 +2,21 @@ import pathlib
 import logging
 
 import uvicorn
-import fastapi
-import pydantic
 
 import juturna as jt
 
+from fastapi import FastAPI
+
 from juturna.components._pipeline_manager import PipelineManager
+from juturna.models.api import PipelineConfig
+from juturna.models.api import PipelineCreatedResponse
+from juturna.models.api import SuccessfulResponse
+from juturna.models.api import UnsuccessfulResponse
+from juturna.utils.http_utils import raise_on_unsuccessful_response
 
 
-app = fastapi.FastAPI()
+app = FastAPI()
 logger = logging.getLogger('jt.service')
-
-
-class PipelineConfig(pydantic.BaseModel):
-    version: str
-    plugins: list
-    pipeline: dict
 
 
 @app.get('/pipelines')
@@ -25,40 +24,60 @@ def pipelines():
     return PipelineManager().pipeline_list()
 
 
-@app.post('/pipelines/new')
+@app.post('/pipelines/new', response_model=PipelineCreatedResponse)
 def new_pipeline(pipeline_config: PipelineConfig):
-    container = PipelineManager().create_pipeline(pipeline_config.model_dump())
-    logger.info(f'created pipe, id {container["pipeline_id"]}')
+    response = PipelineManager().create_pipeline(pipeline_config)
+    if isinstance(response, UnsuccessfulResponse):
+        raise_on_unsuccessful_response(response)
 
-    return container
+    logger.info(f'created pipe, id {response.pipeline_id}')
+
+    return response
 
 
 @app.post('/pipelines/{pipeline_id}/warmup')
 def warmup_pipeline(pipeline_id: str):
-    PipelineManager().warmup_pipeline(pipeline_id)
+    response = PipelineManager().warmup_pipeline(pipeline_id)
+    if isinstance(response, UnsuccessfulResponse):
+        raise_on_unsuccessful_response(response)
 
     return PipelineManager().pipeline_status(pipeline_id)
 
 
 @app.post('/pipelines/{pipeline_id}/start')
 def start_pipeline(pipeline_id: str):
-    PipelineManager().start_pipeline(pipeline_id)
+    response = PipelineManager().start_pipeline(pipeline_id)
+    if isinstance(response, UnsuccessfulResponse):
+        raise_on_unsuccessful_response(response)
 
     return PipelineManager().pipeline_status(pipeline_id)
+
+
+@app.post('/pipelines/deploy')
+def deploy_pipeline(pipeline_config: PipelineConfig):
+    response = PipelineManager().deploy_pipeline(pipeline_config)
+    if isinstance(response, UnsuccessfulResponse):
+        raise_on_unsuccessful_response(response)
+
+    return PipelineManager().pipeline_status(response.pipeline_id)
 
 
 @app.post('/pipelines/{pipeline_id}/stop')
 def stop_pipeline(pipeline_id: str):
-    PipelineManager().stop_pipeline(pipeline_id)
+    response = PipelineManager().stop_pipeline(pipeline_id)
+    if isinstance(response, UnsuccessfulResponse):
+        raise_on_unsuccessful_response(response)
 
     return PipelineManager().pipeline_status(pipeline_id)
 
 
-@app.post('/pipelines/{pipeline_id}/delete')
+@app.post('/pipelines/{pipeline_id}/delete', response_model=SuccessfulResponse)
 def delete_pipeline(pipeline_id: str, wipe: bool = False):
-    del_status = PipelineManager().delete_pipeline(pipeline_id, wipe)
+    response = PipelineManager().delete_pipeline(pipeline_id, wipe)
+    if isinstance(response, UnsuccessfulResponse):
+        raise_on_unsuccessful_response(response)
 
-    return del_status
+    return response
 
 
 @app.get('/pipelines/{pipeline_id}/status')
