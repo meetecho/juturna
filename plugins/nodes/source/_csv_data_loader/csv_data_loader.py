@@ -26,6 +26,7 @@ class CsvDataLoader(Node[ObjectPayload, ObjectPayload]):
         source_file: str,
         interval: int,
         header: list,
+        has_header: bool,
         **kwargs,
     ):
         """
@@ -37,6 +38,8 @@ class CsvDataLoader(Node[ObjectPayload, ObjectPayload]):
             How often data should be transmitted.
         header : list
             Keys of the produced object.
+        has_header : bool
+            If true, skip the first row in the source file.
         kwargs : dict
             Supernode arguments.
 
@@ -46,6 +49,7 @@ class CsvDataLoader(Node[ObjectPayload, ObjectPayload]):
         self._source_file = source_file
         self._interval = interval
         self._header = header
+        self._has_header = has_header
 
         self._file = None
         self._reader = None
@@ -76,8 +80,11 @@ class CsvDataLoader(Node[ObjectPayload, ObjectPayload]):
         self._file = open(self._source_file)  # noqa: SIM115
         self._reader = csv.reader(self._file)
 
+        if self._has_header:
+            _file_header = next(self._reader)
+
         if len(self._header) == 0:
-            self._header = next(self._reader)
+            self._header = _file_header
 
     def start(self):
         """Start the node"""
