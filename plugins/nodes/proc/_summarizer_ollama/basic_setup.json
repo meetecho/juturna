@@ -1,0 +1,19 @@
+{
+    "format": {
+        "type": "object",
+        "properties": {
+            "summary": {
+                "type": "string"
+            }
+        },
+        "required": [
+            "summary"
+        ]
+    },
+    "messages": [
+        {
+            "role": "system",
+            "content": "You are a good model."
+        }
+    ]
+}
