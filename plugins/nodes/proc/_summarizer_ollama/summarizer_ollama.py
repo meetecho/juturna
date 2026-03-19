@@ -12,6 +12,8 @@ changes, the history will be flushed.
 
 import json
 import collections
+import pathlib
+import time
 
 import ollama
 
@@ -83,28 +85,27 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
         self._include = include or None
         self._exclude = exclude or None
 
-        self._topic_history = (
-            {
-                _t: collections.deque()
-                if not self._max_history
-                else collections.deque(maxlen=self._max_history)
-                for _t in self._include
+        self._topic_history = dict()
+
+        if self._include:
+            self._topic_history = {
+                topic: {
+                    'last_updated': -1,
+                    'messages': collections.deque()
+                    if not self._max_history
+                    else collections.deque(maxlen=self._max_history),
+                }
+                for topic in self._include
             }
-            if self._include
-            else dict()
-        )
 
         with open(setup_file) as f:
             self._setup = json.load(f)
 
         self._format = None
         self._system_msg = None
+        self._step = 0
 
         self._client = ollama.Client(host=self._endpoint)
-
-    def configure(self):
-        """Configure the node"""
-        ...
 
     def warmup(self):
         """Warmup the node"""
@@ -117,22 +118,11 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
         )[0]
 
         _ = self._client.generate(
-            model=self._model_name, prompt='', keep_alive=self._keep_alive
+            model=self._model_name,
+            prompt='',
         )
 
         self.logger.info(f'model {self._model_name} loaded')
-
-    def start(self):
-        """Start the node"""
-        super().start()
-
-    def stop(self):
-        """Stop the node"""
-        super().stop()
-
-    def destroy(self):
-        """Destroy the node"""
-        ...
 
     def update(self, message: Message[ObjectPayload | Batch]):
         """Receive data from upstream, transmit data downstream"""
@@ -142,30 +132,25 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
             else [message]
         )
 
-        # this is based on the assumption that all messages in the batch always
-        # have the same topic
         topic = msgs[0].payload['topic']
+
+        self.logger.info(f'received message for topic <{topic}>')
 
         if self._exclude and topic in self._exclude:
             self.logger.info(f'topic not allowed: {topic}')
 
             return
 
-        if (
-            topic not in self._topic_history
-            and len(self._topic_history) == self._max_topics
-        ):
-            return
-
         query_messages = [
             {'role': 'user', 'content': m.payload['chunk']} for m in msgs
         ]
         source = [m.payload for m in msgs]
+        topic_history = self._topic_history.get(topic, dict())
+        history_messages = list(topic_history.get('messages', list()))
 
-        topic_history = self._topic_history.get(topic, list())
-        query_messages = (
-            [self._system_msg] + list(topic_history) + query_messages
-        )
+        self.logger.info(f'topic history: {len(history_messages)}')
+
+        query_messages = [self._system_msg] + history_messages + query_messages
 
         to_send = Message[ObjectPayload](
             creator=self.name,
@@ -182,8 +167,6 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
                 think=False,
             )
 
-        self.logger.info(response)
-
         if isinstance(self._format, dict):
             try:
                 response_dict = json.loads(response['message']['content'])
@@ -193,7 +176,10 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
         to_send.payload['ollama_response'] = response.model_dump()
         to_send.payload['source'] = source
         to_send.payload['structured_response'] = response_dict
+        to_send.payload['topic'] = topic
+        to_send.payload['history'] = self._normalize_history(topic_history)
 
+        self.logger.info('transmitting')
         self.transmit(to_send)
 
         # TODO: this depends on the format provided in the setup file!
@@ -202,28 +188,48 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
         if not summary:
             return
 
-        self.logger.info('transmitting')
         self._update_history(topic, summary)
 
-    def _update_history(self, topic: str, summary: str):
-        if self._include:
-            if topic not in self._include:
-                return
+        with open(
+            pathlib.Path(self.pipe_path, f'history_{self._step}.json'), 'w'
+        ) as f:
+            json.dump(self._topic_history, f, default=list, indent=2)
+            self._step += 1
 
-            self._topic_history[topic].append(
-                {'role': 'assistant', 'content': summary}
-            )
+    def _update_history(self, topic: str, summary: str):
+        msg = {'role': 'user', 'content': summary}
+
+        if topic in self._topic_history:
+            self.logger.info(f'topic <{topic}> in history, updating')
+            self._topic_history[topic]['messages'].append(msg)
+            self._topic_history[topic]['last_updated'] = time.time()
 
             return
 
-        if topic not in self._topic_history:
-            self._topic_history[topic] = (
-                collections.deque()
-                if not self._max_history
-                else collections.deque(maxlen=self._max_history)
+        if self._max_topics and len(self._topic_history) == self._max_topics:
+            oldest_topic = min(
+                self._topic_history,
+                key=lambda t: self._topic_history[t]['last_updated'],
             )
 
-        self._topic_history[topic].append({'role': 'user', 'content': summary})
+            self.logger.info(f'history full, dropping topic <{oldest_topic}>')
+
+            del self._topic_history[oldest_topic]
+
+        self.logger.info(f'adding new topic <{topic}> in history')
+
+        self._topic_history[topic] = {
+            'messages': collections.deque([msg])
+            if not self._max_history
+            else collections.deque([msg], maxlen=self._max_history),
+            'last_updated': time.time(),
+        }
+
+    def _normalize_history(self, history: dict) -> dict:
+        return {
+            'messages': list(history.get('messages', list())),
+            'last_updated': history.get('last_updated', -1),
+        }
 
     def next_batch(
         self, sources: dict[str, list[Message]]
@@ -242,7 +248,7 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
             for idx, msg in enumerate(messages):
                 topic = msg.payload['topic']
 
-                topic_to_indices.setdefault(topic, []).append(idx)
+                topic_to_indices.setdefault(topic, list()).append(idx)
 
             for _, indices in topic_to_indices.items():
                 topic_count = len(indices)
@@ -263,4 +269,4 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
         if best_source is not None:
             return {best_source: best_topic_indices[: self._every]}
 
-        return {}
+        return dict()
