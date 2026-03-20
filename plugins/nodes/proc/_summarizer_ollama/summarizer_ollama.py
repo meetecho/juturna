@@ -12,7 +12,6 @@ changes, the history will be flushed.
 
 import json
 import collections
-import pathlib
 import time
 
 import ollama
@@ -173,28 +172,25 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
             except Exception:
                 response_dict = dict()
 
+            # TODO: this depends on the format provided in the setup file!
+            summary = response_dict.get('summary')
+        else:
+            response_dict = None
+            summary = response.message.content
+
         to_send.payload['ollama_response'] = response.model_dump()
-        to_send.payload['source'] = source
         to_send.payload['structured_response'] = response_dict
+        to_send.payload['source'] = source
         to_send.payload['topic'] = topic
         to_send.payload['history'] = self._normalize_history(topic_history)
 
         self.logger.info('transmitting')
         self.transmit(to_send)
 
-        # TODO: this depends on the format provided in the setup file!
-        summary = response_dict.get('summary')
-
         if not summary:
             return
 
         self._update_history(topic, summary)
-
-        with open(
-            pathlib.Path(self.pipe_path, f'history_{self._step}.json'), 'w'
-        ) as f:
-            json.dump(self._topic_history, f, default=list, indent=2)
-            self._step += 1
 
     def _update_history(self, topic: str, summary: str):
         msg = {'role': 'user', 'content': summary}
