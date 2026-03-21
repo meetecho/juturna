@@ -173,7 +173,11 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
                 response_dict = dict()
 
             # TODO: this depends on the format provided in the setup file!
-            summary = response_dict.get('summary')
+            summary = (
+                response_dict.get('summary')
+                if isinstance(response_dict, dict)
+                else response_dict
+            )
         else:
             response_dict = None
             summary = response.message.content
