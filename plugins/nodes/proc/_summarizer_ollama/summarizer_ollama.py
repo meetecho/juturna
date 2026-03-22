@@ -23,6 +23,8 @@ from juturna.payloads import ObjectPayload
 from juturna.payloads import Batch
 from juturna.payloads import Draft
 
+from juturna.utils.proc_utils import safe_exec
+
 
 class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
     """Node implementation class"""
@@ -123,6 +125,7 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
 
         self.logger.info(f'model {self._model_name} loaded')
 
+    @safe_exec
     def update(self, message: Message[ObjectPayload | Batch]):
         """Receive data from upstream, transmit data downstream"""
         msgs = (
@@ -197,6 +200,9 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
         self._update_history(topic, summary)
 
     def _update_history(self, topic: str, summary: str):
+        if isinstance(summary, dict):
+            summary = json.dumps(summary)
+
         msg = {'role': 'user', 'content': summary}
 
         if topic in self._topic_history:
