@@ -38,6 +38,7 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
         every: int,
         max_topics: int,
         max_history: int,
+        temperature: float,
         include: list,
         exclude: list,
         **kwargs,
@@ -63,6 +64,8 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
         max_history : int
             Maximum number of history messages to save for the topics. If -1,
             the history message is unlimited.
+        temperature : float
+            Temperature option to pass to the model.
         include : list
             List of topics to accept. If provided, trumps max_topics and does
             not apply topic_policy. All topics not included in this list will be
@@ -82,6 +85,7 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
 
         self._max_topics = max_topics
         self._max_history = max_history
+        self._temperature = temperature
 
         self._include = include or None
         self._exclude = exclude or None
@@ -166,6 +170,7 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
                 model=self._model_name,
                 format=self._format,
                 messages=query_messages,
+                options={'temperature': self._temperature},
                 think=False,
             )
 
