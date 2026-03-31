@@ -7,19 +7,19 @@ import logging
 import pathlib
 
 from juturna.components import Pipeline
-from juturna.models.api import PipelineConfig
-from juturna.models.api import PipelineCreatedResponse
-from juturna.models.api import SuccessfulResponse
-from juturna.models.api import UnsuccessfulResponse
-from juturna.names import ServiceFailureReason
+from juturna.cli.commands.models.api import PipelineConfig
+from juturna.cli.commands.models.api import CreatedPipelineDto
+from juturna.cli.commands.exceptions import (
+    AlreadyWarmedupException,
+    InvalidPipelineIdException,
+    AlreadyRunningException,
+    NotReadyException,
+    NotRunningException,
+)
 from juturna.names import PipelineStatus
 
 
 logger = logging.getLogger('jt.manager')
-
-_INVALID_ID_RESPONSE = UnsuccessfulResponse(
-    reason=ServiceFailureReason.INVALID_ID
-)
 
 
 class PipelineManager:
@@ -52,159 +52,98 @@ class PipelineManager:
 
     def create_pipeline(
         self, pipeline_config: PipelineConfig
-    ) -> PipelineCreatedResponse | UnsuccessfulResponse:
+    ) -> CreatedPipelineDto:
         pipeline_id = str(uuid.uuid4())
 
-        try:
-            pipeline_config.pipeline['id'] = pipeline_id
-            pipeline_config.pipeline['folder'] = str(
-                pathlib.Path(
-                    self.base_folder,
-                    f'{pipeline_config.pipeline["name"]}_{pipeline_id}',
-                )
+        pipeline_config.pipeline['id'] = pipeline_id
+        pipeline_config.pipeline['folder'] = str(
+            pathlib.Path(
+                self.base_folder,
+                f'{pipeline_config.pipeline["name"]}_{pipeline_id}',
             )
+        )
 
-            this_pipeline = Pipeline(pipeline_config.model_dump())
+        this_pipeline = Pipeline(pipeline_config.model_dump())
 
-            self._pipelines[this_pipeline.pipe_id] = this_pipeline
+        self._pipelines[this_pipeline.pipe_id] = this_pipeline
 
-        except Exception as e:
-            logger.exception('pipeline exception upon creation')
-            return UnsuccessfulResponse(
-                reason=ServiceFailureReason.INTERNAL_ERROR, detail=f'{e}'
-            )
-
-        return PipelineCreatedResponse(
+        return CreatedPipelineDto(
             pipeline_id=this_pipeline.pipe_id,
             created_at=this_pipeline.created_at,
             status=this_pipeline.status['self'],
         )
 
-    def warmup_pipeline(
-        self, pipeline_id: str
-    ) -> SuccessfulResponse | UnsuccessfulResponse:
+    def warmup_pipeline(self, pipeline_id: str) -> None:
         if pipeline_id not in self._pipelines:
-            return _INVALID_ID_RESPONSE
+            raise InvalidPipelineIdException(pipeline_id)
 
         if self._pipelines[pipeline_id].status['self'] == PipelineStatus.READY:
-            return UnsuccessfulResponse(
-                reason=ServiceFailureReason.ALREADY_WARMEDUP
-            )
+            raise AlreadyWarmedupException(pipeline_id)
 
-        try:
-            self._pipelines[pipeline_id].warmup()
-        except Exception as e:
-            logger.exception('pipeline exception on warmup')
-            return UnsuccessfulResponse(
-                reason=ServiceFailureReason.INTERNAL_ERROR, detail=f'{e}'
-            )
+        self._pipelines[pipeline_id].warmup()
 
-        return SuccessfulResponse
-
-    def start_pipeline(
-        self, pipeline_id: str
-    ) -> SuccessfulResponse | UnsuccessfulResponse:
+    def start_pipeline(self, pipeline_id: str) -> None:
         if pipeline_id not in self._pipelines:
-            return _INVALID_ID_RESPONSE
+            raise InvalidPipelineIdException(pipeline_id)
 
         if self._pipelines[pipeline_id].status['self'] == PipelineStatus.NEW:
-            return UnsuccessfulResponse(reason=ServiceFailureReason.NOT_READY)
+            raise NotReadyException(pipeline_id)
 
         if (
             self._pipelines[pipeline_id].status['self']
             == PipelineStatus.RUNNING
         ):
-            return UnsuccessfulResponse(
-                reason=ServiceFailureReason.ALREADY_RUNNING
-            )
+            raise AlreadyRunningException(pipeline_id)
 
-        try:
-            self._pipelines[pipeline_id].start()
-        except Exception as e:
-            logger.exception('pipeline exception on start')
-            return UnsuccessfulResponse(
-                reason=ServiceFailureReason.INTERNAL_ERROR, detail=f'{e}'
-            )
-
-        return SuccessfulResponse
+        self._pipelines[pipeline_id].start()
 
     def deploy_pipeline(
         self, pipeline_config: PipelineConfig
-    ) -> PipelineCreatedResponse | UnsuccessfulResponse:
-        created_pipe_response = self.create_pipeline(pipeline_config)
-        if isinstance(created_pipe_response, UnsuccessfulResponse):
-            return created_pipe_response
+    ) -> CreatedPipelineDto:
+        created_pipe_dto = self.create_pipeline(pipeline_config)
 
         for operation in [self.warmup_pipeline, self.start_pipeline]:
-            response = operation(created_pipe_response.pipeline_id)
-            if isinstance(response, UnsuccessfulResponse):
-                return response
+            operation(created_pipe_dto.pipeline_id)
 
-        return created_pipe_response
+        return created_pipe_dto
 
-    def stop_pipeline(
-        self, pipeline_id: str
-    ) -> SuccessfulResponse | UnsuccessfulResponse:
+    def stop_pipeline(self, pipeline_id: str) -> None:
         if pipeline_id not in self._pipelines:
-            return _INVALID_ID_RESPONSE
+            raise InvalidPipelineIdException(pipeline_id)
 
         if (
             self._pipelines[pipeline_id].status['self']
             != PipelineStatus.RUNNING
         ):
-            return UnsuccessfulResponse(reason=ServiceFailureReason.NOT_RUNNING)
+            raise NotRunningException(pipeline_id)
 
-        try:
-            self._pipelines[pipeline_id].stop()
-            self._pipelines[pipeline_id].status['self'] = PipelineStatus.READY
-        except Exception as e:
-            logger.exception('pipeline exception on stop')
-            return UnsuccessfulResponse(
-                reason=ServiceFailureReason.INTERNAL_ERROR, detail=f'{e}'
-            )
+        self._pipelines[pipeline_id].stop()
+        self._pipelines[pipeline_id].status['self'] = PipelineStatus.READY
 
-        return SuccessfulResponse
-
-    def delete_pipeline(
-        self, pipeline_id: str, wipe_folder: bool
-    ) -> SuccessfulResponse | UnsuccessfulResponse:
+    def delete_pipeline(self, pipeline_id: str, wipe_folder: bool) -> None:
         if pipeline_id not in self._pipelines:
-            return _INVALID_ID_RESPONSE
+            raise InvalidPipelineIdException(pipeline_id)
 
         sys.exc_info()
 
-        try:
-            self._pipelines[pipeline_id].destroy()
+        self._pipelines[pipeline_id].destroy()
+        _target_folder = self._pipelines[pipeline_id].pipe_path
+        if _target_folder and wipe_folder:
+            try:
+                shutil.rmtree(_target_folder)
+                logger.info(f'wiped pipeline folder {_target_folder}')
+            except FileNotFoundError:
+                logger.warning(f'pipeline folder {_target_folder} not found')
 
-            _target_folder = self._pipelines[pipeline_id].pipe_path
+        del self._pipelines[pipeline_id]
 
-            if _target_folder and wipe_folder:
-                try:
-                    shutil.rmtree(_target_folder)
-
-                    logger.info(f'wiped pipeline folder {_target_folder}')
-                except FileNotFoundError:
-                    logger.warning(
-                        f'pipeline folder {_target_folder} not found'
-                    )
-
-            del self._pipelines[pipeline_id]
-
-            gc.collect()
-
-        except Exception as e:
-            logger.exception('pipeline exception on deletion')
-            return UnsuccessfulResponse(
-                reason=ServiceFailureReason.INTERNAL_ERROR, detail=f'{e}'
-            )
-
-        return SuccessfulResponse
+        gc.collect()
 
     def pipeline_status(self, pipeline_id: str):
         if pipeline_id not in self._pipelines:
-            return _INVALID_ID_RESPONSE
+            raise InvalidPipelineIdException(pipeline_id)
 
-        logger.info('requested status')
+        logger.info(f'requested status for pipeline {pipeline_id}')
         logger.info(self._pipelines[pipeline_id].status)
 
         return self._pipelines[pipeline_id].status
