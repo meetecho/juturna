@@ -1,6 +1,5 @@
 tests/running_pipelines/
 remote_pipes/
-local_files/
 .idea/
 .vscode/
 
@@ -137,7 +136,6 @@ celerybeat.pid
 # Environments
 .env
 .venv
-.venv-volatile
 env/
 venv/
 ENV/
