@@ -87,4 +87,17 @@ def _execute(args) -> int:
         return 0
 
     while True:
-        time.sleep(60)
+        if all(
+            [
+                n['status'] == jt.names.ComponentStatus.STOPPED
+                for n in pipeline.status['nodes'].values()
+            ]
+        ):
+            print('all nodes stopped, exiting...')
+
+            pipeline.stop()
+            pipeline.destroy()
+
+            return 0
+
+        time.sleep(10)

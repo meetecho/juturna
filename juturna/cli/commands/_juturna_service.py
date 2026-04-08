@@ -2,22 +2,25 @@ import pathlib
 import logging
 
 import uvicorn
-import fastapi
-import pydantic
 
 import juturna as jt
 
+from fastapi import FastAPI
+
 from juturna.components._pipeline_manager import PipelineManager
+from juturna.cli.commands.models.api import PipelineConfig
+from juturna.cli.commands.models.api import SuccessfulResponse
+from juturna.cli.commands.exceptions import (
+    register_pipeline_exception_handlers,
+    register_generic_exception_handler,
+)
 
-
-app = fastapi.FastAPI()
+app = FastAPI()
 logger = logging.getLogger('jt.service')
 
-
-class PipelineConfig(pydantic.BaseModel):
-    version: str
-    plugins: list
-    pipeline: dict
+##register exception handlers
+register_pipeline_exception_handlers(app)
+register_generic_exception_handler(app, logger)
 
 
 @app.get('/pipelines')
@@ -25,12 +28,12 @@ def pipelines():
     return PipelineManager().pipeline_list()
 
 
-@app.post('/pipelines/new')
+@app.post('/pipelines/new', response_model=SuccessfulResponse)
 def new_pipeline(pipeline_config: PipelineConfig):
-    container = PipelineManager().create_pipeline(pipeline_config.model_dump())
-    logger.info(f'created pipe, id {container["pipeline_id"]}')
+    created_pipeline_dto = PipelineManager().create_pipeline(pipeline_config)
+    logger.info(f'created pipe with id: {created_pipeline_dto.pipeline_id}')
 
-    return container
+    return SuccessfulResponse(data=created_pipeline_dto)
 
 
 @app.post('/pipelines/{pipeline_id}/warmup')
@@ -47,6 +50,13 @@ def start_pipeline(pipeline_id: str):
     return PipelineManager().pipeline_status(pipeline_id)
 
 
+@app.post('/pipelines/deploy')
+def deploy_pipeline(pipeline_config: PipelineConfig):
+    created_pipeline_dto = PipelineManager().deploy_pipeline(pipeline_config)
+
+    return PipelineManager().pipeline_status(created_pipeline_dto.pipeline_id)
+
+
 @app.post('/pipelines/{pipeline_id}/stop')
 def stop_pipeline(pipeline_id: str):
     PipelineManager().stop_pipeline(pipeline_id)
@@ -54,11 +64,11 @@ def stop_pipeline(pipeline_id: str):
     return PipelineManager().pipeline_status(pipeline_id)
 
 
-@app.post('/pipelines/{pipeline_id}/delete')
+@app.post('/pipelines/{pipeline_id}/delete', response_model=SuccessfulResponse)
 def delete_pipeline(pipeline_id: str, wipe: bool = False):
-    del_status = PipelineManager().delete_pipeline(pipeline_id, wipe)
+    PipelineManager().delete_pipeline(pipeline_id, wipe)
 
-    return del_status
+    return SuccessfulResponse()
 
 
 @app.get('/pipelines/{pipeline_id}/status')

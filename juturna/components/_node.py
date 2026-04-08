@@ -527,7 +527,7 @@ class Node[T_Input, T_Output]:
             message.creator,
             message.id,
             message._data_source_id,
-            message.payload.size_bytes,
+            getattr(message.payload, 'size_bytes', 0),
         )
 
         self._telemetry_buffer.append(telemetry_entry)
