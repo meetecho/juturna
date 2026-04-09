@@ -1,5 +1,5 @@
 --extra-index-url https://pypi.nvidia.com
 faster-whisper==1.2.1
-nvidia-cuda-runtime
-nvidia-cublas
-nvidia-cudnn
+nvidia-cuda-runtime-cu12
+nvidia-cublas-cu12
+nvidia-cudnn-cu12
