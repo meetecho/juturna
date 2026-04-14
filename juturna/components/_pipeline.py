@@ -317,7 +317,7 @@ class Pipeline:
             self._nodes[node_name] = None
 
         self._nodes = None
-
+        self._status = PipelineStatus.DESTROYED
         gc.collect()
 
         self._logger.info('pipe destroyed')
