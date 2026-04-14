@@ -236,12 +236,10 @@ class Pipeline:
         upcoming data and to propagate the stopping signal to their destinations
         """
         if self._status != PipelineStatus.RUNNING:
-            self._logger.info(f'pipeline {self.name} is not running')
-            return
+            raise RuntimeError(f'pipeline {self.name} is not running')
 
         if not self._nodes:
-            self._logger.info(f'pipeline {self.name} is not configured')
-            return
+            raise RuntimeError(f'pipeline {self.name} is not configured')
 
         for layer in self._dag.BFS():
             self._logger.info(f'stopping layer {layer}')
