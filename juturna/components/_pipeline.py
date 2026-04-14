@@ -241,15 +241,19 @@ class Pipeline:
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
-        source_layers = self._dag.BFS()[0]
-        for node_name in source_layers:
-            self._logger.info(f'send stopping message to {node_name}')
-            self._nodes[node_name].put(
-                Message(
-                    creator=self.name,
-                    payload=ControlPayload(ControlSignal.STOP_PROPAGATE),
+        for layer in self._dag.BFS():
+            self._logger.info(f'stopping layer {layer}')
+            for node_name in layer:
+                self._logger.info(f'stopping node {node_name}')
+                self._nodes[node_name].put(
+                    Message(
+                        creator=self.name,
+                        payload=ControlPayload(ControlSignal.STOP),
+                    )
                 )
-            )
+
+            for node_name in layer:
+                self._nodes[node_name].join()
 
         if self._telemetry:
             self._telemetry_manager.stop()

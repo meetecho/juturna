@@ -389,13 +389,7 @@ class Node[T_Input, T_Output]:
         self._queue.put(None)
         self._buffer.put(None)
 
-        for _t in [
-            self._source_thread,
-            self._worker_thread,
-            self._update_thread,
-        ]:
-            if _t and _t.is_alive:
-                _t.join(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
+        self.join()
 
         self._worker_thread = None
         self._source_thread = None
@@ -403,6 +397,20 @@ class Node[T_Input, T_Output]:
         self._status = ComponentStatus.STOPPED
 
         self._logger.info('node stopped')
+
+    def join(self):
+        """
+        Wait for all internal threads to terminate.
+        This method should be called after stop() to ensure the node has
+        fully shut down before its resources are released.
+        """
+        for _t in [
+            self._source_thread,
+            self._worker_thread,
+            self._update_thread,
+        ]:
+            if _t is not None and _t.is_alive():
+                _t.join(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
 
     def configure(self): ...
 
