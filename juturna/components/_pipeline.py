@@ -229,11 +229,9 @@ class Pipeline:
         """
         Stop the pipeline and all its nodes.
 
-        This method stops all the nodes in the pipeline, preventing them from
-        processing any further data. The nodes are stopped in reverse order of
-        their configuration, ensuring that the source node is the last one to be
-        stopped. This is important to ensure that the data flow is properly
-        terminated and that all nodes are safely stopped.
+        This method stops all the nodes in the pipeline, sending a
+        stopping signal to each node that will cause them to stop processing
+        upcoming data and to propagate the stopping signal to their destinations
         """
         if self._status != PipelineStatus.RUNNING:
             raise RuntimeError(f'pipeline {self.name} is not running')
@@ -241,10 +239,10 @@ class Pipeline:
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
-        for node_name, node in self._nodes.items():
-            self._logger.info(f'stopping node {node_name}')
-
-            node.stop()
+        source_layers = self._dag.BFS()[0]
+        for node_name in source_layers:
+            self._logger.info(f'send stopping message to {node_name}')
+            self._nodes[node_name].put(ControlSignal.STOP_PROPAGATE)
 
         if self._telemetry:
             self._telemetry_manager.stop()
