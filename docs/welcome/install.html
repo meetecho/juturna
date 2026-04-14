@@ -340,16 +340,16 @@ start the installation process. If running Ubuntu or any Debian-based distros:</
 </pre></div>
 </div>
 <p>The simplest way to install Juturna is to fetch it from the official Python
-Package Index (<a class="reference external" href="https://pypi.org/project/juturna/" rel="noreferrer" target="_blank">PyPi <svg version="1.1" width="1.0em" height="1.0em" viewBox="0 0 16 16" aria-hidden="true" style="display: inline-block; vertical-align: middle; fill: currentColor;"><path d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z"></path></svg></a>). Assuming you are
-working within a virtual environment, simply run:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(venv)</span> <span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>juturna
-</pre></div>
-</div>
+Package Index (<a class="reference external" href="https://pypi.org/project/juturna/" rel="noreferrer" target="_blank">PyPi <svg version="1.1" width="1.0em" height="1.0em" viewBox="0 0 16 16" aria-hidden="true" style="display: inline-block; vertical-align: middle; fill: currentColor;"><path d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z"></path></svg></a>).</p>
+<p>Here, we assume you are working with a virtual environment, managed by your
+favourite flavour of tools. Anything will do, it is just enough to create one
+where you can install juturna. In here, we are using the built-in <cite>venv</cite>
+module.</p>
 <p>You can also fetch the Juturna source code from the
 <a class="reference external" href="https://github.com/meetecho/juturna" rel="noreferrer" target="_blank">GitHub repository <svg version="1.1" width="1.0em" height="1.0em" viewBox="0 0 16 16" aria-hidden="true" style="display: inline-block; vertical-align: middle; fill: currentColor;"><path d="M3.75 2h3.5a.75.75 0 0 1 0 1.5h-3.5a.25.25 0 0 0-.25.25v8.5c0 .138.112.25.25.25h8.5a.25.25 0 0 0 .25-.25v-3.5a.75.75 0 0 1 1.5 0v3.5A1.75 1.75 0 0 1 12.25 14h-8.5A1.75 1.75 0 0 1 2 12.25v-8.5C2 2.784 2.784 2 3.75 2Zm6.854-1h4.146a.25.25 0 0 1 .25.25v4.146a.25.25 0 0 1-.427.177L13.03 4.03 9.28 7.78a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042l3.75-3.75-1.543-1.543A.25.25 0 0 1 10.604 1Z"></path></svg></a> and install it
 manually:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(venv)</span> <span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/meetecho.juturna
-<span class="gp gp-VirtualEnv">(venv)</span> <span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>./juturna
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/meetecho/juturna
+<span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>./juturna
 </pre></div>
 </div>
 <section id="extras">
@@ -377,10 +377,10 @@ experimenting!</p>
 </div>
 <p>Extra groups can be selected during the installation proess.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>only<span class="w"> </span>include<span class="w"> </span>a<span class="w"> </span>single<span class="w"> </span>optional<span class="w"> </span>group
-<span class="gp gp-VirtualEnv">(venv)</span> <span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span><span class="s1">&#39;juturna[dev]&#39;</span>
+<span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span><span class="s1">&#39;juturna[dev]&#39;</span>
 
 <span class="gp"># </span>inclunde<span class="w"> </span>multiple<span class="w"> </span>optional<span class="w"> </span>groups
-<span class="gp gp-VirtualEnv">(venv)</span> <span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span><span class="s1">&#39;juturna[dev,httpwrapper]&#39;</span>
+<span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>-U<span class="w"> </span><span class="s1">&#39;juturna[dev,httpwrapper]&#39;</span>
 </pre></div>
 </div>
 <p>To simplify things, three meta-groups are also included:</p>
@@ -394,14 +394,14 @@ experimenting!</p>
 <h2>Documentation building<a class="headerlink" href="#documentation-building" title="Link to this heading">¶</a></h2>
 <p>If you want to build the documentation locally, install Juturna including the
 <code class="docutils literal notranslate"><span class="pre">dev</span></code> group, then within the repository folder run the following:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(venv)</span> <span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>docs<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sphinx-build<span class="w"> </span>-b<span class="w"> </span>html<span class="w"> </span>./source<span class="w"> </span>./build/html
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>docs<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>sphinx-build<span class="w"> </span>-b<span class="w"> </span>html<span class="w"> </span>./source<span class="w"> </span>./build/html
 </pre></div>
 </div>
 <p>In case you are actively working on the documentation and need automatic
 building, you can use <code class="docutils literal notranslate"><span class="pre">sphinx-autobuild</span></code> (already included in the <code class="docutils literal notranslate"><span class="pre">dev</span></code>
 group):</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(venv)</span> <span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>docs
-<span class="gp gp-VirtualEnv">(venv)</span> <span class="gp">$ </span>sphinx-autobuild<span class="w"> </span>./source<span class="w"> </span>./build/html
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>docs
+<span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>sphinx-autobuild<span class="w"> </span>./source<span class="w"> </span>./build/html
 </pre></div>
 </div>
 <p>This will automatically trigger the building script whenever a file in the
@@ -411,13 +411,13 @@ group):</p>
 <h2>Testing<a class="headerlink" href="#testing" title="Link to this heading">¶</a></h2>
 <p>To run the tests, you need to install Juturna with the <code class="docutils literal notranslate"><span class="pre">dev</span></code> group, which
 include <code class="docutils literal notranslate"><span class="pre">pytest</span></code>, then from the repository root folder:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(venv)</span> <span class="gp">$ </span>pytest<span class="w"> </span>-vvv
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>pytest<span class="w"> </span>-vvv
 </pre></div>
 </div>
 <p>Please consider that all the test cases concerning the Juturna Hub actively
 interact with GitHub, and this can quickly drain the API quota. It is
 recommended you disable them:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(venv)</span> <span class="gp">$ </span>pytest<span class="w"> </span>-vvv<span class="w"> </span>--ignore<span class="w"> </span>./tests/test_hub.py
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">$ </span>pytest<span class="w"> </span>-vvv<span class="w"> </span>--ignore<span class="w"> </span>./tests/test_hub.py
 </pre></div>
 </div>
 </section>
