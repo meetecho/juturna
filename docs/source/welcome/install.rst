@@ -17,6 +17,7 @@ where you can install juturna. In here, we are using the built-in `venv`
 module.
 
 .. code-block:: console
+
     $ python3 -m venv .venv
     $ source .venv/bin/activate
     (.venv) $ pip install juturna
