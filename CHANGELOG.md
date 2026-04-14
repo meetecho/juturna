@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1](https://github.com/meetecho/juturna/compare/juturna-v2.1.0...juturna-v2.1.1) (2026-04-14)
+
+
+### Bug Fixes
+
+* **deps:** updating dependencies to avoid conflicts in ([6edbe12](https://github.com/meetecho/juturna/commit/6edbe123e6717bdd1de60410016986a1eed79953))
+* **faster-whisper:** reverting nvidia library version to 12 ([fe9a501](https://github.com/meetecho/juturna/commit/fe9a501dc257a7c8647497bdf27bc1ca8e010a5e))
+* **faster-whisper:** reverting nvidia library version to 12 ([3593672](https://github.com/meetecho/juturna/commit/35936728884abe64eff641a973aec4ffcc7e835b))
+* patched typo in warp node import path ([8a0368a](https://github.com/meetecho/juturna/commit/8a0368a868afcd5e857d5f12e18e63a7d19b84b2))
+* patched typo in warp node import path ([9be3c0b](https://github.com/meetecho/juturna/commit/9be3c0b27a8c4e6aae55f46e41de06860c54e2a3))
+
+
+### Documentation
+
+* added short reference to virtual envs in installation guide ([83b8974](https://github.com/meetecho/juturna/commit/83b89749a65aa20fa1b3a7c4afd7c6b334a9a16e))
+* added short reference to virtual envs in installation guide ([022338c](https://github.com/meetecho/juturna/commit/022338c8566334b2d18e9408235c5bbd2cdb2270))
+
 ## [2.1.0](https://github.com/meetecho/juturna/compare/juturna-v2.0.0...juturna-v2.1.0) (2026-04-08)
 
 
