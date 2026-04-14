@@ -7,13 +7,15 @@ import typing
 
 from juturna.components import _component_builder
 from juturna.components import Node
+from juturna.components import Message
+
 from juturna.components._dag import DAG
 from juturna.utils.log_utils import jt_logger
 
 from juturna.names import ComponentStatus
 from juturna.names import PipelineStatus
 
-from juturna.payloads import ControlSignal
+from juturna.payloads import ControlSignal, ControlPayload
 
 from juturna.components._telemetry_manager import TelemetryManager
 
@@ -242,7 +244,12 @@ class Pipeline:
         source_layers = self._dag.BFS()[0]
         for node_name in source_layers:
             self._logger.info(f'send stopping message to {node_name}')
-            self._nodes[node_name].put(ControlSignal.STOP_PROPAGATE)
+            self._nodes[node_name].put(
+                Message(
+                    creator=self.name,
+                    payload=ControlPayload(ControlSignal.STOP_PROPAGATE),
+                )
+            )
 
         if self._telemetry:
             self._telemetry_manager.stop()
@@ -258,7 +265,12 @@ class Pipeline:
         its destinations.
         """
         if node := self._nodes.get(node_name):
-            node.put(ControlSignal.SUSPEND)
+            node.put(
+                Message(
+                    creator=self.name,
+                    payload=ControlPayload(ControlSignal.SUSPEND),
+                )
+            )
 
     def resume_node(self, node_name: str):
         """
@@ -267,7 +279,12 @@ class Pipeline:
         A suspended node can be resumed, so it will start processing data again.
         """
         if node := self._nodes.get(node_name):
-            node.put(ControlSignal.RESUME)
+            node.put(
+                Message(
+                    creator=self.name,
+                    payload=ControlPayload(ControlSignal.RESUME),
+                )
+            )
 
     def destroy(self):
         """
