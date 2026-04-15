@@ -442,7 +442,7 @@ class Node[T_Input, T_Output]:
     def _worker(self):
         while not self._stop_worker_event.is_set():
             try:
-                message = self._queue.get(timeout=0.1)
+                message = self._queue.get(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
             except queue.Empty:
                 continue
 
@@ -458,7 +458,7 @@ class Node[T_Input, T_Output]:
     def _update(self):
         while not self._stop_update_event.is_set():
             try:
-                batch = self._buffer.get(timeout=0.1)
+                batch = self._buffer.get(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
             except queue.Empty:
                 continue
 
