@@ -71,6 +71,11 @@ class Node[T_Input, T_Output]:
         self._stop_source_event = threading.Event()
         self._stop_update_event = threading.Event()
 
+        self._draining = threading.Event()
+
+        self._pending_updates = 0
+        self._pending_condition = threading.Condition()
+
         self._suspended = False
         self._auto_dump = False
 
@@ -166,7 +171,7 @@ class Node[T_Input, T_Output]:
 
     @synchroniser.setter
     def synchroniser(self, synchroniser: Callable):
-        self.synchroniser = synchroniser
+        self._synchroniser = synchroniser
 
     @property
     def origins(self) -> list:
@@ -180,6 +185,9 @@ class Node[T_Input, T_Output]:
         self._telemetry_manager = manager
 
     def put(self, message: Message | ControlSignal):
+        if self._draining.is_set():
+            self._logger.debug('message received while draining, discarding...')
+            return
         self._queue.put(message)
 
     def compile_template(self, template_name: str, arguments: dict) -> str:
@@ -338,6 +346,7 @@ class Node[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the node is started correctly.
         """
+        self._draining.clear()
         if self._worker_thread is None:
             self._worker_thread = threading.Thread(
                 name=f'_worker_{self.name}',
@@ -382,12 +391,10 @@ class Node[T_Input, T_Output]:
         if self._status == ComponentStatus.STOPPED:
             return
 
+        self._draining.set()
         self._stop_worker_event.set()
         self._stop_source_event.set()
         self._stop_update_event.set()
-
-        self._queue.put(None)
-        self._buffer.put(None)
 
         self.join()
 
@@ -404,12 +411,16 @@ class Node[T_Input, T_Output]:
         This method should be called after stop() to ensure the node has
         fully shut down before its resources are released.
         """
+        with self._pending_condition:
+            self._pending_condition.wait_for(lambda: self._pending_updates == 0)
+
+        current_thread = threading.current_thread()
         for _t in [
             self._source_thread,
             self._worker_thread,
             self._update_thread,
         ]:
-            if _t is not None and _t.is_alive():
+            if _t is not None and _t.is_alive() and _t is not current_thread:
                 _t.join(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
 
     def configure(self): ...
@@ -422,28 +433,21 @@ class Node[T_Input, T_Output]:
 
     def destroy(self): ...
 
+    def _handle_control(self, message: Message):
+        _control_thread = threading.Thread(
+            target=self._control, args=(message,), daemon=True
+        )
+        _control_thread.start()
+
     def _worker(self):
         while not self._stop_worker_event.is_set():
-            message = self._queue.get()
-
-            if message is None:
-                self._stop_worker_event.set()
-
-                continue
-
-            if isinstance(message.payload, ControlPayload):
-                if message.payload.signal < 0:
-                    self._logger.info('stop signal received')
-                    self._stop_worker_event.set()
-                    self._buffer.put(None)
-
-                self._handle_control(message)
-
+            try:
+                message = self._queue.get(timeout=0.1)
+            except queue.Empty:
                 continue
 
             if self._suspended:
                 self.transmit(message)
-
                 continue
 
             self._buffer.put(message)
@@ -453,15 +457,29 @@ class Node[T_Input, T_Output]:
 
     def _update(self):
         while not self._stop_update_event.is_set():
-            batch = self._buffer.get()
+            try:
+                batch = self._buffer.get(timeout=0.1)
+            except queue.Empty:
+                continue
 
-            if batch is None:
-                self._stop_update_event.set()
-
+            if isinstance(batch, Message) and isinstance(
+                batch.payload, ControlPayload
+            ):
+                self._handle_control(batch)
+                if batch.payload.signal < 0:
+                    break
                 continue
 
             self._last_data_source_evt_id = batch.id
-            self.update(batch)
+            with self._pending_condition:
+                self._pending_updates += 1
+            try:
+                self.update(batch)
+            finally:
+                with self._pending_condition:
+                    self._pending_updates -= 1
+                    if self._pending_updates == 0:
+                        self._pending_condition.notify_all()
 
     def _source(self):
         while not self._stop_source_event.is_set():
@@ -487,24 +505,11 @@ class Node[T_Input, T_Output]:
 
             self.put(message)
 
-    def _handle_control(self, message: Message):
-        _control_thread = threading.Thread(
-            target=self._control,
-            args=(message,),
-            daemon=True,
-        )
-
-        _control_thread.start()
-
     def _control(self, message: Message):
         if message.payload.signal < 0:
             self.stop()
 
         match message.payload.signal:
-            case ControlSignal.STOP_PROPAGATE:
-                self.transmit(message)
-
-                return
             case ControlSignal.STOP:
                 return
             case ControlSignal.START:
