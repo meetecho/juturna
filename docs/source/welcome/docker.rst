@@ -6,11 +6,24 @@ create a base Juturna image. To build it, symply navigate within the repo
 folder and run:
 
 .. code-block:: console
-    
+
     $ docker build -t juturna:latest .
 
 The created image will include the core Juturna code, and all its plugins. You
 can find them in the ``/root/juturna`` folder.
+
+By default, this image contains all the available juturna optional dependency
+groups. This can be changed by passing the `JT_VERSION` variable to the build
+command. Installing the core package only, for instance, can be done with:
+
+.. code-block:: console
+
+    $ docker build --build-arg JT_VERSION="" -t juturna:latest .
+
+Other individual groups can be targeted as well:
+
+.. code-block:: console
+    $ docker build --build-arg JT_VERSION="[warp]" -t juturna:latest .
 
 Dev image
 ---------
@@ -27,7 +40,7 @@ automated with the following:
         .. code-block:: dockerfile
 
             FROM python:3.12-slim
-            
+
             RUN mkdir -p /juturna_dev
 
             COPY ./requirements.txt /juturna_dev

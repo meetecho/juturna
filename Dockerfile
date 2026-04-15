@@ -12,4 +12,6 @@ COPY ./pyproject.toml .
 COPY ./README.md .
 COPY ./plugins /juturna/plugins
 
-RUN pip install .
+ARG JT_VERSION="[full]"
+
+RUN pip install "./$JT_VERSION"
