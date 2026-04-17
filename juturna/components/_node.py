@@ -446,7 +446,9 @@ class Node[T_Input, T_Output]:
             except queue.Empty:
                 continue
 
-            if self._suspended:
+            if self._suspended and not isinstance(
+                message.payload, ControlPayload
+            ):
                 self.transmit(message)
                 continue
 
