@@ -1,8 +1,8 @@
 """
 AudioRtpAv
 
-@author: Antonio Bevilacqua
-@email: b3by.in.th3.sky@gmail.com
+@author: Antonio Bevilacqua, Paolo Saviano
+@email: b3by.in.th3.sky@gmail.com, psaviano@meetecho.com
 @created_at: 2025-12-16 21:54:39
 
 Consume RTP audio streams using PyAv.
