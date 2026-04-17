@@ -107,11 +107,13 @@ class TestAudioRtpAvNetworkResilience:
           sender.send_tick()
           time.sleep(0.05)
 
+        print(f"received {node._abs_recv} packets on {node_params['port']} before simulating network error")
+
         start_wait = time.time()
         while node._abs_recv == 0 and (time.time() - start_wait) < 5:
           time.sleep(0.1)
 
-        assert node._abs_recv > 0, f"Node did not receive initial packets as expected, received {node._abs_recv} packets on {node_params['port']}"
+        assert node._abs_recv == 22, f"Node did not receive initial packets as expected, received {node._abs_recv} packets on {node_params['port']}"
 
         last_recv = node._abs_recv
 
@@ -121,11 +123,11 @@ class TestAudioRtpAvNetworkResilience:
         time.sleep(2.0)
 
         new_sender = RTPSender(port=node_params["port"])
-        for _ in range(10):
+        for _ in range(12):
           new_sender.send_tick()
           time.sleep(0.05)
 
-        assert node._abs_recv > last_recv, f"Node did not recover from network error as expected {node._abs_recv} packets received on {node_params['port']}"
+        assert node._abs_recv == last_recv + 22, f"Node did not recover from network error as expected {node._abs_recv} packets received on {node_params['port']}"
         new_sender.close()
 
       finally:
