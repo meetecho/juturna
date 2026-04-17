@@ -7,13 +7,15 @@ import typing
 
 from juturna.components import _component_builder
 from juturna.components import Node
+from juturna.components import Message
+
 from juturna.components._dag import DAG
 from juturna.utils.log_utils import jt_logger
 
 from juturna.names import ComponentStatus
 from juturna.names import PipelineStatus
 
-from juturna.payloads import ControlSignal
+from juturna.payloads import ControlSignal, ControlPayload
 
 from juturna.components._telemetry_manager import TelemetryManager
 
@@ -229,11 +231,9 @@ class Pipeline:
         """
         Stop the pipeline and all its nodes.
 
-        This method stops all the nodes in the pipeline, preventing them from
-        processing any further data. The nodes are stopped in reverse order of
-        their configuration, ensuring that the source node is the last one to be
-        stopped. This is important to ensure that the data flow is properly
-        terminated and that all nodes are safely stopped.
+        This method stops all the nodes in the pipeline, sending a
+        stopping signal to each node that will cause them to stop processing
+        upcoming data and to propagate the stopping signal to their destinations
         """
         if self._status != PipelineStatus.RUNNING:
             raise RuntimeError(f'pipeline {self.name} is not running')
@@ -241,10 +241,19 @@ class Pipeline:
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
-        for node_name, node in self._nodes.items():
-            self._logger.info(f'stopping node {node_name}')
+        for layer in self._dag.BFS():
+            self._logger.info(f'stopping layer {layer}')
+            for node_name in layer:
+                self._logger.info(f'stopping node {node_name}')
+                self._nodes[node_name].put(
+                    Message(
+                        creator=self.name,
+                        payload=ControlPayload(ControlSignal.STOP),
+                    )
+                )
 
-            node.stop()
+            for node_name in layer:
+                self._nodes[node_name].join()
 
         if self._telemetry:
             self._telemetry_manager.stop()
@@ -260,7 +269,12 @@ class Pipeline:
         its destinations.
         """
         if node := self._nodes.get(node_name):
-            node.put(ControlSignal.SUSPEND)
+            node.put(
+                Message(
+                    creator=self.name,
+                    payload=ControlPayload(ControlSignal.SUSPEND),
+                )
+            )
 
     def resume_node(self, node_name: str):
         """
@@ -269,7 +283,12 @@ class Pipeline:
         A suspended node can be resumed, so it will start processing data again.
         """
         if node := self._nodes.get(node_name):
-            node.put(ControlSignal.RESUME)
+            node.put(
+                Message(
+                    creator=self.name,
+                    payload=ControlPayload(ControlSignal.RESUME),
+                )
+            )
 
     def destroy(self):
         """
@@ -296,7 +315,7 @@ class Pipeline:
             self._nodes[node_name] = None
 
         self._nodes = None
-
+        self._status = PipelineStatus.DESTROYED
         gc.collect()
 
         self._logger.info('pipe destroyed')

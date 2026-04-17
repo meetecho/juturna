@@ -24,15 +24,10 @@ class Buffer:
         self._logger = jt_logger(creator)
         self._logger.propagate = True
 
-    def get(self) -> typing.Any:
-        return self._out_queue.get()
+    def get(self, timeout: float = None) -> typing.Any:
+        return self._out_queue.get(timeout=timeout)
 
     def put(self, message: Message | None):
-        if message is None:
-            self._out_queue.put(None)
-
-            return
-
         if message.creator not in self._data:
             self._data[message.creator] = list()
 

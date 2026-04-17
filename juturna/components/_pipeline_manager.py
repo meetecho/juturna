@@ -118,7 +118,6 @@ class PipelineManager:
             raise NotRunningException(pipeline_id)
 
         self._pipelines[pipeline_id].stop()
-        self._pipelines[pipeline_id].status['self'] = PipelineStatus.READY
 
     def delete_pipeline(self, pipeline_id: str, wipe_folder: bool) -> None:
         if pipeline_id not in self._pipelines:

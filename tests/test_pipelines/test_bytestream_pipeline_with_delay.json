@@ -13,6 +13,7 @@
         "type": "source",
         "mark": "data_streamer",
         "configuration": {
+          "rate": 1
         }
       },
       {
@@ -26,7 +27,7 @@
       {
         "name": "2_sink",
         "type": "sink",
-        "mark": "crasher",
+        "mark": "dumper",
         "configuration": {}
       }
     ],
