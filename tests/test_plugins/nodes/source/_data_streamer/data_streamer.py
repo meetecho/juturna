@@ -64,6 +64,10 @@ class DataStreamer(Node[None, BytesPayload]):
 
         self._transmitted += 1
 
+    @property
+    def transmitted_count(self):
+        return self._transmitted
+
     @staticmethod
     def generate_stream(sample_length_sec: int, sample_rate: int) -> bytes:
         """

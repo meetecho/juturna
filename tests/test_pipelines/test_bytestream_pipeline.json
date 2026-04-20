@@ -19,15 +19,15 @@
         "name": "1_pass",
         "type": "proc",
         "mark": "passthrough_identity",
-        "configuration": {}
+        "configuration": {
+          "delay": 2
+        }
       },
       {
-        "name": "2_notifier",
+        "name": "2_sink",
         "type": "sink",
-        "mark": "notifier_websocket",
-        "configuration": {
-          "endpoint": "ws://127.0.0.1:8081"
-        }
+        "mark": "crasher",
+        "configuration": {}
       }
     ],
     "links": [
@@ -37,7 +37,7 @@
       },
       {
         "from": "1_pass",
-        "to": "2_notifier"
+        "to": "2_sink"
       }
     ]
   }

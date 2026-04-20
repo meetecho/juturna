@@ -96,7 +96,7 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
             for raw in websocket:
                 payload = BytesPayload(cnt=raw)
 
-                msg = Message[ObjectPayload](
+                msg = Message[BytesPayload](
                     creator=self.name, version=self._sent, payload=payload
                 )
 

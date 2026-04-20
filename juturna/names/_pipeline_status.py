@@ -7,3 +7,4 @@ class PipelineStatus(StrEnum):
     NEW = 'pipeline_created'
     READY = 'pipeline_ready'
     RUNNING = 'pipeline_running'
+    DESTROYED = 'pipeline_destroyed'

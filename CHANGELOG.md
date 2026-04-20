@@ -5,6 +5,63 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1](https://github.com/meetecho/juturna/compare/juturna-v2.1.0...juturna-v2.1.1) (2026-04-14)
+
+
+### Bug Fixes
+
+* **deps:** updating dependencies to avoid conflicts in ([6edbe12](https://github.com/meetecho/juturna/commit/6edbe123e6717bdd1de60410016986a1eed79953))
+* **faster-whisper:** reverting nvidia library version to 12 ([fe9a501](https://github.com/meetecho/juturna/commit/fe9a501dc257a7c8647497bdf27bc1ca8e010a5e))
+* **faster-whisper:** reverting nvidia library version to 12 ([3593672](https://github.com/meetecho/juturna/commit/35936728884abe64eff641a973aec4ffcc7e835b))
+* patched typo in warp node import path ([8a0368a](https://github.com/meetecho/juturna/commit/8a0368a868afcd5e857d5f12e18e63a7d19b84b2))
+* patched typo in warp node import path ([9be3c0b](https://github.com/meetecho/juturna/commit/9be3c0b27a8c4e6aae55f46e41de06860c54e2a3))
+
+
+### Documentation
+
+* added short reference to virtual envs in installation guide ([83b8974](https://github.com/meetecho/juturna/commit/83b89749a65aa20fa1b3a7c4afd7c6b334a9a16e))
+* added short reference to virtual envs in installation guide ([022338c](https://github.com/meetecho/juturna/commit/022338c8566334b2d18e9408235c5bbd2cdb2270))
+
+## [2.1.0](https://github.com/meetecho/juturna/compare/juturna-v2.0.0...juturna-v2.1.0) (2026-04-08)
+
+
+### Features
+
+* added plugin source node for csv feeding ([e3c92fd](https://github.com/meetecho/juturna/commit/e3c92fd49fdae1bded9bdd866e41595c80ae48e0))
+* **API:** add dedicated exception and handlers for pipeline endpoint errors ([ed4e825](https://github.com/meetecho/juturna/commit/ed4e825b0e412aa1aa14e699adcfa4550b0b72ce))
+* **API:** add pipelines/deploy endpoint ([5ca640d](https://github.com/meetecho/juturna/commit/5ca640d07667694aa7d2d9fdab63748c1d8afe6a))
+* **core:** added in proc utils a decorator to safely run node code preventing it to fail ([f307d26](https://github.com/meetecho/juturna/commit/f307d2665466c95055d1f14176cd0e28aed437b4))
+* custom header and header skipping ([4d6b14a](https://github.com/meetecho/juturna/commit/4d6b14a7faedbdef5cc4f6e66cf3f5c15c72c4b9))
+* custom header and header skipping ([b443969](https://github.com/meetecho/juturna/commit/b443969e4d3e91501604c64aad94bed83c1d684f))
+* lauching a pipe from the cli now exits once all nodes in the pipe are stopped ([5df8517](https://github.com/meetecho/juturna/commit/5df8517e1c70c0bda764ccf96eb9131c4354d457))
+* ollama node updated with external configuration file ([2205dae](https://github.com/meetecho/juturna/commit/2205dae1a13cf15d20a339d734bcc6919ec33815))
+* **plugins:** added new summarization node that generate progressive summaries ([b7632f7](https://github.com/meetecho/juturna/commit/b7632f70f01dcf8a73ef66c47db05977635620ee))
+* **plugins:** fixed a bug in summarizer for non dictionary response ([17de6f6](https://github.com/meetecho/juturna/commit/17de6f6a0e2d061c37a9239d5635c14ff4873099))
+* **plugins:** fixed a bug in summarizer when model returns malformed response ([2016b4f](https://github.com/meetecho/juturna/commit/2016b4feab30fde05e685f991456a62b523fbc92))
+* **plugins:** fixed improper dict in topic history ([46e114b](https://github.com/meetecho/juturna/commit/46e114bdb7284dabdd7d1dc67b3bee80ed63847f))
+* **plugins:** fixed improper dict in topic history ([aaace56](https://github.com/meetecho/juturna/commit/aaace5625536571998a42476c016e41cb582a407))
+* **plugins:** summarization node now manages multi-topic history ([e391bae](https://github.com/meetecho/juturna/commit/e391bae37a3735ace0891cb0ad5c87d6fa8cd320))
+* **plugins:** temperature added for ollama models ([a7460fe](https://github.com/meetecho/juturna/commit/a7460fe077f0ed18260932bf400a9f875e04c1c7))
+* prompter node now can buffer input messages ([d06a683](https://github.com/meetecho/juturna/commit/d06a6838a62e248cb13fd77fe9f08a1fed30c960))
+
+
+### Bug Fixes
+
+* **API:** move models module under cli/commands to satisfy dependencies ([7d7c1b6](https://github.com/meetecho/juturna/commit/7d7c1b6b005f509ba6e864e3df3bee045e33e52f))
+* changed the type of message built in the handler for the json websocket source node, fixes [#123](https://github.com/meetecho/juturna/issues/123) ([af42010](https://github.com/meetecho/juturna/commit/af420105f46a7008ba56d9b5344c2d54b43b3283))
+* changed update signature and class name for json http source node, fixes [#122](https://github.com/meetecho/juturna/issues/122) and [#124](https://github.com/meetecho/juturna/issues/124) ([2a49ffa](https://github.com/meetecho/juturna/commit/2a49ffafa9514dddba3cfc55f3b9a83fb55c3e57))
+* fixed queue management for builtin http node ([74bff20](https://github.com/meetecho/juturna/commit/74bff20fdd5ba200ca277681eb34c89ce923cff9))
+* mongo sink node updated to use latest library changes ([9e629d7](https://github.com/meetecho/juturna/commit/9e629d7572871b448ff2821796efa47e0303c2b1))
+* mongo sink node updated with connection timeout ([f660e92](https://github.com/meetecho/juturna/commit/f660e926b37339ebaf105eb57d7796319b10cf49))
+* ollama proc node now includes the full input payload in its transmitted messages ([c9b2954](https://github.com/meetecho/juturna/commit/c9b29547c5d2bec7857d3185ebdb24a2b223c4ad))
+* synced node signatures with head ([7cece5c](https://github.com/meetecho/juturna/commit/7cece5c1a76cdb8a5075e3944fd4e99bccf7e098))
+* telemetry writer now checks for availability of size field as per [#140](https://github.com/meetecho/juturna/issues/140) ([d3e9d5f](https://github.com/meetecho/juturna/commit/d3e9d5f8204b42b5b80c18914d57dcdefe3494e2))
+
+
+### Code Refactoring
+
+* **API:** standardize responses on PipelineManager methods; manage exceptions on api calls ([0168f63](https://github.com/meetecho/juturna/commit/0168f6357a594bcf8b103d731ce9749fc299432b))
+
 ## [2.0.0](https://github.com/meetecho/juturna/compare/juturna-v1.0.2...juturna-v2.0.0) (2026-02-19)
 
 

@@ -4,4 +4,8 @@ from juturna.names._pipeline_status import PipelineStatus
 from juturna.names._service_status import ServiceStatus
 
 
-__all__ = ['ComponentStatus', 'PipelineStatus', 'ServiceStatus']
+__all__ = [
+    'ComponentStatus',
+    'PipelineStatus',
+    'ServiceStatus',
+]

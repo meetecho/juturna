@@ -9,12 +9,18 @@ start the installation process. If running Ubuntu or any Debian-based distros:
     $ sudo apt install libsm6 libext6 ffmpeg
 
 The simplest way to install Juturna is to fetch it from the official Python
-Package Index (`PyPi <https://pypi.org/project/juturna/>`_). Assuming you are
-working within a virtual environment, simply run:
+Package Index (`PyPi <https://pypi.org/project/juturna/>`_).
+
+Here, we assume you are working with a virtual environment, managed by your
+favourite flavour of tools. Anything will do, it is just enough to create one
+where you can install juturna. In here, we are using the built-in `venv`
+module.
 
 .. code-block:: console
 
-    (venv) $ pip install juturna
+    $ python3 -m venv .venv
+    $ source .venv/bin/activate
+    (.venv) $ pip install juturna
 
 You can also fetch the Juturna source code from the
 `GitHub repository <https://github.com/meetecho/juturna>`_ and install it
@@ -22,8 +28,8 @@ manually:
 
 .. code-block:: console
 
-    (venv) $ git clone https://github.com/meetecho.juturna
-    (venv) $ pip install ./juturna
+    (.venv) $ git clone https://github.com/meetecho/juturna
+    (.venv) $ pip install ./juturna
 
 Extras
 ------
@@ -55,10 +61,10 @@ Extra groups can be selected during the installation proess.
 .. code-block:: console
 
     # only include a single optional group
-    (venv) $ pip install -U 'juturna[dev]'
+    (.venv) $ pip install -U 'juturna[dev]'
 
     # inclunde multiple optional groups
-    (venv) $ pip install -U 'juturna[dev,httpwrapper]'
+    (.venv) $ pip install -U 'juturna[dev,httpwrapper]'
 
 To simplify things, three meta-groups are also included:
 
@@ -74,7 +80,7 @@ If you want to build the documentation locally, install Juturna including the
 
 .. code-block:: console
 
-    (venv) $ cd docs && sphinx-build -b html ./source ./build/html
+    (.venv) $ cd docs && sphinx-build -b html ./source ./build/html
 
 In case you are actively working on the documentation and need automatic
 building, you can use ``sphinx-autobuild`` (already included in the ``dev``
@@ -82,8 +88,8 @@ group):
 
 .. code-block:: console
 
-    (venv) $ cd docs
-    (venv) $ sphinx-autobuild ./source ./build/html
+    (.venv) $ cd docs
+    (.venv) $ sphinx-autobuild ./source ./build/html
 
 This will automatically trigger the building script whenever a file in the
 ``source`` folder is edited.
@@ -96,7 +102,7 @@ include ``pytest``, then from the repository root folder:
 
 .. code-block:: console
 
-    (venv) $ pytest -vvv
+    (.venv) $ pytest -vvv
 
 Please consider that all the test cases concerning the Juturna Hub actively
 interact with GitHub, and this can quickly drain the API quota. It is
@@ -104,4 +110,4 @@ recommended you disable them:
 
 .. code-block:: console
 
-    (venv) $ pytest -vvv --ignore ./tests/test_hub.py
+    (.venv) $ pytest -vvv --ignore ./tests/test_hub.py

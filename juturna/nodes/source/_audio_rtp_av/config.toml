@@ -7,5 +7,6 @@ out_rate = 16000
 out_channels = 1
 resampler_format = "dblp"
 block_size = 3
+flush_partial_on_error = true
 
 [meta]
