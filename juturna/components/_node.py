@@ -512,6 +512,9 @@ class Node[T_Input, T_Output]:
             self.stop()
 
         match message.payload.signal:
+            case ControlSignal.STOP_PROPAGATE:
+                self.transmit(message)
+                return
             case ControlSignal.STOP:
                 return
             case ControlSignal.START:
