@@ -512,6 +512,12 @@ class Node[T_Input, T_Output]:
             self.stop()
 
         match message.payload.signal:
+            case ControlSignal.STOP_PROPAGATE:
+                self._logger.warning(
+                    'the stop propagate signal is deprecated, use STOP instead'
+                )
+                self.transmit(message)
+                return
             case ControlSignal.STOP:
                 return
             case ControlSignal.START:
