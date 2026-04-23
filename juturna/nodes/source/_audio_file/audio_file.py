@@ -16,10 +16,11 @@ import av.audio
 import av.audio.resampler
 import numpy as np
 
-from juturna.names import ComponentStatus
 from juturna.components import Node
 from juturna.components import Message
 from juturna.payloads import AudioPayload
+from juturna.payloads import ControlPayload
+from juturna.payloads import ControlSignal
 
 
 class AudioFile(Node[AudioPayload, AudioPayload]):
@@ -51,7 +52,7 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         self._rate = audio_rate
 
         self._audio = None
-        self._audio_chunks = list()
+        self._audio_chunks = None
         self._transmitted = 0
 
     def warmup(self):  # noqa: D102
@@ -79,33 +80,39 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         audio = audio.astype(np.float32) / 32768.0
 
         self._audio = audio
-        self._audio_chunks = self._get_audio_chunks()
+        self._audio_chunks = self._iter_audio_chunks()
 
         self.set_source(self._generate_chunks, by=self._block_size, mode='pre')
 
         self.logger.info('audio loaded')
         self.logger.info(f'duration: {len(audio) / self._rate}')
 
-    def _generate_chunks(self) -> Message[AudioPayload] | None:
-        try:
-            return Message[AudioPayload](
+    def _generate_chunks(self) -> Message[AudioPayload | ControlPayload]:
+        audio_chunk = next(self._audio_chunks, None)
+
+        if audio_chunk is None:
+            self.logger.info('last chunk processed, stopping')
+            return Message[ControlPayload](
                 creator=self.name,
-                payload=AudioPayload(
-                    audio=self._audio_chunks[self._transmitted],
-                    sampling_rate=self._rate,
-                    channels=1,
-                    start=self._block_size * self._transmitted,
-                    end=self._block_size * self._transmitted + self._block_size,
-                ),
+                payload=ControlPayload(signal=ControlSignal.STOP),
             )
-        except IndexError:
-            self.logger.info('sending None')
 
-            return None
+        chunk, sample_offset = audio_chunk
 
-    def _get_audio_chunks(self) -> list:
-        chunks = list()
+        return Message[AudioPayload](
+            creator=self.name,
+            payload=AudioPayload(
+                audio=chunk,
+                sampling_rate=self._rate,
+                channels=1,
+                start=sample_offset,
+                end=sample_offset + self._block_size,
+            ),
+        )
+
+    def _iter_audio_chunks(self):
         wave_len = self._block_size * self._rate
+        sample_offset = 0
 
         for chunk in AudioFile._chunker(self._audio, wave_len):
             if len(chunk) < wave_len:
@@ -116,25 +123,14 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
                     constant_values=0,
                 )
 
-            chunks.append(chunk)
+            yield chunk, sample_offset
+            sample_offset += wave_len
 
-        return chunks
-
-    def update(self, message: Message[AudioPayload]):  # noqa: D102
-        if message is None:
-            self.logger.info('audio file done, stopping...')
-
-            self.stop()
-            self.status = ComponentStatus.STOPPED
-
-            return
-
-        message.version = self._transmitted
+    def update(self, message: Message[AudioPayload | ControlPayload]):  # noqa: D102
         message.meta['session_id'] = self.pipe_id
         message.meta['size'] = self._block_size
 
         self.transmit(message)
-        self._transmitted += 1
 
     @staticmethod
     def _ignore_invalid_frames(frames):
