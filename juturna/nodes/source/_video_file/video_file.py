@@ -16,7 +16,10 @@ import numpy as np
 
 from juturna.components import Node
 from juturna.components import Message
+
 from juturna.payloads import BytesPayload, ImagePayload
+
+from juturna.names import PixelFormat
 
 
 class VideoFile(Node[BytesPayload, ImagePayload]):
@@ -140,7 +143,7 @@ class VideoFile(Node[BytesPayload, ImagePayload]):
                     image=full_frame,
                     width=self._width,
                     height=self._height,
-                    pixel_format='rgb24',
+                    pixel_format=PixelFormat.RGB24,
                     timestamp=time.time(),
                 ),
             )

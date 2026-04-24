@@ -17,6 +17,7 @@ from juturna.components import Node
 from juturna.components import Message
 from juturna.components import _resource_broker as rb
 from juturna.payloads import BytesPayload, ImagePayload
+from juturna.names import PixelFormat
 
 
 class VideoRtpAv(Node[BytesPayload, ImagePayload]):
@@ -141,7 +142,7 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
                     if self._stop_event.is_set():
                         break
 
-                    full_frame = frame.to_ndarray(format='rgb24')
+                    full_frame = frame.to_ndarray(format=PixelFormat.RGB24)
 
                     to_send = Message[ImagePayload](
                         creator=self.name,
@@ -150,7 +151,7 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
                             image=full_frame,
                             width=full_frame.shape[1],
                             height=full_frame.shape[0],
-                            pixel_format='rgb24',
+                            pixel_format=PixelFormat.RGB24,
                             timestamp=time.time(),
                         ),
                     )
