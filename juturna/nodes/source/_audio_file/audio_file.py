@@ -128,7 +128,6 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
 
     def update(self, message: Message[AudioPayload | ControlPayload]):  # noqa: D102
         message.meta['session_id'] = self.pipe_id
-        message.meta['size'] = self._block_size
 
         self.transmit(message)
 
