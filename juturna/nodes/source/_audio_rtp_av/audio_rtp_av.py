@@ -209,7 +209,6 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
                 end=self._elapsed + chunk_duration,
             ),
         )
-        message.meta['size'] = message.payload.end - message.payload.start
         self._abs_recv += 1
         self._elapsed += chunk_duration
         self.transmit(message)

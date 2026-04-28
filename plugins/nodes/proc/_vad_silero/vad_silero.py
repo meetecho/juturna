@@ -82,7 +82,6 @@ class VadSilero(Node[AudioPayload, AudioPayload]):
         waveform = [m.payload.audio for m in self._data]
         waveform = np.concatenate(waveform)
         version = self._data[-1].version
-        block_size = self._data[-1].meta['size']
 
         to_send = Message[AudioPayload](
             creator=self.name,
@@ -94,7 +93,6 @@ class VadSilero(Node[AudioPayload, AudioPayload]):
         to_send.meta = dict(message.meta)
 
         to_send.meta['silence'] = False
-        to_send.meta['size'] = block_size
         to_send.meta['sequence_number'] = version
         to_send.meta['original_audio'] = waveform
 

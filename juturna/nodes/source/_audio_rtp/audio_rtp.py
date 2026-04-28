@@ -233,7 +233,6 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
             ),
         )
 
-        to_send.meta['size'] = self._block_size
         to_send.meta['source_recv'] = self._abs_recv
 
         self.transmit(to_send)
