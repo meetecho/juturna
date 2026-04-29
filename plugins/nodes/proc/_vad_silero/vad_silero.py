@@ -26,6 +26,7 @@ class VadSilero(Node[AudioPayload, AudioPayload]):
 
     def __init__(
         self,
+        device: str,
         rate: int,
         threshold: float,
         min_speech_duration_ms: int,
@@ -41,6 +42,8 @@ class VadSilero(Node[AudioPayload, AudioPayload]):
 
         Parameters
         ----------
+        device : str
+            The device where silero should run. Defaulted to cpu.
         rate : int
             Source audio sampling rate.
         threshold : float
@@ -61,7 +64,9 @@ class VadSilero(Node[AudioPayload, AudioPayload]):
         """
         super().__init__(**kwargs)
 
-        self._model = silero_vad.load_silero_vad()
+        self._device = device
+        self._model = silero_vad.load_silero_vad().to(self._device)
+
         self._rate = rate
         self._threshold = threshold
         self._min_speech_duration_ms = min_speech_duration_ms
@@ -122,6 +127,9 @@ class VadSilero(Node[AudioPayload, AudioPayload]):
         self._data = None
 
     def _run_vad(self, audio: np.ndarray) -> tuple:
+        if self._device == 'cuda':
+            audio = torch.from_numpy(audio).to('cuda')
+
         speech_ts = silero_vad.get_speech_timestamps(
             audio,
             self._model,
@@ -133,10 +141,12 @@ class VadSilero(Node[AudioPayload, AudioPayload]):
             speech_pad_ms=self._speech_pad_ms,
         )
 
+        wav = audio if self._device == 'cuda' else torch.from_numpy(audio)
+
         if len(speech_ts) > 0:
             clipped_audio = silero_vad.collect_chunks(
-                tss=speech_ts, wav=torch.from_numpy(audio)
-            )
+                tss=speech_ts, wav=wav
+            ).cpu()
         else:
             clipped_audio = np.ndarray(0, dtype=np.float32)
 

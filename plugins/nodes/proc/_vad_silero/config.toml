@@ -1,4 +1,5 @@
 [arguments]
+device = "cpu"
 rate = 16000
 threshold = 0.75
 min_speech_duration_ms = 0
