@@ -144,9 +144,9 @@ class VadSilero(Node[AudioPayload, AudioPayload]):
         wav = audio if self._device == 'cuda' else torch.from_numpy(audio)
 
         if len(speech_ts) > 0:
-            clipped_audio = silero_vad.collect_chunks(
-                tss=speech_ts, wav=wav
-            ).cpu()
+            clipped_audio = (
+                silero_vad.collect_chunks(tss=speech_ts, wav=wav).cpu().numpy()
+            )
         else:
             clipped_audio = np.ndarray(0, dtype=np.float32)
 
