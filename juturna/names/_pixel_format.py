@@ -47,11 +47,7 @@ class PixelFormat(StrEnum):
     def is_rgb(self) -> bool:
         """Return ``True`` if the format is RGB-ordered."""
         match self:
-            case (
-                PixelFormat.RGB24
-                | PixelFormat.RGBA
-                | PixelFormat.ARGB
-            ):
+            case PixelFormat.RGB24 | PixelFormat.RGBA | PixelFormat.ARGB:
                 return True
             case _:
                 return False
@@ -60,11 +56,7 @@ class PixelFormat(StrEnum):
     def is_bgr(self) -> bool:
         """Return ``True`` if the format is BGR-ordered."""
         match self:
-            case (
-                PixelFormat.BGR24
-                | PixelFormat.BGRA
-                | PixelFormat.ABGR
-            ):
+            case PixelFormat.BGR24 | PixelFormat.BGRA | PixelFormat.ABGR:
                 return True
             case _:
                 return False
