@@ -21,6 +21,19 @@ from juturna.payloads import AudioPayload
 from juturna.components import _resource_broker as rb
 from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 
+FORMAT_DTYPES = {
+    'dbl': np.float64,
+    'dblp': np.float64,
+    'flt': np.float32,
+    'fltp': np.float32,
+    's16': np.int16,
+    's16p': np.int16,
+    's32': np.int32,
+    's32p': np.int32,
+    'u8': np.uint8,
+    'u8p': np.uint8,
+}
+
 
 class AudioRtpAv(Node[AudioPayload, AudioPayload]):
     """Node implementation class"""
@@ -100,7 +113,9 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
 
         self._abs_recv = 0
         self._elapsed = 0.0
-        self._pending = np.empty((0,), dtype=np.float32)
+
+        self._dtype = FORMAT_DTYPES[self._resampler_format]
+        self._pending = np.empty((0,), dtype=self._dtype)
 
     def configure(self):
         """Configure the node"""
@@ -150,7 +165,16 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
                 try:
                     for raw_frame in packet.decode():
                         for frame in self._resampler.resample(raw_frame):
-                            yield frame.to_ndarray()[0]
+                            audio_block = frame.to_ndarray()
+                            if audio_block.ndim == 2:
+                                yield (
+                                    audio_block.mean(axis=0)
+                                    if self._out_channels == 1
+                                    else audio_block.T.reshape(-1)
+                                )
+                            else:
+                                yield audio_block
+
                 except av.error.InvalidDataError:
                     self.logger.warn('malformed packet in decoder, discarding')
 
@@ -195,7 +219,7 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
                     self._stop_event.wait(2.0)
             finally:
                 self._flush_pending(force=self._flush_partial_on_error)
-                self._pending = np.empty((0,), dtype=np.float32)
+                self._pending = np.empty((0,), dtype=self._dtype)
                 self._elapsed = 0.0
 
     def _emit_chunk(self, audio: np.ndarray):
