@@ -164,7 +164,15 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
 
                 for raw_frame in packet.decode():
                     for frame in self._resampler.resample(raw_frame):
-                        yield frame.to_ndarray()[0]
+                        audio_block = frame.to_ndarray()
+                        if audio_block.ndim == 2:
+                            yield (
+                                audio_block.mean(axis=0)
+                                if self._out_channels == 1
+                                else audio_block.T.reshape(-1)
+                            )
+                        else:
+                            yield audio_block
 
         except OSError:
             raise
