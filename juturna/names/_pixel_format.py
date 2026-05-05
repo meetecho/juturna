@@ -46,46 +46,63 @@ class PixelFormat(StrEnum):
     @property
     def is_rgb(self) -> bool:
         """Return ``True`` if the format is RGB-ordered."""
-        return self in {
-            PixelFormat.RGB24,
-            PixelFormat.RGBA,
-            PixelFormat.ARGB,
-        }
+        match self:
+            case (
+                PixelFormat.RGB24
+                | PixelFormat.RGBA
+                | PixelFormat.ARGB
+            ):
+                return True
+            case _:
+                return False
 
     @property
     def is_bgr(self) -> bool:
         """Return ``True`` if the format is BGR-ordered."""
-        return self in {
-            PixelFormat.BGR24,
-            PixelFormat.BGRA,
-            PixelFormat.ABGR,
-        }
+        match self:
+            case (
+                PixelFormat.BGR24
+                | PixelFormat.BGRA
+                | PixelFormat.ABGR
+            ):
+                return True
+            case _:
+                return False
 
     @property
     def has_alpha(self) -> bool:
         """Return ``True`` if the format has an alpha channel."""
-        return self in {
-            PixelFormat.RGBA,
-            PixelFormat.ARGB,
-            PixelFormat.BGRA,
-            PixelFormat.ABGR,
-        }
+        match self:
+            case (
+                PixelFormat.RGBA
+                | PixelFormat.ARGB
+                | PixelFormat.BGRA
+                | PixelFormat.ABGR
+            ):
+                return True
+            case _:
+                return False
 
     @property
     def is_yuv(self) -> bool:
         """Return ``True`` if the format is a YUV variant."""
-        return self in {
-            PixelFormat.YUV420P,
-            PixelFormat.YUV444P,
-            PixelFormat.YUYV422,
-            PixelFormat.NV12,
-            PixelFormat.NV21,
-        }
+        match self:
+            case (
+                PixelFormat.YUV420P
+                | PixelFormat.YUV444P
+                | PixelFormat.YUYV422
+                | PixelFormat.NV12
+                | PixelFormat.NV21
+            ):
+                return True
+            case _:
+                return False
 
     @property
     def is_grayscale(self) -> bool:
         """Return ``True`` if the format is grayscale."""
-        return self in {
-            PixelFormat.GRAY,
-            PixelFormat.GRAY8,
-        }
+        match self:
+            case PixelFormat.GRAY | PixelFormat.GRAY8:
+                return True
+            case _:
+                return False
