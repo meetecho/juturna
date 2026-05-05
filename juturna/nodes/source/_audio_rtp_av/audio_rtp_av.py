@@ -162,17 +162,21 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
                 if self._stop_event.is_set():
                     break
 
-                for raw_frame in packet.decode():
-                    for frame in self._resampler.resample(raw_frame):
-                        audio_block = frame.to_ndarray()
-                        if audio_block.ndim == 2:
-                            yield (
-                                audio_block.mean(axis=0)
-                                if self._out_channels == 1
-                                else audio_block.T.reshape(-1)
-                            )
-                        else:
-                            yield audio_block
+                try:
+                  for raw_frame in packet.decode():
+                      for frame in self._resampler.resample(raw_frame):
+                          audio_block = frame.to_ndarray()
+                          if audio_block.ndim == 2:
+                              yield (
+                                  audio_block.mean(axis=0)
+                                  if self._out_channels == 1
+                                  else audio_block.T.reshape(-1)
+                              )
+                          else:
+                              yield audio_block
+
+                except av.error.InvalidDataError:
+                    self.logger.warn('malformed packet in decoder, discarding')
 
         except OSError:
             raise
