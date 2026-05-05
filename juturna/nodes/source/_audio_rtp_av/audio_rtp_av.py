@@ -151,8 +151,8 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
                     for raw_frame in packet.decode():
                         for frame in self._resampler.resample(raw_frame):
                             yield frame.to_ndarray()[0]
-                except Exception:
-                    self.logger.info('malformed packet in decoder')
+                except av.error.InvalidDataError:
+                    self.logger.warn('malformed packet in decoder, discarding')
 
         except OSError:
             raise
