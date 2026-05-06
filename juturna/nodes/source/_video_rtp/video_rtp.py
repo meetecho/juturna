@@ -10,6 +10,7 @@ from juturna.components import Message
 from juturna.components import Node
 from juturna.components import _resource_broker as rb
 
+from juturna.names import PixelFormat
 from juturna.payloads import BytesPayload, ImagePayload
 
 
@@ -140,7 +141,7 @@ class VideoRTP(Node[BytesPayload, ImagePayload]):
                     image=full_frame,
                     width=full_frame.shape[0],
                     height=full_frame.shape[1],
-                    pixel_format='rgb24',
+                    pixel_format=PixelFormat.RGB24,
                     timestamp=time.time(),
                 ),
             )
