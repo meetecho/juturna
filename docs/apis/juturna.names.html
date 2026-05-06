@@ -400,6 +400,132 @@ stopped, so <code class="docutils literal notranslate"><span class="pre">stop()<
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.names.</span></span><span class="sig-name descname"><span class="pre">PixelFormat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.names.PixelFormat" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrEnum</span></code></p>
+<p>Supported pixel formats for image and video payloads.
+- RGB / BGR (24-bit):</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">RGB24</span></code>, <code class="docutils literal notranslate"><span class="pre">BGR24</span></code></p>
+</div></blockquote>
+<ul class="simple">
+<li><p>RGBA (32-bit with alpha):
+<code class="docutils literal notranslate"><span class="pre">RGBA</span></code>, <code class="docutils literal notranslate"><span class="pre">ARGB</span></code>, <code class="docutils literal notranslate"><span class="pre">BGRA</span></code>, <code class="docutils literal notranslate"><span class="pre">ABGR</span></code></p></li>
+<li><p>YUV planar / packed:
+<code class="docutils literal notranslate"><span class="pre">YUV420P</span></code>, <code class="docutils literal notranslate"><span class="pre">YUV444P</span></code>, <code class="docutils literal notranslate"><span class="pre">YUYV422</span></code>, <code class="docutils literal notranslate"><span class="pre">NV12</span></code>, <code class="docutils literal notranslate"><span class="pre">NV21</span></code></p></li>
+<li><p>Grayscale:
+<code class="docutils literal notranslate"><span class="pre">GRAY</span></code>, <code class="docutils literal notranslate"><span class="pre">GRAY8</span></code></p></li>
+<li><p>Other:
+<code class="docutils literal notranslate"><span class="pre">PAL8</span></code>, <code class="docutils literal notranslate"><span class="pre">GBRP</span></code></p></li>
+</ul>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.ABGR">
+<span class="sig-name descname"><span class="pre">ABGR</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'abgr'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.ABGR" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.ARGB">
+<span class="sig-name descname"><span class="pre">ARGB</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'argb'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.ARGB" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.BGR24">
+<span class="sig-name descname"><span class="pre">BGR24</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bgr24'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.BGR24" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.BGRA">
+<span class="sig-name descname"><span class="pre">BGRA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bgra'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.BGRA" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.GBRP">
+<span class="sig-name descname"><span class="pre">GBRP</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'gbrp'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.GBRP" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.GRAY">
+<span class="sig-name descname"><span class="pre">GRAY</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'gray'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.GRAY" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.GRAY8">
+<span class="sig-name descname"><span class="pre">GRAY8</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'gray8'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.GRAY8" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.NV12">
+<span class="sig-name descname"><span class="pre">NV12</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'nv12'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.NV12" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.NV21">
+<span class="sig-name descname"><span class="pre">NV21</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'nv21'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.NV21" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.PAL8">
+<span class="sig-name descname"><span class="pre">PAL8</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pal8'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.PAL8" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.RGB24">
+<span class="sig-name descname"><span class="pre">RGB24</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'rgb24'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.RGB24" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.RGBA">
+<span class="sig-name descname"><span class="pre">RGBA</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'rgba'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.RGBA" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.YUV420P">
+<span class="sig-name descname"><span class="pre">YUV420P</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'yuv420p'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.YUV420P" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.YUV444P">
+<span class="sig-name descname"><span class="pre">YUV444P</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'yuv444p'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.YUV444P" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.YUYV422">
+<span class="sig-name descname"><span class="pre">YUYV422</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'yuyv422'</span></em><a class="headerlink" href="#juturna.names.PixelFormat.YUYV422" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.has_alpha">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">has_alpha</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#juturna.names.PixelFormat.has_alpha" title="Link to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the format has an alpha channel.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.is_bgr">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_bgr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#juturna.names.PixelFormat.is_bgr" title="Link to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the format is BGR-ordered.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.is_grayscale">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_grayscale</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#juturna.names.PixelFormat.is_grayscale" title="Link to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the format is grayscale.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.is_rgb">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_rgb</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#juturna.names.PixelFormat.is_rgb" title="Link to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the format is RGB-ordered.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.names.PixelFormat.is_yuv">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_yuv</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#juturna.names.PixelFormat.is_yuv" title="Link to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the format is a YUV variant.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="juturna.names.ServiceStatus">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.names.</span></span><span class="sig-name descname"><span class="pre">ServiceStatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.names.ServiceStatus" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrEnum</span></code></p>
@@ -495,6 +621,29 @@ stopped, so <code class="docutils literal notranslate"><span class="pre">stop()<
 <li><a class="reference internal" href="#juturna.names.PipelineStatus.NEW"><code class="docutils literal notranslate"><span class="pre">PipelineStatus.NEW</span></code></a></li>
 <li><a class="reference internal" href="#juturna.names.PipelineStatus.READY"><code class="docutils literal notranslate"><span class="pre">PipelineStatus.READY</span></code></a></li>
 <li><a class="reference internal" href="#juturna.names.PipelineStatus.RUNNING"><code class="docutils literal notranslate"><span class="pre">PipelineStatus.RUNNING</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat"><code class="docutils literal notranslate"><span class="pre">PixelFormat</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.ABGR"><code class="docutils literal notranslate"><span class="pre">PixelFormat.ABGR</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.ARGB"><code class="docutils literal notranslate"><span class="pre">PixelFormat.ARGB</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.BGR24"><code class="docutils literal notranslate"><span class="pre">PixelFormat.BGR24</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.BGRA"><code class="docutils literal notranslate"><span class="pre">PixelFormat.BGRA</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.GBRP"><code class="docutils literal notranslate"><span class="pre">PixelFormat.GBRP</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.GRAY"><code class="docutils literal notranslate"><span class="pre">PixelFormat.GRAY</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.GRAY8"><code class="docutils literal notranslate"><span class="pre">PixelFormat.GRAY8</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.NV12"><code class="docutils literal notranslate"><span class="pre">PixelFormat.NV12</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.NV21"><code class="docutils literal notranslate"><span class="pre">PixelFormat.NV21</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.PAL8"><code class="docutils literal notranslate"><span class="pre">PixelFormat.PAL8</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.RGB24"><code class="docutils literal notranslate"><span class="pre">PixelFormat.RGB24</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.RGBA"><code class="docutils literal notranslate"><span class="pre">PixelFormat.RGBA</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.YUV420P"><code class="docutils literal notranslate"><span class="pre">PixelFormat.YUV420P</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.YUV444P"><code class="docutils literal notranslate"><span class="pre">PixelFormat.YUV444P</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.YUYV422"><code class="docutils literal notranslate"><span class="pre">PixelFormat.YUYV422</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.has_alpha"><code class="docutils literal notranslate"><span class="pre">PixelFormat.has_alpha</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.is_bgr"><code class="docutils literal notranslate"><span class="pre">PixelFormat.is_bgr</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.is_grayscale"><code class="docutils literal notranslate"><span class="pre">PixelFormat.is_grayscale</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.is_rgb"><code class="docutils literal notranslate"><span class="pre">PixelFormat.is_rgb</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PixelFormat.is_yuv"><code class="docutils literal notranslate"><span class="pre">PixelFormat.is_yuv</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.names.ServiceStatus"><code class="docutils literal notranslate"><span class="pre">ServiceStatus</span></code></a><ul>
