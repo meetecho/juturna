@@ -96,7 +96,7 @@ class TranscriberQwen(Node[AudioPayload, ObjectPayload]):
             timers_from=message,
         )
 
-        if message.meta['silence']:
+        if message.meta.get('silence', False):
             self.logger.info('silence detected, sending silence...')
             to_send.payload['transcript'] = list()
             to_send.timer(self.name, -1)

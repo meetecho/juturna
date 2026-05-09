@@ -107,7 +107,7 @@ class TranscriberWhispy(Node[AudioPayload, ObjectPayload]):
 
         to_send.meta['origin'] = origin
 
-        if message.meta['silence']:
+        if message.meta.get('silence', False):
             self.logger.info('silence detected, sending silence...')
             to_send.payload['transcript'] = list()
             to_send.timer(self.name, -1)
@@ -174,7 +174,7 @@ class TranscriberWhispy(Node[AudioPayload, ObjectPayload]):
             start_abs = m.payload.start
             speech_offset_map = []
 
-            for segment in m.meta['speech_timestamps']:
+            for segment in m.meta.get('speech_timestamps', []):
                 speech_start_abs = start_abs + segment['start_s']
                 speech_end_abs = start_abs + segment['end_s']
                 speech_offset_map.append(
