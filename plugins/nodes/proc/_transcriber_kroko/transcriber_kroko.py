@@ -9,8 +9,7 @@ Transcribe audio packets using kroko-onnx (WIP)
 import typing
 
 import json
-import numpy as np
-import websocket  # pip install websocket-client
+import websocket
 
 from juturna.components import Node
 from juturna.components import Message
@@ -27,6 +26,15 @@ class TranscriberKroko(Node[AudioPayload, ObjectPayload]):
         ws,
         **kwargs
     ):
+        """
+        Parameters
+        ----------
+        ws : str
+            Kroko endpoint, including port.
+        kwargs : dict
+            Superclass arguments.
+
+        """
         super().__init__(**kwargs)
 
         self.ws_uri = ws
@@ -59,7 +67,7 @@ class TranscriberKroko(Node[AudioPayload, ObjectPayload]):
             try:
                 self.ws.close()
             except Exception:
-                pass
+                return
 
     def update(self, message: Message[AudioPayload]):
         """Receive data from upstream, transmit data downstream"""
@@ -100,8 +108,6 @@ class TranscriberKroko(Node[AudioPayload, ObjectPayload]):
                 return
             except Exception as e:
                 self.log.error(f"Kroko recv error: {e}")
-                return
-            except Exception:
                 return
 
     # uncomment next_batch to design custom synchronisation policy
