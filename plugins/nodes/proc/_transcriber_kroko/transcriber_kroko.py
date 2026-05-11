@@ -6,6 +6,7 @@ TranscriberKroko
 
 Transcribe audio packets using kroko-onnx (WIP)
 """
+
 import typing
 
 import json
@@ -18,14 +19,11 @@ from juturna.payloads import AudioPayload
 from juturna.payloads import ObjectPayload
 from juturna.payloads import Draft
 
+
 class TranscriberKroko(Node[AudioPayload, ObjectPayload]):
     """Node implementation class"""
 
-    def __init__(
-        self,
-        ws,
-        **kwargs
-    ):
+    def __init__(self, ws, **kwargs):
         """
         Parameters
         ----------
@@ -80,12 +78,9 @@ class TranscriberKroko(Node[AudioPayload, ObjectPayload]):
         samples = message.payload.audio
 
         try:
-            self.ws.send(
-                samples.tobytes(),
-                opcode=websocket.ABNF.OPCODE_BINARY
-            )
+            self.ws.send(samples.tobytes(), opcode=websocket.ABNF.OPCODE_BINARY)
         except Exception as e:
-            self.log.error(f"Kroko send error: {e}")
+            self.log.error(f'Kroko send error: {e}')
             return
 
         while True:
@@ -107,7 +102,7 @@ class TranscriberKroko(Node[AudioPayload, ObjectPayload]):
             except websocket.WebSocketTimeoutException:
                 return
             except Exception as e:
-                self.log.error(f"Kroko recv error: {e}")
+                self.log.error(f'Kroko recv error: {e}')
                 return
 
     # uncomment next_batch to design custom synchronisation policy
