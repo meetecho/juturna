@@ -1,0 +1,4 @@
+[arguments]
+ws = "ws://localhost:6006"
+
+[meta]
