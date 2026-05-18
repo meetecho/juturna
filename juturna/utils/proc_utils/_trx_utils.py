@@ -9,7 +9,7 @@ def rescale_trx_words(words: list, buffer: list) -> list:
         start_abs = m.payload.start
         speech_offset_map = []
 
-        for segment in m.meta['speech_timestamps']:
+        for segment in m.meta.get('speech_timestamps', []):
             speech_start_abs = start_abs + segment['start_s']
             speech_end_abs = start_abs + segment['end_s']
             speech_offset_map.append(
