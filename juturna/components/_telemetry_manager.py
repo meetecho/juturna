@@ -29,7 +29,7 @@ class TelemetryManager:
         self._thread.start()
 
     def stop(self):
-        if self._thread is None or self._thread._is_stopped:
+        if self._thread is None or not self._thread.is_alive():
             return
 
         self._queue.put(ControlSignal.STOP)
