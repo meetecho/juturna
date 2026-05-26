@@ -23,6 +23,7 @@ def test_message_init():
     assert msg.creator is None
     assert msg.version == -1
     assert msg.payload is None
+    assert msg.id == 0
     assert msg.meta == dict()
     assert msg.timers == dict()
     assert msg._data_source_id == None
@@ -142,6 +143,7 @@ def test_message_repr_dict():
         'created_at': msg.created_at,
         'creator': None,
         'version': -1,
+        'id': 0,
         'payload': None,
         'meta': {},
         'timers': {},
@@ -157,6 +159,7 @@ def test_message_to_json():
     assert 'created_at' in json_str
     assert 'creator' in json_str
     assert 'version' in json_str
+    assert 'id' in json_str
     assert 'payload' in json_str
     assert 'meta' in json_str
     assert 'timers' in json_str
@@ -172,6 +175,7 @@ def test_message_to_json_custom_encoder():
     assert 'created_at' in json_str
     assert 'creator' in json_str
     assert 'version' in json_str
+    assert 'id' in json_str
     assert 'payload' in json_str
     assert 'meta' in json_str
     assert 'timers' in json_str
@@ -181,6 +185,7 @@ def test_message_to_json_custom_encoder():
     assert 'created_at' in recoded.keys()
     assert 'creator' in recoded.keys()
     assert 'version' in recoded.keys()
+    assert 'id' in recoded.keys()
     assert 'payload' in recoded.keys()
     assert 'meta' in recoded.keys()
     assert 'timers' in recoded.keys()
