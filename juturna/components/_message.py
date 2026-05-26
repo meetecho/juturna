@@ -108,6 +108,7 @@ class Message[T_Input]:
             'created_at': self.created_at,
             'creator': self.creator,
             'version': self.version,
+            'id': self.id,
             'payload': self.payload,
             'meta': dict(self.meta),
             'timers': dict(self.timers),
