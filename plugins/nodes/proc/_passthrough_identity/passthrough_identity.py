@@ -33,6 +33,14 @@ class PassthroughIdentity(Node[BasePayload, BasePayload]):
         self._delay = delay
         self._transmitted = 0
 
+    def update_config(self, config: dict):
+        """Update the node configuration"""
+        if 'delay' in config:
+            self._delay = config['delay']
+            self.logger.info(
+                f'config updated: delay set to {self._delay} seconds'
+            )
+
     def update(self, message: Message[BasePayload]):
         """Receive a message from downstream, transmit a message upstream"""
         self.logger.info(
