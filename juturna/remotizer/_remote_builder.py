@@ -1,6 +1,6 @@
 import pathlib
 
-from juturna.components import _builder
+from juturna.components_node_builder import _builder
 from juturna.components._node import Node
 from juturna.names import ComponentStatus
 
@@ -14,6 +14,7 @@ def _standalone_builder(
     plugin_dir: str,
     context_runtime_path: str,
     config: dict = None,
+    build_version: str = '2.0.0',
 ) -> tuple[Node | None, dict]:
     """
     Deploys a node remotely by importing its module and returning its class
@@ -31,6 +32,8 @@ def _standalone_builder(
         The mark of the node to be deployed.
     plugin_dir : str
         The directory where plugins are located.
+    build_version : str
+        Builder version to invoke when building the node.
     context_runtime_path : str
         The runtime path for the context.
     config : dict
@@ -54,6 +57,7 @@ def _standalone_builder(
     _node: Node = _builder.build_node(
         node,
         pipe_name=context_runtime_path,
+        build_version=build_version,
     )
 
     _node.pipe_id = context_runtime_path
