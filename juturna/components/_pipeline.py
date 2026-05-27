@@ -5,11 +5,9 @@ import pathlib
 import gc
 import typing
 
-from juturna.components import _builder
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.components._dag import DAG
 from juturna.utils.log_utils import jt_logger
 
 from juturna.names import ComponentStatus
@@ -17,6 +15,8 @@ from juturna.names import PipelineStatus
 
 from juturna.payloads import ControlSignal, ControlPayload
 
+from juturna.components._dag import DAG
+from juturna.components._node_builder import _builder
 from juturna.components._telemetry_manager import TelemetryManager
 
 
@@ -52,7 +52,9 @@ class Pipeline:
         self._telemetry_file = None
 
         self._status = PipelineStatus.NEW
+
         self.created_at = time.time()
+        self.version = self._raw_config['version']
 
     @staticmethod
     def from_json(json_path: str) -> 'Pipeline':
@@ -146,9 +148,11 @@ class Pipeline:
                 self._logger.info(f'{node_name} warped')
                 self._logger.info(node)
 
-            _node: Node = _builder.build_node(
+            _node: Node = _builder._get_node(
                 node,
                 pipe_name=self.name,
+                plugin_dirs=self._raw_config.get('plugins'),
+                build_version=self.version,
             )
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)
