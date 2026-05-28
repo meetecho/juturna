@@ -9,8 +9,8 @@ from juturna.utils.jt_utils._get_env_var import get_env_var
 _logger = jt_logger('builder.utils')
 
 
-def _semver(build_str: str):
-    return tuple(map(int, (build_str.split('.'))))
+def _semver(build_str: str | float):
+    return tuple(map(int, (str(build_str).split('.'))))
 
 
 def _resolve_env_var(

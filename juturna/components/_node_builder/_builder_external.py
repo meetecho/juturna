@@ -49,7 +49,7 @@ def build_node(node: dict, pipe_name: str):
     concrete_node = node_class(
         **operational_config,
         **{
-            'node_name': node_name,
+            'node_name': node['name'],
             'pipe_name': pipe_name,
             'synchroniser': synchroniser,
         },

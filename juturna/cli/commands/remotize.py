@@ -20,11 +20,15 @@ def setup_parser(subparsers):  # noqa: D103
     )
 
     parser.add_argument(
-        '--node-mark', '-m', required=True, help='mark of the node to run'
+        '--node-mark', '-m', required=False, help='mark of the node to run'
     )
 
     parser.add_argument(
-        '--plugin-dir', '-P', required=True, help='path to plugins directory'
+        '--node-type', '-t', required=False, help='type of the node to run'
+    )
+
+    parser.add_argument(
+        '--plugin-dir', '-P', required=False, help='path to plugin directory'
     )
 
     parser.add_argument(

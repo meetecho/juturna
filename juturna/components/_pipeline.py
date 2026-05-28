@@ -19,6 +19,8 @@ from juturna.components._dag import DAG
 from juturna.components._node_builder import _builder
 from juturna.components._telemetry_manager import TelemetryManager
 
+from juturna.meta import JUTURNA_INTERNAL_PLUGIN_MAX_VER
+
 
 class Pipeline:
     """
@@ -134,6 +136,13 @@ class Pipeline:
         nodes = self._raw_config['pipeline']['nodes']
         links = self._raw_config['pipeline']['links']
 
+        internal_nodes = sum(map(lambda x: 1 if x.get('mark') else 0, nodes))
+
+        if internal_nodes != len(nodes):
+            self._logger.warning(
+                'your configuration includes both local and installed plugins'
+            )
+
         for node in nodes:
             node_name = node['name']
             node_folder = pathlib.Path(self.pipe_path, node_name)
@@ -148,11 +157,17 @@ class Pipeline:
                 self._logger.info(f'{node_name} warped')
                 self._logger.info(node)
 
+            build_version = (
+                JUTURNA_INTERNAL_PLUGIN_MAX_VER
+                if node.get('mark')
+                else self.version
+            )
+
             _node: Node = _builder._get_node(
                 node,
                 pipe_name=self.name,
                 plugin_dirs=self._raw_config.get('plugins'),
-                build_version=self.version,
+                build_version=build_version,
             )
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)

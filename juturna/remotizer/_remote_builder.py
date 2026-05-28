@@ -1,8 +1,11 @@
 import pathlib
 
-from juturna.components_node_builder import _builder
+from juturna.components._node_builder import _builder
 from juturna.components._node import Node
 from juturna.names import ComponentStatus
+
+from juturna.meta import JUTURNA_EXTERNAL_PLUGIN_MIN_VER
+from juturna.meta import JUTURNA_INTERNAL_PLUGIN_MAX_VER
 
 REMOTE_PIPE_FOLDER = 'remote_pipes'
 REMOTE_PIPE_ID = 'remote_pipe'
@@ -11,10 +14,10 @@ REMOTE_PIPE_ID = 'remote_pipe'
 def _standalone_builder(
     name: str,
     node_mark: str,
-    plugin_dir: str,
+    node_type: str,
     context_runtime_path: str,
     config: dict = None,
-    build_version: str = '2.0.0',
+    plugin_dir: str = '',
 ) -> tuple[Node | None, dict]:
     """
     Deploys a node remotely by importing its module and returning its class
@@ -30,12 +33,12 @@ def _standalone_builder(
         The name of the node to be deployed.
     node_mark : str
         The mark of the node to be deployed.
-    plugin_dir : str
-        The directory where plugins are located.
-    build_version : str
-        Builder version to invoke when building the node.
+    node_type : str
+        Type of the node to be deployed.
     context_runtime_path : str
         The runtime path for the context.
+    plugin_dir : str
+        The directory where plugins are located.
     config : dict
         The configuration dictionary for the node.
 
@@ -51,13 +54,25 @@ def _standalone_builder(
         'mark': node_mark,
         'configuration': config,
     }
+
+    build_version = JUTURNA_INTERNAL_PLUGIN_MAX_VER
+
+    if node_type:
+        del node['mark']
+
+        node['type'] = node_type
+        build_version = JUTURNA_EXTERNAL_PLUGIN_MIN_VER
+
     node_runtime_folder = pathlib.Path(REMOTE_PIPE_FOLDER, context_runtime_path)
     node_runtime_folder.mkdir(exist_ok=True, parents=True)
 
-    _node: Node = _builder.build_node(
+    plugin_dirs = [plugin_dir] if plugin_dir else None
+
+    _node: Node = _builder._get_node(
         node,
         pipe_name=context_runtime_path,
-        build_version=build_version,
+        build_version=str(build_version),
+        plugin_dirs=plugin_dirs,
     )
 
     _node.pipe_id = context_runtime_path
