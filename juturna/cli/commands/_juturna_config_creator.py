@@ -493,7 +493,6 @@ class PipelineBuilder:
             if origin == 'extensions' or origin.startswith('contrib.'):
                 has_installed = True
 
-                # Convert snake_case module to PascalCase ClassName
                 mark = node.get('mark', '')
                 class_name = ''.join(
                     word.capitalize() for word in mark.split('_')
