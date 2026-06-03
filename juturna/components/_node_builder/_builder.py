@@ -12,10 +12,8 @@ def _get_node(node: dict, pipe_name: str, plugin_dirs: list = None):
     will be treated as external.
     """
     if node.get('mark'):
-        print('INTERNAL BUILDER')
         return _builder_internal.build_component(
             node, plugin_dirs=plugin_dirs, pipe_name=pipe_name
         )
 
-    print('EXTERNAL BUILDER')
     return _builder_external.build_node(node, pipe_name=pipe_name)
