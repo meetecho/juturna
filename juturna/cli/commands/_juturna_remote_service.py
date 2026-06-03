@@ -259,6 +259,7 @@ def serve(args):
             name=args.node_name,
             plugin_dir=args.plugin_dir,
             node_mark=args.node_mark,
+            node_type=args.node_type,
             context_runtime_path=args.pipe_name,
             config=default_config.copy(),
         )

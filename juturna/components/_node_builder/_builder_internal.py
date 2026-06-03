@@ -1,13 +1,15 @@
 import pathlib
 import typing
-import os
 import traceback
 
-from juturna.components import _mapper as mapper
+from juturna.components._node_builder import _mapper as mapper
 
 from juturna.utils.log_utils import jt_logger
+
+from juturna.components._node_builder._utils import _resolve_env_var
+from juturna.components._node_builder._utils import _update_local_with_remote
 from juturna.components._synchronisers import _SYNCHRONISERS
-from juturna.utils.jt_utils._get_env_var import get_env_var
+
 from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
 
 
@@ -107,29 +109,6 @@ def component_lookup_args(
     ]
 
     return def_args
-
-
-def _update_local_with_remote(local: dict, remote: dict) -> dict:
-    merged_config = {k: remote.get(k, v) for k, v in local.items()}
-
-    return merged_config
-
-
-def _resolve_env_var(
-    key: str, value: str, node_name: str, local_arguments: dict
-) -> str:
-    env_var_name = value[len(JUTURNA_ENV_VAR_PREFIX) :]
-    default_value = local_arguments[key]
-
-    if env_var_name not in os.environ:
-        error_msg = (
-            f'env variable "{env_var_name}" is not set in node "{node_name}" '
-            f'for config key "{key}" (found in config but not in environment)'
-        )
-        _logger.error(error_msg)
-        raise ValueError(error_msg)
-
-    return get_env_var(env_var_name, default_value)
 
 
 def _log_import_exception(exception):

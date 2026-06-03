@@ -29,13 +29,13 @@ def setup_parser(subparsers):  # noqa: D103
 
 
 def _execute(args):
-    if args.plugins is None:
-        args.plugins = [jt.meta.JUTURNA_LOCAL_PLUGIN_DIR]
+    args.plugins = args.plugins or list()
 
-    # add built-in nodes from juturna installation folder
     args.plugins.append(pathlib.Path(jt.__path__[0], 'nodes'))
 
     args.plugins = list(map(lambda x: pathlib.Path(x).resolve(), args.plugins))
+    origins = {f: 'local' for f in args.plugins[:-1]}
+    origins[args.plugins[-1]] = 'built-in'
 
-    builder = PipelineBuilder(args.plugins)
+    builder = PipelineBuilder(args.plugins, origins)
     builder.run()

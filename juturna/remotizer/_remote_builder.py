@@ -1,8 +1,9 @@
 import pathlib
 
-from juturna.components import _component_builder
+from juturna.components._node_builder import _builder
 from juturna.components._node import Node
 from juturna.names import ComponentStatus
+
 
 REMOTE_PIPE_FOLDER = 'remote_pipes'
 REMOTE_PIPE_ID = 'remote_pipe'
@@ -10,9 +11,10 @@ REMOTE_PIPE_ID = 'remote_pipe'
 
 def _standalone_builder(
     name: str,
-    node_mark: str,
-    plugin_dir: str,
+    node_type: str,
     context_runtime_path: str,
+    node_mark: str = None,
+    plugin_dir: str = '',
     config: dict = None,
 ) -> tuple[Node | None, dict]:
     """
@@ -27,12 +29,14 @@ def _standalone_builder(
     ----------
     name : str
         The name of the node to be deployed.
+    node_type : str
+        Type of the node to be deployed.
+    context_runtime_path : str
+        The runtime path for the context.
     node_mark : str
         The mark of the node to be deployed.
     plugin_dir : str
         The directory where plugins are located.
-    context_runtime_path : str
-        The runtime path for the context.
     config : dict
         The configuration dictionary for the node.
 
@@ -44,17 +48,22 @@ def _standalone_builder(
     """
     node = {
         'name': name,
-        'type': 'proc',
-        'mark': node_mark,
+        'type': node_type,
         'configuration': config,
     }
+
+    if node_mark:
+        node['mark'] = node_mark
+
     node_runtime_folder = pathlib.Path(REMOTE_PIPE_FOLDER, context_runtime_path)
     node_runtime_folder.mkdir(exist_ok=True, parents=True)
 
-    _node: Node = _component_builder.build_component(
+    plugin_dirs = [plugin_dir] if plugin_dir else None
+
+    _node: Node = _builder._get_node(
         node,
-        plugin_dirs=[plugin_dir],
         pipe_name=context_runtime_path,
+        plugin_dirs=plugin_dirs,
     )
 
     _node.pipe_id = context_runtime_path

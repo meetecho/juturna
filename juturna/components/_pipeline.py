@@ -5,11 +5,9 @@ import pathlib
 import gc
 import typing
 
-from juturna.components import _component_builder
 from juturna.components import Node
 from juturna.components import Message
 
-from juturna.components._dag import DAG
 from juturna.utils.log_utils import jt_logger
 
 from juturna.names import ComponentStatus
@@ -17,6 +15,8 @@ from juturna.names import PipelineStatus
 
 from juturna.payloads import ControlSignal, ControlPayload
 
+from juturna.components._dag import DAG
+from juturna.components._node_builder import _builder
 from juturna.components._telemetry_manager import TelemetryManager
 
 
@@ -52,6 +52,7 @@ class Pipeline:
         self._telemetry_file = None
 
         self._status = PipelineStatus.NEW
+
         self.created_at = time.time()
 
     @staticmethod
@@ -132,6 +133,13 @@ class Pipeline:
         nodes = self._raw_config['pipeline']['nodes']
         links = self._raw_config['pipeline']['links']
 
+        internal_nodes = sum(map(lambda x: 1 if x.get('mark') else 0, nodes))
+
+        if internal_nodes != len(nodes):
+            self._logger.warning(
+                'your configuration includes both local and installed plugins'
+            )
+
         for node in nodes:
             node_name = node['name']
             node_folder = pathlib.Path(self.pipe_path, node_name)
@@ -140,17 +148,16 @@ class Pipeline:
             if node.get('warped', False):
                 warped_node_cfg = node['configuration']
                 node['type'] = 'proc'
-                node['mark'] = 'warp'
                 node['configuration'] = node['warp_configuration']
                 node['configuration']['remote_config'] = warped_node_cfg
 
                 self._logger.info(f'{node_name} warped')
                 self._logger.info(node)
 
-            _node: Node = _component_builder.build_component(
+            _node: Node = _builder._get_node(
                 node,
-                plugin_dirs=self._raw_config['plugins'],
                 pipe_name=self.name,
+                plugin_dirs=self._raw_config.get('plugins', list()),
             )
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)

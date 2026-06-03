@@ -26,6 +26,6 @@ def test_download_pipeline():
 
     assert pathlib.Path(
         f'{tempfile.gettempdir()}/pipelines/{pipeline_name}').exists()
-    
+
     assert pathlib.Path(
         f'{tempfile.gettempdir()}/nodes/proc/_vad_silero').exists()
