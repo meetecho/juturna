@@ -20,11 +20,11 @@ def setup_parser(subparsers):  # noqa: D103
     )
 
     parser.add_argument(
-        '--node-mark', '-m', required=False, help='mark of the node to run'
+        '--node-type', '-t', required=True, help='type of the node to run'
     )
 
     parser.add_argument(
-        '--node-type', '-t', required=False, help='type of the node to run'
+        '--node-mark', '-m', required=False, help='mark of the node to run'
     )
 
     parser.add_argument(

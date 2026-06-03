@@ -19,8 +19,6 @@ from juturna.components._dag import DAG
 from juturna.components._node_builder import _builder
 from juturna.components._telemetry_manager import TelemetryManager
 
-from juturna.meta import JUTURNA_INTERNAL_PLUGIN_MAX_VER
-
 
 class Pipeline:
     """
@@ -56,7 +54,6 @@ class Pipeline:
         self._status = PipelineStatus.NEW
 
         self.created_at = time.time()
-        self.version = self._raw_config['version']
 
     @staticmethod
     def from_json(json_path: str) -> 'Pipeline':
@@ -157,17 +154,10 @@ class Pipeline:
                 self._logger.info(f'{node_name} warped')
                 self._logger.info(node)
 
-            build_version = (
-                JUTURNA_INTERNAL_PLUGIN_MAX_VER
-                if node.get('mark')
-                else self.version
-            )
-
             _node: Node = _builder._get_node(
                 node,
                 pipe_name=self.name,
-                plugin_dirs=self._raw_config.get('plugins'),
-                build_version=build_version,
+                plugin_dirs=self._raw_config.get('plugins', list()),
             )
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)
