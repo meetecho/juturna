@@ -510,7 +510,6 @@ class PipelineBuilder:
                 has_local = True
 
         if has_local and has_installed:
-            pipeline_to_save['version'] = '3.0'
             self._cns.print(
                 'Warning: You are mixing local plugins with installed plugins.',
                 style='yellow',
