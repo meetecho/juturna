@@ -1,7 +1,6 @@
 import pathlib
 import inspect
 import string
-import logging
 import threading
 import queue
 import time
@@ -50,17 +49,22 @@ class Node[T_Input, T_Output]:
             Management options for multi-input nodes.
 
         """
-        self._name = node_name
-        self._status: ComponentStatus | None = None
-        self._session_id: str | None = None
-        self._pipe_path: str | None = None
-        self._pipe_name: str | None = pipe_name
-
+        self.name = node_name
+        self.pipe_name: str | None = pipe_name
+        self.pipe_path: str | None = None
         self.pipe_id: str | None = None
 
-        _logger_name = f'{self.pipe_name}.{self._name}'
-        self._logger = jt_logger(_logger_name)
-        self._logger.propagate = True
+        _logger_name = f'{self.pipe_name}.{self.name}'
+        self.logger = jt_logger(_logger_name)
+        self.logger.propagate = True
+
+        self.synchroniser = synchroniser or (
+            self.next_batch
+            if hasattr(self, 'next_batch')
+            else _SYNCHRONISERS['passthrough']
+        )
+
+        self._status: ComponentStatus | None = None
 
         self._queue = queue.Queue(maxsize=JUTURNA_MAX_QUEUE_SIZE)
         self._worker_thread: threading.Thread | None = None
@@ -79,15 +83,7 @@ class Node[T_Input, T_Output]:
         self._suspended = False
         self._auto_dump = False
 
-        # buffer stores messages, policy manages them
-        # if the synchroniser is not provided, get local one or default
-        self._synchroniser = synchroniser or (
-            self.next_batch
-            if hasattr(self, 'next_batch')
-            else _SYNCHRONISERS['passthrough']
-        )
-
-        self._buffer = Buffer(_logger_name, self._synchroniser)
+        self._buffer = Buffer(_logger_name, self.synchroniser)
 
         self._source_f: Callable | None = None
         self._source_sleep = -1
@@ -103,15 +99,6 @@ class Node[T_Input, T_Output]:
     def __del__(self): ...
 
     @property
-    def name(self) -> str | None:
-        """The node symbolic name"""
-        return self._name
-
-    @name.setter
-    def name(self, name: str):
-        self._name = name
-
-    @property
     def status(self) -> ComponentStatus | None:
         return self._status
 
@@ -124,35 +111,6 @@ class Node[T_Input, T_Output]:
         self._status = ComponentStatus(new_status)
 
     @property
-    def pipe_name(self) -> str | None:
-        """
-        Id of the pipe the node belongs to. This will automatically be
-        assigned to the node when it is intantiated within a pipeline, but can
-        also be set manually. An isolated node not included within a pipeline
-        will have a ``None`` value for this field.
-        """
-        return self._pipe_name
-
-    @pipe_name.setter
-    def pipe_name(self, pipe_name: str):
-        self._pipe_name = pipe_name
-
-    @property
-    def pipe_path(self) -> str | None:
-        """
-        Path to the pipeline session directory. The node has a dedicated folder
-        within the pipeline session directory where it stores its data. This
-        will automatically be assigned to the node when it is intantiated within
-        a pipeline, but can also be set manually. An isolated node not included
-        within a pipeline will have a ``None`` value for this field.
-        """
-        return self._pipe_path
-
-    @pipe_path.setter
-    def pipe_path(self, session_path: str):
-        self._pipe_path = session_path
-
-    @property
     def static_path(self) -> pathlib.Path:
         """
         Path to the directory where the node is defined. This is useful for
@@ -160,18 +118,6 @@ class Node[T_Input, T_Output]:
         node.
         """
         return pathlib.Path(inspect.getfile(self.__class__)).parent
-
-    @property
-    def logger(self) -> logging.Logger:
-        return self._logger
-
-    @property
-    def synchroniser(self) -> Callable:
-        return self._synchroniser
-
-    @synchroniser.setter
-    def synchroniser(self, synchroniser: Callable):
-        self._synchroniser = synchroniser
 
     @property
     def origins(self) -> list:
@@ -186,7 +132,8 @@ class Node[T_Input, T_Output]:
 
     def put(self, message: Message | ControlSignal):
         if self._draining.is_set():
-            self._logger.debug('message received while draining, discarding...')
+            self.logger.debug('message received while draining, discarding...')
+
             return
         self._queue.put(message)
 
@@ -268,7 +215,7 @@ class Node[T_Input, T_Output]:
             with open(dump_path, 'w') as f:
                 f.write(message.to_json())
         except Exception:
-            self._logger.warning('message cannot be dumped')
+            self.logger.warning('message cannot be dumped')
 
         return str(dump_path)
 
@@ -403,7 +350,7 @@ class Node[T_Input, T_Output]:
         self._update_thread = None
         self._status = ComponentStatus.STOPPED
 
-        self._logger.info('node stopped')
+        self.logger.info('node stopped')
 
     def join(self):
         """
@@ -513,7 +460,7 @@ class Node[T_Input, T_Output]:
 
         match message.payload.signal:
             case ControlSignal.STOP_PROPAGATE:
-                self._logger.warning(
+                self.logger.warning(
                     'the stop propagate signal is deprecated, use STOP instead'
                 )
                 self.transmit(message)
@@ -526,12 +473,12 @@ class Node[T_Input, T_Output]:
                 return
             case ControlSignal.SUSPEND:
                 self._suspended = True
-                self._logger.info('node suspended')
+                self.logger.info('node suspended')
 
                 return
             case ControlSignal.RESUME:
                 self._suspended = False
-                self._logger.info('node resumed')
+                self.logger.info('node resumed')
 
                 return
             case None:
