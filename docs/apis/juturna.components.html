@@ -564,39 +564,9 @@ fully shut down before its resources are released.</p>
 <dd></dd></dl>
 
 <dl class="py property">
-<dt class="sig sig-object py" id="juturna.components.Node.logger">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">logger</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Logger</span></em><a class="headerlink" href="#juturna.components.Node.logger" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="juturna.components.Node.name">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#juturna.components.Node.name" title="Link to this definition">¶</a></dt>
-<dd><p>The node symbolic name</p>
-</dd></dl>
-
-<dl class="py property">
 <dt class="sig sig-object py" id="juturna.components.Node.origins">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">origins</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><a class="headerlink" href="#juturna.components.Node.origins" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="juturna.components.Node.pipe_name">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pipe_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#juturna.components.Node.pipe_name" title="Link to this definition">¶</a></dt>
-<dd><p>Id of the pipe the node belongs to. This will automatically be
-assigned to the node when it is intantiated within a pipeline, but can
-also be set manually. An isolated node not included within a pipeline
-will have a <code class="docutils literal notranslate"><span class="pre">None</span></code> value for this field.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="juturna.components.Node.pipe_path">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pipe_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#juturna.components.Node.pipe_path" title="Link to this definition">¶</a></dt>
-<dd><p>Path to the pipeline session directory. The node has a dedicated folder
-within the pipeline session directory where it stores its data. This
-will automatically be assigned to the node when it is intantiated within
-a pipeline, but can also be set manually. An isolated node not included
-within a pipeline will have a <code class="docutils literal notranslate"><span class="pre">None</span></code> value for this field.</p>
-</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.prepare_template">
@@ -688,11 +658,6 @@ when the parent pipeline is stopped. If you override this method in
 your custom node class, make sure to call the parent method to ensure
 the node is stopped correctly.</p>
 </dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="juturna.components.Node.synchroniser">
-<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">synchroniser</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Callable</span></em><a class="headerlink" href="#juturna.components.Node.synchroniser" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.transmit">
@@ -934,11 +899,7 @@ remotely, that node will be replaced with a proc warp node.</p>
 <li><a class="reference internal" href="#juturna.components.Node.dump_json"><code class="docutils literal notranslate"><span class="pre">Node.dump_json()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.join"><code class="docutils literal notranslate"><span class="pre">Node.join()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.link_telemetry"><code class="docutils literal notranslate"><span class="pre">Node.link_telemetry()</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Node.logger"><code class="docutils literal notranslate"><span class="pre">Node.logger</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Node.name"><code class="docutils literal notranslate"><span class="pre">Node.name</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.origins"><code class="docutils literal notranslate"><span class="pre">Node.origins</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Node.pipe_name"><code class="docutils literal notranslate"><span class="pre">Node.pipe_name</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Node.pipe_path"><code class="docutils literal notranslate"><span class="pre">Node.pipe_path</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.prepare_template"><code class="docutils literal notranslate"><span class="pre">Node.prepare_template()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.put"><code class="docutils literal notranslate"><span class="pre">Node.put()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.set_on_config"><code class="docutils literal notranslate"><span class="pre">Node.set_on_config()</span></code></a></li>
@@ -947,7 +908,6 @@ remotely, that node will be replaced with a proc warp node.</p>
 <li><a class="reference internal" href="#juturna.components.Node.static_path"><code class="docutils literal notranslate"><span class="pre">Node.static_path</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.status"><code class="docutils literal notranslate"><span class="pre">Node.status</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.stop"><code class="docutils literal notranslate"><span class="pre">Node.stop()</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Node.synchroniser"><code class="docutils literal notranslate"><span class="pre">Node.synchroniser</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.transmit"><code class="docutils literal notranslate"><span class="pre">Node.transmit()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.update"><code class="docutils literal notranslate"><span class="pre">Node.update()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.warmup"><code class="docutils literal notranslate"><span class="pre">Node.warmup()</span></code></a></li>
