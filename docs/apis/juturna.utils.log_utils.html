@@ -336,9 +336,128 @@
 <h1>juturna.utils.log_utils package<a class="headerlink" href="#juturna-utils-log-utils-package" title="Link to this heading">¶</a></h1>
 <section id="module-juturna.utils.log_utils">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.utils.log_utils" title="Link to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.ColoredFormatter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">ColoredFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.ColoredFormatter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Formatter</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.ColoredFormatter.BOLD">
+<span class="sig-name descname"><span class="pre">BOLD</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[1m'</span></em><a class="headerlink" href="#juturna.utils.log_utils.ColoredFormatter.BOLD" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.ColoredFormatter.COLORS">
+<span class="sig-name descname"><span class="pre">COLORS</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'CRITICAL':</span> <span class="pre">'\x1b[35m',</span> <span class="pre">'DEBUG':</span> <span class="pre">'\x1b[36m',</span> <span class="pre">'ERROR':</span> <span class="pre">'\x1b[31m',</span> <span class="pre">'INFO':</span> <span class="pre">'\x1b[32m',</span> <span class="pre">'WARNING':</span> <span class="pre">'\x1b[33m'}</span></em><a class="headerlink" href="#juturna.utils.log_utils.ColoredFormatter.COLORS" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.ColoredFormatter.RESET">
+<span class="sig-name descname"><span class="pre">RESET</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'\x1b[0m'</span></em><a class="headerlink" href="#juturna.utils.log_utils.ColoredFormatter.RESET" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.ColoredFormatter.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.ColoredFormatter.format" title="Link to this definition">¶</a></dt>
+<dd><p>Format the specified record as text.</p>
+<p>The record’s attribute dictionary is used as the operand to a
+string formatting operation which yields the returned string.
+Before formatting the dictionary, a couple of preparatory steps
+are carried out. The message attribute of the record is computed
+using LogRecord.getMessage(). If the formatting string uses the
+time (as determined by a call to usesTime(), formatTime() is
+called to format the event time. If there is exception information,
+it is formatted using formatException() and appended to the message.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.JsonFormatter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">JsonFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.JsonFormatter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Formatter</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.JsonFormatter.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.JsonFormatter.format" title="Link to this definition">¶</a></dt>
+<dd><p>Format the specified record as text.</p>
+<p>The record’s attribute dictionary is used as the operand to a
+string formatting operation which yields the returned string.
+Before formatting the dictionary, a couple of preparatory steps
+are carried out. The message attribute of the record is computed
+using LogRecord.getMessage(). If the formatting string uses the
+time (as determined by a call to usesTime(), formatTime() is
+called to format the event time. If there is exception information,
+it is formatted using formatException() and appended to the message.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.JuturnaFormatter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">JuturnaFormatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datefmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">defaults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.JuturnaFormatter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Formatter</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.JuturnaFormatter.format">
+<span class="sig-name descname"><span class="pre">format</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.JuturnaFormatter.format" title="Link to this definition">¶</a></dt>
+<dd><p>Format the specified record as text.</p>
+<p>The record’s attribute dictionary is used as the operand to a
+string formatting operation which yields the returned string.
+Before formatting the dictionary, a couple of preparatory steps
+are carried out. The message attribute of the record is computed
+using LogRecord.getMessage(). If the formatting string uses the
+time (as determined by a call to usesTime(), formatTime() is
+called to format the event time. If there is exception information,
+it is formatted using formatException() and appended to the message.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.JuturnaPipelineFilter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">JuturnaPipelineFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.JuturnaPipelineFilter" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Filter</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.JuturnaPipelineFilter.filter">
+<span class="sig-name descname"><span class="pre">filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">record</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.JuturnaPipelineFilter.filter" title="Link to this definition">¶</a></dt>
+<dd><p>Determine if the specified record is to be logged.</p>
+<p>Returns True if the record should be logged, or False otherwise.
+If deemed appropriate, the record may be modified in-place.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.JuturnaPipelineFilter.register_pipeline">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">register_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipe_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extras</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.JuturnaPipelineFilter.register_pipeline" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.JuturnaPipelineFilter.reserved">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">reserved</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#juturna.utils.log_utils.JuturnaPipelineFilter.reserved" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.JuturnaPipelineFilter.unregister_pipeline">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">unregister_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipe_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.JuturnaPipelineFilter.unregister_pipeline" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.add_extra">
+<span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">add_extra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.add_extra" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.add_formatter">
+<span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">add_formatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Formatter</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.add_formatter" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="juturna.utils.log_utils.add_handler">
 <span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">add_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Handler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formatter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Formatter</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.add_handler" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="juturna.utils.log_utils.drop_extra">
+<span class="sig-prename descclassname"><span class="pre">juturna.utils.log_utils.</span></span><span class="sig-name descname"><span class="pre">drop_extra</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.utils.log_utils.drop_extra" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -424,7 +543,32 @@
             <ul>
 <li><a class="reference internal" href="#">juturna.utils.log_utils package</a><ul>
 <li><a class="reference internal" href="#module-juturna.utils.log_utils">Module contents</a><ul>
+<li><a class="reference internal" href="#juturna.utils.log_utils.ColoredFormatter"><code class="docutils literal notranslate"><span class="pre">ColoredFormatter</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.utils.log_utils.ColoredFormatter.BOLD"><code class="docutils literal notranslate"><span class="pre">ColoredFormatter.BOLD</span></code></a></li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.ColoredFormatter.COLORS"><code class="docutils literal notranslate"><span class="pre">ColoredFormatter.COLORS</span></code></a></li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.ColoredFormatter.RESET"><code class="docutils literal notranslate"><span class="pre">ColoredFormatter.RESET</span></code></a></li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.ColoredFormatter.format"><code class="docutils literal notranslate"><span class="pre">ColoredFormatter.format()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.JsonFormatter"><code class="docutils literal notranslate"><span class="pre">JsonFormatter</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.utils.log_utils.JsonFormatter.format"><code class="docutils literal notranslate"><span class="pre">JsonFormatter.format()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.JuturnaFormatter"><code class="docutils literal notranslate"><span class="pre">JuturnaFormatter</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.utils.log_utils.JuturnaFormatter.format"><code class="docutils literal notranslate"><span class="pre">JuturnaFormatter.format()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.JuturnaPipelineFilter"><code class="docutils literal notranslate"><span class="pre">JuturnaPipelineFilter</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.utils.log_utils.JuturnaPipelineFilter.filter"><code class="docutils literal notranslate"><span class="pre">JuturnaPipelineFilter.filter()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.JuturnaPipelineFilter.register_pipeline"><code class="docutils literal notranslate"><span class="pre">JuturnaPipelineFilter.register_pipeline()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.JuturnaPipelineFilter.reserved"><code class="docutils literal notranslate"><span class="pre">JuturnaPipelineFilter.reserved()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.JuturnaPipelineFilter.unregister_pipeline"><code class="docutils literal notranslate"><span class="pre">JuturnaPipelineFilter.unregister_pipeline()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.add_extra"><code class="docutils literal notranslate"><span class="pre">add_extra()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.add_formatter"><code class="docutils literal notranslate"><span class="pre">add_formatter()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.utils.log_utils.add_handler"><code class="docutils literal notranslate"><span class="pre">add_handler()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.utils.log_utils.drop_extra"><code class="docutils literal notranslate"><span class="pre">drop_extra()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.utils.log_utils.formatter"><code class="docutils literal notranslate"><span class="pre">formatter()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.utils.log_utils.formatters"><code class="docutils literal notranslate"><span class="pre">formatters()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.utils.log_utils.jt_logger"><code class="docutils literal notranslate"><span class="pre">jt_logger()</span></code></a></li>
