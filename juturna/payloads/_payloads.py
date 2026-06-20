@@ -25,6 +25,7 @@ class BasePayload:
 @dataclass(frozen=True)
 class ControlPayload(BasePayload):
     signal: ControlSignal = ControlSignal.STOP
+    data: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
