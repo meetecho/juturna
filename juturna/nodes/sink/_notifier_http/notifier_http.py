@@ -76,8 +76,8 @@ class NotifierHTTP(Node[ObjectPayload, None]):
             payload=message.payload,
         )
 
-        to_send.meta['session_id'] = self.pipe_id
-        to_send = NotifierHTTP._CNT_CB[self._content_type](message)
+        to_send.meta['pipe_id'] = self.pipe_id
+        to_send = NotifierHTTP._CNT_CB[self._content_type](to_send)
 
         t = threading.Thread(
             name=f'{self.name}_thread',
