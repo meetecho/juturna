@@ -117,6 +117,15 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
         self._dtype = FORMAT_DTYPES[self._resampler_format]
         self._pending = np.empty((0,), dtype=self._dtype)
 
+    @Node.configuration.getter
+    def configuration(self) -> dict:  # noqa: D102
+        return {
+            'name': self.name,
+            'session_id': self.pipe_id,
+            'host': self._host,
+            'port': self._port,
+        }
+
     def configure(self):
         """Configure the node"""
         if self._port == 0:
@@ -177,6 +186,21 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
 
                 except av.error.InvalidDataError:
                     self.logger.warn('malformed packet in decoder, discarding')
+
+            try:
+                for frame in self._resampler.resample(None):
+                    audio_block = frame.to_ndarray()
+                    if audio_block.ndim == 2:
+                        yield (
+                            audio_block.mean(axis=0)
+                            if self._out_channels == 1
+                            else audio_block.T.reshape(-1)
+                        )
+                    else:
+                        yield audio_block
+
+            except av.error.EOFError:
+                pass
 
         except OSError:
             raise
