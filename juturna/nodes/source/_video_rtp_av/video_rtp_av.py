@@ -78,6 +78,15 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
         self._t = None
         self._stop_event = threading.Event()
 
+    @Node.configuration.getter
+    def configuration(self) -> dict:  # noqa: D102
+        return {
+            'name': self.name,
+            'session_id': self.pipe_id,
+            'host': self._rec_host,
+            'port': self._rec_port,
+        }
+
     def configure(self):
         """Configure the node"""
         if self._rec_port == 'auto':
