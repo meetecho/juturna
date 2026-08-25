@@ -1,8 +1,6 @@
 import pathlib
 import inspect
 import string
-import threading
-import queue
 import time
 
 from collections.abc import Callable
@@ -25,6 +23,11 @@ from juturna.components._state import State
 from juturna.components._telemetry_manager import TelemetryManager
 from juturna.components._synchronisers import _SYNCHRONISERS
 
+from juturna.transport import Empty
+from juturna.transport import ThreadingTransport
+from juturna.transport import TransportBackend
+from juturna.transport import WorkerHandle
+
 
 class Node[T_Input, T_Output]:
     """
@@ -38,6 +41,7 @@ class Node[T_Input, T_Output]:
         node_name: str = '',
         pipe_name: str = '',
         synchroniser: Callable | None = None,
+        transport: TransportBackend | None = None,
     ):
         """
         Parameters
@@ -48,6 +52,9 @@ class Node[T_Input, T_Output]:
             The name of the pipe this node belongs to.
         synchroniser : Callable
             Management options for multi-input nodes.
+        transport : TransportBackend
+            The concurrency backend used to run and synchronise the node's
+            internal workers. Defaults to a thread-based backend.
 
         """
         self.name = node_name
@@ -68,24 +75,28 @@ class Node[T_Input, T_Output]:
         self._status: ComponentStatus | None = None
         self._state: State | None = None
 
-        self._queue = queue.Queue(maxsize=JUTURNA_MAX_QUEUE_SIZE)
-        self._worker_thread: threading.Thread | None = None
-        self._source_thread: threading.Thread | None = None
-        self._update_thread: threading.Thread | None = None
+        self._transport: TransportBackend = transport or ThreadingTransport()
 
-        self._stop_worker_event = threading.Event()
-        self._stop_source_event = threading.Event()
-        self._stop_update_event = threading.Event()
+        self._queue = self._transport.new_queue(maxsize=JUTURNA_MAX_QUEUE_SIZE)
+        self._worker_thread: WorkerHandle | None = None
+        self._source_thread: WorkerHandle | None = None
+        self._update_thread: WorkerHandle | None = None
 
-        self._draining = threading.Event()
+        self._stop_worker_event = self._transport.new_signal()
+        self._stop_source_event = self._transport.new_signal()
+        self._stop_update_event = self._transport.new_signal()
+
+        self._draining = self._transport.new_signal()
 
         self._pending_updates = 0
-        self._pending_condition = threading.Condition()
+        self._pending_condition = self._transport.new_condition()
 
         self._suspended = False
         self._auto_dump = False
 
-        self._buffer = Buffer(_logger_name, self.synchroniser)
+        self._buffer = Buffer(
+            _logger_name, self.synchroniser, transport=self._transport
+        )
 
         self._source_f: Callable | None = None
         self._source_sleep = -1
@@ -300,10 +311,9 @@ class Node[T_Input, T_Output]:
         """
         self._draining.clear()
         if self._worker_thread is None:
-            self._worker_thread = threading.Thread(
-                name=f'_worker_{self.name}',
+            self._worker_thread = self._transport.spawn(
                 target=self._worker,
-                args=(),
+                name=f'_worker_{self.name}',
                 daemon=True,
             )
 
@@ -311,10 +321,9 @@ class Node[T_Input, T_Output]:
             self._status = ComponentStatus.RUNNING
 
         if self._update_thread is None:
-            self._update_thread = threading.Thread(
-                name=f'_update_{self.name}',
+            self._update_thread = self._transport.spawn(
                 target=self._update,
-                args=(),
+                name=f'_update_{self.name}',
                 daemon=True,
             )
 
@@ -324,10 +333,9 @@ class Node[T_Input, T_Output]:
             return
 
         if self._source_thread is None:
-            self._source_thread = threading.Thread(
-                name=f'_source_{self.name}',
+            self._source_thread = self._transport.spawn(
                 target=self._source,
-                args=(),
+                name=f'_source_{self.name}',
                 daemon=True,
             )
 
@@ -366,13 +374,16 @@ class Node[T_Input, T_Output]:
         with self._pending_condition:
             self._pending_condition.wait_for(lambda: self._pending_updates == 0)
 
-        current_thread = threading.current_thread()
         for _t in [
             self._source_thread,
             self._worker_thread,
             self._update_thread,
         ]:
-            if _t is not None and _t.is_alive() and _t is not current_thread:
+            if (
+                _t is not None
+                and _t.is_alive()
+                and not self._transport.is_current(_t)
+            ):
                 _t.join(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
 
     def configure(self): ...
@@ -386,8 +397,10 @@ class Node[T_Input, T_Output]:
     def destroy(self): ...
 
     def _handle_control(self, message: Message):
-        _control_thread = threading.Thread(
-            target=self._control, args=(message,), daemon=True
+        _control_thread = self._transport.spawn(
+            target=lambda: self._control(message),
+            name=f'_control_{self.name}',
+            daemon=True,
         )
         _control_thread.start()
 
@@ -395,7 +408,7 @@ class Node[T_Input, T_Output]:
         while not self._stop_worker_event.is_set():
             try:
                 message = self._queue.get(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
-            except queue.Empty:
+            except Empty:
                 continue
 
             if self._suspended and not isinstance(
@@ -413,7 +426,7 @@ class Node[T_Input, T_Output]:
         while not self._stop_update_event.is_set():
             try:
                 batch = self._buffer.get(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
-            except queue.Empty:
+            except Empty:
                 continue
 
             if isinstance(batch, Message) and isinstance(

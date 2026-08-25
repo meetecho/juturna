@@ -11,12 +11,18 @@ from juturna.components._node_builder._utils import _update_local_with_remote
 from juturna.components._synchronisers import _SYNCHRONISERS
 
 from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
+from juturna.transport import TransportBackend
 
 
 _logger = jt_logger('builder')
 
 
-def build_component(node: dict, plugin_dirs: list, pipe_name: str):
+def build_component(
+    node: dict,
+    plugin_dirs: list,
+    pipe_name: str,
+    transport: TransportBackend | None = None,
+):
     node_name = node['name']
     node_type = node['type']
     node_mark = node['mark']
@@ -69,6 +75,7 @@ def build_component(node: dict, plugin_dirs: list, pipe_name: str):
             'node_name': node_name,
             'pipe_name': pipe_name,
             'synchroniser': synchroniser,
+            'transport': transport,
         },
     )
 

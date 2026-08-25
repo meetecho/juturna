@@ -1,6 +1,4 @@
 import typing
-import threading
-import queue
 
 from collections.abc import Callable
 
@@ -10,15 +8,28 @@ from juturna.utils.log_utils import jt_logger
 from juturna.payloads import Batch
 from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
 
+from juturna.transport import Empty
+from juturna.transport import ThreadingTransport
+from juturna.transport import TransportBackend
+
 
 class Buffer:
-    def __init__(self, creator: str, synchroniser: Callable | None = None):
+    def __init__(
+        self,
+        creator: str,
+        synchroniser: Callable | None = None,
+        transport: TransportBackend | None = None,
+    ):
+        self._transport: TransportBackend = transport or ThreadingTransport()
+
         self._data: dict[str, list[Message]] = dict()
-        self._data_lock = threading.Lock()
+        self._data_lock = self._transport.new_lock()
         self._synchroniser: Callable = synchroniser
 
         # out queue can be built based on the synchronisation policy
-        self._out_queue = queue.Queue(maxsize=JUTURNA_MAX_QUEUE_SIZE)
+        self._out_queue = self._transport.new_queue(
+            maxsize=JUTURNA_MAX_QUEUE_SIZE
+        )
 
         self._creator = creator
         self._logger = jt_logger(creator)
@@ -81,7 +92,7 @@ class Buffer:
             while not self._out_queue.empty():
                 try:
                     self._out_queue.get_nowait()
-                except queue.Empty:
+                except Empty:
                     break
 
             self._logger.debug('buffer flushed')

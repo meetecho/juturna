@@ -8,6 +8,7 @@ from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
 from juturna.components._synchronisers import _SYNCHRONISERS
 from juturna.components._node_builder._utils import _resolve_env_var
 from juturna.components._node_builder._utils import _update_local_with_remote
+from juturna.transport import TransportBackend
 
 
 _JT_BUILTIN_PREFIX = 'juturna.nodes'
@@ -16,7 +17,9 @@ _JT_EXTENSION_PREFIX = 'juturna'
 _logger = jt_logger('builder')
 
 
-def build_node(node: dict, pipe_name: str):
+def build_node(
+    node: dict, pipe_name: str, transport: TransportBackend | None = None
+):
     node_full_path = node['type']
     node_configuration = node['configuration']
     node_sync = node.get('sync')
@@ -52,6 +55,7 @@ def build_node(node: dict, pipe_name: str):
             'node_name': node['name'],
             'pipe_name': pipe_name,
             'synchroniser': synchroniser,
+            'transport': transport,
         },
     )
 
