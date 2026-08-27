@@ -89,6 +89,13 @@ def pipeline_status(pipeline_id: str):
     return status
 
 
+@app.get('/pipelines/{pipeline_id}/telemetry')
+def pipeline_telemetry(pipeline_id: str):
+    telemetry_data = PipelineManager().pipeline_telemetry(pipeline_id)
+
+    return {'pipeline': pipeline_id, 'telemetry': telemetry_data}
+
+
 def run(host: str, port: int, folder: str, log_config: str, dev: bool):
     if log_config:
         with open(log_config) as f:

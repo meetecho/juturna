@@ -32,3 +32,7 @@ class AlreadyRunningException(BasePipelineException):
 
 class NotRunningException(BasePipelineException):
     pass
+
+
+class TelemetryNotEnabledException(BasePipelineException):
+    pass

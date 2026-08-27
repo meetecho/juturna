@@ -15,6 +15,7 @@ from juturna.cli.commands.exceptions import (
     AlreadyRunningException,
     NotReadyException,
     NotRunningException,
+    TelemetryNotEnabledException,
 )
 from juturna.names import PipelineStatus
 
@@ -146,6 +147,18 @@ class PipelineManager:
         logger.info(self._pipelines[pipeline_id].status)
 
         return self._pipelines[pipeline_id].status
+
+    def pipeline_telemetry(self, pipeline_id: str):
+        if pipeline_id not in self._pipelines:
+            raise InvalidPipelineIdException(pipeline_id)
+
+        if not self._pipelines[pipeline_id]._telemetry:
+            raise TelemetryNotEnabledException(pipeline_id)
+
+        with open(self._pipelines[pipeline_id]._telemetry_file) as f:
+            telemetry_data = f.read()
+
+        return telemetry_data
 
     def pipeline_list(self) -> dict:
         return {
