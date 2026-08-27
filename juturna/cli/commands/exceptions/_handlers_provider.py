@@ -8,6 +8,7 @@ from juturna.cli.commands.exceptions import (
     AlreadyRunningException,
     NotReadyException,
     NotRunningException,
+    TelemetryNotEnabledException,
 )
 
 
@@ -63,6 +64,17 @@ def _not_running_handler(
     )
 
 
+def _telemetry_not_enabled_handler(
+    request: Request, exception: TelemetryNotEnabledException
+) -> JSONResponse:
+    _m = f'pipeline {exception.pipeline_id} does not have telemetry enabled'
+
+    return JSONResponse(
+        status_code=409,
+        content={'message': _m},
+    )
+
+
 def _make_generic_exception_handler(logger: Logger):
     def _generic_exception_handler(
         request: Request, exception: Exception
@@ -85,6 +97,7 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
         - AlreadyRunningException
         - NotReadyException
         - NotRunningException
+        - TelemetryNotEnabledException
 
     Args:
         app (FastAPI): Fastapi instance to apply handlers to
@@ -96,12 +109,12 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(
         AlreadyWarmedupException, _already_warmedup_handler
     )
-
     app.add_exception_handler(AlreadyRunningException, _already_running_handler)
-
     app.add_exception_handler(NotReadyException, _not_ready_handler)
-
     app.add_exception_handler(NotRunningException, _not_running_handler)
+    app.add_exception_handler(
+        TelemetryNotEnabledException, _telemetry_not_enabled_handler
+    )
 
 
 def register_generic_exception_handler(app: FastAPI, logger: Logger) -> None:

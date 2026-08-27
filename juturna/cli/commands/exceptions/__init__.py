@@ -5,6 +5,7 @@ from ._pipeline_exceptions import (
     NotReadyException,
     AlreadyRunningException,
     NotRunningException,
+    TelemetryNotEnabledException,
 )
 
 from ._handlers_provider import (
@@ -18,6 +19,7 @@ __all__ = [
     'NotReadyException',
     'AlreadyRunningException',
     'NotRunningException',
+    'TelemetryNotEnabledException',
     'register_pipeline_exception_handlers',
     'register_generic_exception_handler',
 ]
