@@ -341,10 +341,10 @@ not arrive in the right order.</p>
 single UDP packet exceeds a configured payload size (including the header).
 Each chunk object looks like this:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">chunk</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s1">&#39;seq&#39;</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
-    <span class="s1">&#39;frag&#39;</span><span class="p">:</span> <span class="n">i</span> <span class="o">%</span> <span class="n">max_chunks</span><span class="p">,</span>
-    <span class="s1">&#39;tot&#39;</span><span class="p">:</span> <span class="n">total_chunks</span><span class="p">,</span>
-    <span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">payload_chunk</span><span class="p">,</span>
+    <span class="s1">'seq'</span><span class="p">:</span> <span class="n">message</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+    <span class="s1">'frag'</span><span class="p">:</span> <span class="n">i</span> <span class="o">%</span> <span class="n">max_chunks</span><span class="p">,</span>
+    <span class="s1">'tot'</span><span class="p">:</span> <span class="n">total_chunks</span><span class="p">,</span>
+    <span class="s1">'data'</span><span class="p">:</span> <span class="n">payload_chunk</span><span class="p">,</span>
 <span class="p">}</span>
 </pre></div>
 </div>

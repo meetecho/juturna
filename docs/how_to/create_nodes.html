@@ -374,7 +374,7 @@ we can let Juturna handle that for us with the CLI <code class="docutils literal
 <span class="w">                           </span>-n<span class="w"> </span>red_cat_detector<span class="w"> </span><span class="se">\</span>
 <span class="w">                           </span>-t<span class="w"> </span>proc<span class="w"> </span><span class="se">\</span>
 <span class="w">                           </span>-d<span class="w"> </span>./plugins/nodes<span class="w"> </span><span class="se">\</span>
-<span class="w">                           </span>-a<span class="w"> </span><span class="s2">&quot;Cat Watcher&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">                           </span>-a<span class="w"> </span><span class="s2">"Cat Watcher"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">                           </span>-e<span class="w"> </span>watch@cat.com
 </pre></div>
 </div>
@@ -383,7 +383,7 @@ we can let Juturna handle that for us with the CLI <code class="docutils literal
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-0">
 red_cat_detector.py</label><div class="sd-tab-content docutils">
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">"""</span>
 <span class="sd">CatDetector</span>
 
 <span class="sd">@author: Cat Watcher</span>
@@ -391,7 +391,7 @@ red_cat_detector.py</label><div class="sd-tab-content docutils">
 <span class="sd">@created_at: 2025-11-10 12:56</span>
 
 <span class="sd">Automatically generated with jt.utils.node_utils.node_stub</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">typing</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">juturna.components</span><span class="w"> </span><span class="kn">import</span> <span class="n">Node</span>
@@ -403,46 +403,46 @@ red_cat_detector.py</label><div class="sd-tab-content docutils">
 
 
 <span class="k">class</span><span class="w"> </span><span class="nc">RedCatDetector</span><span class="p">(</span><span class="n">Node</span><span class="p">[</span><span class="n">BasePayload</span><span class="p">,</span> <span class="n">BasePayload</span><span class="p">]):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Node implementation class&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Node implementation class"""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""</span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        kwargs : dict</span>
 <span class="sd">            Supernode arguments.</span>
 
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">configure</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Configure the node&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Configure the node"""</span>
         <span class="o">...</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">warmup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Warmup the node&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Warmup the node"""</span>
         <span class="o">...</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">set_on_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Hot-swap node properties&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Hot-swap node properties"""</span>
         <span class="o">...</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Start the node&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Start the node"""</span>
         <span class="c1"># after custom start code, invoke base node start</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Stop the node&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Stop the node"""</span>
         <span class="c1"># after custom stop code, invoke base node stop</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">destroy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Destroy the node&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Destroy the node"""</span>
         <span class="o">...</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">BasePayload</span><span class="p">]):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Receive data from upstream, transmit data downstream&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""Receive data from upstream, transmit data downstream"""</span>
         <span class="o">...</span>
 
     <span class="c1"># uncomment next_batch to design custom synchronisation policy</span>
@@ -501,8 +501,8 @@ make sure all the YOLO dependencies are satisfied. We then install the
 <code class="docutils literal notranslate"><span class="pre">ultralytics</span></code> package, and include it in the requirement file. We also install
 <code class="docutils literal notranslate"><span class="pre">opencv-python</span></code> to get a better support when checking alarmingly high levels
 of orangeness in our detected entities.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>.venv<span class="o">)</span><span class="w"> </span>user:~/prj$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ultralytics==8.3.79\n&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>plugins/nodes/proc/_red_cat_detector/requirements.txt
-<span class="o">(</span>.venv<span class="o">)</span><span class="w"> </span>user:~/prj$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;opencv-python==4.13.0.92&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>plugins/nodes/proc/_red_cat_detector/requirements.txt
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>.venv<span class="o">)</span><span class="w"> </span>user:~/prj$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"ultralytics==8.3.79\n"</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>plugins/nodes/proc/_red_cat_detector/requirements.txt
+<span class="o">(</span>.venv<span class="o">)</span><span class="w"> </span>user:~/prj$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"opencv-python==4.13.0.92"</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>plugins/nodes/proc/_red_cat_detector/requirements.txt
 <span class="o">(</span>.venv<span class="o">)</span><span class="w"> </span>user:~/prj$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>plugins/nodes/proc/_red_cat_detector/requirements.txt
 </pre></div>
 </div>
@@ -531,8 +531,8 @@ essential arguments the node accepts, alongside their default values, in the
 <p>We pack all this in the node configuration file, where we can define the node
 arguments and their corresponding default values.</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[arguments]</span>
-<span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;yolo11x.pt&quot;</span>
-<span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;cuda&quot;</span>
+<span class="n">model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"yolo11x.pt"</span>
+<span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"cuda"</span>
 <span class="n">cat_min_confidence</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.4</span>
 <span class="n">orangeness_threshold</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.6</span>
 </pre></div>
@@ -585,10 +585,10 @@ later pass it to the model directly.</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">_target_class</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">&#39;cat&#39;</span><span class="p">]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">_target_class</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">names</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="o">==</span> <span class="s1">'cat'</span><span class="p">]</span>
 
     <span class="c1"># we can use the built-in logger</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;model instantiated and ready&#39;</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'model instantiated and ready'</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The processing logic of the node is pretty simple, and can be fully contained in
@@ -652,7 +652,7 @@ the <code class="docutils literal notranslate"><span class="pre">update</span></
         <span class="n">timers_from</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="n">to_send</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;annotations&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">to_send</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">'annotations'</span><span class="p">]</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="bp">self</span><span class="o">.</span><span class="n">transmit</span><span class="p">(</span><span class="n">to_send</span><span class="p">)</span>
 </pre></div>
@@ -689,14 +689,14 @@ our project, then fill in the node configuration in a pipeline JSON file.</p>
 <p>In the pipeline configuration file, the node will be represented by the
 following:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;detector&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;proc&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;mark&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;red_cat_detector&quot;</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">&quot;configuration&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">&quot;model&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;./models/yolo11x.pt&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;device&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;cat_min_confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">&quot;orangeness_threshold&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"detector"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"proc"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"mark"</span><span class="p">:</span><span class="w"> </span><span class="s2">"red_cat_detector"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"model"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./models/yolo11x.pt"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"device"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cuda"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"cat_min_confidence"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.5</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"orangeness_threshold"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.6</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -710,16 +710,16 @@ inference, or making the inference itself stricter or looser. To do so, we can
 implement the <code class="docutils literal notranslate"><span class="pre">set_on_config</span></code> method. In here, we can specify what to do when
 a new value for a particular property needs to be set on the node.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">set_on_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prop</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">prop</span> <span class="o">==</span> <span class="s1">&#39;cat_min_confidence&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">prop</span> <span class="o">==</span> <span class="s1">'cat_min_confidence'</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">cat_min_confidence</span> <span class="o">=</span> <span class="n">value</span>
-    <span class="k">elif</span> <span class="n">prop</span> <span class="o">==</span> <span class="s1">&#39;orangeness_threshold&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">prop</span> <span class="o">==</span> <span class="s1">'orangeness_threshold'</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">orangeness_threshold</span> <span class="o">=</span> <span class="n">value</span>
-    <span class="k">elif</span> <span class="n">prop</span> <span class="o">==</span> <span class="s1">&#39;model&#39;</span><span class="p">:</span>
+    <span class="k">elif</span> <span class="n">prop</span> <span class="o">==</span> <span class="s1">'model'</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model_name</span> <span class="o">=</span> <span class="n">value</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">YOLO</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">model_name</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;cannot update node with property </span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">'cannot update node with property </span><span class="si">{</span><span class="n">prop</span><span class="si">}</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>

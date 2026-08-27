@@ -345,7 +345,7 @@ can find them in the <code class="docutils literal notranslate"><span class="pre
 <p>By default, this image contains all the available juturna optional dependency
 groups. This can be changed by passing the <cite>JT_VERSION</cite> variable to the build
 command. Installing the core package only, for instance, can be done with:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">JT_VERSION</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="w"> </span>-t<span class="w"> </span>juturna:latest<span class="w"> </span>.
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>docker<span class="w"> </span>build<span class="w"> </span>--build-arg<span class="w"> </span><span class="nv">JT_VERSION</span><span class="o">=</span><span class="s2">""</span><span class="w"> </span>-t<span class="w"> </span>juturna:latest<span class="w"> </span>.
 </pre></div>
 </div>
 <p>Other individual groups can be targeted as well:</p>
@@ -386,13 +386,13 @@ watcher.sh</label><div class="sd-tab-content docutils">
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/bash</span>
 
 pip<span class="w"> </span>install<span class="w"> </span>--no-cache<span class="w"> </span>/juturna
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Starting file watcher...&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">"Starting file watcher..."</span>
 
 <span class="k">while</span><span class="w"> </span>inotifywait<span class="w"> </span>-r<span class="w"> </span>-e<span class="w"> </span>modify,create,delete<span class="w"> </span>/juturna<span class="w"> </span>/jutest/plugins<span class="w"> </span><span class="se">\</span>
-<span class="w">                  </span>--exclude<span class="w"> </span><span class="s1">&#39;(__pycache__|\.pyc|\.git)&#39;</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Changes detected, reinstalling...&quot;</span>
+<span class="w">                  </span>--exclude<span class="w"> </span><span class="s1">'(__pycache__|\.pyc|\.git)'</span><span class="p">;</span><span class="w"> </span><span class="k">do</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Changes detected, reinstalling..."</span>
 <span class="w">    </span>pip<span class="w"> </span>install<span class="w"> </span>--no-cache<span class="w"> </span>/juturna
-<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Reinstall complete&quot;</span>
+<span class="w">    </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"Reinstall complete"</span>
 <span class="k">done</span>
 </pre></div>
 </div>

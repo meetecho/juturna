@@ -371,11 +371,11 @@ through their <code class="docutils literal notranslate"><span class="pre">dump_
 <p><code class="docutils literal notranslate"><span class="pre">message.timeit(t_name)</span></code> is a context manager supposed to ease the collection
 of elapsed time during processing. It can be used to isolate a specific
 operation or group of operations, and store their execution time:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">message</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="s1">&#39;inference_time&#39;</span><span class="p">):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">message</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="s1">'inference_time'</span><span class="p">):</span>
     <span class="n">annotated_image</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">infer</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">image</span><span class="p">)</span>
 
 <span class="n">message</span><span class="o">.</span><span class="n">timers</span>
-<span class="c1"># {&#39;inference_time&#39;: &lt;EXEC_TIME&gt;}</span>
+<span class="c1"># {'inference_time': &lt;EXEC_TIME&gt;}</span>
 </pre></div>
 </div>
 </section>
@@ -416,7 +416,7 @@ other object.</p>
 
 
 <span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
-  <span class="n">creator</span><span class="o">=</span><span class="s1">&#39;creator_name&#39;</span><span class="p">,</span>
+  <span class="n">creator</span><span class="o">=</span><span class="s1">'creator_name'</span><span class="p">,</span>
   <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
   <span class="n">payload</span><span class="o">=</span><span class="n">AudioPayload</span><span class="p">()</span>
 <span class="p">)</span>
@@ -428,9 +428,9 @@ other object.</p>
 <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="mi">2</span>
 
 <span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
-<span class="n">File</span> <span class="s2">&quot;&lt;stdin&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
-<span class="n">File</span> <span class="s2">&quot;&lt;string&gt;&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="fm">__setattr__</span>
-<span class="n">dataclasses</span><span class="o">.</span><span class="n">FrozenInstanceError</span><span class="p">:</span> <span class="n">cannot</span> <span class="n">assign</span> <span class="n">to</span> <span class="n">field</span> <span class="s1">&#39;channels&#39;</span>
+<span class="n">File</span> <span class="s2">"&lt;stdin&gt;"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="n">File</span> <span class="s2">"&lt;string&gt;"</span><span class="p">,</span> <span class="n">line</span> <span class="mi">4</span><span class="p">,</span> <span class="ow">in</span> <span class="fm">__setattr__</span>
+<span class="n">dataclasses</span><span class="o">.</span><span class="n">FrozenInstanceError</span><span class="p">:</span> <span class="n">cannot</span> <span class="n">assign</span> <span class="n">to</span> <span class="n">field</span> <span class="s1">'channels'</span>
 </pre></div>
 </div>
 <p>There are situations where it might be conveniente to iteratively create a
@@ -443,7 +443,7 @@ argument. Other than that, it behaves exactly like a normal payload.</p>
 
 
 <span class="n">message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span>
-  <span class="n">creator</span><span class="o">=</span><span class="s1">&#39;creator_name&#39;</span><span class="p">,</span>
+  <span class="n">creator</span><span class="o">=</span><span class="s1">'creator_name'</span><span class="p">,</span>
   <span class="n">version</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
   <span class="n">payload</span><span class="o">=</span><span class="n">Draft</span><span class="p">(</span><span class="n">AudioPayload</span><span class="p">)</span>
 <span class="p">)</span>
