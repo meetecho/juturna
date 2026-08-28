@@ -31,7 +31,7 @@ jobs:
       - name: Run tests
         run: >
           pytest tests/ -q
-          --deselect tests/test_hub.py
-          --deselect tests/test_remote_integration.py
+          --ignore tests/test_hub.py
+          --ignore tests/test_remote_integration.py
           -W error::RuntimeWarning
           --cov=juturna --cov-report=term-missing
