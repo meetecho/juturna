@@ -13,6 +13,7 @@ Subpackages
    juturna.names
    juturna.nodes
    juturna.payloads
+   juturna.transport
    juturna.utils
 
 Module contents
