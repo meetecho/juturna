@@ -20,6 +20,9 @@ from juturna.components._state import State
 from juturna.components._node_builder import _builder
 from juturna.components._telemetry_manager import TelemetryManager
 
+from juturna.transport import TransportBackend
+from juturna.transport import get_transport
+
 
 class Pipeline:
     """
@@ -53,6 +56,10 @@ class Pipeline:
         self._links: list = list()
         self._dag: DAG = DAG()
         self._node_state_store = dict()
+
+        self._transport: TransportBackend = get_transport(
+            self._raw_config['pipeline'].get('transport')
+        )
 
         self._telemetry_manager: TelemetryManager | None = None
         self._telemetry = False
@@ -165,6 +172,7 @@ class Pipeline:
                 node,
                 pipe_name=self.name,
                 plugin_dirs=self._raw_config.get('plugins', list()),
+                transport=self._transport,
             )
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)
