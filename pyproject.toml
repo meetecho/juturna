@@ -66,7 +66,8 @@ lint = [
     "ruff>= 0.14.8"
 ]
 test = [
-    "pytest==9.0.2"
+    "pytest==9.0.2",
+    "pytest-cov"
 ]
 full = [
     "juturna[httpwrapper,pipebuilder,warp]"
