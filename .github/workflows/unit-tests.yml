@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13", "3.13t"]
+        python-version: ["3.12", "3.13", "3.14", "3.14t"]
     steps:
       - uses: actions/checkout@v4
 
@@ -29,8 +29,6 @@ jobs:
         run: pip install -e ".[dev_full]"
 
       - name: Run tests
-        env:
-          PYTHON_GIL: "0"
         run: >
           pytest tests/ -q
           --deselect tests/test_hub.py
