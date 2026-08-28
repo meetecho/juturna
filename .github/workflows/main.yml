@@ -1,0 +1,39 @@
+name: Unit Tests
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13", "3.13t"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "${{ matrix.python-version }}"
+          cache: pip
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install
+        run: pip install -e ".[dev_full]"
+
+      - name: Run tests
+        env:
+          PYTHON_GIL: "0"
+        run: >
+          pytest tests/ -q
+          --deselect tests/test_hub.py
+          --deselect tests/test_remote_integration.py
+          -W error::RuntimeWarning
+          --cov=juturna --cov-report=term-missing
