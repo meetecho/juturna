@@ -49,6 +49,9 @@ class Buffer:
 
             self._consume(next_batch)
 
+    def empty(self) -> bool:
+        return all(map(lambda k: len(self._data[k]) == 0, self._data))
+
     def _consume(self, marks: dict[str, list[int]]):
         """
         Consume sent data

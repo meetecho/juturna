@@ -14,8 +14,8 @@ class _ThreadQueue:
     def __init__(self, maxsize: int = 0):
         self._queue = queue.Queue(maxsize=maxsize)
 
-    def put(self, item: Any) -> None:
-        self._queue.put(item)
+    def put(self, item: Any, timeout: float | None = None) -> None:
+        self._queue.put(item, timeout=timeout)
 
     def get(self, timeout: float | None = None) -> Any:
         try:
@@ -32,6 +32,12 @@ class _ThreadQueue:
     def empty(self) -> bool:
         return self._queue.empty()
 
+    def full(self) -> bool:
+        return self._queue.full()
+
+    def qsize(self) -> bool:
+        return self._queue.qsize()
+
 
 class _ThreadSignal:
     """Signal primitive backed by threading.Event."""
@@ -47,6 +53,9 @@ class _ThreadSignal:
 
     def is_set(self) -> bool:
         return self._event.is_set()
+
+    def wait(self, timeout: float | None = None) -> bool:
+        return self._event.wait(timeout)
 
 
 class _ThreadLock:
@@ -74,8 +83,10 @@ class _ThreadCondition:
     def __exit__(self, *args) -> None:
         self._condition.release()
 
-    def wait_for(self, predicate: Callable[[], bool]) -> None:
-        self._condition.wait_for(predicate)
+    def wait_for(
+        self, predicate: Callable[[], bool], timeout: float | None = None
+    ) -> None:
+        self._condition.wait_for(predicate, timeout=timeout)
 
     def notify_all(self) -> None:
         self._condition.notify_all()

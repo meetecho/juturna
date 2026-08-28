@@ -17,6 +17,7 @@ from juturna.utils.log_utils import jt_logger
 from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
 from juturna.meta import JUTURNA_TELEMETRY_BATCH_SIZE
+from juturna.meta import JUTURNA_DRAIN_TIMEOUT
 
 from juturna.components._buffer import Buffer
 from juturna.components._state import State
@@ -352,8 +353,11 @@ class Node[T_Input, T_Output]:
             return
 
         self._draining.set()
-        self._stop_worker_event.set()
         self._stop_source_event.set()
+
+        self._drain(timeout=JUTURNA_DRAIN_TIMEOUT)
+
+        self._stop_worker_event.set()
         self._stop_update_event.set()
 
         self.join()
@@ -475,6 +479,23 @@ class Node[T_Input, T_Output]:
                 time.sleep(self._source_sleep)
 
             self.put(message)
+
+    def _drain(self, timeout: float):
+        deadline = time.monotonic() + timeout
+
+        while time.monotonic() < deadline:
+            if (
+                self._queue.empty()
+                and self._buffer.empty()
+                and self._pending_updates == 0
+            ):
+                return
+
+            time.sleep(0.05)
+
+        self.logger.warning(
+            f'drain timed out with {self._queue.qsize()} queued messages'
+        )
 
     def _control(self, message: Message):
         if message.payload.signal < 0:
