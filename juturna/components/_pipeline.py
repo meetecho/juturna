@@ -200,6 +200,11 @@ class Pipeline:
             self._links.append(copy.copy(link))
             self._dag.add_edge(from_node, to_node)
 
+        if self._dag.has_cycle():
+            raise ValueError(
+                f'pipe {self.name} contains a cycle: {self._dag.edges}'
+            )
+
         for node_name, node in self._nodes.items():
             node.warmup()
 
@@ -241,6 +246,15 @@ class Pipeline:
 
         if self._telemetry:
             self._telemetry_manager.start()
+
+        layers = self._dag.BFS()
+        scheduled = {n for layer in layers for n in layer}
+
+        if scheduled != set(self._nodes):
+            raise RuntimeError(
+                f'pipe {self.name} cannot start all nodes, '
+                f'{sorted(set(self._nodes) - scheduled)} are unreachable'
+            )
 
         for layer in self._dag.BFS()[::-1]:
             for node_name in layer:
