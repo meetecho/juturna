@@ -25,6 +25,7 @@ def pytest_addoption(parser):
         help='Do not delete the folder created for test pipelines'
     )
 
+
 @pytest.fixture
 def wait_for_condition():
     def _wait(condition_fn, timeout=10.0, interval=0.1):

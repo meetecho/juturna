@@ -87,6 +87,10 @@ class Node[T_Input, T_Output]:
         self._stop_source_event = self._transport.new_signal()
         self._stop_update_event = self._transport.new_signal()
 
+        self._update_failures = 0
+        self._source_failures = 0
+        self._worker_failures = 0
+
         self._draining = self._transport.new_signal()
 
         self._pending_updates = 0
@@ -119,6 +123,14 @@ class Node[T_Input, T_Output]:
     @property
     def configuration(self) -> dict:
         return {'name': self.name, 'session_id': self.pipe_id}
+
+    @property
+    def health(self) -> dict:
+        return {
+            'update_failures': self._update_failures,
+            'transmit_failures': self._worker_failures,
+            'source_failures': self._source_failures,
+        }
 
     @status.setter
     def status(self, new_status: ComponentStatus):
@@ -418,7 +430,17 @@ class Node[T_Input, T_Output]:
             if self._suspended and not isinstance(
                 message.payload, ControlPayload
             ):
-                self.transmit(message)
+                try:
+                    self.transmit(message)
+                except Exception:
+                    self._worker_failures += 1
+                    self.logger.error(
+                        f'unhandled exception in transmit() '
+                        f'(failure {self._worker_failures}), '
+                        f'message id {getattr(message, "id", "?")}',
+                        exc_info=True,
+                    )
+
                 continue
 
             self._buffer.put(message)
@@ -449,6 +471,14 @@ class Node[T_Input, T_Output]:
                 self._pending_updates += 1
             try:
                 self.update(batch, state=self._state)
+            except Exception:
+                self._update_failures += 1
+                self.logger.error(
+                    f'unhandled exception in update() '
+                    f'(failure {self._update_failures}), '
+                    f'for message id {getattr(batch, "id", "?")}',
+                    exc_info=True,
+                )
             finally:
                 with self._pending_condition:
                     self._pending_updates -= 1
@@ -461,7 +491,15 @@ class Node[T_Input, T_Output]:
             if self._source_mode == 'pre':
                 time.sleep(self._source_sleep)
 
-            message = self._source_f()
+            try:
+                message = self._source_f()
+            except Exception:
+                self._source_failures += 1
+                self.logger.error(
+                    f'unhandled exception in source function '
+                    f'(failure {self._source_failures})',
+                    exc_info=True,
+                )
 
             if (
                 isinstance(message.payload, ControlPayload)

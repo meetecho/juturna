@@ -1,3 +1,5 @@
+import time
+
 import juturna as jt
 
 def test_data_source_id_properly_set(test_config, wait_for_condition):
@@ -155,3 +157,42 @@ def test_pipeline_immediate_stop(test_config, wait_for_condition):
     assert received_count < sent_count, (
         f"Immediate stop failed: the pipe waits for all the {sent_count} messages to be processed before stopping."
     )
+
+
+def test_node_survives_exception_in_update():
+    class Boom(jt.components.Node):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+
+            self.calls = 0
+
+        def update(self, message, **kwargs):
+            self.calls += 1
+
+            raise RuntimeError('boom')
+
+    node = Boom(node_name='b', pipe_name='p')
+    node.start()
+
+    for _ in range(5):
+        node.put(jt.components.Message())
+        time.sleep(0.1)
+
+    def wait_for(pred, poll_sec=5, timeout_sec=600):
+        start = time.time()
+
+        while not (ok := pred()) and (time.time() - start < timeout_sec):
+            time.sleep(poll_sec)
+
+        return ok
+
+    assert wait_for(lambda: node.calls == 5)
+    assert node._update_thread.is_alive()
+    assert node._update_failures == 5
+    assert node.health == {
+        'source_failures': 0,
+        'transmit_failures': 0,
+        'update_failures': 5
+    }
+    node.stop()
+    print(node.health)
