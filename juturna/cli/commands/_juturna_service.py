@@ -8,6 +8,8 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+import juturna as jt
+
 from juturna.components._pipeline_manager import PipelineManager
 from juturna.cli.commands.models.api import PipelineConfig
 from juturna.cli.commands.models.api import SuccessfulResponse
@@ -32,6 +34,19 @@ def enable_cross_origins(app: FastAPI):
         allow_methods=['*'],
         allow_headers=['*'],
     )
+
+
+@app.get('/configuration')
+def configuration():
+    return {
+        'version': jt.__version__,
+        'configuration': {
+            'JUTURNA_DRAIN_TIMEOUT': jt.meta.JUTURNA_DRAIN_TIMEOUT,
+            'JUTURNA_MAX_QUEUE_SIZE': jt.meta.JUTURNA_MAX_QUEUE_SIZE,
+            'JUTURNA_TELEMETRY_BATCH_SIZE': jt.meta.JUTURNA_TELEMETRY_BATCH_SIZE,  # noqa: E501
+            'JUTURNA_THREAD_JOIN_TIMEOUT': jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT,
+        },
+    }
 
 
 @app.get('/pipelines')
