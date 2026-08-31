@@ -110,7 +110,11 @@ class Pipeline:
             'folder': self.pipe_path,
             'self': self._status,
             'nodes': {
-                node_name: {'status': node.status, 'config': node.configuration}
+                node_name: {
+                    'status': node.status,
+                    'config': node.configuration,
+                    'health': node.health,
+                }
                 for node_name, node in self._nodes.items()
             }
             if self._nodes

@@ -90,6 +90,7 @@ class Node[T_Input, T_Output]:
         self._update_failures = 0
         self._source_failures = 0
         self._worker_failures = 0
+        self._last_failure_at = None
 
         self._draining = self._transport.new_signal()
 
@@ -126,10 +127,16 @@ class Node[T_Input, T_Output]:
 
     @property
     def health(self) -> dict:
+        """
+        Counter of how many failues the node experienced across its threads.
+        Values are split per-thread, so it will give the total for update,
+        worker and source (if present).
+        """
         return {
             'update_failures': self._update_failures,
-            'transmit_failures': self._worker_failures,
+            'worker_failures': self._worker_failures,
             'source_failures': self._source_failures,
+            'last_failure_at': self._last_failure_at,
         }
 
     @status.setter
@@ -427,26 +434,26 @@ class Node[T_Input, T_Output]:
             except Empty:
                 continue
 
-            if self._suspended and not isinstance(
-                message.payload, ControlPayload
-            ):
-                try:
+            try:
+                if self._suspended and not isinstance(
+                    message.payload, ControlPayload
+                ):
                     self.transmit(message)
-                except Exception:
-                    self._worker_failures += 1
-                    self.logger.error(
-                        f'unhandled exception in transmit() '
-                        f'(failure {self._worker_failures}), '
-                        f'message id {getattr(message, "id", "?")}',
-                        exc_info=True,
-                    )
+                    continue
 
-                continue
+                self._buffer.put(message)
 
-            self._buffer.put(message)
-
-            if isinstance(message, Message):
-                self._rec_telemetry(message, 'rx')
+                if isinstance(message, Message):
+                    self._rec_telemetry(message, 'rx')
+            except Exception:
+                self._worker_failures += 1
+                self._last_failure_at = time.time()
+                self.logger.error(
+                    f'unhandled exception in worker '
+                    f'(failure {self._worker_failures}), '
+                    f'message id {getattr(message, "id", "?")}',
+                    exc_info=True,
+                )
 
     def _update(self):
         while not self._stop_update_event.is_set():
@@ -473,6 +480,7 @@ class Node[T_Input, T_Output]:
                 self.update(batch, state=self._state)
             except Exception:
                 self._update_failures += 1
+                self._last_failure_at = time.time()
                 self.logger.error(
                     f'unhandled exception in update() '
                     f'(failure {self._update_failures}), '
@@ -495,11 +503,14 @@ class Node[T_Input, T_Output]:
                 message = self._source_f()
             except Exception:
                 self._source_failures += 1
+                self._last_failure_at = time.time()
                 self.logger.error(
                     f'unhandled exception in source function '
                     f'(failure {self._source_failures})',
                     exc_info=True,
                 )
+
+                continue
 
             if (
                 isinstance(message.payload, ControlPayload)
