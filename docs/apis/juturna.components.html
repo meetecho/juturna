@@ -556,6 +556,14 @@ in the derived classes.</p>
 <span class="sig-name descname"><span class="pre">dump_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#juturna.components.Node.dump_json" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.components.Node.health">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">health</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#juturna.components.Node.health" title="Link to this definition">¶</a></dt>
+<dd><p>Counter of how many failues the node experienced across its threads.
+Values are split per-thread, so it will give the total for update,
+worker and source (if present).</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.join">
 <span class="sig-name descname"><span class="pre">join</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.join" title="Link to this definition">¶</a></dt>
@@ -915,6 +923,7 @@ remotely, that node will be replaced with a proc warp node.</p>
 <li><a class="reference internal" href="#juturna.components.Node.destinations"><code class="docutils literal notranslate"><span class="pre">Node.destinations</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.destroy"><code class="docutils literal notranslate"><span class="pre">Node.destroy()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.dump_json"><code class="docutils literal notranslate"><span class="pre">Node.dump_json()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.Node.health"><code class="docutils literal notranslate"><span class="pre">Node.health</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.join"><code class="docutils literal notranslate"><span class="pre">Node.join()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.link_state"><code class="docutils literal notranslate"><span class="pre">Node.link_state()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.link_telemetry"><code class="docutils literal notranslate"><span class="pre">Node.link_telemetry()</span></code></a></li>
