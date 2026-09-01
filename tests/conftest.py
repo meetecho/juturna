@@ -25,15 +25,20 @@ def pytest_addoption(parser):
         help='Do not delete the folder created for test pipelines'
     )
 
+
 @pytest.fixture
 def wait_for_condition():
     def _wait(condition_fn, timeout=10.0, interval=0.1):
         deadline = time.monotonic() + timeout
+
         while time.monotonic() < deadline:
             if condition_fn():
                 return True
+
             time.sleep(interval)
+
         return False
+
     return _wait
 
 @pytest.fixture(scope='session')
