@@ -16,6 +16,9 @@ with open(pathlib.Path(test_pipelines, 'test_empty_pipeline.json'), 'r') as f:
 with open(pathlib.Path(test_pipelines, 'test_audio_pipeline.json'), 'r') as f:
     audio_config = json.load(f)
 
+with open(pathlib.Path(test_pipelines, 'test_cyclic_pipeline.json'), 'r') as f:
+    cyclic_config = json.load(f)
+
 
 def test_pipeline_base():
     test_pipeline = jt.components.Pipeline(empty_config)
@@ -74,3 +77,10 @@ def test_pipeline_base_stop_not_running():
         test_pipeline.stop()
 
     assert str(exc_info.value) == 'pipeline test_basic_pipeline is not running'
+
+
+def test_cyclic_pipeline_is_rejected_at_warmup():
+    test_pipeline = jt.components.Pipeline(cyclic_config)
+
+    with pytest.raises(ValueError, match='cycle'):
+        test_pipeline.warmup()
