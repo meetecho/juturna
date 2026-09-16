@@ -362,6 +362,33 @@
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="juturna.transport.Event">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">Event</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.transport.Event" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
+<p>An event that can be set/unset</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.Event.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#juturna.transport.Event.clear" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.Event.is_set">
+<span class="sig-name descname"><span class="pre">is_set</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#juturna.transport.Event.is_set" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.Event.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#juturna.transport.Event.set" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.Event.wait">
+<span class="sig-name descname"><span class="pre">wait</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#juturna.transport.Event.wait" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="juturna.transport.Lock">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">Lock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.transport.Lock" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
@@ -488,6 +515,11 @@ buffers only depend on this interface, never on the concrete primitives.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.transport.TransportBackend.new_condition">
 <span class="sig-name descname"><span class="pre">new_condition</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#juturna.transport.Condition" title="juturna.transport._base.Condition"><span class="pre">Condition</span></a></span></span><a class="headerlink" href="#juturna.transport.TransportBackend.new_condition" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.TransportBackend.new_event">
+<span class="sig-name descname"><span class="pre">new_event</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#juturna.transport.Event" title="juturna.transport._base.Event"><span class="pre">Event</span></a></span></span><a class="headerlink" href="#juturna.transport.TransportBackend.new_event" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -629,6 +661,13 @@ Defaults to the threading backend if not provided.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.transport.Empty"><code class="docutils literal notranslate"><span class="pre">Empty</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.Event"><code class="docutils literal notranslate"><span class="pre">Event</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.transport.Event.clear"><code class="docutils literal notranslate"><span class="pre">Event.clear()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.Event.is_set"><code class="docutils literal notranslate"><span class="pre">Event.is_set()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.Event.set"><code class="docutils literal notranslate"><span class="pre">Event.set()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.Event.wait"><code class="docutils literal notranslate"><span class="pre">Event.wait()</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#juturna.transport.Lock"><code class="docutils literal notranslate"><span class="pre">Lock</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.Queue"><code class="docutils literal notranslate"><span class="pre">Queue</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.transport.Queue.empty"><code class="docutils literal notranslate"><span class="pre">Queue.empty()</span></code></a></li>
@@ -658,6 +697,7 @@ Defaults to the threading backend if not provided.</p>
 <li><a class="reference internal" href="#juturna.transport.TransportBackend"><code class="docutils literal notranslate"><span class="pre">TransportBackend</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.transport.TransportBackend.is_current"><code class="docutils literal notranslate"><span class="pre">TransportBackend.is_current()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.TransportBackend.new_condition"><code class="docutils literal notranslate"><span class="pre">TransportBackend.new_condition()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.TransportBackend.new_event"><code class="docutils literal notranslate"><span class="pre">TransportBackend.new_event()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.TransportBackend.new_lock"><code class="docutils literal notranslate"><span class="pre">TransportBackend.new_lock()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.TransportBackend.new_queue"><code class="docutils literal notranslate"><span class="pre">TransportBackend.new_queue()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.TransportBackend.new_signal"><code class="docutils literal notranslate"><span class="pre">TransportBackend.new_signal()</span></code></a></li>
