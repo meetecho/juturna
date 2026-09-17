@@ -7,15 +7,7 @@ NotifierWebsocket
 Transmit message to a websocket socket.
 
 Keeps a single connection open across messages instead of one
-connect()/close() per message: a burst of segments arriving close
-together (e.g. from resegmenter_vosk cutting several short segments in
-a row) used to open that many concurrent handshakes against the same
-endpoint, which is enough to make a slow or single-threaded receiver
-miss the default 10s handshake window on some of them - each of those
-failures was an uncaught TimeoutError inside a bare daemon thread,
-silently dropping an already-produced message with no log, no retry,
-no trace. A dropped connection is now retried with a fresh handshake
-instead.
+connect()/close() per message
 """
 
 import time
@@ -58,17 +50,9 @@ class NotifierWebsocket(Node[BasePayload, None]):
             doesn't already have a 'topic' key, stamp one on using the
             value found under this key name - checked first on the
             payload itself, then falling back to
-            meta['source_meta'][topic_key] (the same source and lookup
-            order summarizer_ollama's own topic_key uses, which is
-            also where a 'topic' key on the payload would normally
-            come from). Left unset, the payload is forwarded exactly
-            as received. Useful when this node sits directly
-            downstream of a node (e.g. a transcriber) whose payload
-            has no notion of "topic" on its own, but a consumer keyed
-            on it (e.g. a websocket receiver grouping output per call)
-            needs one -
-            without this, such a payload silently falls back to
-            whatever default the receiver uses for a missing topic.
+            meta['source_meta'][topic_key].
+            Left unset, the payload is forwarded exactly
+            as received.
         kwargs : dict
             Superclass arguments.
 
@@ -118,18 +102,7 @@ class NotifierWebsocket(Node[BasePayload, None]):
         self._send_message(to_send)
 
     def _send_message(self, message: Message[BasePayload]):
-        """
-        Send over the persistent connection, reconnecting on failure.
-
-        update() is the only caller and runs on this node's own
-        dedicated thread, so no lock is needed around self._ws. A
-        failed send almost always means the connection itself is
-        dead, so each retry opens a fresh one rather than resending
-        on the one that just failed. Retries are exhausted well
-        before this would block the pipeline for long; a message that
-        still fails after that is raised, which the caller (_update())
-        already counts, logs and moves past without killing the node.
-        """
+        """Send over the persistent connection, reconnecting on failure."""
         message_json = message.to_json()
 
         for attempt in range(1, self._max_retries + 1):
