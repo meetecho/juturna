@@ -1,4 +1,7 @@
 [arguments]
 endpoint = "ws://127.0.0.1:1237"
+topic_key = ""
+max_retries = 3
+retry_backoff_s = 0.3
 
 [meta]
