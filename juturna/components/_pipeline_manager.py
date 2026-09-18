@@ -10,14 +10,9 @@ from juturna.components import Pipeline
 from juturna.cli.commands.models.api import PipelineConfig
 from juturna.cli.commands.models.api import CreatedPipelineDto
 from juturna.cli.commands.exceptions import (
-    AlreadyWarmedupException,
     InvalidPipelineIdException,
-    AlreadyRunningException,
-    NotReadyException,
-    NotRunningException,
     TelemetryNotEnabledException,
 )
-from juturna.names import PipelineStatus
 
 
 logger = logging.getLogger('jt.manager')
@@ -78,23 +73,11 @@ class PipelineManager:
         if pipeline_id not in self._pipelines:
             raise InvalidPipelineIdException(pipeline_id)
 
-        if self._pipelines[pipeline_id].status['self'] == PipelineStatus.READY:
-            raise AlreadyWarmedupException(pipeline_id)
-
         self._pipelines[pipeline_id].warmup()
 
     def start_pipeline(self, pipeline_id: str) -> None:
         if pipeline_id not in self._pipelines:
             raise InvalidPipelineIdException(pipeline_id)
-
-        if self._pipelines[pipeline_id].status['self'] == PipelineStatus.NEW:
-            raise NotReadyException(pipeline_id)
-
-        if (
-            self._pipelines[pipeline_id].status['self']
-            == PipelineStatus.RUNNING
-        ):
-            raise AlreadyRunningException(pipeline_id)
 
         self._pipelines[pipeline_id].start()
 
@@ -111,12 +94,6 @@ class PipelineManager:
     def stop_pipeline(self, pipeline_id: str) -> None:
         if pipeline_id not in self._pipelines:
             raise InvalidPipelineIdException(pipeline_id)
-
-        if (
-            self._pipelines[pipeline_id].status['self']
-            != PipelineStatus.RUNNING
-        ):
-            raise NotRunningException(pipeline_id)
 
         self._pipelines[pipeline_id].stop()
 

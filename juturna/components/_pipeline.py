@@ -3,6 +3,7 @@ import copy
 import json
 import pathlib
 import gc
+import threading
 import typing
 
 from juturna.components import Node
@@ -19,6 +20,13 @@ from juturna.components._dag import DAG
 from juturna.components._state import State
 from juturna.components._node_builder import _builder
 from juturna.components._telemetry_manager import TelemetryManager
+from juturna.components._exceptions import PipelineStateError
+from juturna.components._exceptions import PipelineNotReadyError
+from juturna.components._exceptions import PipelineNotRunningError
+from juturna.components._exceptions import PipelineAlreadyRunningError
+from juturna.components._exceptions import PipelineStoppedError
+from juturna.components._exceptions import PipelineDestroyedError
+from juturna.components._exceptions import PipelineBusyError
 
 from juturna.transport import TransportBackend
 from juturna.transport import get_transport
@@ -66,6 +74,8 @@ class Pipeline:
         self._telemetry_file = None
 
         self._status = PipelineStatus.NEW
+        self._status_lock = threading.Lock()
+        self._transitioning = False
 
         self.created_at = time.time()
 
@@ -125,6 +135,91 @@ class Pipeline:
     def DAG(self) -> DAG:
         return self._dag
 
+    def _begin_transition(
+        self,
+        *,
+        op_name: str,
+        illegal: dict[PipelineStatus, type[PipelineStateError]],
+        loopback: set = frozenset(),
+        messages: dict[PipelineStatus, str] | None = None,
+    ) -> bool:
+        """
+        Validate and claim the right to run a lifecycle transition.
+
+        The check happens under `_status_lock`, so that concurrent callers
+        observe a consistent status. Claiming only sets `_transitioning`:
+        `_status` itself is left untouched here, and is only updated by
+        `_end_transition()` once the transition's actual work has finished.
+        This keeps `status` truthful for the whole (possibly long) duration
+        of the work, and lets a concurrent call be rejected deterministically
+        via `PipelineBusyError` instead of racing against a not-yet-real
+        target status.
+
+        Parameters
+        ----------
+        op_name : str
+            Name of the lifecycle operation, used in log/error messages.
+        illegal : dict[PipelineStatus, type[PipelineStateError]]
+            Maps a current status to the exception to raise if the
+            transition is attempted from it.
+        loopback : set, optional
+            Statuses for which the call is a semi-idempotent no-op (already
+            in the target state).
+        messages : dict[PipelineStatus, str], optional
+            Overrides the default exception message for specific current
+            statuses.
+
+        Returns
+        -------
+        bool
+            True if the transition was claimed and the caller should
+            proceed (and call `_end_transition()`/`_abort_transition()`
+            when done), False if this was a loopback no-op.
+
+        """
+        messages = messages or {}
+
+        with self._status_lock:
+            if self._transitioning:
+                raise PipelineBusyError(
+                    self.name,
+                    f'pipeline {self.name} is already processing another '
+                    f'lifecycle operation, cannot {op_name}() concurrently',
+                )
+
+            current = self._status
+
+            if current in loopback:
+                self._logger.warning(
+                    f'{op_name}() called on pipeline {self.name} already '
+                    f'in {current} state, ignoring'
+                )
+
+                return False
+
+            if current in illegal:
+                message = messages.get(
+                    current,
+                    f'pipeline {self.name} cannot {op_name}() from {current}',
+                )
+
+                raise illegal[current](self.name, message)
+
+            self._transitioning = True
+
+            return True
+
+    def _end_transition(self, new_status: PipelineStatus):
+        """Complete a claimed transition, publishing the new status."""
+        with self._status_lock:
+            self._status = new_status
+            self._transitioning = False
+
+    def _abort_transition(self):
+        """Release a claimed transition without changing `_status`."""
+        with self._status_lock:
+            self._transitioning = False
+
     def warmup(self):
         """
         Prepare the pipeline and all its nodes.
@@ -133,9 +228,27 @@ class Pipeline:
         their required resources. If a node is flagged as to be deployed
         remotely, that node will be replaced with a proc warp node.
         """
-        if self._status != PipelineStatus.NEW:
-            raise RuntimeError(f'pipeline {self.name} cannot be warmed up')
+        if not self._begin_transition(
+            op_name='warmup',
+            loopback={PipelineStatus.READY},
+            illegal={
+                PipelineStatus.RUNNING: PipelineAlreadyRunningError,
+                PipelineStatus.STOPPED: PipelineStoppedError,
+                PipelineStatus.DESTROYED: PipelineDestroyedError,
+            },
+        ):
+            return
 
+        try:
+            self._warmup()
+        except Exception:
+            self._abort_transition()
+
+            raise
+        else:
+            self._end_transition(PipelineStatus.READY)
+
+    def _warmup(self):
         pathlib.Path(self.pipe_path).mkdir(parents=True, exist_ok=True)
 
         with open(pathlib.Path(self.pipe_path, 'config.json'), 'w') as f:
@@ -219,10 +332,7 @@ class Pipeline:
 
             self._logger.info(f'warmed up node {node_name}')
 
-        self._status = PipelineStatus.READY
         self._logger.info('pipe warmed up!')
-
-        return
 
     def update_node(
         self, node_name: str, property_name: str, property_value: typing.Any
@@ -242,9 +352,30 @@ class Pipeline:
         started. This is important to ensure that the data flow is properly
         established and that all nodes are ready to receive data.
         """
-        if self._status != PipelineStatus.READY:
-            raise RuntimeError(f'pipeline {self.name} is not ready')
+        if not self._begin_transition(
+            op_name='start',
+            loopback={PipelineStatus.RUNNING},
+            illegal={
+                PipelineStatus.NEW: PipelineNotReadyError,
+                PipelineStatus.STOPPED: PipelineStoppedError,
+                PipelineStatus.DESTROYED: PipelineDestroyedError,
+            },
+            messages={
+                PipelineStatus.NEW: f'pipeline {self.name} is not ready',
+            },
+        ):
+            return
 
+        try:
+            self._start()
+        except Exception:
+            self._abort_transition()
+
+            raise
+        else:
+            self._end_transition(PipelineStatus.RUNNING)
+
+    def _start(self):
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
@@ -266,8 +397,6 @@ class Pipeline:
 
                 self._nodes[node_name].start()
 
-        self._status = PipelineStatus.RUNNING
-
         self._logger.info('pipe started')
 
     def stop(self):
@@ -278,9 +407,31 @@ class Pipeline:
         stopping signal to each node that will cause them to stop processing
         upcoming data and to propagate the stopping signal to their destinations
         """
-        if self._status != PipelineStatus.RUNNING:
-            raise RuntimeError(f'pipeline {self.name} is not running')
+        if not self._begin_transition(
+            op_name='stop',
+            loopback={PipelineStatus.STOPPED},
+            illegal={
+                PipelineStatus.NEW: PipelineNotRunningError,
+                PipelineStatus.READY: PipelineNotRunningError,
+                PipelineStatus.DESTROYED: PipelineDestroyedError,
+            },
+            messages={
+                PipelineStatus.NEW: f'pipeline {self.name} is not running',
+                PipelineStatus.READY: f'pipeline {self.name} is not running',
+            },
+        ):
+            return
 
+        try:
+            self._stop()
+        except Exception:
+            self._abort_transition()
+
+            raise
+        else:
+            self._end_transition(PipelineStatus.STOPPED)
+
+    def _stop(self):
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
@@ -300,8 +451,6 @@ class Pipeline:
 
         if self._telemetry:
             self._telemetry_manager.stop()
-
-        self._status = PipelineStatus.READY
 
     def suspend_node(self, node_name: str):
         """
@@ -343,22 +492,53 @@ class Pipeline:
         important to ensure that all resources are properly released and that
         there are no memory leaks. The pipeline is set to None, and garbage
         collection is triggered to free up any remaining resources.
+
+        destroy() is legal from every status except DESTROYED itself, on
+        which it is a semi-idempotent no-op: repeated cleanup calls (e.g.
+        from a caller's try/finally) do not raise. Like the other lifecycle
+        methods, it claims the pipeline before doing any work, so a
+        concurrent call raises `PipelineBusyError` instead of racing on
+        `_nodes`.
         """
-        if self._status == PipelineStatus.RUNNING:
-            self.stop()
+        with self._status_lock:
+            if self._status == PipelineStatus.DESTROYED:
+                self._logger.warning(
+                    f'destroy() called on pipeline {self.name} already '
+                    'destroyed, ignoring'
+                )
 
-        if not self._nodes:
-            return
+                return
 
-        for node_name in list(self._nodes.keys())[::-1]:
-            self._nodes[node_name].clear_source()
-            self._nodes[node_name].clear_destinations()
-            self._nodes[node_name].destroy()
+            if self._transitioning:
+                raise PipelineBusyError(
+                    self.name,
+                    f'pipeline {self.name} is already processing another '
+                    'lifecycle operation, cannot destroy() concurrently',
+                )
 
-            self._nodes[node_name] = None
+            was_running = self._status == PipelineStatus.RUNNING
+            self._transitioning = True
 
-        self._nodes = None
-        self._status = PipelineStatus.DESTROYED
+        try:
+            if was_running:
+                self._stop()
+
+            if self._nodes:
+                for node_name in list(self._nodes.keys())[::-1]:
+                    self._nodes[node_name].clear_source()
+                    self._nodes[node_name].clear_destinations()
+                    self._nodes[node_name].destroy()
+
+                    self._nodes[node_name] = None
+
+            self._nodes = None
+        except Exception:
+            self._abort_transition()
+
+            raise
+
+        self._end_transition(PipelineStatus.DESTROYED)
+
         gc.collect()
 
         log_utils.drop_extra(self._name)
