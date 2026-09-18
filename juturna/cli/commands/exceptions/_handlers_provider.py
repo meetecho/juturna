@@ -10,6 +10,7 @@ from juturna.cli.commands.exceptions import (
     PipelineAlreadyRunningError,
     PipelineStoppedError,
     PipelineDestroyedError,
+    PipelineBusyError,
 )
 
 
@@ -69,6 +70,15 @@ def _pipeline_destroyed_handler(
     )
 
 
+def _pipeline_busy_handler(
+    request: Request, exception: PipelineBusyError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=409,
+        content={'message': str(exception)},
+    )
+
+
 def _telemetry_not_enabled_handler(
     request: Request, exception: TelemetryNotEnabledException
 ) -> JSONResponse:
@@ -103,6 +113,7 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
         - PipelineNotRunningError
         - PipelineStoppedError
         - PipelineDestroyedError
+        - PipelineBusyError
         - TelemetryNotEnabledException
 
     Args:
@@ -125,6 +136,7 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(
         PipelineDestroyedError, _pipeline_destroyed_handler
     )
+    app.add_exception_handler(PipelineBusyError, _pipeline_busy_handler)
     app.add_exception_handler(
         TelemetryNotEnabledException, _telemetry_not_enabled_handler
     )

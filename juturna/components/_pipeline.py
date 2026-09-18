@@ -26,6 +26,7 @@ from juturna.components._exceptions import PipelineNotRunningError
 from juturna.components._exceptions import PipelineAlreadyRunningError
 from juturna.components._exceptions import PipelineStoppedError
 from juturna.components._exceptions import PipelineDestroyedError
+from juturna.components._exceptions import PipelineBusyError
 
 from juturna.transport import TransportBackend
 from juturna.transport import get_transport
@@ -74,6 +75,7 @@ class Pipeline:
 
         self._status = PipelineStatus.NEW
         self._status_lock = threading.Lock()
+        self._transitioning = False
 
         self.created_at = time.time()
 
@@ -136,25 +138,25 @@ class Pipeline:
     def _begin_transition(
         self,
         *,
-        target: PipelineStatus,
         op_name: str,
         illegal: dict[PipelineStatus, type[PipelineStateError]],
         loopback: set = frozenset(),
         messages: dict[PipelineStatus, str] | None = None,
     ) -> bool:
         """
-        Atomically validate and claim a lifecycle transition.
+        Validate and claim the right to run a lifecycle transition.
 
-        The check and the `_status` write happen under `_status_lock`, so
-        that concurrent callers racing on the same transition observe a
-        consistent state instead of both passing validation. The caller is
-        responsible for rolling `_status` back (also under the lock) if the
-        transition's actual work fails.
+        The check happens under `_status_lock`, so that concurrent callers
+        observe a consistent status. Claiming only sets `_transitioning`:
+        `_status` itself is left untouched here, and is only updated by
+        `_end_transition()` once the transition's actual work has finished.
+        This keeps `status` truthful for the whole (possibly long) duration
+        of the work, and lets a concurrent call be rejected deterministically
+        via `PipelineBusyError` instead of racing against a not-yet-real
+        target status.
 
         Parameters
         ----------
-        target : PipelineStatus
-            The status to claim if the transition is legal.
         op_name : str
             Name of the lifecycle operation, used in log/error messages.
         illegal : dict[PipelineStatus, type[PipelineStateError]]
@@ -171,12 +173,20 @@ class Pipeline:
         -------
         bool
             True if the transition was claimed and the caller should
-            proceed, False if this was a loopback no-op.
+            proceed (and call `_end_transition()`/`_abort_transition()`
+            when done), False if this was a loopback no-op.
 
         """
         messages = messages or {}
 
         with self._status_lock:
+            if self._transitioning:
+                raise PipelineBusyError(
+                    self.name,
+                    f'pipeline {self.name} is already processing another '
+                    f'lifecycle operation, cannot {op_name}() concurrently',
+                )
+
             current = self._status
 
             if current in loopback:
@@ -195,9 +205,20 @@ class Pipeline:
 
                 raise illegal[current](self.name, message)
 
-            self._status = target
+            self._transitioning = True
 
             return True
+
+    def _end_transition(self, new_status: PipelineStatus):
+        """Complete a claimed transition, publishing the new status."""
+        with self._status_lock:
+            self._status = new_status
+            self._transitioning = False
+
+    def _abort_transition(self):
+        """Release a claimed transition without changing `_status`."""
+        with self._status_lock:
+            self._transitioning = False
 
     def warmup(self):
         """
@@ -208,7 +229,6 @@ class Pipeline:
         remotely, that node will be replaced with a proc warp node.
         """
         if not self._begin_transition(
-            target=PipelineStatus.READY,
             op_name='warmup',
             loopback={PipelineStatus.READY},
             illegal={
@@ -222,10 +242,11 @@ class Pipeline:
         try:
             self._warmup()
         except Exception:
-            with self._status_lock:
-                self._status = PipelineStatus.NEW
+            self._abort_transition()
 
             raise
+        else:
+            self._end_transition(PipelineStatus.READY)
 
     def _warmup(self):
         pathlib.Path(self.pipe_path).mkdir(parents=True, exist_ok=True)
@@ -332,7 +353,6 @@ class Pipeline:
         established and that all nodes are ready to receive data.
         """
         if not self._begin_transition(
-            target=PipelineStatus.RUNNING,
             op_name='start',
             loopback={PipelineStatus.RUNNING},
             illegal={
@@ -349,10 +369,11 @@ class Pipeline:
         try:
             self._start()
         except Exception:
-            with self._status_lock:
-                self._status = PipelineStatus.READY
+            self._abort_transition()
 
             raise
+        else:
+            self._end_transition(PipelineStatus.RUNNING)
 
     def _start(self):
         if not self._nodes:
@@ -387,7 +408,6 @@ class Pipeline:
         upcoming data and to propagate the stopping signal to their destinations
         """
         if not self._begin_transition(
-            target=PipelineStatus.STOPPED,
             op_name='stop',
             loopback={PipelineStatus.STOPPED},
             illegal={
@@ -405,10 +425,11 @@ class Pipeline:
         try:
             self._stop()
         except Exception:
-            with self._status_lock:
-                self._status = PipelineStatus.RUNNING
+            self._abort_transition()
 
             raise
+        else:
+            self._end_transition(PipelineStatus.STOPPED)
 
     def _stop(self):
         if not self._nodes:
@@ -474,7 +495,10 @@ class Pipeline:
 
         destroy() is legal from every status except DESTROYED itself, on
         which it is a semi-idempotent no-op: repeated cleanup calls (e.g.
-        from a caller's try/finally) do not raise.
+        from a caller's try/finally) do not raise. Like the other lifecycle
+        methods, it claims the pipeline before doing any work, so a
+        concurrent call raises `PipelineBusyError` instead of racing on
+        `_nodes`.
         """
         with self._status_lock:
             if self._status == PipelineStatus.DESTROYED:
@@ -485,21 +509,35 @@ class Pipeline:
 
                 return
 
-        if self._status == PipelineStatus.RUNNING:
-            self.stop()
+            if self._transitioning:
+                raise PipelineBusyError(
+                    self.name,
+                    f'pipeline {self.name} is already processing another '
+                    'lifecycle operation, cannot destroy() concurrently',
+                )
 
-        if self._nodes:
-            for node_name in list(self._nodes.keys())[::-1]:
-                self._nodes[node_name].clear_source()
-                self._nodes[node_name].clear_destinations()
-                self._nodes[node_name].destroy()
+            was_running = self._status == PipelineStatus.RUNNING
+            self._transitioning = True
 
-                self._nodes[node_name] = None
+        try:
+            if was_running:
+                self._stop()
 
-        self._nodes = None
+            if self._nodes:
+                for node_name in list(self._nodes.keys())[::-1]:
+                    self._nodes[node_name].clear_source()
+                    self._nodes[node_name].clear_destinations()
+                    self._nodes[node_name].destroy()
 
-        with self._status_lock:
-            self._status = PipelineStatus.DESTROYED
+                    self._nodes[node_name] = None
+
+            self._nodes = None
+        except Exception:
+            self._abort_transition()
+
+            raise
+
+        self._end_transition(PipelineStatus.DESTROYED)
 
         gc.collect()
 

@@ -1,6 +1,7 @@
 import pathlib
 import shutil
 import json
+import threading
 
 import pytest
 
@@ -9,6 +10,7 @@ from juturna.components import (
     PipelineAlreadyRunningError,
     PipelineStoppedError,
     PipelineDestroyedError,
+    PipelineBusyError,
 )
 
 
@@ -170,3 +172,106 @@ def test_pipeline_full_lifecycle_transitions(test_config, wait_for_condition):
 
     with pytest.raises(PipelineDestroyedError):
         pipeline.warmup()
+
+
+def test_pipeline_status_reflects_completion_not_claim(monkeypatch):
+    test_pipeline = jt.components.Pipeline(empty_config)
+
+    started = threading.Event()
+    release = threading.Event()
+    original_warmup = test_pipeline._warmup
+
+    def slow_warmup():
+        started.set()
+        release.wait(timeout=5)
+        original_warmup()
+
+    monkeypatch.setattr(test_pipeline, '_warmup', slow_warmup)
+
+    warmup_thread = threading.Thread(target=test_pipeline.warmup)
+    warmup_thread.start()
+
+    assert started.wait(timeout=2), 'warmup() did not start in time'
+
+    # the transition is claimed but the work is not finished yet: status
+    # must still be NEW, not the target READY
+    assert test_pipeline.status['self'] == 'pipeline_created'
+
+    # a concurrent lifecycle call must be rejected deterministically,
+    # instead of racing against the not-yet-real target status
+    with pytest.raises(PipelineBusyError):
+        test_pipeline.start()
+
+    release.set()
+    warmup_thread.join(timeout=5)
+
+    assert not warmup_thread.is_alive()
+    assert test_pipeline.status['self'] == 'pipeline_ready'
+
+
+def test_pipeline_concurrent_stop_is_rejected_not_duplicated(
+    test_config, wait_for_condition, monkeypatch
+):
+    folder = test_config['test_pipeline_folder']
+    pipeline = jt.components.Pipeline(
+        _sequencer_crasher_config('concurrent_stop_pipeline', folder)
+    )
+
+    pipeline.warmup()
+    pipeline.start()
+
+    assert wait_for_condition(
+        lambda: len(pipeline._nodes['sink_1'].messages) > 0
+    ), 'expected sink_1 to receive at least one message'
+
+    started = threading.Event()
+    release = threading.Event()
+    call_count = {'n': 0}
+    original_stop = pipeline._stop
+
+    def slow_stop():
+        call_count['n'] += 1
+        started.set()
+        release.wait(timeout=5)
+        original_stop()
+
+    monkeypatch.setattr(pipeline, '_stop', slow_stop)
+
+    stop_thread = threading.Thread(target=pipeline.stop)
+    stop_thread.start()
+
+    assert started.wait(timeout=2), 'stop() did not start in time'
+
+    # a second, concurrent stop() must not re-enter _stop() while the
+    # first one is still draining nodes
+    with pytest.raises(PipelineBusyError):
+        pipeline.stop()
+
+    release.set()
+    stop_thread.join(timeout=5)
+
+    assert not stop_thread.is_alive()
+    assert call_count['n'] == 1, '_stop() must run exactly once'
+    assert pipeline.status['self'] == 'pipeline_stopped'
+
+    pipeline.destroy()
+
+
+def test_pipeline_destroy_while_running_stops_then_destroys(
+    test_config, wait_for_condition
+):
+    folder = test_config['test_pipeline_folder']
+    pipeline = jt.components.Pipeline(
+        _sequencer_crasher_config('destroy_while_running_pipeline', folder)
+    )
+
+    pipeline.warmup()
+    pipeline.start()
+
+    assert wait_for_condition(
+        lambda: len(pipeline._nodes['sink_1'].messages) > 0
+    ), 'expected sink_1 to receive at least one message'
+
+    pipeline.destroy()
+
+    assert pipeline.status['self'] == 'pipeline_destroyed'

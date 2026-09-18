@@ -10,6 +10,7 @@ from juturna.components._exceptions import PipelineNotRunningError
 from juturna.components._exceptions import PipelineAlreadyRunningError
 from juturna.components._exceptions import PipelineStoppedError
 from juturna.components._exceptions import PipelineDestroyedError
+from juturna.components._exceptions import PipelineBusyError
 
 
 __all__ = [
@@ -24,4 +25,5 @@ __all__ = [
     'PipelineAlreadyRunningError',
     'PipelineStoppedError',
     'PipelineDestroyedError',
+    'PipelineBusyError',
 ]

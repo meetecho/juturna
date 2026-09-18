@@ -8,6 +8,7 @@ from ._pipeline_exceptions import (
     PipelineAlreadyRunningError,
     PipelineStoppedError,
     PipelineDestroyedError,
+    PipelineBusyError,
 )
 
 from ._handlers_provider import (
@@ -24,6 +25,7 @@ __all__ = [
     'PipelineAlreadyRunningError',
     'PipelineStoppedError',
     'PipelineDestroyedError',
+    'PipelineBusyError',
     'register_pipeline_exception_handlers',
     'register_generic_exception_handler',
 ]

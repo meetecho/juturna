@@ -57,3 +57,15 @@ class PipelineDestroyedError(PipelineStateError):
     destroy() itself is exempted: calling it on an already destroyed
     pipeline is a no-op.
     """
+
+
+class PipelineBusyError(PipelineStateError):
+    """
+    Raised when a lifecycle operation is called while another one is
+    already in progress on the same pipeline.
+
+    Only one of warmup()/start()/stop()/destroy() can be claimed at a time:
+    the transition in flight owns the pipeline's internal state (nodes,
+    DAG, node threads) until it completes, so a concurrent call cannot be
+    safely evaluated against the pipeline's current status.
+    """
