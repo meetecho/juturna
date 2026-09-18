@@ -144,7 +144,8 @@ class PrompterOllama(Node[ObjectPayload, ObjectPayload]):
         if isinstance(self._format, dict):
             try:
                 response_dict = json.loads(response['message']['content'])
-            except Exception:
+            except Exception as e:
+                self.logger.warning(f'bad JSON response from ollama: {e}')
                 response_dict = dict()
 
         to_send.payload['ollama_response'] = response.model_dump()

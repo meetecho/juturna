@@ -140,7 +140,8 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
 
                 try:
                     yield from packet.decode()
-                except Exception:
+                except Exception as e:
+                    self.logger.warning(f'error decoding packet: {e}')
                     continue
         except Exception as e:
             self.logger.error(f'stream error: {e}')
