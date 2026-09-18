@@ -3,12 +3,13 @@ from fastapi.responses import JSONResponse
 from logging import Logger
 
 from juturna.cli.commands.exceptions import (
-    AlreadyWarmedupException,
     InvalidPipelineIdException,
-    AlreadyRunningException,
-    NotReadyException,
-    NotRunningException,
     TelemetryNotEnabledException,
+    PipelineNotReadyError,
+    PipelineNotRunningError,
+    PipelineAlreadyRunningError,
+    PipelineStoppedError,
+    PipelineDestroyedError,
 )
 
 
@@ -22,45 +23,49 @@ def _invalid_pipeline_id_handler(
     )
 
 
-def _already_warmedup_handler(
+def _pipeline_already_running_handler(
     request: Request,
-    exception: AlreadyWarmedupException,
+    exception: PipelineAlreadyRunningError,
 ) -> JSONResponse:
     return JSONResponse(
         status_code=409,
-        content={
-            'message': f'pipeline {exception.pipeline_id} already warmed up'
-        },
+        content={'message': str(exception)},
     )
 
 
-def _already_running_handler(
-    request: Request,
-    exception: AlreadyRunningException,
+def _pipeline_not_ready_handler(
+    request: Request, exception: PipelineNotReadyError
 ) -> JSONResponse:
     return JSONResponse(
         status_code=409,
-        content={
-            'message': f'pipeline {exception.pipeline_id} already running'
-        },
+        content={'message': str(exception)},
     )
 
 
-def _not_ready_handler(
-    request: Request, exception: NotReadyException
+def _pipeline_not_running_handler(
+    request: Request, exception: PipelineNotRunningError
 ) -> JSONResponse:
     return JSONResponse(
         status_code=409,
-        content={'message': f'pipeline {exception.pipeline_id} is not ready'},
+        content={'message': str(exception)},
     )
 
 
-def _not_running_handler(
-    request: Request, exception: NotRunningException
+def _pipeline_stopped_handler(
+    request: Request, exception: PipelineStoppedError
 ) -> JSONResponse:
     return JSONResponse(
         status_code=409,
-        content={'message': f'pipeline {exception.pipeline_id} is not running'},
+        content={'message': str(exception)},
+    )
+
+
+def _pipeline_destroyed_handler(
+    request: Request, exception: PipelineDestroyedError
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=409,
+        content={'message': str(exception)},
     )
 
 
@@ -93,10 +98,11 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
     """
     Register bundled handlers for Pipeline Exceptions:
         - InvalidPipelineIdException
-        - AlreadyWarmedupException
-        - AlreadyRunningException
-        - NotReadyException
-        - NotRunningException
+        - PipelineAlreadyRunningError
+        - PipelineNotReadyError
+        - PipelineNotRunningError
+        - PipelineStoppedError
+        - PipelineDestroyedError
         - TelemetryNotEnabledException
 
     Args:
@@ -107,11 +113,18 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
         InvalidPipelineIdException, _invalid_pipeline_id_handler
     )
     app.add_exception_handler(
-        AlreadyWarmedupException, _already_warmedup_handler
+        PipelineAlreadyRunningError, _pipeline_already_running_handler
     )
-    app.add_exception_handler(AlreadyRunningException, _already_running_handler)
-    app.add_exception_handler(NotReadyException, _not_ready_handler)
-    app.add_exception_handler(NotRunningException, _not_running_handler)
+    app.add_exception_handler(
+        PipelineNotReadyError, _pipeline_not_ready_handler
+    )
+    app.add_exception_handler(
+        PipelineNotRunningError, _pipeline_not_running_handler
+    )
+    app.add_exception_handler(PipelineStoppedError, _pipeline_stopped_handler)
+    app.add_exception_handler(
+        PipelineDestroyedError, _pipeline_destroyed_handler
+    )
     app.add_exception_handler(
         TelemetryNotEnabledException, _telemetry_not_enabled_handler
     )

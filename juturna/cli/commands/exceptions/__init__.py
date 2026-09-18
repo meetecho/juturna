@@ -1,11 +1,13 @@
 # noqa: D104
 from ._pipeline_exceptions import (
     InvalidPipelineIdException,
-    AlreadyWarmedupException,
-    NotReadyException,
-    AlreadyRunningException,
-    NotRunningException,
     TelemetryNotEnabledException,
+    PipelineStateError,
+    PipelineNotReadyError,
+    PipelineNotRunningError,
+    PipelineAlreadyRunningError,
+    PipelineStoppedError,
+    PipelineDestroyedError,
 )
 
 from ._handlers_provider import (
@@ -14,12 +16,14 @@ from ._handlers_provider import (
 )
 
 __all__ = [
-    'AlreadyWarmedupException',
     'InvalidPipelineIdException',
-    'NotReadyException',
-    'AlreadyRunningException',
-    'NotRunningException',
     'TelemetryNotEnabledException',
+    'PipelineStateError',
+    'PipelineNotReadyError',
+    'PipelineNotRunningError',
+    'PipelineAlreadyRunningError',
+    'PipelineStoppedError',
+    'PipelineDestroyedError',
     'register_pipeline_exception_handlers',
     'register_generic_exception_handler',
 ]

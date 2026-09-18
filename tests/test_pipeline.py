@@ -5,6 +5,11 @@ import json
 import pytest
 
 import juturna as jt
+from juturna.components import (
+    PipelineAlreadyRunningError,
+    PipelineStoppedError,
+    PipelineDestroyedError,
+)
 
 
 test_pipelines = './tests/test_pipelines/'
@@ -84,3 +89,84 @@ def test_cyclic_pipeline_is_rejected_at_warmup():
 
     with pytest.raises(ValueError, match='cycle'):
         test_pipeline.warmup()
+
+
+def test_pipeline_warmup_is_idempotent_loopback():
+    test_pipeline = jt.components.Pipeline(empty_config)
+
+    test_pipeline.warmup()
+    test_pipeline.warmup()
+
+    assert test_pipeline.status['self'] == 'pipeline_ready'
+
+
+def _sequencer_crasher_config(name: str, folder: str) -> dict:
+    return {
+        'version': '0.2.0',
+        'plugins': ['./tests/test_plugins'],
+        'pipeline': {
+            'name': name,
+            'id': name,
+            'folder': f'{folder}/{name}',
+            'nodes': [
+                {
+                    'name': 'source_1',
+                    'type': 'source',
+                    'mark': 'sequencer',
+                    'configuration': {},
+                },
+                {
+                    'name': 'sink_1',
+                    'type': 'sink',
+                    'mark': 'crasher',
+                    'configuration': {},
+                },
+            ],
+            'links': [{'from': 'source_1', 'to': 'sink_1'}],
+        },
+    }
+
+
+def test_pipeline_full_lifecycle_transitions(test_config, wait_for_condition):
+    folder = test_config['test_pipeline_folder']
+    pipeline = jt.components.Pipeline(
+        _sequencer_crasher_config('lifecycle_pipeline', folder)
+    )
+
+    pipeline.warmup()
+    pipeline.start()
+    pipeline.start()  # loopback: no-op, still running
+
+    assert pipeline.status['self'] == 'pipeline_running'
+
+    assert wait_for_condition(
+        lambda: len(pipeline._nodes['sink_1'].messages) > 0
+    ), 'expected sink_1 to receive at least one message'
+
+    with pytest.raises(PipelineAlreadyRunningError):
+        pipeline.warmup()
+
+    pipeline.stop()
+    pipeline.stop()  # loopback: no-op, still stopped
+
+    assert pipeline.status['self'] == 'pipeline_stopped'
+
+    with pytest.raises(PipelineStoppedError):
+        pipeline.start()
+
+    with pytest.raises(PipelineStoppedError):
+        pipeline.warmup()
+
+    pipeline.destroy()
+    pipeline.destroy()  # loopback: no-op, still destroyed
+
+    assert pipeline.status['self'] == 'pipeline_destroyed'
+
+    with pytest.raises(PipelineDestroyedError):
+        pipeline.start()
+
+    with pytest.raises(PipelineDestroyedError):
+        pipeline.stop()
+
+    with pytest.raises(PipelineDestroyedError):
+        pipeline.warmup()
