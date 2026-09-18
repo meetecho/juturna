@@ -179,3 +179,40 @@ full behaviour, per current state:
     **cannot** be started again: calling ``start()`` or ``warmup()`` on it
     raises ``PipelineStoppedError``. If you need to stop a pipeline and later
     restart the same workflow, destroy it and create a new pipe instead.
+
+Concurrent lifecycle calls
+---------------------------
+
+Only one of ``warmup()``/``start()``/``stop()``/``destroy()`` can be in
+flight on a given pipeline at a time. Internally, a transition is *claimed*
+before its actual work starts (instantiating nodes, starting them, sending
+the stop signal to every node, tearing them down), and the pipeline's
+reported ``status`` is only updated once that work has genuinely finished -
+never before, and never optimistically.
+
+This has two consequences:
+
+- ``status`` is always truthful. A slow ``warmup()`` (loading a model,
+  opening a remote connection) keeps reporting ``NEW`` for as long as it
+  actually takes, not ``READY`` from the instant it was called.
+- a lifecycle call that arrives while another one is still being processed
+  on the *same* pipeline raises ``PipelineStateError``'s ``PipelineBusyError``
+  subclass, instead of being evaluated against a status that hasn't caught up
+  with reality yet - which would otherwise let it race against internal
+  state (nodes, DAG) the in-flight transition is still mutating.
+
+``PipelineBusyError`` is a different situation from the semi-idempotent
+no-op described above: a no-op happens when the pipeline has *already
+reached* the target state; ``PipelineBusyError`` happens when it is *in the
+process of reaching* some state, possibly a different one. Concretely: two
+overlapping calls to ``stop()`` on a running pipeline do not both drain and
+signal every node - the second one raises immediately, and the underlying
+work runs exactly once.
+
+.. admonition:: Retrying after PipelineBusyError
+    :class: :NOTE:
+
+    ``PipelineBusyError`` is transient: it means "another operation on this
+    pipeline is still in progress", not "this call is illegal". A caller that
+    receives it should wait (optionally polling ``status``) and retry, rather
+    than treating it like the other lifecycle exceptions.
