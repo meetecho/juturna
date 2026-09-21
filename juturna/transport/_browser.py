@@ -405,7 +405,8 @@ class _BrowserQueue:
                 f'serialized message metadata ({len(meta_json_bytes)} '
                 f"bytes) exceeds this queue's slot capacity "
                 f'({self._max_meta_json_bytes} bytes) - increase '
-                'max_meta_json_bytes on BrowserTransport'
+                'max_meta_json_bytes in the transport of the pipeline: '
+                '{"name": "browser", "max_meta_json_bytes": ...}'
             )
 
         payload_len = getattr(payload_buf, 'nbytes', None)
@@ -417,7 +418,8 @@ class _BrowserQueue:
                 f'serialized message payload ({payload_len} bytes) '
                 f"exceeds this queue's slot capacity "
                 f'({self._max_payload_bytes} bytes) - increase '
-                'max_payload_bytes on BrowserTransport'
+                'max_payload_bytes in the transport of the pipeline: '
+                '{"name": "browser", "max_payload_bytes": ...}'
             )
 
         slot = self._reserve_write(timeout)
