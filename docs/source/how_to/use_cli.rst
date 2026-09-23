@@ -201,43 +201,6 @@ allows pipeline manipulation.
       --log-file LOG_FILE, -L LOG_FILE
                             log file destination
 
-Once the service is running, it exposes the following HTTP endpoints to
-manage pipelines. All lifecycle validation happens inside ``Pipeline``
-itself (see :ref:`explain_pipelines`), so every endpoint below behaves the
-same way regardless of the fact that it is reached over HTTP rather than
-by calling the ``Pipeline``/``PipelineManager`` API directly.
-
-- ``GET /configuration`` - Juturna version and the active runtime constants
-  (queue size, thread join/drain timeouts, telemetry batch size).
-- ``GET /pipelines`` - list every pipeline currently held by the service,
-  with its status.
-- ``POST /pipelines/new`` - create a pipeline from a JSON configuration
-  body, without warming it up or starting it.
-- ``POST /pipelines/deploy`` - create a pipeline and immediately warm it up
-  and start it in one call.
-- ``POST /pipelines/{pipeline_id}/warmup`` - warm up a previously created
-  pipeline.
-- ``POST /pipelines/{pipeline_id}/start`` - start a warmed-up pipeline.
-- ``POST /pipelines/{pipeline_id}/stop`` - stop a running pipeline.
-- ``POST /pipelines/{pipeline_id}/delete`` - destroy a pipeline and remove
-  it from the service; pass ``?wipe=true`` to also delete its folder on
-  disk.
-- ``GET /pipelines/{pipeline_id}/status`` - current status of a pipeline
-  and of each of its nodes.
-- ``GET /pipelines/{pipeline_id}/telemetry`` - content of the pipeline's
-  telemetry file, if telemetry was enabled at warmup.
-
-The same status codes are used across all of the endpoints above:
-
-- ``404`` - the given ``pipeline_id`` does not exist in the service.
-- ``409`` - the requested operation is not legal from the pipeline's
-  current state (e.g. starting a pipeline that hasn't been warmed up yet),
-  or another lifecycle operation is already in progress on it (see
-  :ref:`explain_pipelines`). The response body's ``message`` field carries
-  the same text ``Pipeline`` itself produces for the underlying exception.
-- ``500`` - an unexpected error occurred; check the service logs, since the
-  response body only reports the exception class name.
-
 Remote service
 --------------
 

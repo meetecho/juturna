@@ -100,7 +100,7 @@ Instantiating a pipeline object doesn't really do much. An empty pipeline
 container is created, with all the instructions required to build the actual
 nodes and linking them.
 
-A pipeline object can be in one of five states:
+A pipeline object can be in only three states:
 
 - a ``NEW`` pipeline is freshly created, but the nodes within the graph still
   need to be instantiated;
@@ -108,11 +108,7 @@ A pipeline object can be in one of five states:
   system and external resources required for its functioning - as the state
   name says, this pipeline is ready to go;
 - a ``RUNNING`` pipeline is consuming data sources, processing and sending them,
-  so it working (hepefully) just how it is supposed to;
-- a ``STOPPED`` pipeline was previously running and has been stopped. This is
-  a terminal state: a stopped pipeline **cannot** go back to ``RUNNING``, it
-  can only be destroyed;
-- a ``DESTROYED`` pipeline released all its resources and is no longer usable.
+  so it working (hepefully) just how it is supposed to.
 
 .. image:: ../_static/img/pipeline_lifecycle.svg
    :alt: pipeline
@@ -132,36 +128,17 @@ from ``READY`` to ``RUNNING``. Internally, this calls the start method on every
 node in the pipeline.
 
 ``stop()`` interrupts the pipeline execution, moving it from ``RUNNING`` to
-``STOPPED``. Again, this call is propagated to every node in the pipe.
+``READY``. Again, this call is propagated to every node in the pipe.
 
-``destroy()`` releases every resource held by the pipeline and its nodes,
-moving it to ``DESTROYED`` from any other state (stopping it first if it was
-still ``RUNNING``).
+``destroy()`` can be invoked if any kind of custom memory management should be
+performed by any of its composing nodes.
 
-Pipeline is the sole owner of this validation: whichever layer calls these
-methods (directly, through :class:`PipelineManager`, or through the HTTP
-wrapper) observes the same, deterministic behaviour, and the same exception
-hierarchy (:mod:`juturna.components`) for illegal calls.
+Any call sequence that does not respect the state transitions here discussed
+will generate an exception:
 
-Loopback calls - a method invoked while the pipeline is already in the state
-it targets - are **semi-idempotent**: they are a no-op, logged as a warning,
-rather than an error. This only applies to the exact target state; every other
-call that cannot legally reach that state raises an explicit exception. The
-full behaviour, per current state:
-
-- ``NEW``: ``warmup()`` moves to ``READY``; ``start()`` and ``stop()`` raise
-  (``PipelineNotReadyError`` / ``PipelineNotRunningError``); ``destroy()``
-  moves to ``DESTROYED``.
-- ``READY``: ``warmup()`` is a no-op; ``start()`` moves to ``RUNNING``;
-  ``stop()`` raises ``PipelineNotRunningError``; ``destroy()`` moves to
-  ``DESTROYED``.
-- ``RUNNING``: ``warmup()`` raises ``PipelineAlreadyRunningError``;
-  ``start()`` is a no-op; ``stop()`` moves to ``STOPPED``; ``destroy()``
-  stops the pipeline first, then moves to ``DESTROYED``.
-- ``STOPPED``: ``warmup()`` and ``start()`` raise ``PipelineStoppedError``;
-  ``stop()`` is a no-op; ``destroy()`` moves to ``DESTROYED``.
-- ``DESTROYED``: ``warmup()``, ``start()`` and ``stop()`` raise
-  ``PipelineDestroyedError``; ``destroy()`` is a no-op.
+#. only a new pipe can be warmed up;
+#. only a ready pipe can be started;
+#. a running pipeline cannot be destroyed.
 
 .. admonition:: Warming up and configuring
     :class: :NOTE:
@@ -172,47 +149,11 @@ full behaviour, per current state:
     node implementation (ports, connections), and the ``warmup`` to prepare the
     node internal status for execution.
 
-.. admonition:: Restarting a pipeline is not supported
+.. admonition:: Restarting a pipeline might catch fire (|version|-|release|)
     :class: :ATTENTION:
 
-    A pipeline that has been stopped moves to the ``STOPPED`` state and
-    **cannot** be started again: calling ``start()`` or ``warmup()`` on it
-    raises ``PipelineStoppedError``. If you need to stop a pipeline and later
-    restart the same workflow, destroy it and create a new pipe instead.
-
-Concurrent lifecycle calls
----------------------------
-
-Only one of ``warmup()``/``start()``/``stop()``/``destroy()`` can be in
-flight on a given pipeline at a time. Internally, a transition is *claimed*
-before its actual work starts (instantiating nodes, starting them, sending
-the stop signal to every node, tearing them down), and the pipeline's
-reported ``status`` is only updated once that work has genuinely finished -
-never before, and never optimistically.
-
-This has two consequences:
-
-- ``status`` is always truthful. A slow ``warmup()`` (loading a model,
-  opening a remote connection) keeps reporting ``NEW`` for as long as it
-  actually takes, not ``READY`` from the instant it was called.
-- a lifecycle call that arrives while another one is still being processed
-  on the *same* pipeline raises ``PipelineStateError``'s ``PipelineBusyError``
-  subclass, instead of being evaluated against a status that hasn't caught up
-  with reality yet - which would otherwise let it race against internal
-  state (nodes, DAG) the in-flight transition is still mutating.
-
-``PipelineBusyError`` is a different situation from the semi-idempotent
-no-op described above: a no-op happens when the pipeline has *already
-reached* the target state; ``PipelineBusyError`` happens when it is *in the
-process of reaching* some state, possibly a different one. Concretely: two
-overlapping calls to ``stop()`` on a running pipeline do not both drain and
-signal every node - the second one raises immediately, and the underlying
-work runs exactly once.
-
-.. admonition:: Retrying after PipelineBusyError
-    :class: :NOTE:
-
-    ``PipelineBusyError`` is transient: it means "another operation on this
-    pipeline is still in progress", not "this call is illegal". A caller that
-    receives it should wait (optionally polling ``status``) and retry, rather
-    than treating it like the other lifecycle exceptions.
+    Please be aware that the pipeline lifecycle and state transitions do not
+    currently support restarting a stopped pipeline. When designing your
+    workflow, please assume **pipelines cannot be restarted once stopped, only
+    destroyed**. If you need to stop a pipeline and later restart it, destroy it
+    and create a new pipe instead.
