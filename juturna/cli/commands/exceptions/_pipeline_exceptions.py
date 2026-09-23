@@ -3,18 +3,18 @@
 Collector module for exceptions raised when acting on Pipeline objects.
 
 Illegal lifecycle transitions (warmup/start/stop) are validated and raised by
-Pipeline itself (see juturna.components._exceptions): this module only keeps
+Pipeline itself (see juturna.components.exceptions): this module only keeps
 exceptions specific to the manager/HTTP layer, i.e. concerns Pipeline has no
 notion of (an unknown id in the registry, telemetry not configured).
 """
 
-from juturna.components._exceptions import PipelineStateError
-from juturna.components._exceptions import PipelineNotReadyError
-from juturna.components._exceptions import PipelineNotRunningError
-from juturna.components._exceptions import PipelineAlreadyRunningError
-from juturna.components._exceptions import PipelineStoppedError
-from juturna.components._exceptions import PipelineDestroyedError
-from juturna.components._exceptions import PipelineBusyError
+from juturna.components.exceptions import PipelineStateError
+from juturna.components.exceptions import PipelineNotReadyError
+from juturna.components.exceptions import PipelineNotRunningError
+from juturna.components.exceptions import PipelineAlreadyRunningError
+from juturna.components.exceptions import PipelineStoppedError
+from juturna.components.exceptions import PipelineDestroyedError
+from juturna.components.exceptions import PipelineBusyError
 
 
 class BasePipelineException(Exception):

@@ -20,13 +20,13 @@ from juturna.components._dag import DAG
 from juturna.components._state import State
 from juturna.components._node_builder import _builder
 from juturna.components._telemetry_manager import TelemetryManager
-from juturna.components._exceptions import PipelineStateError
-from juturna.components._exceptions import PipelineNotReadyError
-from juturna.components._exceptions import PipelineNotRunningError
-from juturna.components._exceptions import PipelineAlreadyRunningError
-from juturna.components._exceptions import PipelineStoppedError
-from juturna.components._exceptions import PipelineDestroyedError
-from juturna.components._exceptions import PipelineBusyError
+from juturna.components.exceptions import PipelineStateError
+from juturna.components.exceptions import PipelineNotReadyError
+from juturna.components.exceptions import PipelineNotRunningError
+from juturna.components.exceptions import PipelineAlreadyRunningError
+from juturna.components.exceptions import PipelineStoppedError
+from juturna.components.exceptions import PipelineDestroyedError
+from juturna.components.exceptions import PipelineBusyError
 
 from juturna.transport import TransportBackend
 from juturna.transport import get_transport
