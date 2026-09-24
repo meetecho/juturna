@@ -12,6 +12,7 @@ These utilities are essential for the serialization layer of the Remotizer.
 
 import numpy as np
 import base64
+import json
 import uuid
 import time
 from typing import Any
@@ -346,7 +347,10 @@ def create_envelope(
     envelope.id = id or str(uuid.uuid4())
     envelope.sender = creator
     envelope.pipe_id = pipe_id
-    envelope.state = state
+    # the wire field is a plain string (payloads.proto), not a Struct -
+    # JSON-encode the sanitised state dict rather than assigning it
+    # directly, which raises (protobuf rejects a dict for a string field)
+    envelope.state = json.dumps(to_primitive(state) or {})
     envelope.created_at = time.time()
     envelope.ttl = int(timeout)
     envelope.request_type = request_type
@@ -367,7 +371,7 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
         'id': envelope.id,
         'sender': envelope.sender,
         'pipe_id': envelope.pipe_id,
-        'state': envelope.state,
+        'state': json.loads(envelope.state) if envelope.state else {},
         'response_to': envelope.response_to,
         'ttl': envelope.ttl,
         'request_type': envelope.request_type,
