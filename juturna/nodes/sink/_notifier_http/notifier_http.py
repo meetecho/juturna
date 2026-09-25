@@ -7,14 +7,18 @@ NotifierHTTP
 Transmit message to a HTTP endpoint.
 """
 
-import threading
-
 import requests
 
 from juturna.components import Message
 from juturna.components import Node
 
+from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
+from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 from juturna.payloads import ObjectPayload
+from juturna.transport import Empty
+from juturna.transport import Queue
+from juturna.transport import Event
+from juturna.transport import WorkerHandle
 
 
 class NotifierHTTP(Node[ObjectPayload, None]):
@@ -48,6 +52,12 @@ class NotifierHTTP(Node[ObjectPayload, None]):
         self._timeout = timeout
         self._content_type = content_type
 
+        self._send_queue: Queue = self._transport.new_queue(
+            maxsize=JUTURNA_MAX_QUEUE_SIZE
+        )
+        self._stop_sender_event: Event = self._transport.new_event()
+        self._sender_thread: WorkerHandle | None = None
+
     @property
     def configuration(self) -> dict:
         """Fetch node configuration"""
@@ -59,6 +69,27 @@ class NotifierHTTP(Node[ObjectPayload, None]):
     def warmup(self):
         """Warmup the node"""
         self.logger.info(f'[{self.name}] set to endpoint {self._endpoint}')
+
+        self._sender_thread = self._transport.spawn(
+            target=self._sender_loop,
+            name=f'{self.name}_sender',
+            daemon=True,
+        )
+
+    def start(self):
+        """Start the sender worker"""
+        self._sender_thread.start()
+
+        super().start()
+
+    def stop(self):
+        """Stop the node, then drain and stop the sender worker"""
+        super().stop()
+
+        self._stop_sender_event.set()
+
+        if self._sender_thread:
+            self._sender_thread.join()
 
     def set_on_config(self, prop: str, value: str):
         """Change the node configuration"""
@@ -79,14 +110,22 @@ class NotifierHTTP(Node[ObjectPayload, None]):
         to_send.meta['pipe_id'] = self.pipe_id
         to_send = NotifierHTTP._CNT_CB[self._content_type](to_send)
 
-        t = threading.Thread(
-            name=f'{self.name}_thread',
-            target=self._send_chunk,
-            args=(to_send,),
-            daemon=True,
-        )
+        self._send_queue.put(to_send)
 
-        t.start()
+    def _sender_loop(self):
+        """Drain the send queue and forward each entry to the endpoint"""
+        while True:
+            try:
+                message_cnt = self._send_queue.get(
+                    timeout=JUTURNA_THREAD_JOIN_TIMEOUT
+                )
+            except Empty:
+                if self._stop_sender_event.is_set():
+                    return
+
+                continue
+
+            self._send_chunk(message_cnt)
 
     def _send_chunk(self, message_cnt):
         try:

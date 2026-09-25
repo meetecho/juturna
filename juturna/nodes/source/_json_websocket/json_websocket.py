@@ -8,7 +8,6 @@ Expose a websocket server and fetch input data from it.
 """
 
 import json
-import threading
 
 from websockets.sync.server import serve
 
@@ -18,6 +17,7 @@ from juturna.components import Message
 from juturna.payloads import BytesPayload
 from juturna.payloads import ObjectPayload
 from juturna.payloads import Draft
+from juturna.transport import WorkerHandle
 
 
 class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
@@ -40,16 +40,16 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
         self._rtx_host = rtx_host
         self._rtx_port = rtx_port
 
-        self._thread: threading.Thread | None = None
+        self._thread: WorkerHandle | None = None
         self._server = None
 
     def warmup(self):
         """Prepare node for execution"""
         self._server = serve(self._ws_handler, self._rtx_host, self._rtx_port)
-        self._thread = threading.Thread(
+        self._thread = self._transport.spawn(
             target=self._server.serve_forever,
-            daemon=True,
             name=f'{self.name}_ws',
+            daemon=True,
         )
 
         self.logger.info('ws server created')

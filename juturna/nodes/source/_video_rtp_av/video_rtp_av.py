@@ -9,7 +9,6 @@ Consume RTP video streams using PyAv.
 
 import time
 import pathlib
-import threading
 
 import av
 
@@ -20,6 +19,8 @@ from juturna.components import _resource_broker as rb
 from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 from juturna.names import PixelFormat
 from juturna.payloads import BytesPayload, ImagePayload
+from juturna.transport import Event
+from juturna.transport import WorkerHandle
 
 
 class VideoRtpAv(Node[BytesPayload, ImagePayload]):
@@ -76,8 +77,8 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
 
         self._container = None
         self._sdp_file_path = None
-        self._t = None
-        self._stop_event = threading.Event()
+        self._t: WorkerHandle | None = None
+        self._stop_event: Event = self._transport.new_event()
 
     @Node.configuration.getter
     def configuration(self) -> dict:  # noqa: D102
@@ -96,8 +97,10 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
     def warmup(self):
         """Warmup the node"""
         self._sdp_file_path = self.sdp_descriptor
-        self._t = threading.Thread(
-            target=self._generate_chunks, args=(), daemon=True
+        self._t = self._transport.spawn(
+            target=self._generate_chunks,
+            name=f'{self.name}_rtp',
+            daemon=True,
         )
 
     def start(self):
