@@ -20,7 +20,6 @@ from juturna.components._dag import DAG
 from juturna.components._state import State
 from juturna.components._node_builder import _builder
 from juturna.components._telemetry_manager import TelemetryManager
-from juturna.components.exceptions import PipelineStateError
 from juturna.components.exceptions import PipelineNotReadyError
 from juturna.components.exceptions import PipelineNotRunningError
 from juturna.components.exceptions import PipelineAlreadyRunningError
@@ -30,6 +29,41 @@ from juturna.components.exceptions import PipelineBusyError
 
 from juturna.transport import TransportBackend
 from juturna.transport import get_transport
+
+
+_TRANSITION_RULES: dict[str, dict] = {
+    'warmup': {
+        'illegal': {
+            PipelineStatus.RUNNING: PipelineAlreadyRunningError,
+            PipelineStatus.STOPPED: PipelineStoppedError,
+            PipelineStatus.DESTROYED: PipelineDestroyedError,
+        },
+        'loopback': {PipelineStatus.READY},
+    },
+    'start': {
+        'illegal': {
+            PipelineStatus.NEW: PipelineNotReadyError,
+            PipelineStatus.STOPPED: PipelineStoppedError,
+            PipelineStatus.DESTROYED: PipelineDestroyedError,
+        },
+        'loopback': {PipelineStatus.RUNNING},
+        'messages': {
+            PipelineStatus.NEW: 'pipeline {name} is not ready',
+        },
+    },
+    'stop': {
+        'illegal': {
+            PipelineStatus.NEW: PipelineNotRunningError,
+            PipelineStatus.READY: PipelineNotRunningError,
+            PipelineStatus.DESTROYED: PipelineDestroyedError,
+        },
+        'loopback': {PipelineStatus.STOPPED},
+        'messages': {
+            PipelineStatus.NEW: 'pipeline {name} is not running',
+            PipelineStatus.READY: 'pipeline {name} is not running',
+        },
+    },
+}
 
 
 class Pipeline:
@@ -135,14 +169,7 @@ class Pipeline:
     def DAG(self) -> DAG:
         return self._dag
 
-    def _begin_transition(
-        self,
-        *,
-        op_name: str,
-        illegal: dict[PipelineStatus, type[PipelineStateError]],
-        loopback: set = frozenset(),
-        messages: dict[PipelineStatus, str] | None = None,
-    ) -> bool:
+    def _begin_transition(self, op_name: str, transitions: dict) -> bool:
         """
         Validate and claim the right to run a lifecycle transition.
 
@@ -158,16 +185,15 @@ class Pipeline:
         Parameters
         ----------
         op_name : str
-            Name of the lifecycle operation, used in log/error messages.
-        illegal : dict[PipelineStatus, type[PipelineStateError]]
-            Maps a current status to the exception to raise if the
-            transition is attempted from it.
-        loopback : set, optional
-            Statuses for which the call is a semi-idempotent no-op (already
-            in the target state).
-        messages : dict[PipelineStatus, str], optional
-            Overrides the default exception message for specific current
-            statuses.
+            Name of the lifecycle operation, used in log/error messages and
+            to look up its rules in `transitions`.
+        transitions : dict
+            Static map of lifecycle rules, keyed by operation name. Each
+            entry holds `illegal` (current status -> exception to raise if
+            the transition is attempted from it), `loopback` (statuses for
+            which the call is a semi-idempotent no-op) and `messages`
+            (per-status overrides for the exception message, as a `{name}`
+            template).
 
         Returns
         -------
@@ -177,7 +203,10 @@ class Pipeline:
             when done), False if this was a loopback no-op.
 
         """
-        messages = messages or {}
+        rules = transitions[op_name]
+        illegal = rules['illegal']
+        loopback = rules.get('loopback', frozenset())
+        messages = rules.get('messages', {})
 
         with self._status_lock:
             if self._transitioning:
@@ -198,10 +227,13 @@ class Pipeline:
                 return False
 
             if current in illegal:
-                message = messages.get(
-                    current,
-                    f'pipeline {self.name} cannot {op_name}() from {current}',
-                )
+                if current in messages:
+                    message = messages[current].format(name=self.name)
+                else:
+                    message = (
+                        f'pipeline {self.name} cannot {op_name}() '
+                        f'from {current}'
+                    )
 
                 raise illegal[current](self.name, message)
 
@@ -228,15 +260,7 @@ class Pipeline:
         their required resources. If a node is flagged as to be deployed
         remotely, that node will be replaced with a proc warp node.
         """
-        if not self._begin_transition(
-            op_name='warmup',
-            loopback={PipelineStatus.READY},
-            illegal={
-                PipelineStatus.RUNNING: PipelineAlreadyRunningError,
-                PipelineStatus.STOPPED: PipelineStoppedError,
-                PipelineStatus.DESTROYED: PipelineDestroyedError,
-            },
-        ):
+        if not self._begin_transition('warmup', _TRANSITION_RULES):
             return
 
         try:
@@ -352,18 +376,7 @@ class Pipeline:
         started. This is important to ensure that the data flow is properly
         established and that all nodes are ready to receive data.
         """
-        if not self._begin_transition(
-            op_name='start',
-            loopback={PipelineStatus.RUNNING},
-            illegal={
-                PipelineStatus.NEW: PipelineNotReadyError,
-                PipelineStatus.STOPPED: PipelineStoppedError,
-                PipelineStatus.DESTROYED: PipelineDestroyedError,
-            },
-            messages={
-                PipelineStatus.NEW: f'pipeline {self.name} is not ready',
-            },
-        ):
+        if not self._begin_transition('start', _TRANSITION_RULES):
             return
 
         try:
@@ -407,19 +420,7 @@ class Pipeline:
         stopping signal to each node that will cause them to stop processing
         upcoming data and to propagate the stopping signal to their destinations
         """
-        if not self._begin_transition(
-            op_name='stop',
-            loopback={PipelineStatus.STOPPED},
-            illegal={
-                PipelineStatus.NEW: PipelineNotRunningError,
-                PipelineStatus.READY: PipelineNotRunningError,
-                PipelineStatus.DESTROYED: PipelineDestroyedError,
-            },
-            messages={
-                PipelineStatus.NEW: f'pipeline {self.name} is not running',
-                PipelineStatus.READY: f'pipeline {self.name} is not running',
-            },
-        ):
+        if not self._begin_transition('stop', _TRANSITION_RULES):
             return
 
         try:
