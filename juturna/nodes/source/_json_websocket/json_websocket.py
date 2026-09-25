@@ -96,7 +96,8 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
     def _ws_handler(self, websocket):
         try:
             for raw in websocket:
-                payload = BytesPayload(cnt=raw)
+                cnt = raw.encode() if isinstance(raw, str) else raw
+                payload = BytesPayload(cnt=cnt)
 
                 msg = Message[BytesPayload](creator=self.name, payload=payload)
 
