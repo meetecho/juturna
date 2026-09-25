@@ -12,6 +12,7 @@ import requests
 from juturna.components import Message
 from juturna.components import Node
 
+from juturna.meta import JUTURNA_DRAIN_TIMEOUT
 from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
 from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 from juturna.payloads import ObjectPayload
@@ -89,7 +90,14 @@ class NotifierHTTP(Node[ObjectPayload, None]):
         self._stop_sender_event.set()
 
         if self._sender_thread:
-            self._sender_thread.join()
+            self._sender_thread.join(timeout=JUTURNA_DRAIN_TIMEOUT)
+
+            if self._sender_thread.is_alive():
+                self.logger.warning(
+                    f'sender worker still draining after '
+                    f'{JUTURNA_DRAIN_TIMEOUT}s, '
+                    f'{self._send_queue.qsize()} message(s) may be dropped'
+                )
 
     def set_on_config(self, prop: str, value: str):
         """Change the node configuration"""
