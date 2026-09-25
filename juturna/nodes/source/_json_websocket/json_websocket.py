@@ -8,7 +8,6 @@ Expose a websocket server and fetch input data from it.
 """
 
 import json
-import queue
 import threading
 
 from websockets.sync.server import serve
@@ -41,7 +40,6 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
         self._rtx_host = rtx_host
         self._rtx_port = rtx_port
 
-        self._queue: queue.Queue[Message[ObjectPayload]] = queue.Queue()
         self._thread: threading.Thread | None = None
         self._server = None
 
@@ -57,13 +55,14 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
         self.logger.info('ws server created')
 
     def start(self):
-        """Start server thread and set source"""
-        self.set_source(self._queue.get)
+        """Start server thread"""
         self._thread.start()
 
         super().start()
 
     def stop(self):  # noqa: D102
+        super().stop()
+
         if self._server:
             self._server.shutdown()
         if self._thread:
@@ -101,6 +100,6 @@ class JsonWebsocket(Node[BytesPayload, ObjectPayload]):
 
                 msg = Message[BytesPayload](creator=self.name, payload=payload)
 
-                self._queue.put(msg)
+                self.put(msg)
         except Exception as exc:
             self.logger.warning('ws handler died: %s', exc)
