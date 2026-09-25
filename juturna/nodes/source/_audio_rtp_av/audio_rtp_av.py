@@ -146,7 +146,8 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
     def stop(self):
         """Stop the node"""
         self._stop_event.set()
-        self._t.join()
+        if self._t:
+            self._t.join()
         super().stop()
 
     def update(self, message: Message[AudioPayload], **kwargs):
