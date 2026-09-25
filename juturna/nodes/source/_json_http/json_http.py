@@ -106,10 +106,9 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
         """Stop the node"""
         super().stop()
 
-        if self._httpd:
-            self._httpd.shutdown()
-
         if self._thread:
+            # shutdown() blocks forever if serve_forever() never ran
+            self._httpd.shutdown()
             self._thread.join(timeout=2)
 
     def destroy(self) -> None:
