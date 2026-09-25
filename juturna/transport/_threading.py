@@ -35,7 +35,7 @@ class _ThreadQueue:
     def full(self) -> bool:
         return self._queue.full()
 
-    def qsize(self) -> bool:
+    def qsize(self) -> int:
         return self._queue.qsize()
 
 
