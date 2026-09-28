@@ -55,7 +55,7 @@ class Buffer:
                 and self._out_queue.empty()
             )
 
-    def _consume(self, marks: dict[str, list[int]]):
+    def _consume(self, marks: dict[str, list[int]], flush: bool = False):
         """
         Consume sent data
 
@@ -68,8 +68,23 @@ class Buffer:
         ----------
         marks: dict[str, list[int]]
             A dictionary of indexes of messages to send for every source.
+        flush: bool
+            When True, return all data currently in the buffer.
 
         """
+        if flush:
+            to_send = [m for src in self._data.values() for m in src]
+            to_send = (
+                to_send[0]
+                if len(to_send) == 1
+                else Message[Batch](
+                    creator=f'{self._creator}_sync',
+                    payload=Batch(messages=tuple(to_send)),
+                )
+            )
+
+            return to_send
+
         to_send = list()
 
         for mark in marks:

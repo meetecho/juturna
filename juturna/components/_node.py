@@ -2,6 +2,7 @@ import pathlib
 import inspect
 import string
 import time
+import contextlib
 
 from collections.abc import Callable
 
@@ -357,10 +358,15 @@ class Node[T_Input, T_Output]:
             return
 
         self._stop_source_event.set()
-        self._stop_worker_event.set()
-        self._stop_update_event.set()
+        self._source_thread.join()
 
-        self.join()
+        self._stop_worker_event.set()
+        self._worker_thread.join()
+
+        self._stop_update_event.set()
+        self._update_thread.join()
+
+        # self.join()
 
         self._worker_thread = None
         self._source_thread = None
@@ -369,23 +375,23 @@ class Node[T_Input, T_Output]:
 
         self.logger.info('node stopped')
 
-    def join(self):
-        """
-        Wait for all internal threads to terminate.
-        This method should be called after stop() to ensure the node has
-        fully shut down before its resources are released.
-        """
-        for _t in [
-            self._source_thread,
-            self._worker_thread,
-            self._update_thread,
-        ]:
-            if (
-                _t is not None
-                and _t.is_alive()
-                and not self._transport.is_current(_t)
-            ):
-                _t.join(timeout=jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT)
+    # def join(self):
+    #     """
+    #     Wait for all internal threads to terminate.
+    #     This method should be called after stop() to ensure the node has
+    #     fully shut down before its resources are released.
+    #     """
+    #     for _t in [
+    #         self._source_thread,
+    #         self._worker_thread,
+    #         self._update_thread,
+    #     ]:
+    #         if (
+    #             _t is not None
+    #             and _t.is_alive()
+    #             and not self._transport.is_current(_t)
+    #         ):
+    #             _t.join(timeout=jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT)
 
     def configure(self): ...
 
@@ -421,6 +427,12 @@ class Node[T_Input, T_Output]:
                     exc_info=True,
                 )
 
+        # stop event is set: empty queue and send to buffer all residual
+        # messages
+        while not self._queue.empty():
+            with contextlib.suppress(jt.transport.Empty):
+                self._buffer.put(self._queue.get_nowait())
+
     def _update(self):
         while not self._stop_update_event.is_set():
             try:
@@ -443,6 +455,20 @@ class Node[T_Input, T_Output]:
                     f'for message id {getattr(batch, "id", "?")}',
                     exc_info=True,
                 )
+
+        # update stop event set: empty buffer (both data container and queue)
+        while not self._buffer._out_queue.empty():
+            with contextlib.suppress(jt.transport.Empty):
+                last_batch = self._buffer.get(
+                    timeout=jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT
+                )
+
+                self.update(last_batch, state=self._state)
+
+        last_data = self._buffer._consume(None, True)
+
+        if last_data:
+            self.update(last_data, state=self._state)
 
     def _source(self):
         while not self._stop_source_event.is_set():
