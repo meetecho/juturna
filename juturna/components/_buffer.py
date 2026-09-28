@@ -26,7 +26,6 @@ class Buffer:
         self._data_lock = self._transport.new_lock()
         self._synchroniser: Callable = synchroniser
 
-        # out queue can be built based on the synchronisation policy
         self._out_queue = self._transport.new_queue(
             maxsize=JUTURNA_MAX_QUEUE_SIZE
         )
@@ -50,7 +49,11 @@ class Buffer:
             self._consume(next_batch)
 
     def empty(self) -> bool:
-        return all(map(lambda k: len(self._data[k]) == 0, self._data))
+        with self._data_lock:
+            return (
+                all(len(v) == 0 for v in self._data.values())
+                and self._out_queue.empty()
+            )
 
     def _consume(self, marks: dict[str, list[int]]):
         """

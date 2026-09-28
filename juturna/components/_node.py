@@ -7,28 +7,17 @@ from collections.abc import Callable
 
 from typing import Any
 
+import juturna as jt
+
 from juturna.components import Message
-from juturna.payloads import ControlPayload
-from juturna.payloads import ControlSignal
 
 from juturna.names import ComponentStatus
 from juturna.utils.log_utils import jt_logger
-
-from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
-from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
-from juturna.meta import JUTURNA_TELEMETRY_BATCH_SIZE
-from juturna.meta import JUTURNA_DRAIN_TIMEOUT
 
 from juturna.components._buffer import Buffer
 from juturna.components._state import State
 from juturna.components._telemetry_manager import TelemetryManager
 from juturna.components._synchronisers import _SYNCHRONISERS
-
-from juturna.transport import Empty
-from juturna.transport import Lock
-from juturna.transport import ThreadingTransport
-from juturna.transport import TransportBackend
-from juturna.transport import WorkerHandle
 
 
 class Node[T_Input, T_Output]:
@@ -43,7 +32,7 @@ class Node[T_Input, T_Output]:
         node_name: str = '',
         pipe_name: str = '',
         synchroniser: Callable | None = None,
-        transport: TransportBackend | None = None,
+        transport: jt.transport.TransportBackend | None = None,
     ):
         """
         Parameters
@@ -77,12 +66,16 @@ class Node[T_Input, T_Output]:
         self._status: ComponentStatus | None = None
         self._state: State | None = None
 
-        self._transport: TransportBackend = transport or ThreadingTransport()
+        self._transport: jt.transport.TransportBackend = (
+            transport or jt.transport.ThreadingTransport()
+        )
 
-        self._queue = self._transport.new_queue(maxsize=JUTURNA_MAX_QUEUE_SIZE)
-        self._worker_thread: WorkerHandle | None = None
-        self._source_thread: WorkerHandle | None = None
-        self._update_thread: WorkerHandle | None = None
+        self._queue = self._transport.new_queue(
+            maxsize=jt.meta.JUTURNA_MAX_QUEUE_SIZE
+        )
+        self._worker_thread: jt.transport.WorkerHandle | None = None
+        self._source_thread: jt.transport.WorkerHandle | None = None
+        self._update_thread: jt.transport.WorkerHandle | None = None
 
         self._stop_worker_event = self._transport.new_event()
         self._stop_source_event = self._transport.new_event()
@@ -92,11 +85,6 @@ class Node[T_Input, T_Output]:
         self._source_failures = 0
         self._worker_failures = 0
         self._last_failure_at = None
-
-        self._draining = self._transport.new_event()
-
-        self._pending_updates = 0
-        self._pending_condition = self._transport.new_condition()
 
         self._suspended = False
         self._auto_dump = False
@@ -115,7 +103,7 @@ class Node[T_Input, T_Output]:
 
         self._telemetry_buffer = list()
         self._telemetry_manager: TelemetryManager | None = None
-        self._telemetry_lock: Lock = self._transport.new_lock()
+        self._telemetry_lock: jt.transport.Lock = self._transport.new_lock()
 
     def __del__(self): ...
 
@@ -168,11 +156,7 @@ class Node[T_Input, T_Output]:
     def link_state(self, state: State):
         self._state = state
 
-    def put(self, message: Message | ControlSignal):
-        if self._draining.is_set():
-            self.logger.debug('message received while draining, discarding...')
-
-            return
+    def put(self, message: Message):
         self._queue.put(message)
 
     def compile_template(self, template_name: str, arguments: dict) -> str:
@@ -298,7 +282,7 @@ class Node[T_Input, T_Output]:
     def clear_buffer(self):
         self._buffer.flush()
 
-    def transmit(self, message: Message[T_Output] | ControlSignal):
+    def transmit(self, message: Message[T_Output]):
         """
         Transmit a message. This method is used to send data from the node to
         its destinations. Messages are frozen before transmission, so that
@@ -331,7 +315,6 @@ class Node[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the node is started correctly.
         """
-        self._draining.clear()
         if self._worker_thread is None:
             self._worker_thread = self._transport.spawn(
                 target=self._worker,
@@ -373,11 +356,7 @@ class Node[T_Input, T_Output]:
         if self._status == ComponentStatus.STOPPED:
             return
 
-        self._draining.set()
         self._stop_source_event.set()
-
-        self._drain(timeout=JUTURNA_DRAIN_TIMEOUT)
-
         self._stop_worker_event.set()
         self._stop_update_event.set()
 
@@ -396,9 +375,6 @@ class Node[T_Input, T_Output]:
         This method should be called after stop() to ensure the node has
         fully shut down before its resources are released.
         """
-        with self._pending_condition:
-            self._pending_condition.wait_for(lambda: self._pending_updates == 0)
-
         for _t in [
             self._source_thread,
             self._worker_thread,
@@ -409,7 +385,7 @@ class Node[T_Input, T_Output]:
                 and _t.is_alive()
                 and not self._transport.is_current(_t)
             ):
-                _t.join(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
+                _t.join(timeout=jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT)
 
     def configure(self): ...
 
@@ -421,28 +397,16 @@ class Node[T_Input, T_Output]:
 
     def destroy(self): ...
 
-    def _handle_control(self, message: Message):
-        _control_thread = self._transport.spawn(
-            target=lambda: self._control(message),
-            name=f'_control_{self.name}',
-            daemon=True,
-        )
-        _control_thread.start()
-
     def _worker(self):
         while not self._stop_worker_event.is_set():
             try:
-                message = self._queue.get(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
-            except Empty:
+                message = self._queue.get(
+                    timeout=jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT
+                )
+            except jt.transport.Empty:
                 continue
 
             try:
-                if self._suspended and not isinstance(
-                    message.payload, ControlPayload
-                ):
-                    self.transmit(message)
-                    continue
-
                 self._buffer.put(message)
 
                 if isinstance(message, Message):
@@ -460,24 +424,14 @@ class Node[T_Input, T_Output]:
     def _update(self):
         while not self._stop_update_event.is_set():
             try:
-                batch = self._buffer.get(timeout=JUTURNA_THREAD_JOIN_TIMEOUT)
-            except Empty:
-                continue
-
-            if isinstance(batch, Message) and isinstance(
-                batch.payload, ControlPayload
-            ):
-                self._handle_control(batch)
-
-                if batch.payload.signal < 0:
-                    break
-
+                batch = self._buffer.get(
+                    timeout=jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT
+                )
+            except jt.transport.Empty:
                 continue
 
             self._last_data_source_evt_id = batch.id
 
-            with self._pending_condition:
-                self._pending_updates += 1
             try:
                 self.update(batch, state=self._state)
             except Exception:
@@ -489,12 +443,6 @@ class Node[T_Input, T_Output]:
                     f'for message id {getattr(batch, "id", "?")}',
                     exc_info=True,
                 )
-            finally:
-                with self._pending_condition:
-                    self._pending_updates -= 1
-
-                    if self._pending_updates == 0:
-                        self._pending_condition.notify_all()
 
     def _source(self):
         while not self._stop_source_event.is_set():
@@ -514,15 +462,6 @@ class Node[T_Input, T_Output]:
 
                 continue
 
-            if (
-                isinstance(message.payload, ControlPayload)
-                and message.payload.signal < 0
-            ):
-                self._stop_source_event.set()
-                self.put(message)
-
-                continue
-
             if self._stop_source_event.is_set():
                 return
 
@@ -530,53 +469,6 @@ class Node[T_Input, T_Output]:
                 time.sleep(self._source_sleep)
 
             self.put(message)
-
-    def _drain(self, timeout: float):
-        deadline = time.monotonic() + timeout
-
-        while time.monotonic() < deadline:
-            if (
-                self._queue.empty()
-                and self._buffer.empty()
-                and self._pending_updates == 0
-            ):
-                return
-
-            time.sleep(0.05)
-
-        self.logger.warning(
-            f'drain timed out with {self._queue.qsize()} queued messages'
-        )
-
-    def _control(self, message: Message):
-        if message.payload.signal < 0:
-            self.stop()
-
-        match message.payload.signal:
-            case ControlSignal.STOP_PROPAGATE:
-                self.logger.warning(
-                    'the stop propagate signal is deprecated, use STOP instead'
-                )
-                self.transmit(message)
-                return
-            case ControlSignal.STOP:
-                return
-            case ControlSignal.START:
-                self.start()
-
-                return
-            case ControlSignal.SUSPEND:
-                self._suspended = True
-                self.logger.info('node suspended')
-
-                return
-            case ControlSignal.RESUME:
-                self._suspended = False
-                self.logger.info('node resumed')
-
-                return
-            case None:
-                return
 
     def _rec_telemetry(self, message: Message, event: str):
         if self._telemetry_manager is None:
@@ -595,7 +487,10 @@ class Node[T_Input, T_Output]:
         with self._telemetry_lock:
             self._telemetry_buffer.append(telemetry_entry)
 
-            if len(self._telemetry_buffer) < JUTURNA_TELEMETRY_BATCH_SIZE:
+            if (
+                len(self._telemetry_buffer)
+                < jt.meta.JUTURNA_TELEMETRY_BATCH_SIZE
+            ):
                 return
 
             batch, self._telemetry_buffer = self._telemetry_buffer, list()
