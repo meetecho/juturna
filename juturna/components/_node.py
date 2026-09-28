@@ -84,16 +84,16 @@ class Node[T_Input, T_Output]:
         self._source_thread: WorkerHandle | None = None
         self._update_thread: WorkerHandle | None = None
 
-        self._stop_worker_event = self._transport.new_signal()
-        self._stop_source_event = self._transport.new_signal()
-        self._stop_update_event = self._transport.new_signal()
+        self._stop_worker_event = self._transport.new_event()
+        self._stop_source_event = self._transport.new_event()
+        self._stop_update_event = self._transport.new_event()
 
         self._update_failures = 0
         self._source_failures = 0
         self._worker_failures = 0
         self._last_failure_at = None
 
-        self._draining = self._transport.new_signal()
+        self._draining = self._transport.new_event()
 
         self._pending_updates = 0
         self._pending_condition = self._transport.new_condition()
