@@ -145,7 +145,7 @@ class Pipeline:
             self._telemetry = True
             self._telemetry_file = pathlib.Path(self.pipe_path, _tele_file)
             self._telemetry_manager = TelemetryManager(
-                str(self._telemetry_file)
+                str(self._telemetry_file), transport=self._transport
             )
 
         nodes = self._raw_config['pipeline']['nodes']
@@ -299,6 +299,9 @@ class Pipeline:
                 self._nodes[node_name].join()
 
         if self._telemetry:
+            for node in self._nodes.values():
+                node.flush_telemetry()
+
             self._telemetry_manager.stop()
 
         self._status = PipelineStatus.READY
