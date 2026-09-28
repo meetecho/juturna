@@ -40,7 +40,7 @@ class _ThreadQueue:
 
 
 class _ThreadEvent:
-    """Signal primitive backed by threading.Event."""
+    """Event primitive backed by threading.Event."""
 
     def __init__(self):
         self._event = threading.Event()
