@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from contextlib import AbstractContextManager
 from typing import Any
 from typing import Protocol
 
@@ -76,7 +77,32 @@ class TransportBackend(Protocol):
     buffers only depend on this interface, never on the concrete primitives.
     """
 
-    def new_queue(self, maxsize: int = 0) -> Queue: ...
+    def new_queue(self, maxsize: int = 0, local: bool = False) -> Queue:
+        """
+        Build a queue. ``local`` is a hint: the queue is only used within the
+        execution context that creates it (the messages never go to another
+        worker), so a backend may use a cheaper implementation. A backend whose
+        queues are all local anyway ignores it.
+        """
+        ...
+
+    def node_scope(self, shared: bool) -> AbstractContextManager:
+        """
+        Return a context manager around the construction of a node. ``shared``
+        tells whether the node is written to from another worker, which a
+        backend may use to build the queues of the node accordingly. A backend
+        with a single kind of queue returns a no-op context manager.
+        """
+        ...
+
+    def remote_destination(self, node_name: str) -> Any:
+        """
+        Return the object that stands for a node of another worker: anything
+        with a ``put(message)`` method, to be used as a destination of the
+        local nodes. Raises ``ValueError`` if the backend cannot reach other
+        workers.
+        """
+        ...
 
     def new_event(self) -> Event: ...
 

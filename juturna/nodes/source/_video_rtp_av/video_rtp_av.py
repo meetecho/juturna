@@ -9,7 +9,6 @@ Consume RTP video streams using PyAv.
 
 import time
 import pathlib
-import threading
 
 import av
 
@@ -17,8 +16,11 @@ from juturna.components import Node
 from juturna.components import Message
 
 from juturna.components import _resource_broker as rb
+from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
 from juturna.names import PixelFormat
 from juturna.payloads import BytesPayload, ImagePayload
+from juturna.transport import Signal
+from juturna.transport import WorkerHandle
 
 
 class VideoRtpAv(Node[BytesPayload, ImagePayload]):
@@ -75,8 +77,8 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
 
         self._container = None
         self._sdp_file_path = None
-        self._t = None
-        self._stop_event = threading.Event()
+        self._t: WorkerHandle | None = None
+        self._stop_event: Signal = self._transport.new_signal()
 
     @Node.configuration.getter
     def configuration(self) -> dict:  # noqa: D102
@@ -95,8 +97,10 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
     def warmup(self):
         """Warmup the node"""
         self._sdp_file_path = self.sdp_descriptor
-        self._t = threading.Thread(
-            target=self._generate_chunks, args=(), daemon=True
+        self._t = self._transport.spawn(
+            target=self._generate_chunks,
+            name=f'{self.name}_rtp',
+            daemon=True,
         )
 
     def start(self):
@@ -126,7 +130,9 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
 
         try:
             self._container = av.open(
-                str(self.sdp_descriptor), options=self._OPTIONS
+                str(self.sdp_descriptor),
+                options=self._OPTIONS,
+                timeout=(None, JUTURNA_THREAD_JOIN_TIMEOUT),
             )
             self._stream = self._container.streams.video[0]
             self._stream.thread_type = 'AUTO'
@@ -140,8 +146,11 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
 
                 try:
                     yield from packet.decode()
-                except Exception:
+                except Exception as e:
+                    self.logger.warning(f'error decoding packet: {e}')
                     continue
+        except av.error.ExitError:
+            raise
         except Exception as e:
             self.logger.error(f'stream error: {e}')
 
@@ -171,6 +180,10 @@ class VideoRtpAv(Node[BytesPayload, ImagePayload]):
                     )
 
                     self.put(to_send)
+            except av.error.ExitError:
+                self.logger.debug(
+                    f'demux terminate while reading {self._stop_event.is_set()}'
+                )
             except Exception as e:
                 if not self._stop_event.is_set():
                     self.logger.info(f'source unavailable ({e}), retrying...')

@@ -72,6 +72,26 @@ To simplify things, three meta-groups are also included:
 - ``dev_full`` installs ``doc``, ``dev``, ``lint``, and ``test``
 - ``all`` installs ``full`` and ``dev_full``
 
+Pyodide
+-------
+
+Juturna can run in a browser tab, inside a Pyodide Worker (Pyodide 314 or
+later, Python 3.14). Some core dependencies have no Pyodide build (``av``
+above all), so the library has to be installed without resolving them, after
+installing the ones the browser needs:
+
+.. code-block:: python
+
+    import micropip
+
+    await micropip.install(['numpy', 'websockets'])
+    await micropip.install('<url of the juturna wheel>', deps=False)
+
+Importing ``juturna`` does not load ``juturna.nodes``, ``juturna.hub`` and
+``juturna.remotizer`` until they are used, so ``av``, ``requests`` and
+``grpc`` are not needed to build and run a pipeline with the browser
+transport.
+
 Documentation building
 ----------------------
 

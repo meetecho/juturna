@@ -7,9 +7,9 @@ AudioRTP
 Read an incoming RTO audio stream.
 """
 
+import functools
 import pathlib
 import subprocess
-import threading
 import time
 import contextlib
 
@@ -21,6 +21,8 @@ from juturna.components import _resource_broker as rb
 
 from juturna.payloads import BytesPayload, AudioPayload
 from juturna.names import ComponentStatus
+from juturna.transport import Lock
+from juturna.transport import WorkerHandle
 
 
 class AudioRTP(Node[BytesPayload, AudioPayload]):
@@ -91,12 +93,12 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         self._sdp_file_path = None
         self._ffmpeg_proc = None
         self._ffmpeg_launcher_path = None
-        self._monitor_thread = None
+        self._monitor_thread: WorkerHandle | None = None
 
         # avoid sleep and race conditions during restart using a flag and a lock
         self._stop_requested = False
         self._subprocess_running = False
-        self._restart_lock = threading.Lock()
+        self._restart_lock: Lock = self._transport.new_lock()
 
     def configure(self):
         """Configure the node"""
@@ -367,9 +369,9 @@ class AudioRTP(Node[BytesPayload, AudioPayload]):
         self._subprocess_running = True
         self.logger.debug('ffmpeg process started, launching monitor thread...')
 
-        self._monitor_thread = threading.Thread(
-            target=self.monitor_process,
-            args=(self._ffmpeg_proc,),
+        self._monitor_thread = self._transport.spawn(
+            target=functools.partial(self.monitor_process, self._ffmpeg_proc),
+            name=f'{self.name}_monitor',
             daemon=True,  # ensure thread exits when main program exits
         )
         self._monitor_thread.start()

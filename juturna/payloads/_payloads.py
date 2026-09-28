@@ -127,6 +127,10 @@ class Batch(BasePayload):
         return [msg.to_dict() for msg in obj.messages]
 
 
+def _unpickle_object_payload(cls: type, items: dict) -> 'ObjectPayload':
+    return cls(**items)
+
+
 @dataclass(frozen=True)
 class ObjectPayload(dict, BasePayload):
     def __init__(self, **kwargs):
@@ -148,6 +152,12 @@ class ObjectPayload(dict, BasePayload):
         raise TypeError(
             f"'{type(self).__name__}' object does not support item deletion"
         )
+
+    def __reduce__(self):
+        # dict's default pickling reconstructs the instance by calling
+        # __setitem__ for each item, which this class always rejects;
+        # route through __init__ instead, like __deepcopy__ already does.
+        return (_unpickle_object_payload, (self.__class__, dict(self)))
 
     def __deepcopy__(self, memo) -> Self:
         cls = self.__class__

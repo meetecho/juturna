@@ -174,7 +174,8 @@ class SummarizerOllama(Node[ObjectPayload, ObjectPayload]):
         if isinstance(self._format, dict):
             try:
                 response_dict = json.loads(response['message']['content'])
-            except Exception:
+            except Exception as e:
+                self.logger.warning(f'bad JSON response from ollama: {e}')
                 response_dict = dict()
 
             # TODO: this depends on the format provided in the setup file!

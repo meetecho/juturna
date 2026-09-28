@@ -8,7 +8,6 @@ AudioRtpAv
 Consume RTP audio streams using PyAv.
 """
 
-import threading
 import pathlib
 
 import av
@@ -20,6 +19,8 @@ from juturna.components import Message
 from juturna.payloads import AudioPayload
 from juturna.components import _resource_broker as rb
 from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
+from juturna.transport import Signal
+from juturna.transport import WorkerHandle
 
 FORMAT_DTYPES = {
     'dbl': np.float64,
@@ -108,8 +109,8 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
         self._resampler = None
         self._sdp_file_path = None
 
-        self._t = None
-        self._stop_event = threading.Event()
+        self._t: WorkerHandle | None = None
+        self._stop_event: Signal = self._transport.new_signal()
 
         self._abs_recv = 0
         self._elapsed = 0.0
@@ -134,8 +135,10 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
     def warmup(self):
         """Warmup the node"""
         self._sdp_file_path = self.sdp_descriptor
-        self._t = threading.Thread(
-            target=self._generate_chunks, args=(), daemon=True
+        self._t = self._transport.spawn(
+            target=self._generate_chunks,
+            name=f'{self.name}_rtp',
+            daemon=True,
         )
 
     def start(self):
@@ -146,7 +149,8 @@ class AudioRtpAv(Node[AudioPayload, AudioPayload]):
     def stop(self):
         """Stop the node"""
         self._stop_event.set()
-        self._t.join()
+        if self._t:
+            self._t.join()
         super().stop()
 
     def update(self, message: Message[AudioPayload], **kwargs):
