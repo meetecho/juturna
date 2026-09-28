@@ -1,28 +1,33 @@
-import threading
-import queue
 import csv
 
 from juturna.utils.log_utils import jt_logger
 from juturna.payloads import ControlSignal
+from juturna.transport import Signal
+from juturna.transport import ThreadingTransport
+from juturna.transport import TransportBackend
+from juturna.transport import WorkerHandle
 
 
 class TelemetryManager:
-    def __init__(self, target: str):
+    def __init__(self, target: str, transport: TransportBackend | None = None):
         self._target = target
+        self._transport: TransportBackend = transport or ThreadingTransport()
 
-        self._queue = queue.SimpleQueue()
-        self._evt = threading.Event()
+        self._queue = self._transport.new_queue()
+        self._evt: Signal = self._transport.new_signal()
         self._logger = jt_logger('telemetry')
 
-        self._thread: threading.Thread | None = None
+        self._thread: WorkerHandle | None = None
 
     def start(self):
         if self._thread is not None:
             self._logger.info('telemetry already running')
 
-        self._thread = threading.Thread(
+            return
+
+        self._thread = self._transport.spawn(
             target=self._read_telemetry,
-            args=(),
+            name='telemetry',
             daemon=True,
         )
 
@@ -42,15 +47,13 @@ class TelemetryManager:
     def _read_telemetry(self):
         self._logger.info(f'telemetry started, writing on {self._target}')
 
-        _telemetry_lock = threading.Lock()
-
         with open(self._target, 'a', newline='', buffering=1) as f:
             _writer = csv.writer(f)
             _writer.writerow(
                 ['ts', 'evt', 'node', 'origin', 'msg_id', 'src_id', 'size']
             )
 
-            while self._evt:
+            while not self._evt.is_set():
                 telemetry_batch = self._queue.get()
 
                 if telemetry_batch == ControlSignal.STOP:
@@ -61,5 +64,4 @@ class TelemetryManager:
                 for entry in telemetry_batch:
                     ts, evt_type, node, origin, msg_id, src_id, size = entry
 
-                    with _telemetry_lock:
-                        _writer.writerow(entry)
+                    _writer.writerow(entry)

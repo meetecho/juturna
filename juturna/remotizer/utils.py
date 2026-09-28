@@ -346,7 +346,7 @@ def create_envelope(
     envelope.id = id or str(uuid.uuid4())
     envelope.sender = creator
     envelope.pipe_id = pipe_id
-    envelope.state = state
+    envelope.state.update(sanitize_struct_for_proto(state))
     envelope.created_at = time.time()
     envelope.ttl = int(timeout)
     envelope.request_type = request_type
@@ -367,7 +367,7 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
         'id': envelope.id,
         'sender': envelope.sender,
         'pipe_id': envelope.pipe_id,
-        'state': envelope.state,
+        'state': MessageToDict(envelope.state),
         'response_to': envelope.response_to,
         'ttl': envelope.ttl,
         'request_type': envelope.request_type,

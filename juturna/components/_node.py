@@ -25,6 +25,7 @@ from juturna.components._telemetry_manager import TelemetryManager
 from juturna.components._synchronisers import _SYNCHRONISERS
 
 from juturna.transport import Empty
+from juturna.transport import Lock
 from juturna.transport import ThreadingTransport
 from juturna.transport import TransportBackend
 from juturna.transport import WorkerHandle
@@ -114,6 +115,7 @@ class Node[T_Input, T_Output]:
 
         self._telemetry_buffer = list()
         self._telemetry_manager: TelemetryManager | None = None
+        self._telemetry_lock: Lock = self._transport.new_lock()
 
     def __del__(self): ...
 
@@ -590,8 +592,25 @@ class Node[T_Input, T_Output]:
             getattr(message.payload, 'size_bytes', 0),
         )
 
-        self._telemetry_buffer.append(telemetry_entry)
+        with self._telemetry_lock:
+            self._telemetry_buffer.append(telemetry_entry)
 
-        if len(self._telemetry_buffer) >= JUTURNA_TELEMETRY_BATCH_SIZE:
-            self._telemetry_manager.record_telemetry(self._telemetry_buffer)
-            self._telemetry_buffer = list()
+            if len(self._telemetry_buffer) < JUTURNA_TELEMETRY_BATCH_SIZE:
+                return
+
+            batch, self._telemetry_buffer = self._telemetry_buffer, list()
+
+        self._telemetry_manager.record_telemetry(batch)
+
+    def flush_telemetry(self):
+        """Send any buffered telemetry entries below the batch size"""
+        if self._telemetry_manager is None:
+            return
+
+        with self._telemetry_lock:
+            if not self._telemetry_buffer:
+                return
+
+            batch, self._telemetry_buffer = self._telemetry_buffer, list()
+
+        self._telemetry_manager.record_telemetry(batch)
