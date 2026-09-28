@@ -39,7 +39,7 @@ class _ThreadQueue:
         return self._queue.qsize()
 
 
-class _ThreadSignal:
+class _ThreadEvent:
     """Signal primitive backed by threading.Event."""
 
     def __init__(self):
@@ -126,8 +126,8 @@ class ThreadingTransport:
     def new_queue(self, maxsize: int = 0) -> _ThreadQueue:
         return _ThreadQueue(maxsize)
 
-    def new_signal(self) -> _ThreadSignal:
-        return _ThreadSignal()
+    def new_event(self) -> _ThreadEvent:
+        return _ThreadEvent()
 
     def new_lock(self) -> _ThreadLock:
         return _ThreadLock()
