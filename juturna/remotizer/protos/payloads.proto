@@ -147,7 +147,7 @@ message ProtoEnvelope {
   string pipe_id = 5;
 
   // Node state object
-  string state = 6;
+  google.protobuf.Struct state = 6;
 
   // Response-to field: ID of the envelope this is responding to
   // Enables explicit request/response tracking
