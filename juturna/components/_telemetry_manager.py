@@ -2,7 +2,7 @@ import csv
 
 from juturna.utils.log_utils import jt_logger
 from juturna.payloads import ControlSignal
-from juturna.transport import Signal
+from juturna.transport import Event
 from juturna.transport import ThreadingTransport
 from juturna.transport import TransportBackend
 from juturna.transport import WorkerHandle
@@ -14,7 +14,7 @@ class TelemetryManager:
         self._transport: TransportBackend = transport or ThreadingTransport()
 
         self._queue = self._transport.new_queue()
-        self._evt: Signal = self._transport.new_signal()
+        self._evt: Event = self._transport.new_event()
         self._logger = jt_logger('telemetry')
 
         self._thread: WorkerHandle | None = None
