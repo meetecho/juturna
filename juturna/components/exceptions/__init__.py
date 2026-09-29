@@ -1,7 +1,5 @@
 # noqa: D104
-from ._pipeline_exceptions import (
-    InvalidPipelineIdException,
-    TelemetryNotEnabledException,
+from juturna.components.exceptions._pipeline_exceptions import (
     PipelineStateError,
     PipelineNotReadyError,
     PipelineNotRunningError,
@@ -11,14 +9,7 @@ from ._pipeline_exceptions import (
     PipelineBusyError,
 )
 
-from ._handlers_provider import (
-    register_pipeline_exception_handlers,
-    register_generic_exception_handler,
-)
-
 __all__ = [
-    'InvalidPipelineIdException',
-    'TelemetryNotEnabledException',
     'PipelineStateError',
     'PipelineNotReadyError',
     'PipelineNotRunningError',
@@ -26,6 +17,4 @@ __all__ = [
     'PipelineStoppedError',
     'PipelineDestroyedError',
     'PipelineBusyError',
-    'register_pipeline_exception_handlers',
-    'register_generic_exception_handler',
 ]
