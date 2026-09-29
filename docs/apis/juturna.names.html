@@ -270,11 +270,14 @@
 <li class="toctree-l1"><a class="reference internal" href="explore.html">Explore the APIs</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="modules.html">juturna</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of juturna</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2 current has-children"><a class="reference internal" href="juturna.html">juturna package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of juturna package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="juturna.components.html">juturna.components package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="juturna.components.html">juturna.components package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of juturna.components package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="juturna.components.exceptions.html">juturna.components.exceptions package</a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.hub.html">juturna.hub package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.meta.html">juturna.meta package</a></li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">juturna.names package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="juturna.nodes.html">juturna.nodes package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of juturna.nodes package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="juturna.nodes.html">juturna.nodes package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of juturna.nodes package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="juturna.nodes.proc.html">juturna.nodes.proc package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.nodes.sink.html">juturna.nodes.sink package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.nodes.source.html">juturna.nodes.source package</a></li>
@@ -282,7 +285,7 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html">juturna.payloads package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.transport.html">juturna.transport package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="juturna.utils.html">juturna.utils package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of juturna.utils package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="juturna.utils.html">juturna.utils package</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of juturna.utils package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="juturna.utils.jt_utils.html">juturna.utils.jt_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
@@ -378,6 +381,16 @@ stopped, so <code class="docutils literal notranslate"><span class="pre">stop()<
 <dt class="sig sig-object py" id="juturna.names.PipelineStatus">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.names.</span></span><span class="sig-name descname"><span class="pre">PipelineStatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.names.PipelineStatus" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">StrEnum</span></code></p>
+<p>Possible state values of a pipeline.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">NEW</span></code>: a pipeline was instantiated, but its nodes are not built yet</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">READY</span></code>: nodes were instantiated and linked, the pipeline can start</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RUNNING</span></code>: the pipeline is consuming, processing and sending data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">STOPPED</span></code>: a previously running pipeline was stopped; it cannot be
+started again, only destroyed</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">DESTROYED</span></code>: the pipeline released its resources and is no longer
+usable</p></li>
+</ul>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.names.PipelineStatus.DESTROYED">
 <span class="sig-name descname"><span class="pre">DESTROYED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pipeline_destroyed'</span></em><a class="headerlink" href="#juturna.names.PipelineStatus.DESTROYED" title="Link to this definition">¶</a></dt>
@@ -396,6 +409,11 @@ stopped, so <code class="docutils literal notranslate"><span class="pre">stop()<
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.names.PipelineStatus.RUNNING">
 <span class="sig-name descname"><span class="pre">RUNNING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pipeline_running'</span></em><a class="headerlink" href="#juturna.names.PipelineStatus.RUNNING" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.names.PipelineStatus.STOPPED">
+<span class="sig-name descname"><span class="pre">STOPPED</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pipeline_stopped'</span></em><a class="headerlink" href="#juturna.names.PipelineStatus.STOPPED" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -622,6 +640,7 @@ stopped, so <code class="docutils literal notranslate"><span class="pre">stop()<
 <li><a class="reference internal" href="#juturna.names.PipelineStatus.NEW"><code class="docutils literal notranslate"><span class="pre">PipelineStatus.NEW</span></code></a></li>
 <li><a class="reference internal" href="#juturna.names.PipelineStatus.READY"><code class="docutils literal notranslate"><span class="pre">PipelineStatus.READY</span></code></a></li>
 <li><a class="reference internal" href="#juturna.names.PipelineStatus.RUNNING"><code class="docutils literal notranslate"><span class="pre">PipelineStatus.RUNNING</span></code></a></li>
+<li><a class="reference internal" href="#juturna.names.PipelineStatus.STOPPED"><code class="docutils literal notranslate"><span class="pre">PipelineStatus.STOPPED</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.names.PixelFormat"><code class="docutils literal notranslate"><span class="pre">PixelFormat</span></code></a><ul>
