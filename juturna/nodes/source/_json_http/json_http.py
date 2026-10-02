@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import json
 import socket
-import threading
 import contextlib
 
 from http import HTTPStatus
@@ -27,6 +26,7 @@ from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads import ObjectPayload
+from juturna.transport import WorkerHandle
 
 
 class JsonHttp(Node[ObjectPayload, ObjectPayload]):
@@ -59,7 +59,7 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
         self._port: int | str = port
         self._endpoint: str = endpoint.lstrip('/')
         self._httpd: HTTPServer | None = None
-        self._thread: threading.Thread | None = None
+        self._thread: WorkerHandle | None = None
 
     def configure(self) -> None:
         """Configure the node before warming up"""
@@ -92,10 +92,10 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
         if self._httpd is None:
             raise RuntimeError('warmup() not called')
 
-        self._thread = threading.Thread(
+        self._thread = self._transport.spawn(
             target=self._httpd.serve_forever,
-            daemon=True,
             name=f'{self.name}_http',
+            daemon=True,
         )
 
         self._thread.start()
@@ -106,10 +106,9 @@ class JsonHttp(Node[ObjectPayload, ObjectPayload]):
         """Stop the node"""
         super().stop()
 
-        if self._httpd:
-            self._httpd.shutdown()
-
         if self._thread:
+            # shutdown() blocks forever if serve_forever() never ran
+            self._httpd.shutdown()
             self._thread.join(timeout=2)
 
     def destroy(self) -> None:
