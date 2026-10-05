@@ -96,7 +96,7 @@ class VideostreamFFMPEG(Node[ImagePayload, None]):
     def stop(self):
         """Stop the node"""
         try:
-            self._ffmpeg_proc.stdin.write('q\n')
+            self._ffmpeg_proc.stdin.write(b'q\n')
             self._ffmpeg_proc.stdin.flush()
             self._ffmpeg_proc.stdin.close()
 
@@ -105,8 +105,10 @@ class VideostreamFFMPEG(Node[ImagePayload, None]):
             self._ffmpeg_proc.terminate()
             self._ffmpeg_proc.wait()
             self._ffmpeg_proc = None
-        except Exception:
-            ...
+        except Exception as e:
+            self.logger.warning(f'error stopping ffmpeg process: {e}')
+
+        super().stop()
 
     def update(self, message: Message[ImagePayload], **kwargs):
         """Receive a message, transmit a message"""
