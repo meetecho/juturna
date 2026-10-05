@@ -2,6 +2,7 @@ import pathlib
 import inspect
 import string
 import time
+import contextlib
 
 from collections.abc import Callable
 
@@ -18,6 +19,9 @@ from juturna.components._buffer import Buffer
 from juturna.components._state import State
 from juturna.components._telemetry_manager import TelemetryManager
 from juturna.components._synchronisers import _SYNCHRONISERS
+
+
+_WAKE = object()
 
 
 class Node[T_Input, T_Output]:
@@ -366,12 +370,15 @@ class Node[T_Input, T_Output]:
         if self._status == ComponentStatus.STOPPED:
             return
 
-        for _evt, _t in [
-            (self._stop_source_event, self._source_thread),
-            (self._stop_worker_event, self._worker_thread),
-            (self._stop_update_event, self._update_thread),
+        for _evt, _t, _wake in [
+            (self._stop_source_event, self._source_thread, None),
+            (self._stop_worker_event, self._worker_thread, self._wake_worker),
+            (self._stop_update_event, self._update_thread, self._wake_update),
         ]:
             _evt.set()
+
+            if _wake is not None:
+                _wake()
 
             if _t is not None and not self._transport.is_current(_t):
                 _t.join()
@@ -393,6 +400,9 @@ class Node[T_Input, T_Output]:
         self._stop_source_event.set()
         self._stop_worker_event.set()
         self._stop_update_event.set()
+
+        self._wake_worker()
+        self._wake_update()
 
     def kill(self):
         """
@@ -444,6 +454,13 @@ class Node[T_Input, T_Output]:
     def warmup(self): ...
 
     def destroy(self): ...
+
+    def _wake_worker(self):
+        with contextlib.suppress(jt.transport.Full):
+            self._queue.put_nowait(_WAKE)
+
+    def _wake_update(self):
+        self._buffer.wake(_WAKE)
 
     def _worker(self):
         while not self._stop_worker_event.is_set():
@@ -518,6 +535,9 @@ class Node[T_Input, T_Output]:
             self.put(message)
 
     def _ingest(self, message: Message):
+        if message is _WAKE:
+            return
+
         try:
             self._buffer.put(message)
 
@@ -534,6 +554,9 @@ class Node[T_Input, T_Output]:
             )
 
     def _process(self, batch: Message):
+        if batch is _WAKE:
+            return
+
         self._last_data_source_evt_id = batch.id
 
         try:

@@ -1,4 +1,5 @@
 import typing
+import contextlib
 
 from collections.abc import Callable
 
@@ -9,6 +10,7 @@ from juturna.payloads import Batch
 from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
 
 from juturna.transport import Empty
+from juturna.transport import Full
 from juturna.transport import ThreadingTransport
 from juturna.transport import TransportBackend
 
@@ -39,6 +41,15 @@ class Buffer:
 
     def get_nowait(self) -> typing.Any:
         return self._out_queue.get_nowait()
+
+    def wake(self, token: typing.Any):
+        """
+        Wake up a consumer blocked on get() by putting a token in the out
+        queue. If the queue is full, the consumer is not blocked and the token
+        is not needed, so it is dropped.
+        """
+        with contextlib.suppress(Full):
+            self._out_queue.put_nowait(token)
 
     def put(self, message: Message | None):
         with self._data_lock:

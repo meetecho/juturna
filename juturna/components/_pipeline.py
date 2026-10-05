@@ -60,6 +60,18 @@ _TRANSITION_RULES: dict[str, dict] = {
             PipelineStatus.READY: 'pipeline {name} is not running',
         },
     },
+    'kill': {
+        'illegal': {
+            PipelineStatus.NEW: PipelineNotRunningError,
+            PipelineStatus.READY: PipelineNotRunningError,
+            PipelineStatus.DESTROYED: PipelineDestroyedError,
+        },
+        'loopback': {PipelineStatus.STOPPED},
+        'messages': {
+            PipelineStatus.NEW: 'pipeline {name} is not running',
+            PipelineStatus.READY: 'pipeline {name} is not running',
+        },
+    },
 }
 
 
@@ -449,12 +461,29 @@ class Pipeline:
 
             self._telemetry_manager.stop()
 
-        self._status = PipelineStatus.READY
+        # self._status = PipelineStatus.READY
 
     def kill(self):
-        if self._status != PipelineStatus.RUNNING:
-            raise RuntimeError(f'pipeline {self.name} is not running')
+        """
+        Kill the pipeline and all its nodes.
 
+        Unlike stop(), pending messages in the nodes are not processed: all
+        nodes are signalled at once, then each one is joined and its input
+        queue and buffer are discarded.
+        """
+        if not self._begin_transition('kill', _TRANSITION_RULES):
+            return
+
+        try:
+            self._kill()
+        except Exception:
+            self._abort_transition()
+
+            raise
+        else:
+            self._end_transition(PipelineStatus.STOPPED)
+
+    def _kill(self):
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
@@ -470,8 +499,6 @@ class Pipeline:
                 node.flush_telemetry()
 
             self._telemetry_manager.stop()
-
-        self._status = PipelineStatus.READY
 
     def destroy(self):
         """

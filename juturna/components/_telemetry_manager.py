@@ -40,6 +40,10 @@ class TelemetryManager:
             return
 
         self._evt.set()
+
+        # an empty batch wakes up the reader blocked on get(), and is a no-op
+        # when written
+        self._queue.put(list())
         self._thread.join()
 
     def record_telemetry(self, record_batch: list):

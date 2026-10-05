@@ -5,17 +5,32 @@ from collections.abc import Callable
 from typing import Any
 
 from juturna.transport._base import Empty
+from juturna.transport._base import Full
 from juturna.transport._base import WorkerHandle
 
 
 class _ThreadQueue:
     """Queue primitive backed by queue.Queue."""
 
+    # NOTE: blocked consumers are currently woken up on stop by putting a
+    # sentinel on the queue (see Node._wake_worker). If the minimum supported
+    # Python version moves to 3.13+, queue.Queue.shutdown() can replace that:
+    # after shutdown, a blocked get() raises queue.ShutDown once the queue is
+    # drained, and further put() calls are rejected.
     def __init__(self, maxsize: int = 0):
         self._queue = queue.Queue(maxsize=maxsize)
 
     def put(self, item: Any, timeout: float | None = None) -> None:
-        self._queue.put(item, timeout=timeout)
+        try:
+            self._queue.put(item, timeout=timeout)
+        except queue.Full as exc:
+            raise Full from exc
+
+    def put_nowait(self, item: Any) -> None:
+        try:
+            self._queue.put_nowait(item)
+        except queue.Full as exc:
+            raise Full from exc
 
     def get(self, timeout: float | None = None) -> Any:
         try:

@@ -7,10 +7,16 @@ class Empty(Exception):
     """Raised by Queue.get() when no item is available within the timeout."""
 
 
+class Full(Exception):
+    """Raised by Queue.put() when no free slot is available in time."""
+
+
 class Queue(Protocol):
     """A FIFO channel used to move messages between nodes and workers."""
 
     def put(self, item: Any, timeout: float | None = None) -> None: ...
+
+    def put_nowait(self, item: Any) -> None: ...
 
     def get(self, timeout: float | None = None) -> Any: ...
 
