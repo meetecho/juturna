@@ -9,7 +9,6 @@ from pathlib import Path
 
 from juturna.nodes.source._audio_rtp_av.audio_rtp_av import AudioRtpAv
 from juturna.components import Message
-from juturna.payloads import ControlPayload, ControlSignal
 
 class RTPSender:
     def __init__(self, host="127.0.0.1", port=5005, payload_type=10):
@@ -54,9 +53,6 @@ class RTPSender:
             self.sock.close()
         except:
             pass
-
-def generate_stop_message():
-    return Message(payload=ControlPayload(ControlSignal.STOP), creator="test_control", version=999)
 
 class TestAudioRtpAvNetworkResilience:
 
@@ -132,8 +128,7 @@ class TestAudioRtpAvNetworkResilience:
 
       finally:
         def stop_node():
-            node.put(generate_stop_message())
-            node.join()
+            node.stop()
 
         stop_thread = threading.Thread(target=stop_node)
         stop_thread.start()

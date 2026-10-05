@@ -9,8 +9,6 @@ from dataclasses import field, dataclass
 
 import numpy as np
 
-from juturna.payloads._control_signal import ControlSignal
-
 
 @dataclass(frozen=True, slots=True)
 class BasePayload:
@@ -20,11 +18,6 @@ class BasePayload:
     @staticmethod
     def serialize(obj):
         return json.JSONEncoder.default(obj)
-
-
-@dataclass(frozen=True)
-class ControlPayload(BasePayload):
-    signal: ControlSignal = ControlSignal.STOP
 
 
 @dataclass(frozen=True)

@@ -6,14 +6,11 @@ import gc
 import typing
 
 from juturna.components import Node
-from juturna.components import Message
 
 from juturna.utils import log_utils
 
 from juturna.names import ComponentStatus
 from juturna.names import PipelineStatus
-
-from juturna.payloads import ControlSignal, ControlPayload
 
 from juturna.components._dag import DAG
 from juturna.components._state import State
@@ -286,14 +283,10 @@ class Pipeline:
 
         for layer in self._dag.BFS():
             self._logger.info(f'stopping layer {layer}')
+
             for node_name in layer:
                 self._logger.info(f'stopping node {node_name}')
-                self._nodes[node_name].put(
-                    Message(
-                        creator=self.name,
-                        payload=ControlPayload(ControlSignal.STOP),
-                    )
-                )
+                self._nodes[node_name].stop()
 
             for node_name in layer:
                 self._nodes[node_name].join()
@@ -306,35 +299,27 @@ class Pipeline:
 
         self._status = PipelineStatus.READY
 
-    def suspend_node(self, node_name: str):
-        """
-        Suspend a node in the pipeline.
+    def kill(self):
+        if self._status != PipelineStatus.RUNNING:
+            raise RuntimeError(f'pipeline {self.name} is not running')
 
-        A pipeline node can be suspended, so it won't process any data until it
-        is resumed. A suspended node will keep forwarding received messages to
-        its destinations.
-        """
-        if node := self._nodes.get(node_name):
-            node.put(
-                Message(
-                    creator=self.name,
-                    payload=ControlPayload(ControlSignal.SUSPEND),
-                )
-            )
+        if not self._nodes:
+            raise RuntimeError(f'pipeline {self.name} is not configured')
 
-    def resume_node(self, node_name: str):
-        """
-        Resume a node in the pipeline.
+        for node in self._nodes.values():
+            node.signal_kill()
 
-        A suspended node can be resumed, so it will start processing data again.
-        """
-        if node := self._nodes.get(node_name):
-            node.put(
-                Message(
-                    creator=self.name,
-                    payload=ControlPayload(ControlSignal.RESUME),
-                )
-            )
+        for node_name, node in self._nodes.items():
+            self._logger.info(f'killing node {node_name}')
+            node.kill()
+
+        if self._telemetry:
+            for node in self._nodes.values():
+                node.flush_telemetry()
+
+            self._telemetry_manager.stop()
+
+        self._status = PipelineStatus.READY
 
     def destroy(self):
         """

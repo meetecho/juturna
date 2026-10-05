@@ -7,7 +7,6 @@ import pytest
 
 import juturna as jt
 from juturna.components import Message, Node
-from juturna.payloads import ControlPayload, ControlSignal
 
 class SlowNode(Node):
     """Nodo che simula un carico di lavoro per testare il draining."""

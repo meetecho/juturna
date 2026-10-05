@@ -20,8 +20,6 @@ from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads import AudioPayload
-from juturna.payloads import ControlPayload
-from juturna.payloads import ControlSignal
 
 
 class AudioFile(Node[AudioPayload, AudioPayload]):
@@ -87,16 +85,14 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
         self.logger.info('audio loaded')
         self.logger.info(f'duration: {len(audio) / self._rate}')
 
-    def _generate_chunks(self) -> Message[AudioPayload | ControlPayload]:
+    def _generate_chunks(self) -> Message[AudioPayload] | None:
         audio_chunk = next(self._audio_chunks, None)
 
         if audio_chunk is None:
-            self.logger.info('last chunk processed, stopping')
+            self.logger.info('last chunk processed, stopping source')
+            self._stop_source_event.set()
 
-            return Message[ControlPayload](
-                creator=self.name,
-                payload=ControlPayload(signal=ControlSignal.STOP),
-            )
+            return None
 
         chunk, sample_offset = audio_chunk
 
@@ -127,7 +123,7 @@ class AudioFile(Node[AudioPayload, AudioPayload]):
             yield chunk, sample_offset
             sample_offset += wave_len
 
-    def update(self, message: Message[AudioPayload | ControlPayload], **kwargs):  # noqa: D102
+    def update(self, message: Message[AudioPayload], **kwargs):  # noqa: D102
         message.meta['session_id'] = self.pipe_id
 
         self.transmit(message)

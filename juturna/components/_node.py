@@ -80,13 +80,13 @@ class Node[T_Input, T_Output]:
         self._stop_worker_event = self._transport.new_event()
         self._stop_source_event = self._transport.new_event()
         self._stop_update_event = self._transport.new_event()
+        self._kill_event = self._transport.new_event()
 
         self._update_failures = 0
         self._source_failures = 0
         self._worker_failures = 0
         self._last_failure_at = None
 
-        self._suspended = False
         self._auto_dump = False
 
         self._buffer = Buffer(
@@ -315,6 +315,11 @@ class Node[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the node is started correctly.
         """
+        self._stop_source_event.clear()
+        self._stop_worker_event.clear()
+        self._stop_update_event.clear()
+        self._kill_event.clear()
+
         if self._worker_thread is None:
             self._worker_thread = self._transport.spawn(
                 target=self._worker,
@@ -352,15 +357,24 @@ class Node[T_Input, T_Output]:
         when the parent pipeline is stopped. If you override this method in
         your custom node class, make sure to call the parent method to ensure
         the node is stopped correctly.
+
+        Threads are stopped one at a time, each one after its upstream has
+        terminated: source first, then worker, then update. Every thread
+        consumes its own pending data before exiting, so all the messages
+        received before the stop call are processed.
         """
         if self._status == ComponentStatus.STOPPED:
             return
 
-        self._stop_source_event.set()
-        self._stop_worker_event.set()
-        self._stop_update_event.set()
+        for _evt, _t in [
+            (self._stop_source_event, self._source_thread),
+            (self._stop_worker_event, self._worker_thread),
+            (self._stop_update_event, self._update_thread),
+        ]:
+            _evt.set()
 
-        self.join()
+            if _t is not None and not self._transport.is_current(_t):
+                _t.join()
 
         self._worker_thread = None
         self._source_thread = None
@@ -368,6 +382,40 @@ class Node[T_Input, T_Output]:
         self._status = ComponentStatus.STOPPED
 
         self.logger.info('node stopped')
+
+    def signal_kill(self):
+        """
+        Signal all the node threads to exit without processing pending data.
+        This method does not block: use ``kill()`` to wait for the threads to
+        terminate and discard pending data.
+        """
+        self._kill_event.set()
+        self._stop_source_event.set()
+        self._stop_worker_event.set()
+        self._stop_update_event.set()
+
+    def kill(self):
+        """
+        Stop the node without processing pending data. All threads are
+        signalled at once and exit as soon as their current iteration is
+        over: any message still in the input queue or in the buffer is
+        discarded. Subclass cleanup in ``stop()`` still runs.
+        """
+        if self._status == ComponentStatus.STOPPED:
+            return
+
+        self.signal_kill()
+        self.stop()
+
+        while True:
+            try:
+                self._queue.get_nowait()
+            except jt.transport.Empty:
+                break
+
+        self.clear_buffer()
+
+        self.logger.info('node killed')
 
     def join(self):
         """
@@ -406,20 +454,18 @@ class Node[T_Input, T_Output]:
             except jt.transport.Empty:
                 continue
 
-            try:
-                self._buffer.put(message)
+            self._ingest(message)
 
-                if isinstance(message, Message):
-                    self._rec_telemetry(message, 'rx')
-            except Exception:
-                self._worker_failures += 1
-                self._last_failure_at = time.time()
-                self.logger.error(
-                    f'unhandled exception in worker '
-                    f'(failure {self._worker_failures}), '
-                    f'message id {getattr(message, "id", "?")}',
-                    exc_info=True,
-                )
+        if self._kill_event.is_set():
+            return
+
+        while True:
+            try:
+                message = self._queue.get_nowait()
+            except jt.transport.Empty:
+                break
+
+            self._ingest(message)
 
     def _update(self):
         while not self._stop_update_event.is_set():
@@ -430,24 +476,25 @@ class Node[T_Input, T_Output]:
             except jt.transport.Empty:
                 continue
 
-            self._last_data_source_evt_id = batch.id
+            self._process(batch)
 
+        if self._kill_event.is_set():
+            return
+
+        while True:
             try:
-                self.update(batch, state=self._state)
-            except Exception:
-                self._update_failures += 1
-                self._last_failure_at = time.time()
-                self.logger.error(
-                    f'unhandled exception in update() '
-                    f'(failure {self._update_failures}), '
-                    f'for message id {getattr(batch, "id", "?")}',
-                    exc_info=True,
-                )
+                batch = self._buffer.get_nowait()
+            except jt.transport.Empty:
+                break
+
+            self._process(batch)
 
     def _source(self):
         while not self._stop_source_event.is_set():
-            if self._source_mode == 'pre':
-                time.sleep(self._source_sleep)
+            if self._source_mode == 'pre' and self._stop_source_event.wait(
+                self._source_sleep
+            ):
+                return
 
             try:
                 message = self._source_f()
@@ -462,13 +509,44 @@ class Node[T_Input, T_Output]:
 
                 continue
 
-            if self._stop_source_event.is_set():
-                return
+            if self._stop_source_event.is_set() or message is None:
+                continue
 
             if self._source_mode == 'post':
-                time.sleep(self._source_sleep)
+                self._stop_source_event.wait(self._source_sleep)
 
             self.put(message)
+
+    def _ingest(self, message: Message):
+        try:
+            self._buffer.put(message)
+
+            if isinstance(message, Message):
+                self._rec_telemetry(message, 'rx')
+        except Exception:
+            self._worker_failures += 1
+            self._last_failure_at = time.time()
+            self.logger.error(
+                f'unhandled exception in worker '
+                f'(failure {self._worker_failures}), '
+                f'message id {getattr(message, "id", "?")}',
+                exc_info=True,
+            )
+
+    def _process(self, batch: Message):
+        self._last_data_source_evt_id = batch.id
+
+        try:
+            self.update(batch, state=self._state)
+        except Exception:
+            self._update_failures += 1
+            self._last_failure_at = time.time()
+            self.logger.error(
+                f'unhandled exception in update() '
+                f'(failure {self._update_failures}), '
+                f'for message id {getattr(batch, "id", "?")}',
+                exc_info=True,
+            )
 
     def _rec_telemetry(self, message: Message, event: str):
         if self._telemetry_manager is None:

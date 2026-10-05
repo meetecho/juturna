@@ -37,13 +37,13 @@ class Buffer:
     def get(self, timeout: float = None) -> typing.Any:
         return self._out_queue.get(timeout=timeout)
 
+    def get_nowait(self) -> typing.Any:
+        return self._out_queue.get_nowait()
+
     def put(self, message: Message | None):
-        if message.creator not in self._data:
-            self._data[message.creator] = list()
-
-        self._data[message.creator].append(message)
-
         with self._data_lock:
+            self._data.setdefault(message.creator, list()).append(message)
+
             next_batch = self._synchroniser(self._data)
 
             self._consume(next_batch)
