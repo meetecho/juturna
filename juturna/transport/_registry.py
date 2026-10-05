@@ -1,9 +1,11 @@
 from juturna.transport._base import TransportBackend
 from juturna.transport._threading import ThreadingTransport
+from juturna.transport._browser import BrowserTransport
 
 
 _TRANSPORTS: dict[str, type[TransportBackend]] = {
     'threading': ThreadingTransport,
+    'browser': BrowserTransport,
 }
 
 _DEFAULT_TRANSPORT = 'threading'
