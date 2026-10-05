@@ -64,7 +64,8 @@ class TranscriberKroko(Node[AudioPayload, ObjectPayload]):
         if self.ws:
             try:
                 self.ws.close()
-            except Exception:
+            except Exception as e:
+                self.logger.warning(f'error closing websocket: {e}')
                 return
 
     def update(self, message: Message[AudioPayload], **kwargs):

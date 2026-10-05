@@ -110,8 +110,8 @@ class VideoRTP(Node[BytesPayload, ImagePayload]):
             self._ffmpeg_proc.terminate()
             self._ffmpeg_proc.wait()
             self._ffmpeg_proc = None
-        except Exception:
-            ...
+        except Exception as e:
+            self.logger.warning(f'error stopping ffmpeg process: {e}')
 
         super().stop()
 
