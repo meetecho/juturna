@@ -1,4 +1,5 @@
 import time
+import threading
 
 import juturna as jt
 
@@ -149,7 +150,7 @@ def test_pipeline_immediate_stop(test_config, wait_for_condition):
     received_count = len(received_messages)
 
     for node in pipeline._nodes.values():
-        node.stop()
+        node.kill()
 
     received_messages = pipeline._nodes['2_sink'].messages
     received_count = len(received_messages)
@@ -157,6 +158,88 @@ def test_pipeline_immediate_stop(test_config, wait_for_condition):
     assert received_count < sent_count, (
         f"Immediate stop failed: the pipe waits for all the {sent_count} messages to be processed before stopping."
     )
+
+
+def test_pipeline_kill_discards_pending_messages(test_config, wait_for_condition):
+    """
+    Verify that killing a pipeline does not process the messages still pending
+    in the nodes: the slow node has a backlog when the kill is issued, and none
+    of the backlog reaches the sink.
+    """
+    p = test_config['test_pipeline_folder']
+    delay = 1
+
+    pipeline_config = {
+        "version": "0.1.0",
+        'plugins': ['./tests/test_plugins', './plugins'],
+        "pipeline": {
+            "name": "e2e_test_kill_pipeline",
+            "id": "e2e_3",
+            "folder": f'{p}/e2e_test_kill_pipeline',
+            "nodes": [
+                {
+                    "name": "0_stream",
+                    "type": "source",
+                    "mark": "data_streamer",
+                    "configuration": { "rate": 10 }
+                },
+                {
+                    "name": "1_pass",
+                    "type": "proc",
+                    "mark": "passthrough_identity",
+                    "configuration": { "delay": delay }
+                },
+                {
+                    'name': '2_sink',
+                    'type': 'sink',
+                    'mark': 'crasher',
+                    'configuration': {}
+                }
+            ],
+            "links": [
+                {"from": "0_stream", "to": "1_pass"},
+                {"from": "1_pass", "to": "2_sink"}
+            ]
+        }
+    }
+
+    pipeline = jt.components.Pipeline(pipeline_config)
+    pipeline.warmup()
+    pipeline.start()
+
+    # the source produces 10 msg/s, the proc node consumes 1 msg/s: wait until
+    # a backlog has accumulated in the proc node
+    assert wait_for_condition(
+        lambda: pipeline._node_state_store['0_stream'].get('transmitted', 0) >= 15,
+        timeout=5,
+    ), "source did not produce enough messages"
+
+    sink = pipeline._nodes['2_sink']
+    received_before_kill = len(sink.messages)
+
+    t0 = time.monotonic()
+    pipeline.kill()
+    elapsed = time.monotonic() - t0
+
+    sent_count = pipeline._node_state_store['0_stream']['transmitted']
+    received_count = len(sink.messages)
+
+    # at most the update in progress in the proc node, plus one message already
+    # in flight towards the sink, can be delivered after the kill
+    assert received_count <= received_before_kill + 2, (
+        f"pending messages processed after kill: {received_before_kill} "
+        f"received before, {received_count} after"
+    )
+    assert sent_count - received_count >= 10, (
+        f"expected a discarded backlog, sent {sent_count}, received {received_count}"
+    )
+
+    # draining the backlog would take ~delay seconds per message
+    assert elapsed < 2 * delay + 1, f"kill took {elapsed:.2f}s, pipe was drained"
+
+    for node in pipeline._nodes.values():
+        assert node._queue.empty(), f"{node.name} input queue not cleared"
+        assert node._buffer.empty(), f"{node.name} buffer not cleared"
 
 
 def test_node_survives_exception_in_update(wait_for_condition):

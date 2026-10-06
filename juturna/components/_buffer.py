@@ -1,4 +1,5 @@
 import typing
+import contextlib
 
 from collections.abc import Callable
 
@@ -9,6 +10,7 @@ from juturna.payloads import Batch
 from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
 
 from juturna.transport import Empty
+from juturna.transport import Full
 from juturna.transport import ThreadingTransport
 from juturna.transport import TransportBackend
 
@@ -26,7 +28,6 @@ class Buffer:
         self._data_lock = self._transport.new_lock()
         self._synchroniser: Callable = synchroniser
 
-        # out queue can be built based on the synchronisation policy
         self._out_queue = self._transport.new_queue(
             maxsize=JUTURNA_MAX_QUEUE_SIZE
         )
@@ -38,19 +39,32 @@ class Buffer:
     def get(self, timeout: float = None) -> typing.Any:
         return self._out_queue.get(timeout=timeout)
 
+    def get_nowait(self) -> typing.Any:
+        return self._out_queue.get_nowait()
+
+    def wake(self, token: typing.Any):
+        """
+        Wake up a consumer blocked on get() by putting a token in the out
+        queue. If the queue is full, the consumer is not blocked and the token
+        is not needed, so it is dropped.
+        """
+        with contextlib.suppress(Full):
+            self._out_queue.put_nowait(token)
+
     def put(self, message: Message | None):
-        if message.creator not in self._data:
-            self._data[message.creator] = list()
-
-        self._data[message.creator].append(message)
-
         with self._data_lock:
+            self._data.setdefault(message.creator, list()).append(message)
+
             next_batch = self._synchroniser(self._data)
 
             self._consume(next_batch)
 
     def empty(self) -> bool:
-        return all(map(lambda k: len(self._data[k]) == 0, self._data))
+        with self._data_lock:
+            return (
+                all(len(v) == 0 for v in self._data.values())
+                and self._out_queue.empty()
+            )
 
     def _consume(self, marks: dict[str, list[int]]):
         """

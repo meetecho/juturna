@@ -1,7 +1,9 @@
 import csv
 
 from juturna.utils.log_utils import jt_logger
-from juturna.payloads import ControlSignal
+from juturna.meta import JUTURNA_THREAD_JOIN_TIMEOUT
+
+from juturna.transport import Empty
 from juturna.transport import Event
 from juturna.transport import ThreadingTransport
 from juturna.transport import TransportBackend
@@ -37,8 +39,11 @@ class TelemetryManager:
         if self._thread is None or not self._thread.is_alive():
             return
 
-        self._queue.put(ControlSignal.STOP)
         self._evt.set()
+
+        # an empty batch wakes up the reader blocked on get(), and is a no-op
+        # when written
+        self._queue.put(list())
         self._thread.join()
 
     def record_telemetry(self, record_batch: list):
@@ -54,14 +59,19 @@ class TelemetryManager:
             )
 
             while not self._evt.is_set():
-                telemetry_batch = self._queue.get()
+                try:
+                    telemetry_batch = self._queue.get(
+                        timeout=JUTURNA_THREAD_JOIN_TIMEOUT
+                    )
+                except Empty:
+                    continue
 
-                if telemetry_batch == ControlSignal.STOP:
-                    self._evt.set()
+                _writer.writerows(telemetry_batch)
 
-                    return
+            while True:
+                try:
+                    telemetry_batch = self._queue.get_nowait()
+                except Empty:
+                    break
 
-                for entry in telemetry_batch:
-                    ts, evt_type, node, origin, msg_id, src_id, size = entry
-
-                    _writer.writerow(entry)
+                _writer.writerows(telemetry_batch)

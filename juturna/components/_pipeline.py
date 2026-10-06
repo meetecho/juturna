@@ -7,14 +7,11 @@ import threading
 import typing
 
 from juturna.components import Node
-from juturna.components import Message
 
 from juturna.utils import log_utils
 
 from juturna.names import ComponentStatus
 from juturna.names import PipelineStatus
-
-from juturna.payloads import ControlSignal, ControlPayload
 
 from juturna.components._dag import DAG
 from juturna.components._state import State
@@ -52,6 +49,18 @@ _TRANSITION_RULES: dict[str, dict] = {
         },
     },
     'stop': {
+        'illegal': {
+            PipelineStatus.NEW: PipelineNotRunningError,
+            PipelineStatus.READY: PipelineNotRunningError,
+            PipelineStatus.DESTROYED: PipelineDestroyedError,
+        },
+        'loopback': {PipelineStatus.STOPPED},
+        'messages': {
+            PipelineStatus.NEW: 'pipeline {name} is not running',
+            PipelineStatus.READY: 'pipeline {name} is not running',
+        },
+    },
+    'kill': {
         'illegal': {
             PipelineStatus.NEW: PipelineNotRunningError,
             PipelineStatus.READY: PipelineNotRunningError,
@@ -438,14 +447,10 @@ class Pipeline:
 
         for layer in self._dag.BFS():
             self._logger.info(f'stopping layer {layer}')
+
             for node_name in layer:
                 self._logger.info(f'stopping node {node_name}')
-                self._nodes[node_name].put(
-                    Message(
-                        creator=self.name,
-                        payload=ControlPayload(ControlSignal.STOP),
-                    )
-                )
+                self._nodes[node_name].stop()
 
             for node_name in layer:
                 self._nodes[node_name].join()
@@ -456,35 +461,44 @@ class Pipeline:
 
             self._telemetry_manager.stop()
 
-    def suspend_node(self, node_name: str):
-        """
-        Suspend a node in the pipeline.
+        # self._status = PipelineStatus.READY
 
-        A pipeline node can be suspended, so it won't process any data until it
-        is resumed. A suspended node will keep forwarding received messages to
-        its destinations.
+    def kill(self):
         """
-        if node := self._nodes.get(node_name):
-            node.put(
-                Message(
-                    creator=self.name,
-                    payload=ControlPayload(ControlSignal.SUSPEND),
-                )
-            )
+        Kill the pipeline and all its nodes.
 
-    def resume_node(self, node_name: str):
+        Unlike stop(), pending messages in the nodes are not processed: all
+        nodes are signalled at once, then each one is joined and its input
+        queue and buffer are discarded.
         """
-        Resume a node in the pipeline.
+        if not self._begin_transition('kill', _TRANSITION_RULES):
+            return
 
-        A suspended node can be resumed, so it will start processing data again.
-        """
-        if node := self._nodes.get(node_name):
-            node.put(
-                Message(
-                    creator=self.name,
-                    payload=ControlPayload(ControlSignal.RESUME),
-                )
-            )
+        try:
+            self._kill()
+        except Exception:
+            self._abort_transition()
+
+            raise
+        else:
+            self._end_transition(PipelineStatus.STOPPED)
+
+    def _kill(self):
+        if not self._nodes:
+            raise RuntimeError(f'pipeline {self.name} is not configured')
+
+        for node in self._nodes.values():
+            node.signal_kill()
+
+        for node_name, node in self._nodes.items():
+            self._logger.info(f'killing node {node_name}')
+            node.kill()
+
+        if self._telemetry:
+            for node in self._nodes.values():
+                node.flush_telemetry()
+
+            self._telemetry_manager.stop()
 
     def destroy(self):
         """

@@ -1,14 +1,11 @@
 import time
 import threading
 from juturna.components import Message, Node, State
-from juturna.payloads import BytesPayload, ControlPayload, ControlSignal
+from juturna.payloads import BytesPayload
 
 class SlowNode(Node):
     def update(self, message: Message, **kwargs):
         time.sleep(0.01)
-
-def generate_stop_message():
-    return Message(payload=ControlPayload(ControlSignal.STOP), creator="test_control", version=999)
 
 def test_worker_queue_saturation_no_deadlock(wait_for_condition):
 
@@ -32,10 +29,9 @@ def test_worker_queue_saturation_no_deadlock(wait_for_condition):
         assert success, f"Deadlock detected: threads did not process all messages in time, last processed ID: {node._last_data_source_evt_id}"
 
     finally:
-        node.put(generate_stop_message())
+        node.stop()
 
 def test_stop_draining_no_deadlock_with_real_work(wait_for_condition):
-
     node = SlowNode(node_name="draining_node", pipe_name="test_pipe")
     node.start()
 
@@ -46,8 +42,7 @@ def test_stop_draining_no_deadlock_with_real_work(wait_for_condition):
         node.put(msg)
 
     def stop_node():
-        node.put(generate_stop_message())
-        node.join()
+        node.stop()
 
     stop_thread = threading.Thread(target=stop_node)
     stop_thread.start()

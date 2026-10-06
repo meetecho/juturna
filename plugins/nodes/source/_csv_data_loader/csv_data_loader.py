@@ -14,8 +14,6 @@ from juturna.components import Node
 from juturna.components import Message
 
 from juturna.payloads import ObjectPayload
-from juturna.payloads import ControlSignal
-from juturna.payloads import ControlPayload
 
 
 class CsvDataLoader(Node[ObjectPayload, ObjectPayload]):
@@ -70,10 +68,10 @@ class CsvDataLoader(Node[ObjectPayload, ObjectPayload]):
                 ),
             )
         except StopIteration:
-            return Message(
-                creator=self.name,
-                payload=ControlPayload(ControlSignal.STOP_PROPAGATE),
-            )
+            self.logger.info('last row processed, stopping source')
+            self._stop_source_event.set()
+
+            return None
 
     def warmup(self):
         """Warmup the node"""
