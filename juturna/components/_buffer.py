@@ -29,7 +29,7 @@ class Buffer:
         self._synchroniser: Callable = synchroniser
 
         self._out_queue = self._transport.new_queue(
-            maxsize=JUTURNA_MAX_QUEUE_SIZE
+            maxsize=JUTURNA_MAX_QUEUE_SIZE, local=True
         )
 
         self._creator = creator

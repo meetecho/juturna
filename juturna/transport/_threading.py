@@ -1,3 +1,4 @@
+import contextlib
 import threading
 import queue
 
@@ -138,8 +139,18 @@ class ThreadingTransport:
     are backed by `queue.Queue`.
     """
 
-    def new_queue(self, maxsize: int = 0) -> _ThreadQueue:
+    def new_queue(self, maxsize: int = 0, local: bool = False) -> _ThreadQueue:
+        # threads share memory: every queue is local already
         return _ThreadQueue(maxsize)
+
+    def node_scope(self, shared: bool) -> contextlib.AbstractContextManager:
+        return contextlib.nullcontext()
+
+    def remote_destination(self, node_name: str) -> Any:
+        raise ValueError(
+            f'node {node_name} runs in another worker, which the '
+            f'{type(self).__name__} transport cannot reach'
+        )
 
     def new_event(self) -> _ThreadEvent:
         return _ThreadEvent()
