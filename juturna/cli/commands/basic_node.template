@@ -5,7 +5,7 @@ $_node_class_name
 @email: $_node_author_email
 @created_at: $_creation_datetime
 
-Automatically generated with jt.utils.node_utils.node_stub
+Automatically generated with juturna stub
 """
 import typing
 

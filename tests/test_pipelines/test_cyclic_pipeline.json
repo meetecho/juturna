@@ -1,6 +1,5 @@
 {
   "version": "0.1.0",
-  "plugins": ["./plugins"],
   "pipeline": {
     "name": "test_audio_pipeline",
     "id": "1234567890",

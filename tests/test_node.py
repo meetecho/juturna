@@ -8,7 +8,6 @@ def test_data_source_id_properly_set(test_config, wait_for_condition):
 
     pipeline_config = {
         'version': '0.2.0',
-        'plugins': ['./tests/test_plugins'],
         "pipeline": {
             'name': 'e2e_test_pipeline_generated_messages',
             'id': 'e2e_1',
@@ -53,7 +52,6 @@ def test_pipeline_draining_on_stop(test_config, wait_for_condition):
 
     pipeline_config = {
         "version": "0.1.0",
-        'plugins': ['./tests/test_plugins', './plugins'],
         "pipeline": {
             "name": "e2e_test_draining_pipeline",
             "id": "e2e_2",
@@ -102,7 +100,6 @@ def test_pipeline_immediate_stop(test_config, wait_for_condition):
 
     pipeline_config = {
         "version": "0.1.0",
-        'plugins': ['./tests/test_plugins', './plugins'],
         "pipeline": {
             "name": "e2e_test_draining_pipeline",
             "id": "e2e_2",
@@ -111,7 +108,6 @@ def test_pipeline_immediate_stop(test_config, wait_for_condition):
                 {
                     "name": "0_stream",
                     "type": "contrib.jt_test.nodes.DataStreamer",
-                    "mark": "data_streamer",
                     "configuration": { "rate": 2 }
                 },
                 {
@@ -164,7 +160,6 @@ def test_pipeline_kill_discards_pending_messages(test_config, wait_for_condition
 
     pipeline_config = {
         "version": "0.1.0",
-        'plugins': ['./tests/test_plugins', './plugins'],
         "pipeline": {
             "name": "e2e_test_kill_pipeline",
             "id": "e2e_3",
