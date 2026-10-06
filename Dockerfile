@@ -10,7 +10,6 @@ WORKDIR /root/juturna
 COPY ./juturna ./juturna
 COPY ./pyproject.toml .
 COPY ./README.md .
-COPY ./plugins /juturna/plugins
 
 ARG JT_VERSION="[full]"
 

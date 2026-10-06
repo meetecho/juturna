@@ -1,6 +1,6 @@
 [project]
 name = "juturna"
-version = "2.1.1"
+version = "3.0.0"
 description = "Juturna core library"
 authors = [
     { name = "Antonio Bevilacqua", email = "b3by.in.th3.sky@gmail.com" },
@@ -19,11 +19,14 @@ classifiers = [
     "Programming Language :: Python :: 3",
 ]
 dependencies = [
-    "av>=16.0.0",
+    "av>=19.0.1",
     "numpy>=2.2.3,<3.0.0",
     "requests>=2.32.3,<3.0.0",
     "websockets>=16.0"
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["tests/_nodes"]
 
 [project.urls]
 Homepage = "https://github.com/meetecho/juturna"
@@ -49,24 +52,24 @@ warp = [
 ]
 doc = [
     "sphinx<9.0,>6.0",
-    "sphinx-autoapi==3.6.0",
+    "sphinx-autoapi==3.8.1",
     "sphinx-autobuild==2025.8.25",
     "sphinxcontrib-apidoc==0.6.0",
     "sphinxcontrib-napoleon==0.7",
-    "furo==2025.7.19",
+    "furo==2025.12.19",
     "sphinx-design==0.7.0",
-    "sphinx_new_tab_link==0.8.0"
+    "sphinx_new_tab_link==0.8.2"
 ]
 dev = [
-    "pre-commit==4.5.0",
-    "bandit==1.9.2",
-    "conventional-pre-commit==4.3.0"
+    "pre-commit==4.6.2",
+    "bandit==1.9.4",
+    "conventional-pre-commit==4.4.0"
 ]
 lint = [
-    "ruff>= 0.14.8"
+    "ruff>= 0.16.10"
 ]
 test = [
-    "pytest==9.0.2",
+    "pytest==9.1.1",
     "pytest-cov"
 ]
 full = [
