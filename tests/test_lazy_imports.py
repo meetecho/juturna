@@ -21,7 +21,7 @@ def _run(code: str) -> subprocess.CompletedProcess:
 def test_plain_import_loads_none_of_the_lazy_modules():
     result = _run(
         'import sys, juturna\n'
-        'loaded = [m for m in ("juturna.nodes", "juturna.hub",'
+        'loaded = [m for m in ("juturna.nodes",'
         ' "juturna.remotizer", "grpc") if m in sys.modules]\n'
         'print(",".join(loaded))'
     )
@@ -32,7 +32,7 @@ def test_plain_import_loads_none_of_the_lazy_modules():
     )
 
 
-@pytest.mark.parametrize('name', ['nodes', 'hub'])
+@pytest.mark.parametrize('name', ['nodes'])
 def test_attribute_access_imports_the_module(name):
     result = _run(
         'import sys, juturna\n'

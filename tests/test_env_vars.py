@@ -32,8 +32,7 @@ def test_pipeline_with_env_var_in_configuration(test_config):
             'nodes': [
                 {
                     'name': 'test_node',
-                    'type': 'proc',
-                    'mark': 'passthrough_identity',
+                    'type': 'contrib.jt_test.nodes.PassthroughIdentity',
                     'configuration': {
                         'delay': '$JT_ENV_TEST_DELAY'
                     }
@@ -76,8 +75,7 @@ def test_pipeline_with_missing_env_var(test_config, caplog):
             'nodes': [
                 {
                     'name': 'test_node',
-                    'type': 'proc',
-                    'mark': 'passthrough_identity',
+                    'type': 'contrib.jt_test.nodes.PassthroughIdentity',
                     'configuration': {
                         'delay': '$JT_ENV_MISSING_ENV_VAR'
                     }

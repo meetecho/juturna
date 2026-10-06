@@ -16,14 +16,12 @@ def test_data_source_id_properly_set(test_config, wait_for_condition):
             'nodes': [
                 {
                     'name': 'source_1',
-                    'type': 'source',
-                    'mark': 'sequencer',
+                    'type': 'contrib.jt_test.nodes.Sequencer',
                     'configuration': {}
                 },
                 {
                     'name': 'sink_1',
-                    'type': 'sink',
-                    'mark': 'crasher',
+                    'type': 'contrib.jt_test.nodes.Crasher',
                     'configuration': {}
                 }
             ],
@@ -63,20 +61,17 @@ def test_pipeline_draining_on_stop(test_config, wait_for_condition):
             "nodes": [
                 {
                     "name": "0_stream",
-                    "type": "source",
-                    "mark": "data_streamer",
+                    "type": "contrib.jt_test.nodes.DataStreamer",
                     "configuration": { "rate": 2 }
                 },
                 {
                     "name": "1_pass",
-                    "type": "proc",
-                    "mark": "passthrough_identity",
+                    "type": "contrib.jt_test.nodes.PassthroughIdentity",
                     "configuration": { "delay": 2 }
                 },
                 {
                     'name': '2_sink',
-                    'type': 'sink',
-                    'mark': 'crasher',
+                    'type': 'contrib.jt_test.nodes.Crasher',
                     'configuration': {}
                 }
             ],
@@ -115,20 +110,18 @@ def test_pipeline_immediate_stop(test_config, wait_for_condition):
             "nodes": [
                 {
                     "name": "0_stream",
-                    "type": "source",
+                    "type": "contrib.jt_test.nodes.DataStreamer",
                     "mark": "data_streamer",
                     "configuration": { "rate": 2 }
                 },
                 {
                     "name": "1_pass",
-                    "type": "proc",
-                    "mark": "passthrough_identity",
+                    "type": "contrib.jt_test.nodes.PassthroughIdentity",
                     "configuration": { "delay": 2 }
                 },
                 {
                     'name': '2_sink',
-                    'type': 'sink',
-                    'mark': 'crasher',
+                    'type': 'contrib.jt_test.nodes.Crasher',
                     'configuration': {}
                 }
             ],
@@ -179,20 +172,17 @@ def test_pipeline_kill_discards_pending_messages(test_config, wait_for_condition
             "nodes": [
                 {
                     "name": "0_stream",
-                    "type": "source",
-                    "mark": "data_streamer",
+                    "type": "contrib.jt_test.nodes.DataStreamer",
                     "configuration": { "rate": 10 }
                 },
                 {
                     "name": "1_pass",
-                    "type": "proc",
-                    "mark": "passthrough_identity",
+                    "type": "contrib.jt_test.nodes.PassthroughIdentity",
                     "configuration": { "delay": delay }
                 },
                 {
                     'name': '2_sink',
-                    'type': 'sink',
-                    'mark': 'crasher',
+                    'type': 'contrib.jt_test.nodes.Crasher',
                     'configuration': {}
                 }
             ],

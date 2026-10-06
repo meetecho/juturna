@@ -10,23 +10,20 @@
     "nodes": [
       {
         "name": "0_stream",
-        "type": "source",
-        "mark": "data_streamer",
+        "type": "contrib.jt_test.nodes.DataStreamer",
         "configuration": {
         }
       },
       {
         "name": "1_pass",
-        "type": "proc",
-        "mark": "passthrough_identity",
+        "type": "contrib.jt_test.nodes.PassthroughIdentity",
         "configuration": {
           "delay": 2
         }
       },
       {
         "name": "2_sink",
-        "type": "sink",
-        "mark": "crasher",
+        "type": "contrib.jt_test.nodes.Crasher",
         "configuration": {}
       }
     ],

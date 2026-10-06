@@ -113,14 +113,12 @@ def _sequencer_crasher_config(name: str, folder: str) -> dict:
             'nodes': [
                 {
                     'name': 'source_1',
-                    'type': 'source',
-                    'mark': 'sequencer',
+                    'type': 'contrib.jt_test.nodes.Sequencer',
                     'configuration': {},
                 },
                 {
                     'name': 'sink_1',
-                    'type': 'sink',
-                    'mark': 'crasher',
+                    'type': 'contrib.jt_test.nodes.Crasher',
                     'configuration': {},
                 },
             ],

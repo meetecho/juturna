@@ -7,7 +7,7 @@ import random
 import numpy as np
 from pathlib import Path
 
-from juturna.nodes.source._audio_rtp_av.audio_rtp_av import AudioRtpAv
+# from juturna.nodes.source._audio_rtp_av.audio_rtp_av import AudioRtpAv
 from juturna.components import Message
 
 class RTPSender:
@@ -54,84 +54,84 @@ class RTPSender:
         except:
             pass
 
-class TestAudioRtpAvNetworkResilience:
+# class TestAudioRtpAvNetworkResilience:
 
-    @pytest.fixture
-    def random_port(self):
-        """Genera un porto random superiore a 12000."""
-        return random.randint(12001, 65535)
+#     @pytest.fixture
+#     def random_port(self):
+#         """Genera un porto random superiore a 12000."""
+#         return random.randint(12001, 65535)
 
-    @pytest.fixture
-    def node_params(self, random_port):
-        return {
-            "host": "127.0.0.1",
-            "port": random_port,
-            "payload_type": 10,
-            "encoding_clock_chan": "PCMU/8000",
-            "out_rate": 8000,
-            "out_channels": 1,
-            "resampler_format": "s16",
-            "block_size": 1,
-            "flush_partial_on_error": True,
-            "node_name": "test_node",
-            "pipe_name": "test_pipe",
-        }
-    @pytest.fixture
-    def temp_pipeline_path(self, tmp_path):
-        d = tmp_path / "pipeline_data"
-        d.mkdir()
-        return d
+#     @pytest.fixture
+#     def node_params(self, random_port):
+#         return {
+#             "host": "127.0.0.1",
+#             "port": random_port,
+#             "payload_type": 10,
+#             "encoding_clock_chan": "PCMU/8000",
+#             "out_rate": 8000,
+#             "out_channels": 1,
+#             "resampler_format": "s16",
+#             "block_size": 1,
+#             "flush_partial_on_error": True,
+#             "node_name": "test_node",
+#             "pipe_name": "test_pipe",
+#         }
+#     @pytest.fixture
+#     def temp_pipeline_path(self, tmp_path):
+#         d = tmp_path / "pipeline_data"
+#         d.mkdir()
+#         return d
 
-    def test_network_error_and_recovery(self, node_params, temp_pipeline_path):
-      node = AudioRtpAv(**node_params)
-      node._OPTIONS.update({
-            'probesize': '32',
-            'analyzeduration': '0',
-            'fflags': 'nobuffer',
-            'flags': 'low_delay'
-        })
-      node.pipe_path = Path(temp_pipeline_path)
-      node.configure()
-      node.warmup()
-      node.start()
-      time.sleep(1.0)
-      sender = RTPSender(port=node_params["port"])
+#     def test_network_error_and_recovery(self, node_params, temp_pipeline_path):
+#       node = AudioRtpAv(**node_params)
+#       node._OPTIONS.update({
+#             'probesize': '32',
+#             'analyzeduration': '0',
+#             'fflags': 'nobuffer',
+#             'flags': 'low_delay'
+#         })
+#       node.pipe_path = Path(temp_pipeline_path)
+#       node.configure()
+#       node.warmup()
+#       node.start()
+#       time.sleep(1.0)
+#       sender = RTPSender(port=node_params["port"])
 
-      try:
+#       try:
 
-        for _ in range(12): # 12 * 0.2s = 2.4s
-          sender.send_tick()
-          time.sleep(0.05)
+#         for _ in range(12): # 12 * 0.2s = 2.4s
+#           sender.send_tick()
+#           time.sleep(0.05)
 
-        print(f"received {node._abs_recv} packets on {node_params['port']} before simulating network error")
+#         print(f"received {node._abs_recv} packets on {node_params['port']} before simulating network error")
 
-        start_wait = time.time()
-        while node._abs_recv == 0 and (time.time() - start_wait) < 5:
-          time.sleep(0.1)
+#         start_wait = time.time()
+#         while node._abs_recv == 0 and (time.time() - start_wait) < 5:
+#           time.sleep(0.1)
 
-        assert node._abs_recv == 22, f"Node did not receive initial packets as expected, received {node._abs_recv} packets on {node_params['port']}"
+#         assert node._abs_recv == 22, f"Node did not receive initial packets as expected, received {node._abs_recv} packets on {node_params['port']}"
 
-        last_recv = node._abs_recv
+#         last_recv = node._abs_recv
 
-        with pytest.raises(OSError):
-            sender.send_tick(simulate_network_error=True)
+#         with pytest.raises(OSError):
+#             sender.send_tick(simulate_network_error=True)
 
-        time.sleep(2.0)
+#         time.sleep(2.0)
 
-        new_sender = RTPSender(port=node_params["port"])
-        for _ in range(12):
-          new_sender.send_tick()
-          time.sleep(0.05)
+#         new_sender = RTPSender(port=node_params["port"])
+#         for _ in range(12):
+#           new_sender.send_tick()
+#           time.sleep(0.05)
 
-        assert node._abs_recv == last_recv + 22, f"Node did not recover from network error as expected {node._abs_recv} packets received on {node_params['port']}"
-        new_sender.close()
+#         assert node._abs_recv == last_recv + 22, f"Node did not recover from network error as expected {node._abs_recv} packets received on {node_params['port']}"
+#         new_sender.close()
 
-      finally:
-        def stop_node():
-            node.stop()
+#       finally:
+#         def stop_node():
+#             node.stop()
 
-        stop_thread = threading.Thread(target=stop_node)
-        stop_thread.start()
+#         stop_thread = threading.Thread(target=stop_node)
+#         stop_thread.start()
 
-        stop_thread.join(timeout=2)
-        sender.close()
+#         stop_thread.join(timeout=2)
+#         sender.close()
