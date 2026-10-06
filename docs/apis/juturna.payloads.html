@@ -430,58 +430,6 @@
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="juturna.payloads.ControlPayload">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">ControlPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal:</span> <span class="pre">juturna.payloads._control_signal.ControlSignal</span> <span class="pre">=</span> <span class="pre">&lt;ControlSignal.STOP:</span> <span class="pre">-1&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.ControlPayload" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#juturna.payloads.BasePayload" title="juturna.payloads._payloads.BasePayload"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasePayload</span></code></a></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="juturna.payloads.ControlPayload.signal">
-<span class="sig-name descname"><span class="pre">signal</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#juturna.payloads.ControlSignal" title="juturna.payloads._control_signal.ControlSignal"><span class="pre">ControlSignal</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#juturna.payloads.ControlPayload.signal" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="juturna.payloads.ControlSignal">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">ControlSignal</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.ControlSignal" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">IntEnum</span></code></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="juturna.payloads.ControlSignal.RESUME">
-<span class="sig-name descname"><span class="pre">RESUME</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#juturna.payloads.ControlSignal.RESUME" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="juturna.payloads.ControlSignal.START">
-<span class="sig-name descname"><span class="pre">START</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#juturna.payloads.ControlSignal.START" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="juturna.payloads.ControlSignal.START_PROPAGATE">
-<span class="sig-name descname"><span class="pre">START_PROPAGATE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#juturna.payloads.ControlSignal.START_PROPAGATE" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="juturna.payloads.ControlSignal.STOP">
-<span class="sig-name descname"><span class="pre">STOP</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#juturna.payloads.ControlSignal.STOP" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="juturna.payloads.ControlSignal.STOP_PROPAGATE">
-<span class="sig-name descname"><span class="pre">STOP_PROPAGATE</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-2</span></em><a class="headerlink" href="#juturna.payloads.ControlSignal.STOP_PROPAGATE" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="juturna.payloads.ControlSignal.SUSPEND">
-<span class="sig-name descname"><span class="pre">SUSPEND</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#juturna.payloads.ControlSignal.SUSPEND" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="juturna.payloads.ControlSignal.WARMUP">
-<span class="sig-name descname"><span class="pre">WARMUP</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></em><a class="headerlink" href="#juturna.payloads.ControlSignal.WARMUP" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="juturna.payloads.Draft">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">Draft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">payload_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.Draft" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></p>
@@ -692,20 +640,6 @@ once it is compiled an actual payload will be generated.</p>
 <li><a class="reference internal" href="#juturna.payloads.BytesPayload"><code class="docutils literal notranslate"><span class="pre">BytesPayload</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.payloads.BytesPayload.cnt"><code class="docutils literal notranslate"><span class="pre">BytesPayload.cnt</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.BytesPayload.serialize"><code class="docutils literal notranslate"><span class="pre">BytesPayload.serialize()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#juturna.payloads.ControlPayload"><code class="docutils literal notranslate"><span class="pre">ControlPayload</span></code></a><ul>
-<li><a class="reference internal" href="#juturna.payloads.ControlPayload.signal"><code class="docutils literal notranslate"><span class="pre">ControlPayload.signal</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#juturna.payloads.ControlSignal"><code class="docutils literal notranslate"><span class="pre">ControlSignal</span></code></a><ul>
-<li><a class="reference internal" href="#juturna.payloads.ControlSignal.RESUME"><code class="docutils literal notranslate"><span class="pre">ControlSignal.RESUME</span></code></a></li>
-<li><a class="reference internal" href="#juturna.payloads.ControlSignal.START"><code class="docutils literal notranslate"><span class="pre">ControlSignal.START</span></code></a></li>
-<li><a class="reference internal" href="#juturna.payloads.ControlSignal.START_PROPAGATE"><code class="docutils literal notranslate"><span class="pre">ControlSignal.START_PROPAGATE</span></code></a></li>
-<li><a class="reference internal" href="#juturna.payloads.ControlSignal.STOP"><code class="docutils literal notranslate"><span class="pre">ControlSignal.STOP</span></code></a></li>
-<li><a class="reference internal" href="#juturna.payloads.ControlSignal.STOP_PROPAGATE"><code class="docutils literal notranslate"><span class="pre">ControlSignal.STOP_PROPAGATE</span></code></a></li>
-<li><a class="reference internal" href="#juturna.payloads.ControlSignal.SUSPEND"><code class="docutils literal notranslate"><span class="pre">ControlSignal.SUSPEND</span></code></a></li>
-<li><a class="reference internal" href="#juturna.payloads.ControlSignal.WARMUP"><code class="docutils literal notranslate"><span class="pre">ControlSignal.WARMUP</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.payloads.Draft"><code class="docutils literal notranslate"><span class="pre">Draft</span></code></a><ul>

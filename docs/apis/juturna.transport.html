@@ -391,6 +391,13 @@
 
 </dd></dl>
 
+<dl class="py exception">
+<dt class="sig sig-object py" id="juturna.transport.Full">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">Full</span></span><a class="headerlink" href="#juturna.transport.Full" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised by Queue.put() when no free slot is available in time.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.transport.Lock">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">Lock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.transport.Lock" title="Link to this definition">¶</a></dt>
@@ -426,6 +433,11 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.transport.Queue.put">
 <span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#juturna.transport.Queue.put" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.Queue.put_nowait">
+<span class="sig-name descname"><span class="pre">put_nowait</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#juturna.transport.Queue.put_nowait" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -639,6 +651,7 @@ Defaults to the threading backend if not provided.</p>
 <li><a class="reference internal" href="#juturna.transport.Event.wait"><code class="docutils literal notranslate"><span class="pre">Event.wait()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#juturna.transport.Full"><code class="docutils literal notranslate"><span class="pre">Full</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.Lock"><code class="docutils literal notranslate"><span class="pre">Lock</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.Queue"><code class="docutils literal notranslate"><span class="pre">Queue</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.transport.Queue.empty"><code class="docutils literal notranslate"><span class="pre">Queue.empty()</span></code></a></li>
@@ -646,6 +659,7 @@ Defaults to the threading backend if not provided.</p>
 <li><a class="reference internal" href="#juturna.transport.Queue.get"><code class="docutils literal notranslate"><span class="pre">Queue.get()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.Queue.get_nowait"><code class="docutils literal notranslate"><span class="pre">Queue.get_nowait()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.Queue.put"><code class="docutils literal notranslate"><span class="pre">Queue.put()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.Queue.put_nowait"><code class="docutils literal notranslate"><span class="pre">Queue.put_nowait()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.Queue.qsize"><code class="docutils literal notranslate"><span class="pre">Queue.qsize()</span></code></a></li>
 </ul>
 </li>

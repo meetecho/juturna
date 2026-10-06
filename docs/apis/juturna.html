@@ -355,7 +355,9 @@
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Buffer.empty"><code class="docutils literal notranslate"><span class="pre">Buffer.empty()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Buffer.flush"><code class="docutils literal notranslate"><span class="pre">Buffer.flush()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Buffer.get"><code class="docutils literal notranslate"><span class="pre">Buffer.get()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Buffer.get_nowait"><code class="docutils literal notranslate"><span class="pre">Buffer.get_nowait()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Buffer.put"><code class="docutils literal notranslate"><span class="pre">Buffer.put()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Buffer.wake"><code class="docutils literal notranslate"><span class="pre">Buffer.wake()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.components.html#juturna.components.Message"><code class="docutils literal notranslate"><span class="pre">Message</span></code></a><ul>
@@ -387,6 +389,7 @@
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.flush_telemetry"><code class="docutils literal notranslate"><span class="pre">Node.flush_telemetry()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.health"><code class="docutils literal notranslate"><span class="pre">Node.health</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.join"><code class="docutils literal notranslate"><span class="pre">Node.join()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.kill"><code class="docutils literal notranslate"><span class="pre">Node.kill()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.link_state"><code class="docutils literal notranslate"><span class="pre">Node.link_state()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.link_telemetry"><code class="docutils literal notranslate"><span class="pre">Node.link_telemetry()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.origins"><code class="docutils literal notranslate"><span class="pre">Node.origins</span></code></a></li>
@@ -394,6 +397,7 @@
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.put"><code class="docutils literal notranslate"><span class="pre">Node.put()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.set_on_config"><code class="docutils literal notranslate"><span class="pre">Node.set_on_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.set_source"><code class="docutils literal notranslate"><span class="pre">Node.set_source()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.signal_kill"><code class="docutils literal notranslate"><span class="pre">Node.signal_kill()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.start"><code class="docutils literal notranslate"><span class="pre">Node.start()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.static_path"><code class="docutils literal notranslate"><span class="pre">Node.static_path</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Node.status"><code class="docutils literal notranslate"><span class="pre">Node.status</span></code></a></li>
@@ -407,14 +411,13 @@
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.DAG"><code class="docutils literal notranslate"><span class="pre">Pipeline.DAG</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.destroy"><code class="docutils literal notranslate"><span class="pre">Pipeline.destroy()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.from_json"><code class="docutils literal notranslate"><span class="pre">Pipeline.from_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.kill"><code class="docutils literal notranslate"><span class="pre">Pipeline.kill()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.name"><code class="docutils literal notranslate"><span class="pre">Pipeline.name</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.pipe_id"><code class="docutils literal notranslate"><span class="pre">Pipeline.pipe_id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.pipe_path"><code class="docutils literal notranslate"><span class="pre">Pipeline.pipe_path</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.resume_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.resume_node()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.start"><code class="docutils literal notranslate"><span class="pre">Pipeline.start()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.status"><code class="docutils literal notranslate"><span class="pre">Pipeline.status</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.stop"><code class="docutils literal notranslate"><span class="pre">Pipeline.stop()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.suspend_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.suspend_node()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.update_node"><code class="docutils literal notranslate"><span class="pre">Pipeline.update_node()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.components.html#juturna.components.Pipeline.warmup"><code class="docutils literal notranslate"><span class="pre">Pipeline.warmup()</span></code></a></li>
 </ul>
@@ -539,20 +542,6 @@
 <li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.BytesPayload.serialize"><code class="docutils literal notranslate"><span class="pre">BytesPayload.serialize()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlPayload"><code class="docutils literal notranslate"><span class="pre">ControlPayload</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlPayload.signal"><code class="docutils literal notranslate"><span class="pre">ControlPayload.signal</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal"><code class="docutils literal notranslate"><span class="pre">ControlSignal</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.RESUME"><code class="docutils literal notranslate"><span class="pre">ControlSignal.RESUME</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.START"><code class="docutils literal notranslate"><span class="pre">ControlSignal.START</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.START_PROPAGATE"><code class="docutils literal notranslate"><span class="pre">ControlSignal.START_PROPAGATE</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.STOP"><code class="docutils literal notranslate"><span class="pre">ControlSignal.STOP</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.STOP_PROPAGATE"><code class="docutils literal notranslate"><span class="pre">ControlSignal.STOP_PROPAGATE</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.SUSPEND"><code class="docutils literal notranslate"><span class="pre">ControlSignal.SUSPEND</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.ControlSignal.WARMUP"><code class="docutils literal notranslate"><span class="pre">ControlSignal.WARMUP</span></code></a></li>
-</ul>
-</li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.Draft"><code class="docutils literal notranslate"><span class="pre">Draft</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.Draft.clear"><code class="docutils literal notranslate"><span class="pre">Draft.clear()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.payloads.html#juturna.payloads.Draft.compile"><code class="docutils literal notranslate"><span class="pre">Draft.compile()</span></code></a></li>
@@ -600,6 +589,7 @@
 <li class="toctree-l4"><a class="reference internal" href="juturna.transport.html#juturna.transport.Event.wait"><code class="docutils literal notranslate"><span class="pre">Event.wait()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="juturna.transport.html#juturna.transport.Full"><code class="docutils literal notranslate"><span class="pre">Full</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.transport.html#juturna.transport.Lock"><code class="docutils literal notranslate"><span class="pre">Lock</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.transport.html#juturna.transport.Queue"><code class="docutils literal notranslate"><span class="pre">Queue</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="juturna.transport.html#juturna.transport.Queue.empty"><code class="docutils literal notranslate"><span class="pre">Queue.empty()</span></code></a></li>
@@ -607,6 +597,7 @@
 <li class="toctree-l4"><a class="reference internal" href="juturna.transport.html#juturna.transport.Queue.get"><code class="docutils literal notranslate"><span class="pre">Queue.get()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.transport.html#juturna.transport.Queue.get_nowait"><code class="docutils literal notranslate"><span class="pre">Queue.get_nowait()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.transport.html#juturna.transport.Queue.put"><code class="docutils literal notranslate"><span class="pre">Queue.put()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.html#juturna.transport.Queue.put_nowait"><code class="docutils literal notranslate"><span class="pre">Queue.put_nowait()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.transport.html#juturna.transport.Queue.qsize"><code class="docutils literal notranslate"><span class="pre">Queue.qsize()</span></code></a></li>
 </ul>
 </li>
