@@ -1,12 +1,11 @@
 # noqa: D104
+import importlib
+
 import juturna.names as names
 import juturna.components as components
-import juturna.nodes as nodes
 import juturna.utils as utils
-import juturna.hub as hub
 import juturna.meta as meta
 import juturna.payloads as payloads
-import juturna.remotizer as remotizer
 
 import juturna.utils.log_utils as log
 
@@ -25,3 +24,14 @@ __all__ = [
     'remotizer',
     'payloads',
 ]
+
+
+def __getattr__(name: str):
+    """Import juturna.nodes, juturna.hub and juturna.remotizer on first use"""
+    if name in ('nodes', 'hub', 'remotizer'):
+        module = importlib.import_module(f'juturna.{name}')
+
+        globals()[name] = module
+        return module
+
+    raise AttributeError(f"module 'juturna' has no attribute {name!r}")
