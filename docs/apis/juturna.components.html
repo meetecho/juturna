@@ -768,7 +768,7 @@ immutability is ensured.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.components.Pipeline">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">Pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">Pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'main'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>A pipeline aggregates nodes to create a data workflow from a source node to
 destination nodes.</p>
@@ -874,6 +874,12 @@ upcoming data and to propagate the stopping signal to their destinations</p>
 <p>This method creates all the concrete nodes in the pipe, allocating
 their required resources. If a node is flagged as to be deployed
 remotely, that node will be replaced with a proc warp node.</p>
+<p>Only the nodes of this pipeline’s worker are built. A link from one of
+them to a node of another worker delivers messages to the object
+returned by the transport’s <code class="docutils literal notranslate"><span class="pre">remote_destination(node_name)</span></code>, so the
+transport must provide it; a link from another worker’s node only
+adds that node to the origins of the local one. Cycles are checked
+on the local graph only.</p>
 </dd></dl>
 
 </dd></dl>
