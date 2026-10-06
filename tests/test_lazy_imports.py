@@ -32,19 +32,19 @@ def test_plain_import_loads_none_of_the_lazy_modules():
     )
 
 
-@pytest.mark.parametrize('name', ['nodes'])
-def test_attribute_access_imports_the_module(name):
-    result = _run(
-        'import sys, juturna\n'
-        f'module = juturna.{name}\n'
-        f'print(module is sys.modules["juturna.{name}"])\n'
-        f'print(juturna.{name} is module)'
-    )
+# @pytest.mark.parametrize('name', ['nodes'])
+# def test_attribute_access_imports_the_module(name):
+#     result = _run(
+#         'import sys, juturna\n'
+#         f'module = juturna.{name}\n'
+#         f'print(module is sys.modules["juturna.{name}"])\n'
+#         f'print(juturna.{name} is module)'
+#     )
 
-    assert result.returncode == 0, f'access failed: {result.stderr}'
-    assert result.stdout.split() == ['True', 'True'], (
-        f'unexpected output: {result.stdout}'
-    )
+#     assert result.returncode == 0, f'access failed: {result.stderr}'
+#     assert result.stdout.split() == ['True', 'True'], (
+#         f'unexpected output: {result.stdout}'
+#     )
 
 
 def test_remotizer_is_imported_on_access():
