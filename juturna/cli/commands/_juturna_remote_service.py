@@ -269,13 +269,11 @@ def serve(args):
     else:
         default_config = dict()
 
-    logger.info(f"Building node '{args.node_name}' from '{args.plugin_dir}'...")
+    logger.info(f"Building node '{args.node_name}' ({args.node_type}) ...")
 
     try:
         node_instance, _ = _standalone_builder(
             name=args.node_name,
-            plugin_dir=args.plugin_dir,
-            node_mark=args.node_mark,
             node_type=args.node_type,
             context_runtime_path=args.pipe_name,
             config=default_config.copy(),

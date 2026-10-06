@@ -311,13 +311,6 @@ class Pipeline:
         nodes = self._raw_config['pipeline']['nodes']
         links = self._raw_config['pipeline']['links']
 
-        internal_nodes = sum(map(lambda x: 1 if x.get('mark') else 0, nodes))
-
-        if internal_nodes != len(nodes):
-            self._logger.warning(
-                'your configuration includes both local and installed plugins'
-            )
-
         local_nodes = [
             node
             for node in nodes
@@ -333,7 +326,7 @@ class Pipeline:
 
             if node.get('warped', False):
                 warped_node_cfg = node['configuration']
-                node['type'] = 'proc'
+                node['type'] = 'Warp'
                 node['configuration'] = node['warp_configuration']
                 node['configuration']['remote_config'] = warped_node_cfg
 
@@ -350,7 +343,6 @@ class Pipeline:
                 _node: Node = _builder._get_node(
                     node,
                     pipe_name=self.name,
-                    plugin_dirs=self._raw_config.get('plugins', list()),
                     transport=self._transport,
                 )
 

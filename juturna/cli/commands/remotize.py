@@ -24,14 +24,6 @@ def setup_parser(subparsers):  # noqa: D103
     )
 
     parser.add_argument(
-        '--node-mark', '-m', required=False, help='mark of the node to run'
-    )
-
-    parser.add_argument(
-        '--plugin-dir', '-P', required=False, help='path to plugin directory'
-    )
-
-    parser.add_argument(
         '--pipe-name', '-N', default='warped_node', help='pipeline name context'
     )
 

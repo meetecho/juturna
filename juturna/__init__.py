@@ -11,27 +11,28 @@ import juturna.utils.log_utils as log
 
 
 __app_name__ = 'juturna'
-__version__ = '2.1.1'
+__version__ = '3.0.0'
 
 __all__ = [
     'names',
     'components',
-    'nodes',
     'utils',
     'log',
     'meta',
-    'hub',
     'remotizer',
     'payloads',
 ]
 
+__path__ = __import__('pkgutil').extend_path(__path__, __name__)
+
 
 def __getattr__(name: str):
-    """Import juturna.nodes, juturna.hub and juturna.remotizer on first use"""
-    if name in ('nodes', 'hub', 'remotizer'):
+    """Import juturna.nodes and juturna.remotizer on first use"""
+    if name in ('nodes', 'remotizer'):
         module = importlib.import_module(f'juturna.{name}')
 
         globals()[name] = module
+
         return module
 
     raise AttributeError(f"module 'juturna' has no attribute {name!r}")

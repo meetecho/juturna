@@ -13,8 +13,6 @@ def _standalone_builder(
     name: str,
     node_type: str,
     context_runtime_path: str,
-    node_mark: str = None,
-    plugin_dir: str = '',
     config: dict = None,
 ) -> tuple[Node | None, dict]:
     """
@@ -33,10 +31,6 @@ def _standalone_builder(
         Type of the node to be deployed.
     context_runtime_path : str
         The runtime path for the context.
-    node_mark : str
-        The mark of the node to be deployed.
-    plugin_dir : str
-        The directory where plugins are located.
     config : dict
         The configuration dictionary for the node.
 
@@ -52,18 +46,12 @@ def _standalone_builder(
         'configuration': config,
     }
 
-    if node_mark:
-        node['mark'] = node_mark
-
     node_runtime_folder = pathlib.Path(REMOTE_PIPE_FOLDER, context_runtime_path)
     node_runtime_folder.mkdir(exist_ok=True, parents=True)
-
-    plugin_dirs = [plugin_dir] if plugin_dir else None
 
     _node: Node = _builder._get_node(
         node,
         pipe_name=context_runtime_path,
-        plugin_dirs=plugin_dirs,
     )
 
     _node.pipe_id = context_runtime_path
