@@ -326,6 +326,58 @@
 <section id="module-juturna.transport">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.transport" title="Link to this heading">¶</a></h2>
 <dl class="py class">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">BrowserTransport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue_capacity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_meta_json_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4096</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_payload_bytes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2000000</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.transport.BrowserTransport" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Transport backend for a pipeline running in a browser (Pyodide)</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.is_current">
+<span class="sig-name descname"><span class="pre">is_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.transport.WorkerHandle" title="juturna.transport._base.WorkerHandle"><span class="pre">WorkerHandle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.is_current" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.new_condition">
+<span class="sig-name descname"><span class="pre">new_condition</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserCondition</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.new_condition" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.new_event">
+<span class="sig-name descname"><span class="pre">new_event</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserEvent</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.new_event" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.new_lock">
+<span class="sig-name descname"><span class="pre">new_lock</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserLock</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.new_lock" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.new_queue">
+<span class="sig-name descname"><span class="pre">new_queue</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">maxsize</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">local</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserQueue</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.new_queue" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.node_scope">
+<span class="sig-name descname"><span class="pre">node_scope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shared</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">AbstractContextManager</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.node_scope" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.remote_destination">
+<span class="sig-name descname"><span class="pre">remote_destination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.remote_destination" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.spawn">
+<span class="sig-name descname"><span class="pre">spawn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">daemon</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">_BrowserWorker</span></span></span><a class="headerlink" href="#juturna.transport.BrowserTransport.spawn" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.transport.BrowserTransport.supports_telemetry">
+<span class="sig-name descname"><span class="pre">supports_telemetry</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#juturna.transport.BrowserTransport.supports_telemetry" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="juturna.transport.Condition">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">Condition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.transport.Condition" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></p>
@@ -568,12 +620,15 @@ workers.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="juturna.transport.get_transport">
-<span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">get_transport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#juturna.transport.TransportBackend" title="juturna.transport._base.TransportBackend"><span class="pre">TransportBackend</span></a></span></span><a class="headerlink" href="#juturna.transport.get_transport" title="Link to this definition">¶</a></dt>
-<dd><p>Resolve a transport backend by name.</p>
+<span class="sig-prename descclassname"><span class="pre">juturna.transport.</span></span><span class="sig-name descname"><span class="pre">get_transport</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#juturna.transport.TransportBackend" title="juturna.transport._base.TransportBackend"><span class="pre">TransportBackend</span></a></span></span><a class="headerlink" href="#juturna.transport.get_transport" title="Link to this definition">¶</a></dt>
+<dd><p>Resolve a transport backend from its configuration.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em> | </em><em>None</em>) – The name of the transport backend, as registered in <cite>_TRANSPORTS</cite>.
-Defaults to the threading backend if not provided.</p>
+<dd class="field-odd"><p><strong>spec</strong> (<em>str</em><em> | </em><em>dict</em><em> | </em><em>None</em>) – Either the name of the backend, as registered in <cite>_TRANSPORTS</cite>, or a
+dictionary with its <code class="docutils literal notranslate"><span class="pre">name</span></code> and the options of the backend, that are
+passed to its constructor, like
+<code class="docutils literal notranslate"><span class="pre">{'name':</span> <span class="pre">'browser',</span> <span class="pre">'max_payload_bytes':</span> <span class="pre">4000000}</span></code>. Defaults to the
+threading backend if not provided.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A new instance of the requested backend.</p>
@@ -582,7 +637,8 @@ Defaults to the threading backend if not provided.</p>
 <dd class="field-odd"><p><a class="reference internal" href="#juturna.transport.TransportBackend" title="juturna.transport.TransportBackend">TransportBackend</a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If <cite>name</cite> does not match any registered backend.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If the name does not match any registered backend, or the backend
+    does not accept one of the options.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -655,6 +711,18 @@ Defaults to the threading backend if not provided.</p>
             <ul>
 <li><a class="reference internal" href="#">juturna.transport package</a><ul>
 <li><a class="reference internal" href="#module-juturna.transport">Module contents</a><ul>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport"><code class="docutils literal notranslate"><span class="pre">BrowserTransport</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.is_current"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.is_current()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.new_condition"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_condition()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.new_event"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_event()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.new_lock"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_lock()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.new_queue"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_queue()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.node_scope"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.node_scope()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.remote_destination"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.remote_destination()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.spawn"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.spawn()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.transport.BrowserTransport.supports_telemetry"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.supports_telemetry</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#juturna.transport.Condition"><code class="docutils literal notranslate"><span class="pre">Condition</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.transport.Condition.notify_all"><code class="docutils literal notranslate"><span class="pre">Condition.notify_all()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.Condition.wait_for"><code class="docutils literal notranslate"><span class="pre">Condition.wait_for()</span></code></a></li>
