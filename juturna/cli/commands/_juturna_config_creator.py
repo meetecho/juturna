@@ -371,8 +371,7 @@ class PipelineBuilder:
         help_text = """
 [b cyan]Add node to pipe[/b cyan]:
     <node_type>  Create a node (TAB lists the available types)
-                 AudioRtp, nextip.CaccaNode, extensions.nodes.MyNode,
-                 contrib.author.nodes.MyNode
+                 AudioRtp, extensions.nodes.MyNode, contrib.author.nodes.MyNode
 
 [b cyan]Special Commands[/b cyan]:
     .link     Create a link between nodes
@@ -456,8 +455,8 @@ class NodeCompleter(Completer):
 
             return
 
-        # node types can be dotted (nextip.CaccaNode), so they are matched
-        # against the whole input rather than the last word
+        # node types can be dotted, so they are matched against the whole input
+        # rather than the last word
         for node_type in self.cli._node_types:
             if node_type.startswith(full_text):
                 yield Completion(
