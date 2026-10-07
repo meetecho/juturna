@@ -30,7 +30,7 @@ def discover_nodes() -> dict:
     Collect the nodes available in the juturna node namespaces
 
     Returns a dictionary keyed by node type, formatted as the node builder
-    expects it in a pipeline configuration (``AudioRtp``, ``nextip.CaccaNode``,
+    expects it in a pipeline configuration (``AudioRtp``,
     ``extensions.nodes.MyNode``, ``contrib.author.nodes.MyNode``). Namespaces
     that are not installed are skipped.
     """
