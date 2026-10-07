@@ -2,8 +2,12 @@
 Create node stub
 
 This command creates a node skeleton, starting from basic pieces of information
-such as node name, node type, and node class if it cannot be automatically
-inferred from the name. Author info also included.
+such as node name, contrib package, and node class if it cannot be
+automatically inferred from the name. Author info also included.
+
+The command is meant to be executed in the root of a node repository: the node
+is created in src/juturna/contrib/<package>/nodes/, and registered in the
+__init__.py file of the nodes package.
 """
 
 from juturna.cli.commands import _node_stub
@@ -22,7 +26,13 @@ def setup_parser(subparsers):  # noqa: D103
         required=True,
         help='node name, used for folder and module',
     )
-    parser.add_argument('--node-type', '-t', type=str, help='node type')
+    parser.add_argument(
+        '--package',
+        '-p',
+        type=str,
+        required=True,
+        help='contrib package name (juturna.contrib.<package>.nodes)',
+    )
     parser.add_argument(
         '--node-class',
         '-N',
@@ -47,8 +57,8 @@ def setup_parser(subparsers):  # noqa: D103
         '--destination-folder',
         '-d',
         type=str,
-        default='./plugins',
-        help='destination folder for the plugin (defaulted to ./plugins)',
+        default='./src',
+        help='source folder of the node repository (defaulted to ./src)',
     )
 
 

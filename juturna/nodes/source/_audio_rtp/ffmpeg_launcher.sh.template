@@ -1,9 +1,0 @@
-ffmpeg \
-    -protocol_whitelist file,rtp,udp \
-    -i $_sdp_location \
-    -f s16le \
-    -ac $_channels \
-    -acodec pcm_s16le \
-    -ar $_audio_rate \
-    -loglevel $_process_log_level \
-    pipe:

@@ -1,9 +1,5 @@
 import json
 import sys
-import os
-import importlib
-import pkgutil
-import copy
 
 from rich.console import Console
 from rich.table import Table
@@ -23,75 +19,19 @@ from juturna.cli.commands import _create_tools
 
 
 class PipelineBuilder:
-    def __init__(self, node_folders: list[str], origins: dict):
+    def __init__(self):
         self._cns = Console()
         self._history = InMemoryHistory()
         self._completer = NodeCompleter(self)
 
-        self._registry = dict()
         self._links = dict()
-        self._folder_origins = dict()
         self._mode = 'base'
 
-        all_folders = list(node_folders)
-
-        for folder in node_folders:
-            self._folder_origins[folder] = origins[folder]
-
-        try:
-            ext_mod = importlib.import_module('juturna.extensions.nodes')
-            if ext_mod.__file__:
-                ext_dir = os.path.dirname(ext_mod.__file__)
-                all_folders.append(ext_dir)
-                self._folder_origins[ext_dir] = 'extensions'
-        except ImportError:
-            pass
-
-        try:
-            contrib_mod = importlib.import_module('juturna.contrib')
-            if contrib_mod.__path__:
-                for _, author_name, ispkg in pkgutil.iter_modules(
-                    contrib_mod.__path__
-                ):
-                    if ispkg:
-                        try:
-                            nodes_mod = importlib.import_module(
-                                f'juturna.contrib.{author_name}.nodes'
-                            )
-                            if nodes_mod.__file__:
-                                nodes_dir = os.path.dirname(nodes_mod.__file__)
-                                all_folders.append(nodes_dir)
-                                self._folder_origins[nodes_dir] = (
-                                    f'contrib.{author_name}'
-                                )
-                        except ImportError:
-                            pass
-        except ImportError:
-            pass
-
-        for folder in all_folders:
-            nodes = _create_tools.discover_nodes(folder)
-            origin = self._folder_origins.get(folder, 'unknown')
-
-            for node_type in nodes:
-                if node_type not in self._registry:
-                    self._registry[node_type] = {}
-
-                for mark in nodes[node_type]:
-                    node_cfg = nodes[node_type][mark]
-                    if node_cfg:
-                        node_cfg['_origin'] = origin
-
-                    if mark not in self._registry[node_type]:
-                        self._registry[node_type][mark] = []
-
-                    self._registry[node_type][mark].append(node_cfg)
-
-        self._node_types = sorted(_create_tools.get_types(self._registry))
+        self._registry = _create_tools.discover_nodes()
+        self._node_types = sorted(self._registry.keys())
 
         self._pipeline = {
             'version': jt.__version__,
-            'plugins': ['./plugins'],
             'pipeline': {
                 'name': '',
                 'id': '',
@@ -111,6 +51,13 @@ class PipelineBuilder:
                 border_style='cyan',
             )
         )
+
+        if not self._registry:
+            self._cns.print(
+                'No nodes found: install juturna-nodes or a package providing '
+                'juturna.extensions.nodes or juturna.contrib.<author>.nodes',
+                style='yellow',
+            )
 
     def run(self):
         try:
@@ -168,58 +115,15 @@ class PipelineBuilder:
         if self._mode == 'base':
             if command.startswith('.'):
                 self._execute_special(command)
-            elif '/' in command:
-                parts = command.split('/', 1)
-
-                if len(parts) == 2:
-                    node_type, rest = parts
-
-                    origin = None
-                    if '@' in rest:
-                        mark, origin = rest.split('@', 1)
-                    else:
-                        mark = rest
-
-                    if node_type in self._node_types:
-                        if mark in self._registry.get(node_type, {}):
-                            self._create_node(node_type, mark, origin)
-                        else:
-                            self._cns.print(
-                                f'Unknown mark: {mark}', style='red'
-                            )
-
-                            marks = sorted(
-                                list(self._registry.get(node_type, {}).keys())
-                            )
-
-                            self._cns.print(
-                                f'Available: {", ".join(marks)}',
-                                style='dim',
-                            )
-                    else:
-                        self._cns.print(
-                            f'Unknown node type: {node_type}', style='red'
-                        )
-                else:
-                    self._cns.print(
-                        'Invalid syntax. Use: node_type/mark', style='red'
-                    )
+            elif command in self._registry:
+                self._create_node(command)
             else:
-                if command in self._node_types:
-                    marks = sorted(list(self._registry.get(command, {}).keys()))
-
-                    if marks:
-                        self._cns.print(
-                            f"Type '{command}/' to see available marks",
-                            style='yellow',
-                        )
-                    else:
-                        self._cns.print(
-                            f"No marks found for '{command}'", style='red'
-                        )
-                else:
-                    self._cns.print(f'Unknown command: {command}', style='red')
-                    self._cns.print('Use .help for command list', style='dim')
+                self._cns.print(f'Unknown node type: {command}', style='red')
+                self._cns.print(
+                    'Use TAB to list the available node types, or .help for '
+                    'the command list',
+                    style='dim',
+                )
 
     def _execute_special(self, command: str):
         parts = command.split()
@@ -253,52 +157,12 @@ class PipelineBuilder:
             self._cns.print(f'Unknown command: {cmd}', style='red')
             self._cns.print('Use .help to see available commands', style='dim')
 
-    def _create_node(
-        self, node_type: str, mark: str, specific_origin: str = None
-    ):
-        configs = self._registry[node_type].get(mark, [])
+    def _create_node(self, node_type: str):
+        config = self._registry[node_type]
+        origin = config['origin']
 
-        if not configs:
-            self._cns.print('Failed to load node configuration', style='dim')
-            return
-
-        if specific_origin:
-            matched = [
-                c for c in configs if c.get('_origin') == specific_origin
-            ]
-            if matched:
-                config = matched[0]
-            else:
-                self._cns.print(
-                    f'Origin "{specific_origin}" not found for this node.',
-                    style='red',
-                )
-                return
-        elif len(configs) > 1:
-            self._cns.print(
-                '\nMultiple plugins found for this node. Select origin:',
-                style='yellow',
-            )
-            for i, cfg in enumerate(configs):
-                self._cns.print(f'  [{i + 1}] {cfg.get("_origin", "unknown")}')
-
-            while True:
-                choice = prompt('Origin number: ')
-                try:
-                    idx = int(choice) - 1
-                    if 0 <= idx < len(configs):
-                        config = configs[idx]
-                        break
-                    else:
-                        self._cns.print('Invalid selection', style='red')
-                except ValueError:
-                    self._cns.print('Please enter a valid number', style='red')
-        else:
-            config = configs[0]
-
-        origin = config.get('_origin', 'unknown')
         self._cns.print(
-            f'\nCreating node: {node_type}/{mark} [yellow]({origin})[/yellow]',
+            f'\nCreating node: {node_type} [yellow]({origin})[/yellow]',
             style='bold',
         )
 
@@ -364,8 +228,6 @@ class PipelineBuilder:
         node = {
             'name': name.strip(),
             'type': node_type,
-            'mark': mark,
-            'origin': origin,
             'configuration': node_config,
         }
 
@@ -482,45 +344,12 @@ class PipelineBuilder:
 
                 return
 
-        pipeline_to_save = copy.deepcopy(self._pipeline)
-
-        has_local = False
-        has_installed = False
-
-        for node in pipeline_to_save['pipeline']['nodes']:
-            origin = node.pop('origin', 'unknown')
-
-            if origin == 'extensions' or origin.startswith('contrib.'):
-                has_installed = True
-
-                mark = node.get('mark', '')
-                class_name = ''.join(
-                    word.capitalize() for word in mark.split('_')
-                )
-
-                if origin == 'extensions':
-                    node['type'] = (
-                        f'extensions.nodes.{node["type"]}.{class_name}'
-                    )
-                elif origin.startswith('contrib.'):
-                    node['type'] = f'{origin}.nodes.{node["type"]}.{class_name}'
-
-                node.pop('mark', None)
-            else:
-                has_local = True
-
-        if has_local and has_installed:
-            self._cns.print(
-                'Warning: You are mixing local plugins with installed plugins.',
-                style='yellow',
-            )
-
         default = f'{self._pipeline["pipeline"]["name"]}.json'
         filename = prompt('Filename: ', default=default)
 
         try:
             with open(filename, 'w') as f:
-                json.dump(pipeline_to_save, f, indent=2)
+                json.dump(self._pipeline, f, indent=2)
             self._cns.print(f'Pipeline saved to {filename}', style='green')
 
             sys.exit(0)
@@ -541,7 +370,8 @@ class PipelineBuilder:
     def _show_help(self):
         help_text = """
 [b cyan]Add node to pipe[/b cyan]:
-    <node_type>/<node_mark>      Create a node
+    <node_type>  Create a node (TAB lists the available types)
+                 AudioRtp, extensions.nodes.MyNode, contrib.author.nodes.MyNode
 
 [b cyan]Special Commands[/b cyan]:
     .link     Create a link between nodes
@@ -564,7 +394,7 @@ class PipelineBuilder:
 
         table = Table()
         table.add_column('Name', style='cyan')
-        table.add_column('Type/Mark', style='green')
+        table.add_column('Type', style='green')
         table.add_column('Origin', style='yellow')
         table.add_column('Config', style='dim')
 
@@ -574,8 +404,8 @@ class PipelineBuilder:
             )
             table.add_row(
                 node['name'],
-                f'{node["type"]}/{node["mark"]}',
-                node.get('origin', 'unknown'),
+                node['type'],
+                self._registry.get(node['type'], {}).get('origin', 'unknown'),
                 config[:40],
             )
 
@@ -625,53 +455,12 @@ class NodeCompleter(Completer):
 
             return
 
-        if '/' in full_text:
-            parts = full_text.split('/', 1)
-
-            if len(parts) == 2:
-                node_type, rest = parts
-
-                partial_mark = rest
-                partial_origin = None
-                if '@' in rest:
-                    partial_mark, partial_origin = rest.split('@', 1)
-
-                if node_type in self.cli._node_types:
-                    marks_dict = self.cli._registry.get(node_type, {})
-
-                    for mark, node_configs in sorted(marks_dict.items()):
-                        if mark.startswith(partial_mark):
-                            for node_info in node_configs:
-                                origin = (
-                                    node_info.get('_origin', 'unknown')
-                                    if node_info
-                                    else 'unknown'
-                                )
-
-                                if (
-                                    partial_origin is not None
-                                    and not origin.startswith(partial_origin)
-                                ):
-                                    continue
-
-                                if (
-                                    len(node_configs) > 1
-                                    or partial_origin is not None
-                                ):
-                                    suggestion = f'{node_type}/{mark}@{origin}'
-                                    display_text = f'{node_type}/{mark}'
-                                else:
-                                    suggestion = f'{node_type}/{mark}'
-                                    display_text = suggestion
-
-                                yield Completion(
-                                    suggestion,
-                                    start_position=-len(full_text),
-                                    display=display_text,
-                                    display_meta=f'[{origin}]',
-                                )
-            return
-
-        for item in self.cli._get_base_commands():
-            if item.startswith(word):
-                yield Completion(item, start_position=-len(word))
+        # node types can be dotted, so they are matched against the whole input
+        # rather than the last word
+        for node_type in self.cli._node_types:
+            if node_type.startswith(full_text):
+                yield Completion(
+                    node_type,
+                    start_position=-len(full_text),
+                    display_meta=f'[{self.cli._registry[node_type]["origin"]}]',
+                )

@@ -1,31 +1,89 @@
-from juturna.components._node_builder import _builder_internal
-from juturna.components._node_builder import _builder_external
+import tomllib
+import importlib
+import importlib.resources
+
+from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
+from juturna.components._synchronisers import _SYNCHRONISERS
+
+from juturna.components._node_builder._utils import _resolve_env_var
+from juturna.components._node_builder._utils import _update_local_with_remote
 
 from juturna.transport import TransportBackend
+
+
+_JT_BUILTIN_PREFIX = 'juturna.nodes'
+_JT_EXTENSION_PREFIX = 'juturna'
 
 
 def _get_node(
     node: dict,
     pipe_name: str,
-    plugin_dirs: list = None,
     transport: TransportBackend | None = None,
 ):
-    """
-    Build a concrete node
-    The current building system instantiates both local and external nodes. The
-    key differentiating them is mark, only available for local nodes. Hence, if
-    the passed node has the mark attribute, it will be treated as a local node
-    (and therefore, a plugin directory will be required), otherwise the node
-    will be treated as external.
-    """
-    if node.get('mark'):
-        return _builder_internal.build_component(
-            node,
-            plugin_dirs=plugin_dirs,
-            pipe_name=pipe_name,
-            transport=transport,
-        )
+    node_full_path = node['type']
+    node_configuration = node['configuration']
+    node_sync = node.get('sync')
 
-    return _builder_external.build_node(
-        node, pipe_name=pipe_name, transport=transport
+    # node_name = node_full_path.split('.')[-1]
+
+    node_class, default_config = _resolve_node(node_full_path)
+    default_args = default_config['arguments']
+
+    operational_config = _update_local_with_remote(
+        default_args, node_configuration
     )
+
+    items_to_process = [
+        (key, value)
+        for key, value in operational_config.items()
+        if isinstance(value, str)
+        and value.startswith(JUTURNA_ENV_VAR_PREFIX)
+        and key in default_args
+    ]
+
+    operational_config.update(
+        {
+            key: _resolve_env_var(key, value, node['name'], default_args)
+            for key, value in items_to_process
+        }
+    )
+
+    synchroniser = _SYNCHRONISERS.get(node_sync)
+    concrete_node = node_class(
+        **operational_config,
+        **{
+            'node_name': node['name'],
+            'pipe_name': pipe_name,
+            'synchroniser': synchroniser,
+            'transport': transport,
+        },
+    )
+
+    concrete_node.configure()
+
+    return concrete_node
+
+
+def _resolve_node(node_full_path: str) -> str:
+    node_name = node_full_path.split('.')[-1]
+    node_path = '.'.join(node_full_path.split('.')[:-1])
+    node_header = node_path.split('.')[0]
+
+    prefix = (
+        _JT_EXTENSION_PREFIX
+        if node_header in ['extensions', 'contrib']
+        else _JT_BUILTIN_PREFIX
+    )
+
+    node_path = '.'.join(p for p in (prefix, node_path) if p)
+
+    node_module = importlib.import_module(node_path)
+    node_class = getattr(node_module, node_name)
+    config_file_path = (
+        importlib.resources.files(node_class.__module__) / 'config.toml'
+    )
+
+    with open(config_file_path, 'rb') as f:
+        default_config = tomllib.load(f)
+
+    return node_class, default_config

@@ -17,7 +17,6 @@ def test_simple_pipe_generated_messages(test_config):
 
     pipeline_config = {
         'version': '0.2.0',
-        'plugins': ['./tests/test_plugins'],
         "pipeline": {
             'name': 'e2e_test_pipeline_generated_messages',
             'id': 'e2e_1',
@@ -25,14 +24,12 @@ def test_simple_pipe_generated_messages(test_config):
             'nodes': [
                 {
                     'name': 'source_1',
-                    'type': 'source',
-                    'mark': 'sequencer',
+                    'type': 'contrib.jt_test.nodes.Sequencer',
                     'configuration': {}
                 },
                 {
                     'name': 'sink_1',
-                    'type': 'sink',
-                    'mark': 'crasher',
+                    'type': 'contrib.jt_test.nodes.Crasher',
                     'configuration': {}
                 }
             ],
@@ -59,7 +56,6 @@ def test_simple_pipe_dumped_messages(test_config):
 
     pipeline_config = {
         'version': '0.2.0',
-        'plugins': ['./tests/test_plugins'],
         "pipeline": {
             'name': 'e2e_test_pipeline_dumped_messages',
             'id': 'e2e_1',
@@ -67,14 +63,12 @@ def test_simple_pipe_dumped_messages(test_config):
             'nodes': [
                 {
                     'name': 'source_1',
-                    'type': 'source',
-                    'mark': 'sequencer',
+                    'type': 'contrib.jt_test.nodes.Sequencer',
                     'configuration': {}
                 },
                 {
                     'name': 'sink_1',
-                    'type': 'sink',
-                    'mark': 'crasher',
+                    'type': 'contrib.jt_test.nodes.Crasher',
                     'configuration': {}
                 }
             ],
@@ -112,7 +106,6 @@ def test_simple_pipe_synchroniser(test_config):
 
     pipeline_config = {
         'version': '0.2.0',
-        'plugins': ['./tests/test_plugins'],
         "pipeline": {
             'name': 'e2e_test_pipeline_synchroniser',
             'id': 'e2e_1',
@@ -120,16 +113,14 @@ def test_simple_pipe_synchroniser(test_config):
             'nodes': [
                 {
                     'name': 'source_1',
-                    'type': 'source',
-                    'mark': 'sequencer',
+                    'type': 'contrib.jt_test.nodes.Sequencer',
                     'configuration': {
                         'sample_rate': 100
                     }
                 },
                 {
                     'name': 'proc_1',
-                    'type': 'proc',
-                    'mark': 'aggregator',
+                    'type': 'contrib.jt_test.nodes.Aggregator',
                     'configuration': {}
                 }
             ],

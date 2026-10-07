@@ -26,7 +26,6 @@ class RemoteTransport(ThreadingTransport):
 
 def _config(tmp_path, sink_worker='b'):
     return {
-        'plugins': ['tests/test_plugins'],
         'pipeline': {
             'name': 'workers',
             'id': 'workers-1',
@@ -34,14 +33,12 @@ def _config(tmp_path, sink_worker='b'):
             'nodes': [
                 {
                     'name': 's',
-                    'type': 'source',
-                    'mark': 'data_streamer',
+                    'type': 'contrib.jt_test.nodes.DataStreamer',
                     'configuration': {'rate': 20},
                 },
                 {
                     'name': 'k',
-                    'type': 'sink',
-                    'mark': 'dumper',
+                    'type': 'contrib.jt_test.nodes.Dumper',
                     'configuration': {},
                     'worker': sink_worker,
                 },

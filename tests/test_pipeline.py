@@ -20,9 +20,6 @@ test_pipeline_folder = './tests/running_pipelines'
 with open(pathlib.Path(test_pipelines, 'test_empty_pipeline.json'), 'r') as f:
     empty_config = json.load(f)
 
-with open(pathlib.Path(test_pipelines, 'test_audio_pipeline.json'), 'r') as f:
-    audio_config = json.load(f)
-
 with open(pathlib.Path(test_pipelines, 'test_cyclic_pipeline.json'), 'r') as f:
     cyclic_config = json.load(f)
 
@@ -105,7 +102,6 @@ def test_pipeline_warmup_is_idempotent_loopback():
 def _sequencer_crasher_config(name: str, folder: str) -> dict:
     return {
         'version': '0.2.0',
-        'plugins': ['./tests/test_plugins'],
         'pipeline': {
             'name': name,
             'id': name,
@@ -113,14 +109,12 @@ def _sequencer_crasher_config(name: str, folder: str) -> dict:
             'nodes': [
                 {
                     'name': 'source_1',
-                    'type': 'source',
-                    'mark': 'sequencer',
+                    'type': 'contrib.jt_test.nodes.Sequencer',
                     'configuration': {},
                 },
                 {
                     'name': 'sink_1',
-                    'type': 'sink',
-                    'mark': 'crasher',
+                    'type': 'contrib.jt_test.nodes.Crasher',
                     'configuration': {},
                 },
             ],

@@ -24,7 +24,6 @@ def run_around_tests():
 def test_pipeline_with_env_var_in_configuration(test_config):
     config = {
         'version': '0.1.0',
-        'plugins': ['./plugins'],
         'pipeline': {
             'name': 'test_env_pipeline',
             'id': '9999999999',
@@ -32,8 +31,7 @@ def test_pipeline_with_env_var_in_configuration(test_config):
             'nodes': [
                 {
                     'name': 'test_node',
-                    'type': 'proc',
-                    'mark': 'passthrough_identity',
+                    'type': 'contrib.jt_test.nodes.PassthroughIdentity',
                     'configuration': {
                         'delay': '$JT_ENV_TEST_DELAY'
                     }
@@ -68,7 +66,6 @@ def test_pipeline_with_missing_env_var(test_config, caplog):
 
     config = {
         'version': '0.1.0',
-        'plugins': ['./plugins'],
         'pipeline': {
             'name': 'test_missing_env_pipeline',
             'id': '8888888888',
@@ -76,8 +73,7 @@ def test_pipeline_with_missing_env_var(test_config, caplog):
             'nodes': [
                 {
                     'name': 'test_node',
-                    'type': 'proc',
-                    'mark': 'passthrough_identity',
+                    'type': 'contrib.jt_test.nodes.PassthroughIdentity',
                     'configuration': {
                         'delay': '$JT_ENV_MISSING_ENV_VAR'
                     }
