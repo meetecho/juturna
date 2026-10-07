@@ -301,7 +301,16 @@ class Pipeline:
         with open(pathlib.Path(self.pipe_path, 'config.json'), 'w') as f:
             json.dump(self._raw_config, f, indent=2)
 
-        if _tele_file := self._raw_config['pipeline'].get('telemetry', None):
+        _tele_file = self._raw_config['pipeline'].get('telemetry', None)
+
+        if _tele_file and not getattr(
+            self._transport, 'supports_telemetry', True
+        ):
+            self._logger.warning(
+                f'the {type(self._transport).__name__} transport does not '
+                'support telemetry: it is disabled for this pipeline'
+            )
+        elif _tele_file:
             self._telemetry = True
             self._telemetry_file = pathlib.Path(self.pipe_path, _tele_file)
             self._telemetry_manager = TelemetryManager(
