@@ -1,8 +1,8 @@
 import inspect
 
 from juturna.transport._base import TransportBackend
-from juturna.transport._threading import ThreadingTransport
-from juturna.transport._browser import BrowserTransport
+from juturna.transport.threads import ThreadingTransport
+from juturna.transport.browser import BrowserTransport
 
 
 _TRANSPORTS: dict[str, type[TransportBackend]] = {

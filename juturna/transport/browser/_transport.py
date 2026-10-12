@@ -915,14 +915,14 @@ class _BrowserLock:
         sab = SharedArrayBuffer.new(4)
         self._cell = Int32Array.new(sab)
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         from js import Atomics
 
         while True:
             prev = int(Atomics.compareExchange(self._cell, self._CELL, 0, 1))
 
             if prev == 0:
-                return self
+                return
 
             _atomics_wait_async(self._cell, self._CELL, 1)
 
@@ -946,9 +946,8 @@ class _BrowserCondition:
         self._gen_cell = Int32Array.new(sab)
         self._lock = _BrowserLock()
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         self._lock.__enter__()
-        return self
 
     def __exit__(self, *exc_info) -> None:
         self._lock.__exit__(*exc_info)

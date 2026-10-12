@@ -10,8 +10,8 @@ from juturna.payloads import AudioPayload
 from juturna.transport import BrowserTransport
 from juturna.transport import Empty
 from juturna.transport import Full
-from juturna.transport import _browser
-from juturna.transport._browser import _serialize_message
+from juturna.transport.browser import _transport
+from juturna.transport.browser._transport import _serialize_message
 
 
 def _audio_message(shape):
@@ -76,14 +76,14 @@ def ring(monkeypatch):
         sys.modules, 'js', types.SimpleNamespace(Atomics=_FakeAtomics)
     )
 
-    q = object.__new__(_browser._BrowserQueue)
-    q._header = [0] * _browser._HEADER_INT32_LENGTH
+    q = object.__new__(_transport._BrowserQueue)
+    q._header = [0] * _transport._HEADER_INT32_LENGTH
     q._capacity = 2
     q._meta_views = [
-        [0] * _browser._SLOT_META_INT32_LENGTH for _ in range(q._capacity)
+        [0] * _transport._SLOT_META_INT32_LENGTH for _ in range(q._capacity)
     ]
     for i, view in enumerate(q._meta_views):
-        view[_browser._SLOT_SEQ] = i
+        view[_transport._SLOT_SEQ] = i
     q._max_meta_json_bytes = 4096
     q._max_payload_bytes = 4096
     q._wake_item = None
@@ -110,21 +110,21 @@ def test_wake_token_is_delivered_once(ring):
 
 
 def test_wake_from_another_interpreter_reads_as_empty(ring):
-    ring._header[_browser._WAKE] = 1
+    ring._header[_transport._WAKE] = 1
 
     with pytest.raises(Empty):
         ring.get(timeout=0)
 
-    assert ring._header[_browser._WAKE] == 0, (
+    assert ring._header[_transport._WAKE] == 0, (
         'the wake flag must be consumed even when there is no token to return'
     )
 
 
 def _fill(ring):
     """Mark every slot as holding a message, as after `capacity` puts."""
-    ring._header[_browser._HEAD] = ring._capacity
+    ring._header[_transport._HEAD] = ring._capacity
     for i, view in enumerate(ring._meta_views):
-        view[_browser._SLOT_SEQ] = i + 1
+        view[_transport._SLOT_SEQ] = i + 1
 
 
 def test_put_nowait_on_a_full_ring_raises_the_transport_full(ring):
@@ -139,7 +139,7 @@ def test_wake_token_does_not_need_a_free_slot(ring):
 
     ring.put_nowait(object())
 
-    assert ring._header[_browser._WAKE] == 1, (
+    assert ring._header[_transport._WAKE] == 1, (
         'a wake token must not fail on a full ring'
     )
 
@@ -158,7 +158,7 @@ class _StubLocalQueue:
 
 @pytest.fixture
 def stub_local_queue(monkeypatch):
-    monkeypatch.setattr(_browser, '_BrowserLocalQueue', _StubLocalQueue)
+    monkeypatch.setattr(_transport, '_BrowserLocalQueue', _StubLocalQueue)
 
 
 def test_queue_of_a_node_nothing_remote_writes_to_is_local(stub_local_queue):

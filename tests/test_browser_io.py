@@ -4,7 +4,7 @@ import pytest
 from juturna.components import Message
 from juturna.payloads import AudioPayload, BytesPayload, ImagePayload
 from juturna.payloads import ObjectPayload
-from juturna.transport._browser_io import decode_message, encode_message
+from juturna.transport.browser._io import decode_message, encode_message
 
 
 def _roundtrip(message):
