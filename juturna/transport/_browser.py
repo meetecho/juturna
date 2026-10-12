@@ -28,11 +28,19 @@ Differences from `ThreadingTransport`:
   frame sizes;
 - `Image`, `Audio` and `Bytes` payloads take a fast binary path, anything
   else is pickled.
+
+A queue is a ring only when its messages can reach another Worker. Those that
+never leave it (`Buffer._out_queue`, and the inbound queue of a node that
+nothing in another Worker writes to, see `node_scope()`) are
+`_BrowserLocalQueue`: the messages stay Python objects, which saves a
+serialization and a copy on each side, about 1 ms for a 640x480 RGBA frame.
 """
 
+import collections
 import contextlib
 import contextvars
 import json
+import logging
 import pickle
 
 from collections.abc import Callable
@@ -83,17 +91,31 @@ def _atomics_wait_async(
 # --- wire format -----------------------------------------------------------
 # Slot layout inside the SharedArrayBuffer of a queue:
 #
-#   [0..32)                       8x int32: metaJsonLen, dtypeCode, ndim,
-#                                 shape0..shape3, payloadLen
-#   [32..32+max_meta_json_bytes)  UTF-8 JSON metadata
+#   queue header, 8 x int32: HEAD, TAIL, COUNT, CLOSED, the geometry
+#   (capacity, max_meta_json_bytes, max_payload_bytes), _WAKE
+#
+#   then `capacity` slots, each of:
+#
+#   [0..36)                       9 x int32: metaJsonLen, dtypeCode, ndim,
+#                                 shape0..shape3, payloadLen, SEQ
+#   [36..36+max_meta_json_bytes)  UTF-8 JSON metadata
 #   [..end)                       payload bytes (the array reinterpreted
 #                                 as uint8, or pickled bytes)
 #
-# The queue header holds HEAD, TAIL, COUNT, CLOSED and _WAKE.
+# The web api closes and repairs queues from JavaScript (ring.js there): keep
+# the two in step. A slot with metaJsonLen 0 holds no message: the page fills
+# one in for a producer that died (see `_TOMBSTONE`), and `get()` skips it.
 
-_HEADER_INT32_LENGTH = 5
-_HEAD, _TAIL, _COUNT, _CLOSED, _WAKE = 0, 1, 2, 3, 4
-_SLOT_META_INT32_LENGTH = 8
+_HEADER_INT32_LENGTH = 8
+_HEAD, _TAIL, _COUNT, _CLOSED = 0, 1, 2, 3
+# the geometry lets a queue attached from another Worker check that it agrees
+# with the creator's: a mismatch would otherwise read mid-slot, silently
+_GEOM_CAPACITY, _GEOM_META_BYTES, _GEOM_PAYLOAD_BYTES = 4, 5, 6
+# set by `put_nowait()` with a non-message token, to wake the reader
+_WAKE = 7
+# 8 words describing the message, then the slot's sequence number
+_SLOT_META_INT32_LENGTH = 9
+_SLOT_SEQ = 8
 # the shape of an array takes 4 of those words: that is its most dimensions
 _MAX_NDIM = 4
 
@@ -335,15 +357,52 @@ def _deserialize_message(header, meta_json_bytes: bytes, payload_bytes):
     return msg
 
 
+# What the page publishes in a slot claimed by a producer that died (see
+# `repairRing` in the web api): a slot with no metadata, which no message has.
+_TOMBSTONE = object()
+
+
+class QueueClosed(RuntimeError):
+    """Raised by a `put()` on a queue that was closed."""
+
+
 class _BrowserQueue:
-    """Queue backed by a `SharedArrayBuffer` ring buffer"""
+    """
+    Queue backed by a `SharedArrayBuffer` ring buffer.
+
+    Any number of Workers may write to it (`handle()` gives what to post to
+    another one, which attaches by passing the `sab` to a new queue) and
+    exactly one reads from it.
+
+    Each slot carries a sequence number. A producer claims ticket `t` with a
+    compare-and-swap on the head only if slot `t % capacity` is free for it
+    (its sequence is `t`), writes the slot, then publishes it by setting the
+    sequence to `t + 1`; the consumer reads the slot once its sequence is
+    `t + 1` and frees it for the next lap with `t + capacity`. A producer that
+    finds the ring full claims nothing, so a `put()` that times out leaves no
+    hole behind.
+
+    A closed queue refuses writes with `QueueClosed` and keeps serving what it
+    holds. The page closes the queues of a Worker it lost, and publishes an
+    empty slot for a producer that died between claiming and publishing
+    (`poisonRing` and `repairRing` in the web api), which `get()` skips.
+
+    Tickets are 32 bits: the ring stays correct past 2**31 messages only if
+    `capacity` divides 2**32.
+    """
 
     def __init__(
         self,
         capacity: int = DEFAULT_QUEUE_CAPACITY,
         max_meta_json_bytes: int = DEFAULT_MAX_META_JSON_BYTES,
         max_payload_bytes: int = DEFAULT_MAX_PAYLOAD_BYTES,
+        sab=None,
     ):
+        """
+        Create a ring, or attach to the one created elsewhere with the
+        `sab` of its handle, whose geometry must then match (`ValueError`).
+        """
+        from js import Atomics
         from js import Int32Array
         from js import SharedArrayBuffer
         from js import Uint8Array
@@ -357,11 +416,42 @@ class _BrowserQueue:
             + max_payload_bytes
         )
 
-        sab = SharedArrayBuffer.new(
-            _HEADER_INT32_LENGTH * 4 + capacity * self._slot_bytes
-        )
+        size = _HEADER_INT32_LENGTH * 4 + capacity * self._slot_bytes
+        geometry = (capacity, max_meta_json_bytes, max_payload_bytes)
+
+        if sab is None:
+            sab = SharedArrayBuffer.new(size)
+            header = Int32Array.new(sab, 0, _HEADER_INT32_LENGTH)
+
+            for index, value in zip(
+                (_GEOM_CAPACITY, _GEOM_META_BYTES, _GEOM_PAYLOAD_BYTES),
+                geometry,
+                strict=True,
+            ):
+                Atomics.store(header, index, value)
+
+            creating = True
+        else:
+            creating = False
+            header = Int32Array.new(sab, 0, _HEADER_INT32_LENGTH)
+            found = tuple(
+                int(Atomics.load(header, index))
+                for index in (
+                    _GEOM_CAPACITY,
+                    _GEOM_META_BYTES,
+                    _GEOM_PAYLOAD_BYTES,
+                )
+            )
+
+            if sab.byteLength != size or found != geometry:
+                raise ValueError(
+                    'cannot attach to the queue: it was created with '
+                    f'(capacity, max_meta_json_bytes, max_payload_bytes) = '
+                    f'{found}, not {geometry}'
+                )
+
         self._sab = sab
-        self._header = Int32Array.new(sab, 0, _HEADER_INT32_LENGTH)
+        self._header = header
 
         slots_base = _HEADER_INT32_LENGTH * 4
         self._meta_views = []
@@ -383,8 +473,30 @@ class _BrowserQueue:
                 Uint8Array.new(sab, payload_offset, max_payload_bytes)
             )
 
+            if creating:
+                Atomics.store(self._meta_views[i], _SLOT_SEQ, i)
+
         self._write_bulk = _get_buffer_write_fn()
         self._wake_item = None
+
+    def handle(self):
+        """
+        What another Worker needs to attach to this queue: a JS object
+        ``{sab, capacity, max_meta_json_bytes, max_payload_bytes}``, meant to
+        be posted to it (the buffer is shared, not copied).
+        """
+        from js import Object
+        from pyodide.ffi import to_js
+
+        return to_js(
+            {
+                'sab': self._sab,
+                'capacity': self._capacity,
+                'max_meta_json_bytes': self._max_meta_json_bytes,
+                'max_payload_bytes': self._max_payload_bytes,
+            },
+            dict_converter=Object.fromEntries,
+        )
 
     def put(self, item: Any, timeout: float | None = None) -> None:
         from juturna.components._message import Message
@@ -422,27 +534,36 @@ class _BrowserQueue:
                 '{"name": "browser", "max_payload_bytes": ...}'
             )
 
-        slot = self._reserve_write(timeout)
+        slot, ticket = self._reserve_write(timeout)
         if slot == -1:
             raise Full
 
         shape_padded = (list(shape) + [0, 0, 0, 0])[:4]
 
         meta_view = self._meta_views[slot]
-        meta_view[0] = len(meta_json_bytes)
-        meta_view[1] = dtype_code
-        meta_view[2] = ndim
-        meta_view[3] = shape_padded[0]
-        meta_view[4] = shape_padded[1]
-        meta_view[5] = shape_padded[2]
-        meta_view[6] = shape_padded[3]
-        meta_view[7] = payload_len
 
-        self._write_bulk(self._meta_json_views[slot], meta_json_bytes)
-        if payload_len > 0:
-            self._write_bulk(self._payload_views[slot], payload_buf)
+        try:
+            meta_view[0] = len(meta_json_bytes)
+            meta_view[1] = dtype_code
+            meta_view[2] = ndim
+            meta_view[3] = shape_padded[0]
+            meta_view[4] = shape_padded[1]
+            meta_view[5] = shape_padded[2]
+            meta_view[6] = shape_padded[3]
+            meta_view[7] = payload_len
 
-        self._publish_write(slot)
+            self._write_bulk(self._meta_json_views[slot], meta_json_bytes)
+            if payload_len > 0:
+                self._write_bulk(self._payload_views[slot], payload_buf)
+        except BaseException:
+            # the slot is claimed: leaving it unpublished would stop the
+            # consumer for good, so publish it empty, which `get()` skips
+            meta_view[0] = 0
+            self._publish_write(slot, ticket)
+
+            raise
+
+        self._publish_write(slot, ticket)
 
     def put_nowait(self, item: Any) -> None:
         """
@@ -464,24 +585,50 @@ class _BrowserQueue:
 
         self._wake_item = item
         Atomics.store(self._header, _WAKE, 1)
-        Atomics.notify(self._header, _COUNT)
+
+        # the reader waits on the sequence of the slot it reads next
+        tail = int(Atomics.load(self._header, _TAIL))
+        Atomics.notify(
+            self._meta_views[_slot_of(tail, self._capacity)], _SLOT_SEQ
+        )
 
     def get(self, timeout: float | None = None) -> Any:
-        slot = self._reserve_read(timeout)
+        deadline = None if timeout is None else _now_ms() + timeout * 1000
 
-        if slot == _WOKEN:
-            if self._wake_item is None:
+        while True:
+            remaining = (
+                None
+                if deadline is None
+                else max(0.0, deadline - _now_ms()) / 1000
+            )
+            slot = self._reserve_read(remaining)
+
+            if slot == _WOKEN:
+                if self._wake_item is None:
+                    raise Empty
+
+                return self._wake_item
+
+            if slot == -1:
                 raise Empty
 
-            return self._wake_item
+            try:
+                msg = self._read_slot(slot)
+            except Exception:
+                # a message that cannot be rebuilt here (a class this Worker
+                # does not have, a malformed slot) must not stall the queue
+                # nor make `get()` raise something other than `Empty`
+                logging.getLogger('jt.transport').error(
+                    'dropping a message that cannot be read from the queue',
+                    exc_info=True,
+                )
+                msg = _TOMBSTONE
+            finally:
+                self._release_read(slot)
 
-        if slot == -1:
-            raise Empty
-
-        msg = self._read_slot(slot)
-        self._release_read()
-
-        return msg
+            # a slot the page filled in for a producer that died: nothing there
+            if msg is not _TOMBSTONE:
+                return msg
 
     def get_nowait(self) -> Any:
         return self.get(timeout=0)
@@ -505,7 +652,11 @@ class _BrowserQueue:
         from js import Atomics
 
         Atomics.store(self._header, _CLOSED, 1)
-        Atomics.notify(self._header, _COUNT)
+
+        # a consumer waits on the sequence of the slot it reads next, a
+        # producer on that of the slot it wants to write: wake them all
+        for view in self._meta_views:
+            Atomics.notify(view, _SLOT_SEQ)
 
     # -- internals ------------------------------------------------------
 
@@ -515,6 +666,9 @@ class _BrowserQueue:
         header = np.asarray(self._meta_views[slot].to_py())
         meta_json_len = int(header[0])
         payload_len = int(header[7])
+
+        if meta_json_len == 0:
+            return _TOMBSTONE
 
         # to_py() copies what it is given, so a view over the whole slot area
         # would make every read cost as much as a maximum-size message, however
@@ -534,36 +688,61 @@ class _BrowserQueue:
 
         return _deserialize_message(header, meta_json_raw, bytes(payload_raw))
 
-    def _reserve_write(self, timeout: float | None = None) -> int:
+    def _reserve_write(self, timeout: float | None = None) -> tuple[int, int]:
+        """
+        Claim the next slot: ``(slot, ticket)``, or ``(-1, -1)`` when the ring
+        stays full for `timeout` seconds.
+        """
         from js import Atomics
 
         # Blocks indefinitely when timeout is None, matching
         # queue.Queue.put()'s default (block=True, timeout=None) semantics
-        # used by ThreadingTransport. Returns -1 on timeout, mirroring
-        # _reserve_read()'s sentinel - put() turns it into Full.
+        # used by ThreadingTransport. put() turns the sentinel into Full.
         deadline = None if timeout is None else _now_ms() + timeout * 1000
 
         while True:
-            count = int(Atomics.load(self._header, _COUNT))
+            if int(Atomics.load(self._header, _CLOSED)):
+                raise QueueClosed('the queue was closed')
 
-            if count < self._capacity:
-                return int(Atomics.load(self._header, _HEAD))
+            ticket = int(Atomics.load(self._header, _HEAD))
+            slot = _slot_of(ticket, self._capacity)
+            cell = self._meta_views[slot]
+            seq = int(Atomics.load(cell, _SLOT_SEQ))
+            behind = _wrap32(seq - ticket)
 
-            if timeout is not None:
-                remaining_ms = deadline - _now_ms()
-                if remaining_ms <= 0:
-                    return -1
-                _atomics_wait_async(self._header, _COUNT, count, remaining_ms)
-            else:
-                _atomics_wait_async(self._header, _COUNT, count)
+            if behind == 0:
+                claimed = Atomics.compareExchange(
+                    self._header, _HEAD, ticket, _wrap32(ticket + 1)
+                )
 
-    def _publish_write(self, slot: int) -> None:
+                if int(claimed) == ticket:
+                    return slot, ticket
+
+                continue
+
+            if behind > 0:
+                # another producer claimed this ticket first
+                continue
+
+            # the slot still holds a message of the previous lap: full
+            if timeout is None:
+                _atomics_wait_async(cell, _SLOT_SEQ, seq)
+                continue
+
+            remaining_ms = deadline - _now_ms()
+            if remaining_ms <= 0:
+                return -1, -1
+
+            _atomics_wait_async(cell, _SLOT_SEQ, seq, remaining_ms)
+
+    def _publish_write(self, slot: int, ticket: int) -> None:
         from js import Atomics
 
-        head = int(Atomics.load(self._header, _HEAD))
-        Atomics.store(self._header, _HEAD, (head + 1) % self._capacity)
+        cell = self._meta_views[slot]
+
+        Atomics.store(cell, _SLOT_SEQ, _wrap32(ticket + 1))
         Atomics.add(self._header, _COUNT, 1)
-        Atomics.notify(self._header, _COUNT)
+        Atomics.notify(cell, _SLOT_SEQ)
 
     def _reserve_read(self, timeout: float | None) -> int:
         from js import Atomics
@@ -571,10 +750,13 @@ class _BrowserQueue:
         deadline = None if timeout is None else _now_ms() + timeout * 1000
 
         while True:
-            count = int(Atomics.load(self._header, _COUNT))
+            tail = int(Atomics.load(self._header, _TAIL))
+            slot = _slot_of(tail, self._capacity)
+            cell = self._meta_views[slot]
+            seq = int(Atomics.load(cell, _SLOT_SEQ))
 
-            if count > 0:
-                return int(Atomics.load(self._header, _TAIL))
+            if seq == _wrap32(tail + 1):
+                return slot
 
             if int(Atomics.exchange(self._header, _WAKE, 0)):
                 return _WOKEN
@@ -582,21 +764,134 @@ class _BrowserQueue:
             if int(Atomics.load(self._header, _CLOSED)):
                 return -1
 
-            if timeout is not None:
-                remaining_ms = deadline - _now_ms()
-                if remaining_ms <= 0:
-                    return -1
-                _atomics_wait_async(self._header, _COUNT, count, remaining_ms)
-            else:
-                _atomics_wait_async(self._header, _COUNT, count)
+            if timeout is None:
+                _atomics_wait_async(cell, _SLOT_SEQ, seq)
+                continue
 
-    def _release_read(self) -> None:
+            remaining_ms = deadline - _now_ms()
+            if remaining_ms <= 0:
+                return -1
+
+            _atomics_wait_async(cell, _SLOT_SEQ, seq, remaining_ms)
+
+    def _release_read(self, slot: int) -> None:
         from js import Atomics
 
+        cell = self._meta_views[slot]
         tail = int(Atomics.load(self._header, _TAIL))
-        Atomics.store(self._header, _TAIL, (tail + 1) % self._capacity)
+
+        Atomics.store(self._header, _TAIL, _wrap32(tail + 1))
         Atomics.add(self._header, _COUNT, -1)
-        Atomics.notify(self._header, _COUNT)
+
+        # free the slot for the next lap and wake a producer waiting for it
+        Atomics.store(cell, _SLOT_SEQ, _wrap32(tail + self._capacity))
+        Atomics.notify(cell, _SLOT_SEQ)
+
+
+def _wrap32(value: int) -> int:
+    """Wrap an integer to the signed 32 bits of an `Int32Array` cell."""
+    return (value + 2**31) % 2**32 - 2**31
+
+
+def _slot_of(ticket: int, capacity: int) -> int:
+    return (ticket & 0xFFFFFFFF) % capacity
+
+
+class _BrowserLocalQueue:
+    """
+    Queue for messages that never leave the Worker: they stay Python objects
+    in a `deque`, with no serialization and no copy, and the same capacity as
+    a ring would have, so a full queue makes `put()` wait just the same.
+
+    Waiting is cooperative: nothing else runs between a check and the wait
+    that follows it, so a counter cell that changes with every `put()` and
+    `get()` is all it takes to wake a waiter (the mechanism of the ring).
+    """
+
+    def __init__(self, capacity: int):
+        from js import Int32Array
+        from js import SharedArrayBuffer
+
+        self._items = collections.deque()
+        self._capacity = capacity
+        self._closed = False
+        self._cell = Int32Array.new(SharedArrayBuffer.new(4))
+
+    def put(self, item: Any, timeout: float | None = None) -> None:
+        if self._closed:
+            raise QueueClosed('the queue was closed')
+
+        deadline = None if timeout is None else _now_ms() + timeout * 1000
+
+        while len(self._items) >= self._capacity:
+            if not self._wait(deadline):
+                raise Full
+
+            if self._closed:
+                raise QueueClosed('the queue was closed')
+
+        self._items.append(item)
+        self._changed()
+
+    def get(self, timeout: float | None = None) -> Any:
+        deadline = None if timeout is None else _now_ms() + timeout * 1000
+
+        while not self._items:
+            if self._closed or not self._wait(deadline):
+                raise Empty
+
+        item = self._items.popleft()
+        self._changed()
+
+        return item
+
+    def get_nowait(self) -> Any:
+        return self.get(timeout=0)
+
+    def put_nowait(self, item: Any) -> None:
+        self.put(item, timeout=0)
+
+    def empty(self) -> bool:
+        return not self._items
+
+    def full(self) -> bool:
+        return len(self._items) >= self._capacity
+
+    def qsize(self) -> int:
+        return len(self._items)
+
+    def close(self) -> None:
+        self._closed = True
+        self._changed()
+
+    def handle(self):
+        raise RuntimeError('a local queue cannot be shared with another Worker')
+
+    def _changed(self) -> None:
+        from js import Atomics
+
+        Atomics.add(self._cell, 0, 1)
+        Atomics.notify(self._cell, 0)
+
+    def _wait(self, deadline: float | None) -> bool:
+        """Wait for a change; False when the deadline has passed."""
+        from js import Atomics
+
+        seen = int(Atomics.load(self._cell, 0))
+
+        if deadline is None:
+            _atomics_wait_async(self._cell, 0, seen)
+
+            return True
+
+        remaining_ms = deadline - _now_ms()
+
+        if remaining_ms <= 0:
+            return False
+
+        _atomics_wait_async(self._cell, 0, seen, remaining_ms)
+
+        return True
 
 
 def _now_ms() -> float:
@@ -773,6 +1068,40 @@ class _BrowserWorker:
         return self._promise is not None and not self._done
 
 
+class _BrowserRemoteDestination:
+    """
+    Stands for a node that runs in another Worker: `put()` writes to the
+    inbound queue of that node, which is attached to on first use.
+    """
+
+    def __init__(self, transport: 'BrowserTransport', node_name: str):
+        self._transport = transport
+        self._node_name = node_name
+        self._queue: _BrowserQueue | None = None
+        self.dropped = 0
+
+    def reset(self) -> None:
+        """Forget the queue: the next write attaches to the current one."""
+        self._queue = None
+
+    def put(self, message) -> None:
+        if self._queue is None:
+            self._queue = self._transport._attach_remote(self._node_name)
+
+        try:
+            self._queue.put(message)
+        except QueueClosed:
+            # the node is gone: drop the message, so that the other
+            # destinations of the sender still get it
+            self.dropped += 1
+
+            if self.dropped == 1:
+                logging.getLogger('jt.transport').warning(
+                    f'node {self._node_name} of another Worker is gone, '
+                    'dropping its messages'
+                )
+
+
 class BrowserTransport:
     """Transport backend for a pipeline running in a browser (Pyodide)"""
 
@@ -785,20 +1114,52 @@ class BrowserTransport:
         queue_capacity: int = DEFAULT_QUEUE_CAPACITY,
         max_meta_json_bytes: int = DEFAULT_MAX_META_JSON_BYTES,
         max_payload_bytes: int = DEFAULT_MAX_PAYLOAD_BYTES,
+        remote_timeout: float = 30.0,
     ):
+        """
+        `remote_timeout` is how many seconds a write towards another Worker
+        waits for its `connect()`.
+        """
         self._queue_capacity = queue_capacity
         self._max_meta_json_bytes = max_meta_json_bytes
         self._max_payload_bytes = max_payload_bytes
+        self._remote_timeout = remote_timeout
 
-    def new_queue(self, maxsize: int = 0, local: bool = False) -> _BrowserQueue:
-        # every queue is a ring, local or not; an unbounded queue (0) has no
-        # equivalent here, and a larger maxsize is capped to the capacity
-        # because it drives the memory pre-allocated
+        self._scope_shared: bool | None = None
+        self._remote_handles: dict = {}
+        self._remote_events: dict = {}
+        self._remote_destinations: dict = {}
+
+    @contextlib.contextmanager
+    def node_scope(self, shared: bool):
+        """
+        Declare, for the queues built inside the block, whether the node they
+        belong to is written to from another Worker. When it is not, a queue is
+        local (see `_BrowserLocalQueue`); outside a block, or with ``shared``
+        true, it is a ring.
+        """
+        previous = self._scope_shared
+        self._scope_shared = shared
+
+        try:
+            yield
+        finally:
+            self._scope_shared = previous
+
+    def new_queue(
+        self, maxsize: int = 0, local: bool = False
+    ) -> _BrowserQueue | _BrowserLocalQueue:
+        # every queue of a node written from another Worker is a ring; an
+        # unbounded queue (0) has no equivalent, and a larger maxsize is
+        # capped to the capacity because it drives the memory pre-allocated
         capacity = (
             self._queue_capacity
             if not maxsize
             else min(maxsize, self._queue_capacity)
         )
+
+        if local or self._scope_shared is False:
+            return _BrowserLocalQueue(capacity)
 
         return _BrowserQueue(
             capacity=capacity,
@@ -806,14 +1167,73 @@ class BrowserTransport:
             max_payload_bytes=self._max_payload_bytes,
         )
 
-    def node_scope(self, shared: bool) -> contextlib.AbstractContextManager:
-        return contextlib.nullcontext()
+    def queue_handle(self, queue: _BrowserQueue):
+        """What to post to another Worker so it can `attach_queue()`."""
+        return queue.handle()
 
-    def remote_destination(self, node_name: str) -> Any:
-        raise ValueError(
-            f'node {node_name} runs in another worker, which the '
-            f'{type(self).__name__} transport cannot reach'
+    def attach_queue(self, handle) -> _BrowserQueue:
+        """Attach to a queue created in another Worker, from its handle"""
+        return _BrowserQueue(
+            capacity=handle.capacity,
+            max_meta_json_bytes=handle.max_meta_json_bytes,
+            max_payload_bytes=handle.max_payload_bytes,
+            sab=handle.sab,
         )
+
+    def remote_destination(self, node_name: str) -> _BrowserRemoteDestination:
+        """
+        The destination standing for a node of another Worker, to be linked
+        as if it were the node itself (see `Pipeline.warmup`).
+        """
+        if node_name not in self._remote_destinations:
+            self._remote_destinations[node_name] = _BrowserRemoteDestination(
+                self, node_name
+            )
+
+        return self._remote_destinations[node_name]
+
+    def connect(self, node_name: str, handle) -> None:
+        """
+        Register the handle of the inbound queue of a node of another Worker,
+        as returned by its `queue_handle()`. Writes to that node's
+        destination wait for it. Calling it again for the same node, with the
+        handle of a rebuilt node, makes the destination write to the new queue.
+        """
+        self._remote_handles[node_name] = handle
+
+        # a node that was rebuilt has a new queue: writes must go there
+        if node_name in self._remote_destinations:
+            self._remote_destinations[node_name].reset()
+
+        self._remote_event(node_name).set()
+
+    def _remote_event(self, node_name: str):
+        import asyncio
+
+        if node_name not in self._remote_events:
+            self._remote_events[node_name] = asyncio.Event()
+
+        return self._remote_events[node_name]
+
+    def _attach_remote(self, node_name: str) -> _BrowserQueue:
+        import asyncio
+
+        from pyodide.ffi import run_sync
+
+        event = self._remote_event(node_name)
+
+        if not event.is_set():
+            _require_stack_switching(f'a write to node {node_name}')
+
+            try:
+                run_sync(asyncio.wait_for(event.wait(), self._remote_timeout))
+            except TimeoutError:
+                raise RuntimeError(
+                    f'node {node_name} of another Worker was not connected '
+                    f'within {self._remote_timeout} seconds'
+                ) from None
+
+        return self.attach_queue(self._remote_handles[node_name])
 
     def new_event(self) -> _BrowserEvent:
         return _BrowserEvent()
