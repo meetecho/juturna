@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="juturna.utils package" href="juturna.utils.html"><link rel="prev" title="juturna.payloads package" href="juturna.payloads.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="juturna.transport.browser package" href="juturna.transport.browser.html"><link rel="prev" title="juturna.payloads package" href="juturna.payloads.html">
         <link rel="prefetch" href="../_static/img/logo_light_alt.svg" as="image">
         <link rel="prefetch" href="../_static/img/logo_dark_alt.svg" as="image">
 
@@ -271,8 +271,12 @@
 <li class="toctree-l3"><a class="reference internal" href="juturna.meta.html">juturna.meta package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.names.html">juturna.names package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html">juturna.payloads package</a></li>
-<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">juturna.transport package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 current has-children current-page"><a class="current reference internal" href="#">juturna.transport package</a><input aria-label="Toggle navigation of juturna.transport package" checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html">juturna.transport.browser package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.threads.html">juturna.transport.threads package</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="juturna.utils.jt_utils.html">juturna.utils.jt_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
@@ -323,6 +327,55 @@
         <article role="main" id="furo-main-content">
           <section id="juturna-transport-package">
 <h1>juturna.transport package<a class="headerlink" href="#juturna-transport-package" title="Link to this heading">¶</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="juturna.transport.browser.html">juturna.transport.browser package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="juturna.transport.browser.html#module-juturna.transport.browser">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport"><code class="docutils literal notranslate"><span class="pre">BrowserTransport</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.attach_queue"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.attach_queue()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.connect"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.connect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.is_current"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.is_current()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.new_condition"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_condition()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.new_event"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_event()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.new_lock"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_lock()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.new_queue"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.new_queue()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.node_scope"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.node_scope()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.queue_handle"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.queue_handle()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.remote_destination"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.remote_destination()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.spawn"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.spawn()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.supports_telemetry"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.supports_telemetry</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.decode_message"><code class="docutils literal notranslate"><span class="pre">decode_message()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.encode_message"><code class="docutils literal notranslate"><span class="pre">encode_message()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.message_from_js"><code class="docutils literal notranslate"><span class="pre">message_from_js()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="juturna.transport.browser.html#juturna.transport.browser.message_to_js"><code class="docutils literal notranslate"><span class="pre">message_to_js()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="juturna.transport.threads.html">juturna.transport.threads package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="juturna.transport.threads.html#module-juturna.transport.threads">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="juturna.transport.threads.html#juturna.transport.threads.ThreadingTransport"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.threads.html#juturna.transport.threads.ThreadingTransport.is_current"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.is_current()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.threads.html#juturna.transport.threads.ThreadingTransport.new_condition"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.new_condition()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.threads.html#juturna.transport.threads.ThreadingTransport.new_event"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.new_event()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.threads.html#juturna.transport.threads.ThreadingTransport.new_lock"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.new_lock()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.threads.html#juturna.transport.threads.ThreadingTransport.new_queue"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.new_queue()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.threads.html#juturna.transport.threads.ThreadingTransport.node_scope"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.node_scope()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.threads.html#juturna.transport.threads.ThreadingTransport.remote_destination"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.remote_destination()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.transport.threads.html#juturna.transport.threads.ThreadingTransport.spawn"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.spawn()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
 <section id="module-juturna.transport">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.transport" title="Link to this heading">¶</a></h2>
 <dl class="py class">
@@ -678,12 +731,12 @@ threading backend if not provided.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="juturna.utils.html">
+          <a class="next-page" href="juturna.transport.browser.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">juturna.utils package</div>
+                <div class="title">juturna.transport.browser package</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -737,6 +790,7 @@ threading backend if not provided.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">juturna.transport package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#module-juturna.transport">Module contents</a><ul>
 <li><a class="reference internal" href="#juturna.transport.BrowserTransport"><code class="docutils literal notranslate"><span class="pre">BrowserTransport</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.transport.BrowserTransport.attach_queue"><code class="docutils literal notranslate"><span class="pre">BrowserTransport.attach_queue()</span></code></a></li>
