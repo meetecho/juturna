@@ -10,6 +10,7 @@ from juturna.payloads import Batch
 from juturna.meta import JUTURNA_MAX_QUEUE_SIZE
 
 from juturna.transport import Empty
+from juturna.transport import Event
 from juturna.transport import Full
 from juturna.transport import ThreadingTransport
 from juturna.transport import TransportBackend
@@ -21,8 +22,13 @@ class Buffer:
         creator: str,
         synchroniser: Callable | None = None,
         transport: TransportBackend | None = None,
+        abort: Event | None = None,
     ):
         self._transport: TransportBackend = transport or ThreadingTransport()
+
+        self._abort: Event = (
+            abort if abort is not None else self._transport.new_event()
+        )
 
         self._data: dict[str, list[Message]] = dict()
         self._data_lock = self._transport.new_lock()
@@ -99,7 +105,13 @@ class Buffer:
             )
         )
 
-        self._out_queue.put(to_send)
+        while not self._abort.is_set():
+            try:
+                self._out_queue.put(to_send, timeout=0.1)
+
+                return
+            except Full:
+                continue
 
     def flush(self):
         """Flush the buffer content"""

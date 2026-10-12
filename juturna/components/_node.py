@@ -94,7 +94,10 @@ class Node[T_Input, T_Output]:
         self._auto_dump = False
 
         self._buffer = Buffer(
-            _logger_name, self.synchroniser, transport=self._transport
+            _logger_name,
+            self.synchroniser,
+            transport=self._transport,
+            abort=self._kill_event,
         )
 
         self._source_f: Callable | None = None
@@ -161,7 +164,13 @@ class Node[T_Input, T_Output]:
         self._state = state
 
     def put(self, message: Message):
-        self._queue.put(message)
+        while not self._kill_event.is_set():
+            try:
+                self._queue.put(message, timeout=0.1)
+
+                return
+            except jt.transport.Full:
+                continue
 
     def compile_template(self, template_name: str, arguments: dict) -> str:
         """
