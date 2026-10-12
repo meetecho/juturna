@@ -1,5 +1,5 @@
 """
-Round-trips through `juturna.transport.browser._transport`'s own wire format
+Round-trips through `juturna.transport.browser._wire`'s own wire format
 (`_serialize_message`/`_deserialize_message`), the pickle-based transport
 used between Workers - distinct from `browser/_io.py`, which only covers
 the JSON-based format at the JS/Python edge (see `test_browser_io.py`).
@@ -8,8 +8,8 @@ the JSON-based format at the JS/Python edge (see `test_browser_io.py`).
 from juturna.components import Message
 from juturna.payloads import AudioPayload
 from juturna.payloads import ObjectPayload
-from juturna.transport.browser._transport import _deserialize_message
-from juturna.transport.browser._transport import _serialize_message
+from juturna.transport.browser._wire import _deserialize_message
+from juturna.transport.browser._wire import _serialize_message
 
 
 def _roundtrip(message: Message) -> Message:
