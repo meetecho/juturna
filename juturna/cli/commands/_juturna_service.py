@@ -1,12 +1,23 @@
+import os
+import sys
 import pathlib
 import json
+import secrets
+import ipaddress
 import logging
 import logging.config
 
+from typing import Annotated
+
 import uvicorn
 
+from fastapi import Depends
 from fastapi import FastAPI
+from fastapi import HTTPException
+from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.security import HTTPBearer
 
 import juturna as jt
 
@@ -18,7 +29,46 @@ from juturna.cli.commands.exceptions import (
     register_generic_exception_handler,
 )
 
-app = FastAPI()
+TOKEN_ENV_VAR = 'JUTURNA_SERVICE_TOKEN'
+
+_bearer = HTTPBearer(auto_error=False)
+
+
+def require_token(
+    request: Request,
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None, Depends(_bearer)
+    ],
+):
+    """
+    Reject requests without the service token as a bearer credential.
+
+    The token is the one set by ``run()``, or ``JUTURNA_SERVICE_TOKEN`` when
+    the app is served some other way. With no token configured every request
+    is rejected, so the service never runs open by mistake. Browsers cannot
+    attach the header to a cross-site request without a CORS preflight, so
+    this also blocks cross-site requests to the state-changing routes.
+    """
+    expected = getattr(request.app.state, 'token', None) or os.environ.get(
+        TOKEN_ENV_VAR
+    )
+
+    if not expected:
+        raise HTTPException(
+            status_code=503, detail='service token not configured'
+        )
+
+    if credentials is None or not secrets.compare_digest(
+        credentials.credentials.encode(), expected.encode()
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail='missing or invalid service token',
+            headers={'WWW-Authenticate': 'Bearer'},
+        )
+
+
+app = FastAPI(dependencies=[Depends(require_token)])
 logger = logging.getLogger('jt.service')
 
 # register exception handlers
@@ -27,13 +77,25 @@ register_generic_exception_handler(app, logger)
 
 
 def enable_cross_origins(app: FastAPI):
+    # the token travels in the Authorization header, not in cookies, so
+    # credentials are not needed (with them, "*" would reflect any origin)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=['*'],
-        allow_credentials=True,
+        allow_credentials=False,
         allow_methods=['*'],
         allow_headers=['*'],
     )
+
+
+def _is_loopback(host: str) -> bool:
+    if host == 'localhost':
+        return True
+
+    try:
+        return ipaddress.ip_address(host).is_loopback
+    except ValueError:
+        return False
 
 
 @app.get('/configuration')
@@ -111,7 +173,14 @@ def pipeline_telemetry(pipeline_id: str):
     return {'pipeline': pipeline_id, 'telemetry': telemetry_data}
 
 
-def run(host: str, port: int, folder: str, log_config: str, dev: bool):
+def run(
+    host: str,
+    port: int,
+    folder: str,
+    log_config: str,
+    dev: bool,
+    allow_env: list[str] | None = None,
+):
     if log_config:
         with open(log_config) as f:
             cfg = json.load(f)
@@ -119,6 +188,24 @@ def run(host: str, port: int, folder: str, log_config: str, dev: bool):
         logging.config.dictConfig(cfg)
 
     logger.info('starting juturna service...')
+
+    app.state.token = os.environ.get(TOKEN_ENV_VAR)
+
+    if not app.state.token:
+        app.state.token = secrets.token_urlsafe(32)
+
+        # printed on the console only, never logged (logs may be shipped)
+        print(
+            f'{TOKEN_ENV_VAR} not set, generated service token: '
+            f'{app.state.token}',
+            file=sys.stderr,
+        )
+
+    if not _is_loopback(host):
+        logger.warning(
+            f'service bound to {host}, reachable from the network over plain '
+            'HTTP: put it behind a TLS proxy'
+        )
 
     if dev:
         enable_cross_origins(app)
@@ -132,6 +219,7 @@ def run(host: str, port: int, folder: str, log_config: str, dev: bool):
         logger.info(f'pipeline folder {folder} exists, skipping...')
 
     PipelineManager().set_base_folder(folder)
+    PipelineManager().set_allowed_env_vars(allow_env or list())
 
     logger.info(f'service address: {host}:{port}')
 
