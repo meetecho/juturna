@@ -90,6 +90,7 @@ class Node[T_Input, T_Output]:
         self._source_failures = 0
         self._worker_failures = 0
         self._last_failure_at = None
+        self._stuck_workers: list[str] = list()
 
         self._auto_dump = False
 
@@ -134,6 +135,7 @@ class Node[T_Input, T_Output]:
             'worker_failures': self._worker_failures,
             'source_failures': self._source_failures,
             'last_failure_at': self._last_failure_at,
+            'stuck_workers': list(self._stuck_workers),
         }
 
     @status.setter
@@ -374,10 +376,24 @@ class Node[T_Input, T_Output]:
         Threads are stopped one at a time, each one after its upstream has
         terminated: source first, then worker, then update. Every thread
         consumes its own pending data before exiting, so all the messages
-        received before the stop call are processed.
+        received before the stop call are processed, and stop() waits for
+        an ``update()`` call in progress to return, however long it takes.
+
+        When the node is being killed (see ``kill()``), each thread is only
+        waited for ``JUTURNA_THREAD_JOIN_TIMEOUT`` seconds: a thread still
+        busy after that is left behind, and listed in ``health`` under
+        ``stuck_workers``.
         """
         if self._status == ComponentStatus.STOPPED:
             return
+
+        # the kill event is the only signal available here: subclasses call
+        # super().stop() without arguments, so kill() cannot pass a timeout
+        join_timeout = (
+            jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT
+            if self._kill_event.is_set()
+            else None
+        )
 
         for _evt, _t, _wake in [
             (self._stop_source_event, self._source_thread, None),
@@ -389,8 +405,17 @@ class Node[T_Input, T_Output]:
             if _wake is not None:
                 _wake()
 
-            if _t is not None and not self._transport.is_current(_t):
-                _t.join()
+            if _t is None or self._transport.is_current(_t):
+                continue
+
+            _t.join(timeout=join_timeout)
+
+            if _t.is_alive():
+                self._stuck_workers.append(_t.name)
+                self.logger.warning(
+                    f'worker {_t.name} did not exit within {join_timeout}s, '
+                    'leaving it behind'
+                )
 
         self._worker_thread = None
         self._source_thread = None
@@ -419,6 +444,11 @@ class Node[T_Input, T_Output]:
         signalled at once and exit as soon as their current iteration is
         over: any message still in the input queue or in the buffer is
         discarded. Subclass cleanup in ``stop()`` still runs.
+
+        Unlike ``stop()``, kill() does not wait for a busy ``update()`` or
+        source call to return: each thread gets ``JUTURNA_THREAD_JOIN_TIMEOUT``
+        seconds, then it is left behind (it exits on its own as soon as the
+        call returns, without processing anything else).
         """
         if self._status == ComponentStatus.STOPPED:
             return
