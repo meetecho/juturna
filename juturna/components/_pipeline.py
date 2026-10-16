@@ -127,6 +127,7 @@ class Pipeline:
         self._status = PipelineStatus.NEW
         self._status_lock = threading.Lock()
         self._transitioning = False
+        self._started_nodes: list[str] = list()
 
         self.created_at = time.time()
 
@@ -264,10 +265,26 @@ class Pipeline:
             self._status = new_status
             self._transitioning = False
 
-    def _abort_transition(self):
-        """Release a claimed transition without changing `_status`."""
-        with self._status_lock:
-            self._transitioning = False
+    def _abort_transition(
+        self, rollback: typing.Callable[[], None] | None = None
+    ):
+        """
+        Release a claimed transition without changing `_status`.
+
+        Parameters
+        ----------
+        rollback : Callable[[], None] | None
+            Undoes the partial work of the failed transition. It runs before
+            the transition is released, so no other lifecycle operation can
+            interleave with it.
+
+        """
+        try:
+            if rollback is not None:
+                rollback()
+        finally:
+            with self._status_lock:
+                self._transitioning = False
 
     def warmup(self):
         """
@@ -437,25 +454,31 @@ class Pipeline:
         configuration, ensuring that the source node is the last one to be
         started. This is important to ensure that the data flow is properly
         established and that all nodes are ready to receive data.
+
+        If a node fails to start, the nodes already started (including the
+        failing one) are killed and telemetry is stopped before the error is
+        raised: the pipeline stays READY with no worker running, so start()
+        can be retried, or the pipeline destroyed.
         """
         if not self._begin_transition('start', _TRANSITION_RULES):
             return
 
         try:
             self._start()
-        except Exception:
-            self._abort_transition()
+        except BaseException:
+            # interrupts are rolled back too, or nodes would be left running
+            self._abort_transition(self._rollback_start)
 
             raise
         else:
             self._end_transition(PipelineStatus.RUNNING)
 
     def _start(self):
+        # progress for _rollback_start(), in case start() does not complete
+        self._started_nodes = list()
+
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
-
-        if self._telemetry:
-            self._telemetry_manager.start()
 
         layers = self._dag.BFS()
         scheduled = {n for layer in layers for n in layer}
@@ -466,13 +489,53 @@ class Pipeline:
                 f'{sorted(set(self._nodes) - scheduled)} are unreachable'
             )
 
-        for layer in self._dag.BFS()[::-1]:
+        if self._telemetry:
+            self._telemetry_manager.start()
+
+        for layer in layers[::-1]:
             for node_name in layer:
                 self._logger.info(f'starting node {node_name}')
 
+                # a node failing in start() may have spawned some of its
+                # workers already, so it is rolled back as well
+                self._started_nodes.append(node_name)
                 self._nodes[node_name].start()
 
         self._logger.info('pipe started')
+
+    def _rollback_start(self):
+        """
+        Undo a partial start: kill the nodes started so far, sources first,
+        and stop telemetry. Pending messages are discarded, and each node goes
+        back to CONFIGURED so that the pipeline can be started again.
+        """
+        started, self._started_nodes = self._started_nodes, list()
+
+        if started:
+            self._logger.error(
+                f'node {started[-1]} failed to start, stopping the nodes '
+                'already started'
+            )
+
+        nodes = [self._nodes[node_name] for node_name in started[::-1]]
+
+        for node in nodes:
+            node.signal_kill()
+
+        for node in nodes:
+            try:
+                node.kill()
+            except Exception:
+                # the node threads are already signalled, and exit on their own
+                self._logger.error(
+                    f'failed to kill node {node.name} during start rollback',
+                    exc_info=True,
+                )
+
+            node.status = ComponentStatus.CONFIGURED
+
+        if self._telemetry:
+            self._telemetry_manager.stop()
 
     def stop(self):
         """

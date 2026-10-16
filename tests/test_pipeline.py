@@ -269,3 +269,102 @@ def test_pipeline_destroy_while_running_stops_then_destroys(
     pipeline.destroy()
 
     assert pipeline.status['self'] == 'pipeline_destroyed'
+
+
+
+class _StartError(Exception):
+    pass
+
+
+def _alive_workers(pipeline) -> list[str]:
+    names = {
+        f'_{kind}_{node_name}'
+        for kind in ('worker', 'update', 'source')
+        for node_name in pipeline._nodes
+    }
+
+    return [t.name for t in threading.enumerate() if t.name in names]
+
+
+def _failing_start(node, spawn_first: bool, error=_StartError):
+    original_start = node.start
+
+    def start():
+        if spawn_first:
+            original_start()
+
+        raise error(f'{node.name} failed to start')
+
+    return start
+
+
+# an interrupt (ctrl+c while the pipeline starts) is rolled back as well
+@pytest.mark.parametrize('error', [_StartError, KeyboardInterrupt])
+@pytest.mark.parametrize('spawn_first', [False, True])
+def test_failed_start_stops_the_nodes_already_started(
+    test_config, monkeypatch, spawn_first, error
+):
+    folder = test_config['test_pipeline_folder']
+    config = _sequencer_crasher_config(
+        f'failed_start_pipeline_{spawn_first}_{error.__name__}', folder
+    )
+    config['pipeline']['telemetry'] = 'telemetry.csv'
+    pipeline = jt.components.Pipeline(config)
+
+    pipeline.warmup()
+
+    # sink_1 is started first, then source_1 fails (after spawning its own
+    # workers, when spawn_first is set)
+    source = pipeline._nodes['source_1']
+    monkeypatch.setattr(
+        source, 'start', _failing_start(source, spawn_first, error)
+    )
+
+    with pytest.raises(error):
+        pipeline.start()
+
+    assert pipeline.status['self'] == 'pipeline_ready'
+    assert _alive_workers(pipeline) == []
+    assert not pipeline._telemetry_manager._thread
+    assert all(
+        node['status'] == 'component_configured'
+        for node in pipeline.status['nodes'].values()
+    )
+
+    pipeline.destroy()
+
+    assert pipeline.status['self'] == 'pipeline_destroyed'
+
+
+def test_start_can_be_retried_after_a_failed_start(
+    test_config, monkeypatch, wait_for_condition
+):
+    folder = test_config['test_pipeline_folder']
+    config = _sequencer_crasher_config('retry_start_pipeline', folder)
+    config['pipeline']['telemetry'] = 'telemetry.csv'
+    pipeline = jt.components.Pipeline(config)
+
+    pipeline.warmup()
+
+    source = pipeline._nodes['source_1']
+    monkeypatch.setattr(source, 'start', _failing_start(source, True))
+
+    with pytest.raises(_StartError):
+        pipeline.start()
+
+    monkeypatch.undo()
+    pipeline.start()
+
+    assert pipeline.status['self'] == 'pipeline_running'
+    assert wait_for_condition(
+        lambda: len(pipeline._nodes['sink_1'].messages) > 0
+    ), 'expected sink_1 to receive messages after the retry'
+
+    pipeline.stop()
+
+    with open(pathlib.Path(pipeline.pipe_path, 'telemetry.csv')) as f:
+        header_rows = [line for line in f if line.startswith('ts,')]
+
+    assert len(header_rows) == 1
+
+    pipeline.destroy()
