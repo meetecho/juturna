@@ -254,27 +254,34 @@ class Node[T_Input, T_Output]:
 
         return str(dump_path)
 
-    def set_source(self, source: Callable, by: int = 0, mode: str = 'post'):
+    def set_source(self, source: Callable, by: float = 0, mode: str = 'post'):
         """
-        Set the node source (to be used for ``source`` nodes). The source can be
-        either a callable or a buffer. However, source nodes are expected to be
-        provided with a callable that will be used to generate the data to be
-        transmitted.
+        Set the node source (to be used for ``source`` nodes). The source is a
+        callable invoked periodically: the message it returns is fed to the
+        node, while ``None`` means there is nothing to deliver this time.
 
         Parameters
         ----------
-        source : Union[Buffer, callable]
-            The source to be set. This can be either a buffer or a callable.
-        by : int, optional
+        source : callable
+            The function producing the messages of the node.
+        by : float, optional
             The time interval (in seconds) between two consecutive calls to the
-            source. This parameter is only used if the source is a callable.
-            The default is 0.
+            source. With the default of 0 the source is called again right
+            away, so it is expected to block until data is available.
         mode : str, optional
             Whether to apply the ``by`` timer before or after the source call.
-            The default is ``post``, indicating the source function will wait
-            for ``by`` seconds before being called. If set to ``pre``, the
-            source function will be called and then wait for ``by`` seconds
-            before being called again.
+            The default is ``post``: the source is called, then the node waits
+            for ``by`` seconds before delivering the message (or before the next
+            call, if the source returned ``None``). If set to ``pre``, the node
+            waits for ``by`` seconds before every call.
+
+        Notes
+        -----
+        An exception raised by the source is logged and counted in
+        ``health``, and the next call is delayed by an exponential backoff
+        starting at ``by`` (at least 0.1 seconds) and capped to
+        ``JUTURNA_SOURCE_MAX_BACKOFF``, which resets at the first successful
+        call.
 
         """
         self._source_f = source
@@ -516,6 +523,8 @@ class Node[T_Input, T_Output]:
             self._process(batch)
 
     def _source(self):
+        consecutive_failures = 0
+
         while not self._stop_source_event.is_set():
             if self._source_mode == 'pre' and self._stop_source_event.wait(
                 self._source_sleep
@@ -525,6 +534,7 @@ class Node[T_Input, T_Output]:
             try:
                 message = self._source_f()
             except Exception:
+                consecutive_failures += 1
                 self._source_failures += 1
                 self._last_failure_at = time.time()
                 self.logger.error(
@@ -533,15 +543,38 @@ class Node[T_Input, T_Output]:
                     exc_info=True,
                 )
 
+                if self._stop_source_event.wait(
+                    self._source_backoff(consecutive_failures)
+                ):
+                    return
+
                 continue
 
-            if self._stop_source_event.is_set() or message is None:
+            consecutive_failures = 0
+
+            if self._stop_source_event.is_set():
                 continue
 
+            # a source with nothing to deliver still waits, or a polling
+            # source returning None would spin on the CPU
             if self._source_mode == 'post':
                 self._stop_source_event.wait(self._source_sleep)
 
-            self.put(message)
+            if message is not None:
+                self.put(message)
+
+    def _source_backoff(self, consecutive_failures: int) -> float:
+        """
+        Time to wait after a failing call to the source function: ``by``
+        seconds (at least 0.1) doubled at every consecutive failure, capped to
+        ``JUTURNA_SOURCE_MAX_BACKOFF``.
+        """
+        base = max(self._source_sleep, 0.1)
+
+        return min(
+            base * 2 ** (consecutive_failures - 1),
+            max(jt.meta.JUTURNA_SOURCE_MAX_BACKOFF, base),
+        )
 
     def _ingest(self, message: Message):
         if message is _WAKE:

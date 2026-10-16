@@ -1,6 +1,8 @@
 import time
 import threading
 
+import pytest
+
 import juturna as jt
 
 def test_data_source_id_properly_set(test_config, wait_for_condition):
@@ -276,3 +278,77 @@ def test_node_survives_exception_in_source(wait_for_condition):
     assert wait_for_condition(lambda: node._source_failures >= 2)
     assert node._source_thread.is_alive()
     node.stop()
+
+
+@pytest.mark.parametrize('mode', ['post', 'pre'])
+def test_source_returning_none_does_not_spin(mode):
+    calls = 0
+
+    def idle_source():
+        nonlocal calls
+        calls += 1
+
+        return None
+
+    node = jt.components.Node(node_name='idle', pipe_name='p')
+    node.set_source(idle_source, by=0.1, mode=mode)
+    node.start()
+
+    time.sleep(0.5)
+    node.stop()
+
+    # about 5 calls are expected in 0.5 s, before the fix there were millions
+    assert 2 <= calls <= 8, f'{calls} calls in 0.5 s with by=0.1'
+
+
+@pytest.mark.parametrize('mode', ['post', 'pre'])
+def test_failing_source_backs_off(mode):
+    node = jt.components.Node(node_name='failing', pipe_name='p')
+
+    def faulty_source():
+        raise RuntimeError('this is failing!')
+
+    # by=0 used to retry a failing source in a tight loop
+    node.set_source(faulty_source, by=0, mode=mode)
+    node.start()
+
+    time.sleep(1.0)
+    node.stop()
+
+    # backoff waits 0.1, 0.2, 0.4, 0.8 s: at most 4 or 5 calls in 1 s
+    assert 2 <= node.health['source_failures'] <= 6
+
+
+def test_source_backoff_doubles_up_to_cap(monkeypatch):
+    monkeypatch.setattr(jt.meta, 'JUTURNA_SOURCE_MAX_BACKOFF', 1.0)
+
+    node = jt.components.Node(node_name='backoff', pipe_name='p')
+
+    node.set_source(lambda: None, by=0)
+    delays = [node._source_backoff(n) for n in range(1, 7)]
+
+    assert delays == [0.1, 0.2, 0.4, 0.8, 1.0, 1.0]
+
+    # a cap below the source interval never shortens the interval itself
+    node.set_source(lambda: None, by=2.0)
+
+    assert node._source_backoff(1) == 2.0
+    assert node._source_backoff(3) == 2.0
+
+
+def test_stop_interrupts_source_backoff():
+    node = jt.components.Node(node_name='slow_backoff', pipe_name='p')
+
+    def faulty_source():
+        raise RuntimeError('this is failing!')
+
+    node.set_source(faulty_source, by=10)
+    node.start()
+
+    time.sleep(0.2)
+
+    start = time.monotonic()
+    node.stop()
+
+    assert node.health['source_failures'] == 1
+    assert time.monotonic() - start < 1.0, 'stop() waited for the backoff'
