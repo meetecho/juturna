@@ -1,5 +1,6 @@
 import base64
 import copy
+import functools
 import json
 import sys
 
@@ -8,6 +9,8 @@ from typing import Any
 from dataclasses import field, dataclass
 
 import numpy as np
+
+import juturna.meta as meta
 
 
 @dataclass(frozen=True, slots=True)
@@ -124,27 +127,107 @@ def _unpickle_object_payload(cls: type, items: dict) -> 'ObjectPayload':
     return cls(**items)
 
 
+_SEQUENCES = (list, tuple, set, frozenset)
+
+
+def _deep_size(obj: Any, max_visits: int) -> int:
+    """
+    Estimate the memory held by an object and the values it contains.
+
+    Arrays count their data buffer, payloads their own ``size_bytes``, and
+    any other object its ``sys.getsizeof``. Dict keys are not counted (they
+    are mostly short strings shared across dicts), each object is counted
+    once, and the walk stops after ``max_visits`` steps, returning the size
+    found up to that point.
+    """
+    size = 0
+    seen = set()
+    pending = [obj]
+    visits = 0
+
+    while pending and visits < max_visits:
+        visits += 1
+        item = pending.pop()
+
+        if id(item) in seen:
+            continue
+
+        seen.add(id(item))
+        cls = type(item)
+
+        if cls is np.ndarray:
+            size += item.nbytes
+        elif isinstance(item, dict):
+            size += sys.getsizeof(item, 0)
+            pending.extend(item.values())
+        elif cls in _SEQUENCES:
+            size += sys.getsizeof(item, 0)
+            pending.extend(item)
+        elif isinstance(item, BasePayload):
+            size += getattr(item, 'size_bytes', 0)
+        else:
+            size += sys.getsizeof(item, 0)
+
+    return size
+
+
 @dataclass(frozen=True)
 class ObjectPayload(dict, BasePayload):
+    """
+    Immutable dictionary payload, with items also readable as attributes.
+
+    Every dict method that changes the content raises ``TypeError``. Only the
+    top level is frozen: mutable values (lists, dicts, arrays) can still be
+    changed in place, and should be treated as read-only.
+    """
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        object.__setattr__(self, 'size_bytes', sys.getsizeof(self))
 
-    # def __post_init__(self):
-    #     object.__setattr__(self, 'size_bytes', sys.getsizeof(self))
+    @functools.cached_property
+    def size_bytes(self) -> int:
+        """
+        Approximate memory held by the payload and its values, in bytes.
+
+        The size is computed on first access (only telemetry reads it), then
+        cached. The walk takes at most ``JUTURNA_PAYLOAD_SIZE_MAX_VISITS``
+        steps, so the value is a lower bound for payloads with many nested
+        objects, and in-place changes to nested values after the first access
+        are not reflected.
+        """
+        return _deep_size(self, meta.JUTURNA_PAYLOAD_SIZE_MAX_VISITS)
+
+    def _immutable(self, operation: str):
+        raise TypeError(
+            f"'{type(self).__name__}' object does not support {operation}"
+        )
 
     def __setitem__(self, key: str, value: Any):
-        raise TypeError(
-            f"'{type(self).__name__}' object does not support item assignment"
-        )
+        self._immutable('item assignment')
 
     def __getattr__(self, key: str) -> Any:
         return self[key]
 
     def __delitem__(self, key):
-        raise TypeError(
-            f"'{type(self).__name__}' object does not support item deletion"
-        )
+        self._immutable('item deletion')
+
+    def __ior__(self, other):
+        self._immutable('in-place update')
+
+    def update(self, *args, **kwargs):
+        self._immutable('update()')
+
+    def pop(self, *args):
+        self._immutable('pop()')
+
+    def popitem(self):
+        self._immutable('popitem()')
+
+    def clear(self):
+        self._immutable('clear()')
+
+    def setdefault(self, *args):
+        self._immutable('setdefault()')
 
     def __reduce__(self):
         # dict's default pickling reconstructs the instance by calling

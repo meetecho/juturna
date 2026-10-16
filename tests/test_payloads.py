@@ -1,6 +1,15 @@
+import copy
+import pickle
+
 import pytest
 
 import numpy as np
+
+import juturna as jt
+import juturna.meta as meta
+
+from juturna.components import Message
+from juturna.payloads import _payloads
 
 from juturna.payloads._payloads import AudioPayload
 from juturna.payloads._payloads import ImagePayload
@@ -173,3 +182,151 @@ def test_draft_copy_from_object():
 
     assert test_payload['prop_a'] == 10
     assert test_payload.prop_b == 'value'
+
+@pytest.mark.parametrize(
+    'mutate',
+    [
+        lambda p: p.update(prop_c=30),
+        lambda p: p.update({'prop_a': 0}),
+        lambda p: p.pop('prop_a'),
+        lambda p: p.pop('missing', None),
+        lambda p: p.popitem(),
+        lambda p: p.clear(),
+        lambda p: p.setdefault('prop_c', 30),
+        lambda p: p.__setitem__('prop_a', 0),
+        lambda p: p.__delitem__('prop_a'),
+        lambda p: p.__ior__({'prop_c': 30}),
+    ],
+    ids=[
+        'update_kwargs',
+        'update_dict',
+        'pop',
+        'pop_default',
+        'popitem',
+        'clear',
+        'setdefault',
+        'setitem',
+        'delitem',
+        'ior',
+    ],
+)
+def test_object_payload_rejects_every_mutator(mutate):
+    payload = ObjectPayload(prop_a=10, prop_b='value')
+
+    with pytest.raises(TypeError, match="'ObjectPayload' object does not"):
+        mutate(payload)
+
+    assert payload == {'prop_a': 10, 'prop_b': 'value'}
+
+
+def test_object_payload_in_place_or_is_rejected():
+    payload = ObjectPayload(prop_a=10)
+    alias = payload
+
+    with pytest.raises(TypeError):
+        alias |= {'prop_b': 20}
+
+    assert payload == {'prop_a': 10}
+
+
+def test_object_payload_or_returns_a_new_dict():
+    payload = ObjectPayload(prop_a=10)
+    merged = payload | {'prop_b': 20}
+
+    assert merged == {'prop_a': 10, 'prop_b': 20}
+    assert payload == {'prop_a': 10}
+
+
+def test_object_payload_copies_keep_working():
+    payload = ObjectPayload(prop_a=[1, 2], prop_b='value')
+
+    assert pickle.loads(pickle.dumps(payload)) == payload
+    assert copy.deepcopy(payload) == payload
+    assert payload.clone() == payload
+
+
+def test_object_payload_size_is_computed_on_first_access(monkeypatch):
+    calls = list()
+    real_deep_size = _payloads._deep_size
+
+    def counting_deep_size(obj, max_visits):
+        calls.append(obj)
+
+        return real_deep_size(obj, max_visits)
+
+    monkeypatch.setattr(_payloads, '_deep_size', counting_deep_size)
+
+    payload = ObjectPayload(prop_a=np.zeros(1000, dtype=np.uint8))
+
+    assert calls == []
+
+    first = payload.size_bytes
+    second = payload.size_bytes
+
+    assert first == second
+    assert len(calls) == 1
+
+
+def test_object_payload_size_counts_nested_values():
+    audio = AudioPayload(audio=np.zeros(100, dtype=np.float32))
+    payload = ObjectPayload(
+        mask=np.zeros((10, 100), dtype=np.uint8),
+        audio=audio,
+        boxes=[{'xyxy': [1, 2, 3, 4]} for _ in range(10)],
+    )
+
+    # the mask buffer and the audio payload, plus the containers
+    assert payload.size_bytes > 1000 + audio.size_bytes
+    assert payload.size_bytes > ObjectPayload(
+        mask=np.zeros((10, 100), dtype=np.uint8), audio=audio
+    ).size_bytes
+
+
+def test_object_payload_size_counts_shared_values_once():
+    frame = np.zeros(10_000, dtype=np.uint8)
+
+    once = ObjectPayload(a=frame)
+    twice = ObjectPayload(a=frame, b=frame)
+
+    assert twice.size_bytes - once.size_bytes < frame.nbytes
+
+
+def test_object_payload_size_handles_cycles():
+    loop = list()
+    loop.append(loop)
+
+    assert ObjectPayload(loop=loop).size_bytes > 0
+
+
+def test_object_payload_size_walk_is_bounded(monkeypatch):
+    rows = [{'a': i, 'b': [i] * 10} for i in range(1000)]
+
+    full = ObjectPayload(rows=rows).size_bytes
+
+    monkeypatch.setattr(meta, 'JUTURNA_PAYLOAD_SIZE_MAX_VISITS', 50)
+    bounded = ObjectPayload(rows=rows).size_bytes
+
+    assert 0 < bounded < full
+
+
+class _TelemetrySink:
+    def __init__(self):
+        self.batches = list()
+
+    def record_telemetry(self, batch: list):
+        self.batches.append(batch)
+
+
+def test_object_payload_size_is_not_computed_without_telemetry():
+    node = jt.components.Node(node_name='idle', pipe_name='p')
+    payload = ObjectPayload(prop_a=np.zeros(1000, dtype=np.uint8))
+
+    node._rec_telemetry(Message(creator='src', payload=payload), 'rx')
+
+    assert 'size_bytes' not in vars(payload)
+
+    node.link_telemetry(_TelemetrySink())
+    node._rec_telemetry(Message(creator='src', payload=payload), 'rx')
+
+    assert 'size_bytes' in vars(payload)
+    assert node._telemetry_buffer[-1][-1] == payload.size_bytes
