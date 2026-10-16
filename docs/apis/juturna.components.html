@@ -610,6 +610,10 @@ fully shut down before its resources are released.</p>
 signalled at once and exit as soon as their current iteration is
 over: any message still in the input queue or in the buffer is
 discarded. Subclass cleanup in <code class="docutils literal notranslate"><span class="pre">stop()</span></code> still runs.</p>
+<p>Unlike <code class="docutils literal notranslate"><span class="pre">stop()</span></code>, kill() does not wait for a busy <code class="docutils literal notranslate"><span class="pre">update()</span></code> or
+source call to return: each thread gets <code class="docutils literal notranslate"><span class="pre">JUTURNA_THREAD_JOIN_TIMEOUT</span></code>
+seconds, then it is left behind (it exits on its own as soon as the
+call returns, without processing anything else).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -727,7 +731,12 @@ the node is stopped correctly.</p>
 <p>Threads are stopped one at a time, each one after its upstream has
 terminated: source first, then worker, then update. Every thread
 consumes its own pending data before exiting, so all the messages
-received before the stop call are processed.</p>
+received before the stop call are processed, and stop() waits for
+an <code class="docutils literal notranslate"><span class="pre">update()</span></code> call in progress to return, however long it takes.</p>
+<p>When the node is being killed (see <code class="docutils literal notranslate"><span class="pre">kill()</span></code>), each thread is only
+waited for <code class="docutils literal notranslate"><span class="pre">JUTURNA_THREAD_JOIN_TIMEOUT</span></code> seconds: a thread still
+busy after that is left behind, and listed in <code class="docutils literal notranslate"><span class="pre">health</span></code> under
+<code class="docutils literal notranslate"><span class="pre">stuck_workers</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
