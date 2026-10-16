@@ -849,6 +849,10 @@ process data. The nodes are started in reverse order of their
 configuration, ensuring that the source node is the last one to be
 started. This is important to ensure that the data flow is properly
 established and that all nodes are ready to receive data.</p>
+<p>If a node fails to start, the nodes already started (including the
+failing one) are killed and telemetry is stopped before the error is
+raised: the pipeline stays READY with no worker running, so start()
+can be retried, or the pipeline destroyed.</p>
 </dd></dl>
 
 <dl class="py property">
