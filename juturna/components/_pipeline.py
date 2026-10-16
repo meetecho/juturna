@@ -9,6 +9,7 @@ import typing
 from juturna.components import Node
 
 from juturna.utils import log_utils
+from juturna.utils import jt_utils
 
 from juturna.names import ComponentStatus
 from juturna.names import PipelineStatus
@@ -282,6 +283,11 @@ class Pipeline:
         transport must provide it; a link from another worker's node only
         adds that node to the origins of the local one. Cycles are checked
         on the local graph only.
+
+        Node names and the telemetry file name are joined to the pipeline
+        folder, so they must be plain file names (see
+        ``jt_utils.check_name``): a ``ValueError`` is raised before anything
+        is written otherwise.
         """
         if not self._begin_transition('warmup', _TRANSITION_RULES):
             return
@@ -296,12 +302,20 @@ class Pipeline:
             self._end_transition(PipelineStatus.READY)
 
     def _warmup(self):
+        _tele_file = self._raw_config['pipeline'].get('telemetry', None)
+
+        # these names become paths under the pipeline folder: a name like
+        # "../x" or "/x" would write (and, for telemetry, read) outside of it
+        for node in self._raw_config['pipeline']['nodes']:
+            jt_utils.check_name(node['name'], 'node')
+
+        if _tele_file:
+            jt_utils.check_name(_tele_file, 'telemetry file')
+
         pathlib.Path(self.pipe_path).mkdir(parents=True, exist_ok=True)
 
         with open(pathlib.Path(self.pipe_path, 'config.json'), 'w') as f:
             json.dump(self._raw_config, f, indent=2)
-
-        _tele_file = self._raw_config['pipeline'].get('telemetry', None)
 
         if _tele_file and not getattr(
             self._transport, 'supports_telemetry', True
