@@ -46,6 +46,10 @@ class TelemetryManager:
         self._queue.put(list())
         self._thread.join()
 
+        # a stopped manager can be started again, as after a failed start
+        self._thread = None
+        self._evt.clear()
+
     def record_telemetry(self, record_batch: list):
         self._queue.put(record_batch)
 
@@ -54,9 +58,12 @@ class TelemetryManager:
 
         with open(self._target, 'a', newline='', buffering=1) as f:
             _writer = csv.writer(f)
-            _writer.writerow(
-                ['ts', 'evt', 'node', 'origin', 'msg_id', 'src_id', 'size']
-            )
+
+            # on a restart the file already has its header
+            if f.tell() == 0:
+                _writer.writerow(
+                    ['ts', 'evt', 'node', 'origin', 'msg_id', 'src_id', 'size']
+                )
 
             while not self._evt.is_set():
                 try:
