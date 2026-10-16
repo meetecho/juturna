@@ -286,25 +286,27 @@ def _alive_workers(pipeline) -> list[str]:
     return [t.name for t in threading.enumerate() if t.name in names]
 
 
-def _failing_start(node, spawn_first: bool):
+def _failing_start(node, spawn_first: bool, error=_StartError):
     original_start = node.start
 
     def start():
         if spawn_first:
             original_start()
 
-        raise _StartError(f'{node.name} failed to start')
+        raise error(f'{node.name} failed to start')
 
     return start
 
 
+# an interrupt (ctrl+c while the pipeline starts) is rolled back as well
+@pytest.mark.parametrize('error', [_StartError, KeyboardInterrupt])
 @pytest.mark.parametrize('spawn_first', [False, True])
 def test_failed_start_stops_the_nodes_already_started(
-    test_config, monkeypatch, spawn_first
+    test_config, monkeypatch, spawn_first, error
 ):
     folder = test_config['test_pipeline_folder']
     config = _sequencer_crasher_config(
-        f'failed_start_pipeline_{spawn_first}', folder
+        f'failed_start_pipeline_{spawn_first}_{error.__name__}', folder
     )
     config['pipeline']['telemetry'] = 'telemetry.csv'
     pipeline = jt.components.Pipeline(config)
@@ -314,9 +316,11 @@ def test_failed_start_stops_the_nodes_already_started(
     # sink_1 is started first, then source_1 fails (after spawning its own
     # workers, when spawn_first is set)
     source = pipeline._nodes['source_1']
-    monkeypatch.setattr(source, 'start', _failing_start(source, spawn_first))
+    monkeypatch.setattr(
+        source, 'start', _failing_start(source, spawn_first, error)
+    )
 
-    with pytest.raises(_StartError):
+    with pytest.raises(error):
         pipeline.start()
 
     assert pipeline.status['self'] == 'pipeline_ready'

@@ -126,6 +126,7 @@ class Pipeline:
         self._status = PipelineStatus.NEW
         self._status_lock = threading.Lock()
         self._transitioning = False
+        self._started_nodes: list[str] = list()
 
         self.created_at = time.time()
 
@@ -263,10 +264,26 @@ class Pipeline:
             self._status = new_status
             self._transitioning = False
 
-    def _abort_transition(self):
-        """Release a claimed transition without changing `_status`."""
-        with self._status_lock:
-            self._transitioning = False
+    def _abort_transition(
+        self, rollback: typing.Callable[[], None] | None = None
+    ):
+        """
+        Release a claimed transition without changing `_status`.
+
+        Parameters
+        ----------
+        rollback : Callable[[], None] | None
+            Undoes the partial work of the failed transition. It runs before
+            the transition is released, so no other lifecycle operation can
+            interleave with it.
+
+        """
+        try:
+            if rollback is not None:
+                rollback()
+        finally:
+            with self._status_lock:
+                self._transitioning = False
 
     def warmup(self):
         """
@@ -434,14 +451,18 @@ class Pipeline:
 
         try:
             self._start()
-        except Exception:
-            self._abort_transition()
+        except BaseException:
+            # interrupts are rolled back too, or nodes would be left running
+            self._abort_transition(self._rollback_start)
 
             raise
         else:
             self._end_transition(PipelineStatus.RUNNING)
 
     def _start(self):
+        # progress for _rollback_start(), in case start() does not complete
+        self._started_nodes = list()
+
         if not self._nodes:
             raise RuntimeError(f'pipeline {self.name} is not configured')
 
@@ -457,34 +478,31 @@ class Pipeline:
         if self._telemetry:
             self._telemetry_manager.start()
 
-        started = list()
+        for layer in layers[::-1]:
+            for node_name in layer:
+                self._logger.info(f'starting node {node_name}')
 
-        try:
-            for layer in layers[::-1]:
-                for node_name in layer:
-                    self._logger.info(f'starting node {node_name}')
+                # a node failing in start() may have spawned some of its
+                # workers already, so it is rolled back as well
+                self._started_nodes.append(node_name)
+                self._nodes[node_name].start()
 
-                    # a node failing in start() may have spawned some of its
-                    # workers already, so it is rolled back as well
-                    started.append(node_name)
-                    self._nodes[node_name].start()
-        except Exception:
+        self._logger.info('pipe started')
+
+    def _rollback_start(self):
+        """
+        Undo a partial start: kill the nodes started so far, sources first,
+        and stop telemetry. Pending messages are discarded, and each node goes
+        back to CONFIGURED so that the pipeline can be started again.
+        """
+        started, self._started_nodes = self._started_nodes, list()
+
+        if started:
             self._logger.error(
                 f'node {started[-1]} failed to start, stopping the nodes '
                 'already started'
             )
-            self._rollback_start(started)
 
-            raise
-
-        self._logger.info('pipe started')
-
-    def _rollback_start(self, started: list[str]):
-        """
-        Undo a partial start: kill the given nodes, sources first, and stop
-        telemetry. Pending messages are discarded, and each node goes back to
-        CONFIGURED so that the pipeline can be started again.
-        """
         nodes = [self._nodes[node_name] for node_name in started[::-1]]
 
         for node in nodes:
