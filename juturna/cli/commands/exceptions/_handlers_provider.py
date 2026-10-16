@@ -5,6 +5,7 @@ from logging import Logger
 from juturna.cli.commands.exceptions import (
     InvalidPipelineIdException,
     TelemetryNotEnabledException,
+    EnvVarNotAllowedException,
     PipelineNotReadyError,
     PipelineNotRunningError,
     PipelineAlreadyRunningError,
@@ -90,6 +91,20 @@ def _telemetry_not_enabled_handler(
     )
 
 
+def _env_var_not_allowed_handler(
+    request: Request, exception: EnvVarNotAllowedException
+) -> JSONResponse:
+    _m = (
+        f'node {exception.node_name} references environment variable '
+        f'{exception.var_name}, which the service does not allow'
+    )
+
+    return JSONResponse(
+        status_code=403,
+        content={'message': _m},
+    )
+
+
 def _make_generic_exception_handler(logger: Logger):
     def _generic_exception_handler(
         request: Request, exception: Exception
@@ -115,6 +130,7 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
         - PipelineDestroyedError
         - PipelineBusyError
         - TelemetryNotEnabledException
+        - EnvVarNotAllowedException
 
     Args:
         app (FastAPI): Fastapi instance to apply handlers to
@@ -139,6 +155,9 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
     app.add_exception_handler(PipelineBusyError, _pipeline_busy_handler)
     app.add_exception_handler(
         TelemetryNotEnabledException, _telemetry_not_enabled_handler
+    )
+    app.add_exception_handler(
+        EnvVarNotAllowedException, _env_var_not_allowed_handler
     )
 
 

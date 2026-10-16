@@ -1,3 +1,4 @@
+import importlib.util
 import pathlib
 import shutil
 import itertools
@@ -39,6 +40,39 @@ def wait_for_condition():
         return False
 
     return _wait
+
+SERVICE_TOKEN = 'test-service-token'
+
+
+@pytest.fixture
+def service_app():
+    # the service needs the httpwrapper extra, which CI does not install, and
+    # the starlette test client needs httpx2 (or httpx)
+    pytest.importorskip('fastapi')
+
+    if not any(importlib.util.find_spec(m) for m in ('httpx2', 'httpx')):
+        pytest.skip('the starlette test client needs httpx2')
+
+    from juturna.cli.commands._juturna_service import app
+    from juturna.components._pipeline_manager import PipelineManager
+
+    PipelineManager.set_base_folder(test_pipeline_folder)
+    app.state.token = SERVICE_TOKEN
+
+    yield app
+
+    app.state.token = None
+    PipelineManager.set_allowed_env_vars(list())
+
+
+@pytest.fixture
+def service_client(service_app):
+    from fastapi.testclient import TestClient
+
+    return TestClient(
+        service_app, headers={'Authorization': f'Bearer {SERVICE_TOKEN}'}
+    )
+
 
 @pytest.fixture(scope='session')
 def test_config():
