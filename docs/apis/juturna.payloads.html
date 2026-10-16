@@ -495,10 +495,60 @@ once it is compiled an actual payload will be generated.</p>
 <dt class="sig sig-object py" id="juturna.payloads.ObjectPayload">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">ObjectPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.ObjectPayload" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code>, <a class="reference internal" href="#juturna.payloads.BasePayload" title="juturna.payloads._payloads.BasePayload"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasePayload</span></code></a></p>
+<p>Immutable dictionary payload, with items also readable as attributes.</p>
+<p>Every dict method that changes the content raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>. Only the
+top level is frozen: mutable values (lists, dicts, arrays) can still be
+changed in place, and should be treated as read-only.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.ObjectPayload.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Remove</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">from</span> <span class="pre">D.</span></span></span><a class="headerlink" href="#juturna.payloads.ObjectPayload.clear" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.payloads.ObjectPayload.from_dict">
 <em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.ObjectPayload.from_dict" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.ObjectPayload.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">v,</span> <span class="pre">remove</span> <span class="pre">specified</span> <span class="pre">key</span> <span class="pre">and</span> <span class="pre">return</span> <span class="pre">the</span> <span class="pre">corresponding</span> <span class="pre">value.</span></span></span><a class="headerlink" href="#juturna.payloads.ObjectPayload.pop" title="Link to this definition">¶</a></dt>
+<dd><p>If the key is not found, return the default if given; otherwise,
+raise a KeyError.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.ObjectPayload.popitem">
+<span class="sig-name descname"><span class="pre">popitem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.ObjectPayload.popitem" title="Link to this definition">¶</a></dt>
+<dd><p>Remove and return a (key, value) pair as a 2-tuple.</p>
+<p>Pairs are returned in LIFO (last-in, first-out) order.
+Raises KeyError if the dict is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.ObjectPayload.setdefault">
+<span class="sig-name descname"><span class="pre">setdefault</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.ObjectPayload.setdefault" title="Link to this definition">¶</a></dt>
+<dd><p>Insert key with a value of default if key is not in the dictionary.</p>
+<p>Return the value for key if key is in the dictionary, else default.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.payloads.ObjectPayload.size_bytes">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size_bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#juturna.payloads.ObjectPayload.size_bytes" title="Link to this definition">¶</a></dt>
+<dd><p>Approximate memory held by the payload and its values, in bytes.</p>
+<p>The size is computed on first access (only telemetry reads it), then
+cached. The walk takes at most <code class="docutils literal notranslate"><span class="pre">JUTURNA_PAYLOAD_SIZE_MAX_VISITS</span></code>
+steps, so the value is a lower bound for payloads with many nested
+objects, and in-place changes to nested values after the first access
+are not reflected.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.ObjectPayload.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <span class="optional">]</span><em class="sig-param"><span class="n"><span class="pre">**F</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Update</span> <span class="pre">D</span> <span class="pre">from</span> <span class="pre">mapping/iterable</span> <span class="pre">E</span> <span class="pre">and</span> <span class="pre">F.</span></span></span><a class="headerlink" href="#juturna.payloads.ObjectPayload.update" title="Link to this definition">¶</a></dt>
+<dd><p>If E is present and has a .keys() method, then does:  for k in E.keys(): D[k] = E[k]
+If E is present and lacks a .keys() method, then does:  for k, v in E: D[k] = v
+In either case, this is followed by: for k in F:  D[k] = F[k]</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -647,7 +697,13 @@ once it is compiled an actual payload will be generated.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.payloads.ObjectPayload"><code class="docutils literal notranslate"><span class="pre">ObjectPayload</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.payloads.ObjectPayload.clear"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.clear()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ObjectPayload.from_dict"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.from_dict()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.ObjectPayload.pop"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.pop()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.ObjectPayload.popitem"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.popitem()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.ObjectPayload.setdefault"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.setdefault()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.ObjectPayload.size_bytes"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.size_bytes</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.ObjectPayload.update"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.update()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload"><code class="docutils literal notranslate"><span class="pre">VideoPayload</span></code></a><ul>
