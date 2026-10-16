@@ -669,26 +669,31 @@ with basic substitution of the passed arguments.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.set_source">
-<span class="sig-name descname"><span class="pre">set_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'post'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.set_source" title="Link to this definition">¶</a></dt>
-<dd><p>Set the node source (to be used for <code class="docutils literal notranslate"><span class="pre">source</span></code> nodes). The source can be
-either a callable or a buffer. However, source nodes are expected to be
-provided with a callable that will be used to generate the data to be
-transmitted.</p>
+<span class="sig-name descname"><span class="pre">set_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'post'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.set_source" title="Link to this definition">¶</a></dt>
+<dd><p>Set the node source (to be used for <code class="docutils literal notranslate"><span class="pre">source</span></code> nodes). The source is a
+callable invoked periodically: the message it returns is fed to the
+node, while <code class="docutils literal notranslate"><span class="pre">None</span></code> means there is nothing to deliver this time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>source</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#juturna.components.Buffer" title="juturna.components.Buffer"><em>Buffer</em></a><em>, </em><em>callable</em><em>]</em>) – The source to be set. This can be either a buffer or a callable.</p></li>
-<li><p><strong>by</strong> (<em>int</em><em>, </em><em>optional</em>) – The time interval (in seconds) between two consecutive calls to the
-source. This parameter is only used if the source is a callable.
-The default is 0.</p></li>
+<li><p><strong>source</strong> (<em>callable</em>) – The function producing the messages of the node.</p></li>
+<li><p><strong>by</strong> (<em>float</em><em>, </em><em>optional</em>) – The time interval (in seconds) between two consecutive calls to the
+source. With the default of 0 the source is called again right
+away, so it is expected to block until data is available.</p></li>
 <li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Whether to apply the <code class="docutils literal notranslate"><span class="pre">by</span></code> timer before or after the source call.
-The default is <code class="docutils literal notranslate"><span class="pre">post</span></code>, indicating the source function will wait
-for <code class="docutils literal notranslate"><span class="pre">by</span></code> seconds before being called. If set to <code class="docutils literal notranslate"><span class="pre">pre</span></code>, the
-source function will be called and then wait for <code class="docutils literal notranslate"><span class="pre">by</span></code> seconds
-before being called again.</p></li>
+The default is <code class="docutils literal notranslate"><span class="pre">post</span></code>: the source is called, then the node waits
+for <code class="docutils literal notranslate"><span class="pre">by</span></code> seconds before delivering the message (or before the next
+call, if the source returned <code class="docutils literal notranslate"><span class="pre">None</span></code>). If set to <code class="docutils literal notranslate"><span class="pre">pre</span></code>, the node
+waits for <code class="docutils literal notranslate"><span class="pre">by</span></code> seconds before every call.</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Notes</p>
+<p>An exception raised by the source is logged and counted in
+<code class="docutils literal notranslate"><span class="pre">health</span></code>, and the next call is delayed by an exponential backoff
+starting at <code class="docutils literal notranslate"><span class="pre">by</span></code> (at least 0.1 seconds) and capped to
+<code class="docutils literal notranslate"><span class="pre">JUTURNA_SOURCE_MAX_BACKOFF</span></code>, which resets at the first successful
+call.</p>
 </dd></dl>
 
 <dl class="py method">
