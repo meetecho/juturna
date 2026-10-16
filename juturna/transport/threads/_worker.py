@@ -21,5 +21,9 @@ class _ThreadWorker:
         return self._thread.is_alive()
 
     @property
+    def name(self) -> str:
+        return self._thread.name
+
+    @property
     def native_thread(self) -> threading.Thread:
         return self._thread

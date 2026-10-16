@@ -67,6 +67,8 @@ class Condition(Protocol):
 class WorkerHandle(Protocol):
     """A handle to a unit of concurrent execution spawned by a backend."""
 
+    name: str
+
     def start(self) -> None: ...
 
     def join(self, timeout: float | None = None) -> None: ...

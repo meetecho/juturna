@@ -1,5 +1,6 @@
 import time
 import threading
+import juturna as jt
 from juturna.components import Message, Node, State
 from juturna.payloads import BytesPayload
 
@@ -51,3 +52,60 @@ def test_stop_draining_no_deadlock_with_real_work(wait_for_condition):
 
     assert not stop_thread.is_alive(), "Deadlock detected in node.stop()"
     assert node._last_data_source_evt_id == 29, f"Not all messages were processed during draining, last processed ID: {node._last_data_source_evt_id}"
+
+
+class BlockingNode(Node):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.release = threading.Event()
+        self.calls = 0
+
+    def update(self, message: Message, **kwargs):
+        self.calls += 1
+        self.release.wait()
+
+
+def test_kill_returns_while_update_is_blocked(monkeypatch):
+    monkeypatch.setattr(jt.meta, 'JUTURNA_THREAD_JOIN_TIMEOUT', 0.2)
+
+    node = BlockingNode(node_name="blocked_node", pipe_name="test_pipe")
+    node.start()
+
+    for i in range(3):
+        node.put(Message(creator="test_source", version=i))
+
+    time.sleep(0.3)
+
+    kill_thread = threading.Thread(target=node.kill)
+    kill_thread.start()
+    kill_thread.join(timeout=5)
+
+    try:
+        assert not kill_thread.is_alive(), "kill() blocked on a busy update()"
+        assert node.health['stuck_workers'] == ['_update_blocked_node']
+    finally:
+        node.release.set()
+
+    # once update() returns, the thread exits without processing the rest
+    time.sleep(0.5)
+    assert node.calls == 1
+
+
+def test_stop_waits_for_blocked_update():
+    node = BlockingNode(node_name="waiting_node", pipe_name="test_pipe")
+    node.start()
+    node.put(Message(creator="test_source", version=0))
+
+    time.sleep(0.3)
+
+    stop_thread = threading.Thread(target=node.stop)
+    stop_thread.start()
+    stop_thread.join(timeout=1)
+
+    assert stop_thread.is_alive(), "stop() must wait for update() to return"
+
+    node.release.set()
+    stop_thread.join(timeout=5)
+
+    assert not stop_thread.is_alive()
+    assert node.health['stuck_workers'] == []
