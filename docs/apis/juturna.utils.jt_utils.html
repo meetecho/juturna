@@ -330,6 +330,32 @@
 <section id="module-juturna.utils.jt_utils">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.utils.jt_utils" title="Link to this heading">¶</a></h2>
 <dl class="py function">
+<dt class="sig sig-object py" id="juturna.utils.jt_utils.check_name">
+<span class="sig-prename descclassname"><span class="pre">juturna.utils.jt_utils.</span></span><span class="sig-name descname"><span class="pre">check_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#juturna.utils.jt_utils.check_name" title="Link to this definition">¶</a></dt>
+<dd><p>Check that a name taken from a configuration can be used as a file or
+folder name, so that joining it to a base folder cannot escape it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>Any</em>) – The name to check.</p></li>
+<li><p><strong>kind</strong> (<em>str</em>) – What the name identifies (<code class="docutils literal notranslate"><span class="pre">pipeline</span></code>, <code class="docutils literal notranslate"><span class="pre">node</span></code>, …), used in the
+error message.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The name, unchanged.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the name is not a string of up to 128 letters, digits, <code class="docutils literal notranslate"><span class="pre">_</span></code>,
+    <code class="docutils literal notranslate"><span class="pre">-</span></code> and <code class="docutils literal notranslate"><span class="pre">.</span></code>, starting with a letter, a digit or <code class="docutils literal notranslate"><span class="pre">_</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="juturna.utils.jt_utils.get_env_var">
 <span class="sig-prename descclassname"><span class="pre">juturna.utils.jt_utils.</span></span><span class="sig-name descname"><span class="pre">get_env_var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="headerlink" href="#juturna.utils.jt_utils.get_env_var" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -402,6 +428,7 @@
             <ul>
 <li><a class="reference internal" href="#">juturna.utils.jt_utils package</a><ul>
 <li><a class="reference internal" href="#module-juturna.utils.jt_utils">Module contents</a><ul>
+<li><a class="reference internal" href="#juturna.utils.jt_utils.check_name"><code class="docutils literal notranslate"><span class="pre">check_name()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.utils.jt_utils.get_env_var"><code class="docutils literal notranslate"><span class="pre">get_env_var()</span></code></a></li>
 </ul>
 </li>

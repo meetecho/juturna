@@ -883,6 +883,10 @@ returned by the transport’s <code class="docutils literal notranslate"><span c
 transport must provide it; a link from another worker’s node only
 adds that node to the origins of the local one. Cycles are checked
 on the local graph only.</p>
+<p>Node names and the telemetry file name are joined to the pipeline
+folder, so they must be plain file names (see
+<code class="docutils literal notranslate"><span class="pre">jt_utils.check_name</span></code>): a <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> is raised before anything
+is written otherwise.</p>
 </dd></dl>
 
 </dd></dl>
