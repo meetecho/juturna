@@ -7,6 +7,7 @@ import logging
 import pathlib
 
 from juturna.components import Pipeline
+from juturna.utils import jt_utils
 from juturna.cli.commands.models.api import PipelineConfig
 from juturna.cli.commands.models.api import CreatedPipelineDto
 from juturna.cli.commands.exceptions import (
@@ -49,6 +50,9 @@ class PipelineManager:
     def create_pipeline(
         self, pipeline_config: PipelineConfig
     ) -> CreatedPipelineDto:
+        # the name becomes the pipeline folder under the base folder
+        jt_utils.check_name(pipeline_config.pipeline.get('name'), 'pipeline')
+
         pipeline_id = str(uuid.uuid4())
 
         pipeline_config.pipeline['id'] = pipeline_id
