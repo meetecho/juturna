@@ -1,7 +1,7 @@
 import base64
 import copy
+import dataclasses
 import functools
-import json
 import sys
 
 from typing import Self
@@ -13,14 +13,55 @@ import numpy as np
 import juturna.meta as meta
 
 
+def _to_json(value: Any) -> Any:
+    if isinstance(value, np.ndarray):
+        return value.tolist()
+
+    if isinstance(value, bytes | bytearray):
+        return base64.b64encode(value).decode('ascii')
+
+    # before the payload check, as ObjectPayload is both
+    if isinstance(value, dict):
+        return {k: _to_json(v) for k, v in value.items()}
+
+    if isinstance(value, BasePayload):
+        return type(value).serialize(value)
+
+    if isinstance(value, list | tuple):
+        return [_to_json(v) for v in value]
+
+    return value
+
+
 @dataclass(frozen=True, slots=True)
 class BasePayload:
     def clone(self) -> Self:
         return copy.deepcopy(self)
 
     @staticmethod
-    def serialize(obj):
-        return json.JSONEncoder.default(obj)
+    def serialize(obj) -> dict:
+        """
+        Convert a dataclass payload into JSON-compatible values, field by
+        field: arrays become lists, bytes become base64 text, and nested
+        payloads use their own ``serialize``.
+
+        Raises
+        ------
+        TypeError
+            If the payload class is not itself a dataclass, so it has no
+            fields to serialise.
+
+        """
+        if '__dataclass_fields__' not in vars(type(obj)):
+            raise TypeError(
+                f'{type(obj).__name__} is not a dataclass: decorate it with '
+                '@dataclass or give it its own serialize()'
+            )
+
+        return {
+            f.name: _to_json(getattr(obj, f.name))
+            for f in dataclasses.fields(obj)
+        }
 
 
 @dataclass(frozen=True)
@@ -32,8 +73,9 @@ class AudioPayload(BasePayload):
     start: float = -1.0
     end: float = -1.0
 
-    def __post_init__(self):
-        object.__setattr__(self, 'size_bytes', self.audio.nbytes)
+    @property
+    def size_bytes(self) -> int:
+        return self.audio.nbytes
 
     @staticmethod
     def serialize(obj) -> dict:
@@ -56,8 +98,9 @@ class ImagePayload(BasePayload):
     pixel_format: str = ''
     timestamp: float = -1.0
 
-    def __post_init__(self):
-        object.__setattr__(self, 'size_bytes', self.image.nbytes)
+    @property
+    def size_bytes(self) -> int:
+        return self.image.nbytes
 
     @staticmethod
     def serialize(obj) -> dict:
@@ -73,21 +116,25 @@ class ImagePayload(BasePayload):
 
 @dataclass(frozen=True)
 class VideoPayload(BasePayload):
-    video: list[ImagePayload] = field(default_factory=lambda: list())
+    video: tuple[ImagePayload, ...] = field(default_factory=tuple)
     frames_per_second: float = -1.0
     codec: str = ''
     start: float = -1.0
     end: float = -1.0
 
     def __post_init__(self):
-        object.__setattr__(
-            self, 'size_bytes', sum([f.nbytes for f in self.video])
-        )
+        # frames are stored as a tuple, so the frozen payload cannot be
+        # changed through the list it was built from
+        object.__setattr__(self, 'video', tuple(self.video))
+
+    @property
+    def size_bytes(self) -> int:
+        return sum(f.size_bytes for f in self.video)
 
     @staticmethod
     def serialize(obj) -> dict:
         return {
-            'video': [img.serialize() for img in obj.video],
+            'video': [ImagePayload.serialize(img) for img in obj.video],
             'frames_per_second': obj.frames_per_second,
             'codec': obj.codec,
             'start': obj.start,
@@ -99,8 +146,9 @@ class VideoPayload(BasePayload):
 class BytesPayload(BasePayload):
     cnt: bytes = field(default_factory=lambda: b'')
 
-    def __post_init__(self):
-        object.__setattr__(self, 'size_bytes', len(self.cnt))
+    @property
+    def size_bytes(self) -> int:
+        return len(self.cnt)
 
     @staticmethod
     def serialize(obj) -> dict:
@@ -111,12 +159,11 @@ class BytesPayload(BasePayload):
 class Batch(BasePayload):
     messages: tuple = field(default_factory=tuple)
 
-    def __post_init__(self):
-        object.__setattr__(
-            self,
-            'size_bytes',
-            sum([m.payload.size_bytes for m in self.messages]),
-        )
+    @property
+    def size_bytes(self) -> int:
+        # messages without a payload, or with a payload that has no size,
+        # count as 0
+        return sum(getattr(m.payload, 'size_bytes', 0) for m in self.messages)
 
     @staticmethod
     def serialize(obj) -> list:
@@ -206,7 +253,12 @@ class ObjectPayload(dict, BasePayload):
         self._immutable('item assignment')
 
     def __getattr__(self, key: str) -> Any:
-        return self[key]
+        try:
+            return self[key]
+        except KeyError:
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{key}'"
+            ) from None
 
     def __delitem__(self, key):
         self._immutable('item deletion')

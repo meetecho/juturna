@@ -86,12 +86,38 @@ class Buffer:
         marks: dict[str, list[int]]
             A dictionary of indexes of messages to send for every source.
 
+        Raises
+        ------
+        IndexError
+            If an index is out of range for its source. The buffer is left
+            unchanged.
+
         """
         to_send = list()
+        remaining = dict()
 
-        for mark in marks:
-            for pop_idx in marks[mark][::-1]:
-                to_send.append(self._data[mark].pop(pop_idx))
+        # select everything first, and change the buffer only once the
+        # message to send is built, so that a failure loses nothing
+        for mark, indexes in marks.items():
+            pending = self._data.get(mark, list())
+            selected = set()
+
+            for idx in indexes:
+                if not -len(pending) <= idx < len(pending):
+                    raise IndexError(
+                        f'synchroniser index {idx} out of range for {mark} '
+                        f'({len(pending)} messages)'
+                    )
+
+                selected.add(idx % len(pending))
+
+            if not selected:
+                continue
+
+            to_send.extend(pending[i] for i in sorted(selected))
+            remaining[mark] = [
+                m for i, m in enumerate(pending) if i not in selected
+            ]
 
         if len(to_send) == 0:
             return
@@ -104,6 +130,8 @@ class Buffer:
                 payload=Batch(messages=tuple(to_send)),
             )
         )
+
+        self._data.update(remaining)
 
         while not self._abort.is_set():
             try:
