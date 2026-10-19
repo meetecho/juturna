@@ -490,7 +490,6 @@ class Pipeline:
 
         self._telemetry_manager = None
         self._telemetry = False
-        self._telemetry_file = None
 
     def update_node(
         self, node_name: str, property_name: str, property_value: typing.Any
