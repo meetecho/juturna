@@ -516,3 +516,26 @@ def test_invalid_links_are_rejected_before_building(
 
     assert destroyed == []
     assert pipeline.status['self'] == 'pipeline_created'
+
+
+def test_duplicate_node_names_are_rejected_before_building(test_config):
+    config = _sequencer_crasher_config(
+        'duplicate_node_pipeline', test_config['test_pipeline_folder']
+    )
+    config['pipeline']['nodes'].append(
+        {
+            'name': 'source_1',
+            'type': 'contrib.jt_test.nodes.Sequencer',
+            'configuration': {},
+        }
+    )
+    pipeline = jt.components.Pipeline(config)
+
+    with pytest.raises(ValueError, match='two nodes named source_1'):
+        pipeline.warmup()
+
+    assert pipeline.status['self'] == 'pipeline_created'
+    assert pipeline._nodes == {}
+    assert not pathlib.Path(pipeline.pipe_path).exists(), (
+        'warmup wrote the pipeline folder'
+    )

@@ -332,8 +332,19 @@ class Pipeline:
     def _warmup(self):
         # these names become paths under the pipeline folder: a name like
         # "../x" or "/x" would write outside of it
+        names = set()
+
         for node in self._raw_config['pipeline']['nodes']:
             jt_utils.check_name(node['name'], 'node')
+
+            # nodes are stored by name: a second node would replace the first,
+            # which would be built and never destroyed
+            if node['name'] in names:
+                raise ValueError(
+                    f'pipe {self.name} has two nodes named {node["name"]}'
+                )
+
+            names.add(node['name'])
 
         self._check_links()
 

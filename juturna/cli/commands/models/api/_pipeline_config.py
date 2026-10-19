@@ -43,8 +43,15 @@ class PipelineConfig(BaseModel):
         _check_list_of_dicts(pipeline, 'nodes', ('type',))
         _check_list_of_dicts(pipeline, 'links', ('from', 'to'))
 
+        names = set()
+
         for node in pipeline['nodes']:
             jt_utils.check_name(node.get('name'), 'node')
+
+            if node['name'] in names:
+                raise ValueError(f'two nodes are named {node["name"]}')
+
+            names.add(node['name'])
 
             if not isinstance(node.get('configuration'), dict):
                 raise ValueError(

@@ -220,6 +220,12 @@ def test_service_shutdown_releases_the_pipelines(service_app):
         {'nodes': ['node']},
         {'nodes': [{'name': 'node', 'configuration': {}}]},
         {'nodes': [{'name': 'node', 'type': _NODE_TYPE}]},
+        {
+            'nodes': [
+                {'name': 'node', 'type': _NODE_TYPE, 'configuration': {}},
+                {'name': 'node', 'type': _NODE_TYPE, 'configuration': {}},
+            ]
+        },
         {'links': None},
         {'links': [{'from': 'node'}]},
         {'links': [['node', 'node']]},
