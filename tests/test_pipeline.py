@@ -368,3 +368,142 @@ def test_start_can_be_retried_after_a_failed_start(
     assert len(header_rows) == 1
 
     pipeline.destroy()
+
+
+class _WarmupError(Exception):
+    pass
+
+
+def _raise(error):
+    def fail(self):
+        raise error(f'{self.name} failed to warm up')
+
+    return fail
+
+
+@pytest.fixture
+def destroyed(monkeypatch):
+    from juturna.contrib.jt_test.nodes import Crasher, Sequencer
+
+    names = list()
+
+    for cls in (Crasher, Sequencer):
+        monkeypatch.setattr(cls, 'destroy', lambda self: names.append(self.name))
+
+    return names
+
+
+def _break_node_warmup(config, monkeypatch, error=_WarmupError):
+    from juturna.contrib.jt_test.nodes import Crasher
+
+    monkeypatch.setattr(Crasher, 'warmup', _raise(error))
+
+    return error
+
+
+def _add_unknown_node(config, monkeypatch):
+    config['pipeline']['nodes'].append(
+        {'name': 'ghost', 'type': 'contrib.jt_test.nodes.Missing'}
+    )
+
+    return Exception
+
+
+def _add_cycle(config, monkeypatch):
+    config['pipeline']['links'].append({'from': 'sink_1', 'to': 'source_1'})
+
+    return ValueError
+
+
+@pytest.mark.parametrize(
+    'break_warmup',
+    [
+        _break_node_warmup,
+        lambda c, m: _break_node_warmup(c, m, KeyboardInterrupt),
+        _add_unknown_node,
+        _add_cycle,
+    ],
+    ids=['node_warmup', 'interrupt', 'unknown_type', 'cycle'],
+)
+def test_failed_warmup_destroys_the_nodes_already_built(
+    test_config, monkeypatch, destroyed, break_warmup
+):
+    config = _sequencer_crasher_config(
+        'failed_warmup_pipeline', test_config['test_pipeline_folder']
+    )
+    config['pipeline']['telemetry'] = 'telemetry.csv'
+    error = break_warmup(config, monkeypatch)
+    pipeline = jt.components.Pipeline(config)
+
+    with pytest.raises(error):
+        pipeline.warmup()
+
+    assert destroyed == ['sink_1', 'source_1']
+    assert pipeline.status['self'] == 'pipeline_created'
+    assert pipeline.status['nodes'] == {}
+    assert pipeline._dag.edges == []
+    assert pipeline._telemetry_manager is None
+
+
+def test_warmup_can_be_retried_after_a_failed_warmup(
+    test_config, monkeypatch, destroyed
+):
+    config = _sequencer_crasher_config(
+        'retry_warmup_pipeline', test_config['test_pipeline_folder']
+    )
+    pipeline = jt.components.Pipeline(config)
+    _break_node_warmup(config, monkeypatch)
+
+    with pytest.raises(_WarmupError):
+        pipeline.warmup()
+
+    monkeypatch.undo()
+    pipeline.warmup()
+
+    assert pipeline.status['self'] == 'pipeline_ready'
+    assert sorted(pipeline._nodes) == ['sink_1', 'source_1']
+    assert pipeline._dag.edges == [('source_1', 'sink_1')]
+    assert pipeline._nodes['sink_1'].origins == ['source_1']
+
+    pipeline.destroy()
+
+
+def test_failed_warmup_leaves_the_warped_node_config_unchanged(test_config):
+    config = _sequencer_crasher_config(
+        'warped_warmup_pipeline', test_config['test_pipeline_folder']
+    )
+    config['pipeline']['nodes'][1].update(
+        {'warped': True, 'warp_configuration': {'host': 'localhost'}}
+    )
+    pipeline = jt.components.Pipeline(config)
+
+    # the Warp node is not shipped by core, so its build fails
+    with pytest.raises(Exception):
+        pipeline.warmup()
+
+    assert pipeline._raw_config == config
+
+
+@pytest.mark.parametrize(
+    'link, message',
+    [
+        ({'from': 'source_1', 'to': 'sink_1'}, 'duplicate link source_1 -> sink_1'),
+        ({'from': 'source_1', 'to': 'ghost'}, 'has no node ghost'),
+        ({'from': 'ghost', 'to': 'sink_1'}, 'has no node ghost'),
+    ],
+    ids=['duplicate', 'unknown_destination', 'unknown_source'],
+)
+def test_invalid_links_are_rejected_before_building(
+    test_config, destroyed, link, message
+):
+    config = _sequencer_crasher_config(
+        'invalid_link_pipeline', test_config['test_pipeline_folder']
+    )
+    config['pipeline']['links'].append(link)
+    pipeline = jt.components.Pipeline(config)
+
+    with pytest.raises(ValueError, match=message):
+        pipeline.warmup()
+
+    assert destroyed == []
+    assert pipeline.status['self'] == 'pipeline_created'
