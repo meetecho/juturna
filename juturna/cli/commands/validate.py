@@ -8,6 +8,7 @@ and all its components are available.
 """
 
 import json
+import os
 import pathlib
 import typing
 
@@ -18,8 +19,13 @@ from juturna.cli.commands._validation_tools import ValidationError
 from juturna.cli.commands._validation_tools import DAG
 from juturna.cli.commands._validation_tools import warn
 
+from juturna.components._node_builder import _builder
+from juturna.components._pipeline import check_links
+from juturna.components._synchronisers import _SYNCHRONISERS
+from juturna.meta import JUTURNA_ENV_VAR_PREFIX
 from juturna.telemetry import check_pipeline_telemetry
 from juturna.transport import get_transport
+from juturna.utils import jt_utils
 
 
 def setup_parser(subparsers):  # noqa: D103
@@ -38,50 +44,71 @@ def setup_parser(subparsers):  # noqa: D103
     )
 
 
-def _execute(args):
+def _execute(args) -> int:
     validation_pipe = ValidationPipe()
 
-    cfg_path = pathlib.Path(args.config)
+    # filled by the checks as they pass, so that each one can rely on what
+    # the previous ones verified
+    state: dict[str, typing.Any] = {'path': pathlib.Path(args.config)}
 
-    def _check_json(file_path) -> bool:
-        try:
-            _load_pipeline(file_path)
+    checks = [
+        Check('JSON well formed', _check_json),
+        Check(
+            'Configuration structure',
+            _check_config_structure,
+            requires=('JSON well formed',),
+        ),
+        Check(
+            'Nodes well formed',
+            lambda s: _check_nodes_well_formed(s['pipeline']['nodes']),
+            requires=('Configuration structure',),
+        ),
+        Check(
+            'Links well formed',
+            lambda s: _check_links_well_formed(s['pipeline']),
+            requires=('Nodes well formed',),
+        ),
+        Check(
+            'Valid transport',
+            lambda s: _check_transport(s['pipeline']),
+            requires=('Configuration structure',),
+        ),
+        Check(
+            'Valid telemetry',
+            lambda s: _check_telemetry(s['pipeline']),
+            requires=('Configuration structure',),
+        ),
+        Check(
+            'Node types and arguments',
+            lambda s: _check_node_types(s['pipeline']['nodes']),
+            requires=('Nodes well formed',),
+        ),
+        Check('DAG properties', _check_dag, requires=('Links well formed',)),
+    ]
 
-            return True
-        except ValidationError:
-            return False
+    for check in checks:
+        validation_pipe.add_check(check)
 
-    validation_pipe.add_check(Check('JSON well formed', _check_json), cfg_path)
+    validation_pipe.run_checks(state)
+    validation_pipe.dag = state.get('dag')
 
-    data = _load_pipeline(cfg_path)
-
-    validation_pipe.add_check(
-        Check('Configuration structure', _check_structure), data
-    )
-
-    pipeline = data['pipeline']
-    nodes = pipeline['nodes']
-    links = pipeline['links']
-
-    validation_pipe.add_check(
-        Check('Nodes well formed', _check_nodes_well_formed), nodes
-    ).add_check(
-        Check('Links well formed', _check_links_well_formed), links
-    ).add_check(Check('Valid transport', _check_transport), pipeline).add_check(
-        Check('Valid telemetry', _check_telemetry), pipeline
-    ).add_check(
-        Check('DAG properly formed', _build_dag), nodes, links
-    ).add_check(
-        Check('DAG properties', _check_dag_properties),
-        _build_dag(nodes, links),
-    )
-
-    validation_pipe.run_checks()
-    validation_pipe.dag = _build_dag(nodes, links)
+    print('valid' if validation_pipe.ok else 'invalid')
 
     if args.report:
         with open(args.report, 'w') as f:
             f.write(validation_pipe.to_json())
+
+    return 0 if validation_pipe.ok else 1
+
+
+def _check_json(state: dict) -> None:
+    state['data'] = _load_pipeline(state['path'])
+
+
+def _check_config_structure(state: dict) -> None:
+    _check_structure(state['data'])
+
+    state['pipeline'] = state['data']['pipeline']
 
 
 def _load_pipeline(cfg_path: pathlib.Path) -> dict[str, typing.Any]:
@@ -116,53 +143,148 @@ def _check_telemetry(pipeline: dict) -> None:
         ) from exc
 
 
-def _check_structure(data: dict[str, typing.Any]) -> None:
-    if 'pipeline' not in data:
+def _check_structure(data: typing.Any) -> None:
+    if not isinstance(data, dict) or 'pipeline' not in data:
         raise ValidationError("Top-level key 'pipeline' missing")
 
     pl = data['pipeline']
+
+    if not isinstance(pl, dict):
+        raise ValidationError('pipeline is not an object')
+
+    if not isinstance(pl.get('name'), str):
+        raise ValidationError('pipeline.name missing')
 
     for key in ('nodes', 'links'):
         if key not in pl:
             raise ValidationError(f'pipeline.{key} missing')
 
+        if not isinstance(pl[key], list):
+            raise ValidationError(f'pipeline.{key} is not a list')
 
-def _check_nodes_well_formed(nodes: list[dict[str, typing.Any]]) -> None:
-    required = {'name', 'type'}
+
+def _check_nodes_well_formed(nodes: list[typing.Any]) -> None:
+    names = set()
 
     for idx, node in enumerate(nodes):
         if not isinstance(node, dict):
             raise ValidationError(f'nodes[{idx}] is not an object')
 
-        missing = required - node.keys()
+        missing = {'name', 'type', 'configuration'} - node.keys()
 
         if missing:
-            raise ValidationError(f'nodes[{idx}] missing keys: {missing}')
+            raise ValidationError(
+                f'nodes[{idx}] missing keys: {sorted(missing)}'
+            )
+
+        if not isinstance(node['type'], str):
+            raise ValidationError(f'nodes[{idx}].type is not a string')
+
+        if not isinstance(node['configuration'], dict):
+            raise ValidationError(
+                f'nodes[{idx}].configuration is not an object'
+            )
+
+        # the name becomes the node folder, as in Pipeline.warmup()
+        try:
+            jt_utils.check_name(node['name'], 'node')
+        except ValueError as exc:
+            raise ValidationError(f'nodes[{idx}]: {exc}') from None
+
+        if node['name'] in names:
+            raise ValidationError(f'duplicate node name {node["name"]!r}')
+
+        names.add(node['name'])
 
 
-def _check_links_well_formed(links: list[dict[str, typing.Any]]) -> None:
-    required = {'from', 'to'}
+def _check_links_well_formed(pipeline: dict) -> None:
+    links = pipeline['links']
 
     for idx, link in enumerate(links):
         if not isinstance(link, dict):
             raise ValidationError(f'links[{idx}] is not an object')
 
-        missing = required - link.keys()
+        missing = {'from', 'to'} - link.keys()
 
         if missing:
-            raise ValidationError(f'links[{idx}] missing keys: {missing}')
+            raise ValidationError(
+                f'links[{idx}] missing keys: {sorted(missing)}'
+            )
+
+    # the same check warmup() runs
+    try:
+        check_links(pipeline['name'], pipeline['nodes'], links)
+    except ValueError as exc:
+        raise ValidationError(str(exc)) from None
 
 
-def _build_dag(nodes: list[dict], links: list[dict]) -> DAG:
+def _check_node_types(nodes: list[dict]) -> None:
+    """
+    Resolve every node type as the builder does, without building the node,
+    and compare the configuration with the arguments the node accepts.
+    """
+    errors = list()
+
+    for node in nodes:
+        name = node['name']
+
+        try:
+            _, default_config = _builder._resolve_node(node['type'])
+            arguments = default_config['arguments']
+        except Exception as exc:
+            errors.append(
+                f'node {name}: cannot resolve type {node["type"]!r} '
+                f'({type(exc).__name__}: {exc})'
+            )
+
+            continue
+
+        # the builder drops these silently
+        if unknown := sorted(node['configuration'].keys() - arguments.keys()):
+            warn(f'node {name}: unknown configuration keys {unknown}')
+
+        sync = node.get('sync')
+
+        if sync is not None and sync not in _SYNCHRONISERS:
+            warn(
+                f'node {name}: unknown sync {sync!r}, '
+                f'available: {list(_SYNCHRONISERS)}'
+            )
+
+        for key, value in node['configuration'].items():
+            if not (
+                key in arguments
+                and isinstance(value, str)
+                and value.startswith(JUTURNA_ENV_VAR_PREFIX)
+            ):
+                continue
+
+            var_name = value[len(JUTURNA_ENV_VAR_PREFIX) :]
+
+            # only known when the pipeline is launched, maybe elsewhere
+            if var_name not in os.environ:
+                warn(
+                    f'node {name}: {key} reads {var_name}, which is not set '
+                    'here'
+                )
+
+    if errors:
+        raise ValidationError('; '.join(errors))
+
+
+def _check_dag(state: dict) -> None:
+    pipeline = state['pipeline']
     dag = DAG()
 
-    for n in nodes:
+    for n in pipeline['nodes']:
         dag.add_node(n['name'])
 
-    for link in links:
+    for link in pipeline['links']:
         dag.add_edge(link['from'], link['to'])
 
-    return dag
+    state['dag'] = dag
+
+    _check_dag_properties(dag)
 
 
 def _check_dag_properties(dag: DAG) -> None:
