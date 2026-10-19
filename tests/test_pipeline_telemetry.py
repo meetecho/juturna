@@ -29,7 +29,7 @@ def manager():
     # the manager imports the http service, an optional extra
     pytest.importorskip('fastapi')
 
-    from juturna.components._pipeline_manager import PipelineManager
+    from juturna.cli.commands._pipeline_manager import PipelineManager
 
     manager = PipelineManager()
 

@@ -123,7 +123,7 @@ def test_service_rejects_unsafe_names(
 
 
 def test_service_creates_pipeline_under_the_base_folder(service_client):
-    from juturna.components._pipeline_manager import PipelineManager
+    from juturna.cli.commands._pipeline_manager import PipelineManager
 
     response = service_client.post(
         '/pipelines/new', json=_config('service_safe_pipe')
@@ -144,7 +144,7 @@ def test_service_creates_pipeline_under_the_base_folder(service_client):
 
 def test_manager_rejects_unsafe_name_without_the_model_check(service_client):
     from juturna.cli.commands.models.api import PipelineConfig
-    from juturna.components._pipeline_manager import PipelineManager
+    from juturna.cli.commands._pipeline_manager import PipelineManager
 
     # model_construct skips validation, as a direct caller of the manager could
     config = PipelineConfig.model_construct(**_config('../escaped'))

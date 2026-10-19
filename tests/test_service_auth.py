@@ -160,7 +160,7 @@ def test_dev_cors_does_not_reflect_the_origin_with_credentials():
 
 @pytest.mark.parametrize('endpoint', ['new', 'deploy'])
 def test_service_rejects_env_vars_not_allowed(service_client, endpoint):
-    from juturna.components._pipeline_manager import PipelineManager
+    from juturna.cli.commands._pipeline_manager import PipelineManager
 
     before = len(PipelineManager())
     response = service_client.post(
@@ -174,7 +174,7 @@ def test_service_rejects_env_vars_not_allowed(service_client, endpoint):
 
 
 def test_service_accepts_allowed_env_vars(service_client):
-    from juturna.components._pipeline_manager import PipelineManager
+    from juturna.cli.commands._pipeline_manager import PipelineManager
 
     PipelineManager.set_allowed_env_vars(['MODEL_DIR'])
 
@@ -192,7 +192,7 @@ def test_service_accepts_allowed_env_vars(service_client):
 def test_manager_rejects_env_vars_for_direct_callers(service_app):
     from juturna.cli.commands.exceptions import EnvVarNotAllowedException
     from juturna.cli.commands.models.api import PipelineConfig
-    from juturna.components._pipeline_manager import PipelineManager
+    from juturna.cli.commands._pipeline_manager import PipelineManager
 
     config = PipelineConfig(**_config('env_pipe', {'k': '$JT_ENV_HOME'}))
 
@@ -305,7 +305,7 @@ def test_run_uses_the_token_from_the_environment(
 
 
 def test_run_sets_the_allowed_env_vars(service_app, monkeypatch, tmp_path):
-    from juturna.components._pipeline_manager import PipelineManager
+    from juturna.cli.commands._pipeline_manager import PipelineManager
 
     _run(monkeypatch, tmp_path, allow_env=['MODEL_DIR'])
 

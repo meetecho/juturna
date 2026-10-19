@@ -133,7 +133,7 @@ class Pipeline:
         self.created_at = time.time()
 
     @staticmethod
-    def from_json(json_path: str) -> 'Pipeline':
+    def from_json(json_path: str, worker: str = DEFAULT_WORKER) -> 'Pipeline':
         """
         Create a pipeline starting from the path of the configuration file
         rather than from the actual configuration content.
@@ -142,6 +142,8 @@ class Pipeline:
         ----------
         json_path : str
             The path to the pipeline configuration file.
+        worker : str
+            The worker this pipeline instance runs in, see `Pipeline`.
 
         Returns
         -------
@@ -152,7 +154,7 @@ class Pipeline:
         with open(json_path) as f:
             config = json.load(f)
 
-        return Pipeline(config)
+        return Pipeline(config, worker=worker)
 
     @property
     def pipe_id(self) -> str:
@@ -168,6 +170,10 @@ class Pipeline:
 
     @property
     def status(self) -> dict:
+        # read from service threads while destroy() empties the nodes: work on
+        # a snapshot, and skip the nodes already released
+        nodes = list((self._nodes or dict()).items())
+
         return {
             'pipe_id': self.pipe_id,
             'folder': self.pipe_path,
@@ -178,10 +184,9 @@ class Pipeline:
                     'config': node.configuration,
                     'health': node.health,
                 }
-                for node_name, node in self._nodes.items()
-            }
-            if self._nodes
-            else dict(),
+                for node_name, node in nodes
+                if node is not None
+            },
         }
 
     @property
@@ -490,7 +495,6 @@ class Pipeline:
 
         self._telemetry_manager = None
         self._telemetry = False
-        self._telemetry_file = None
 
     def update_node(
         self, node_name: str, property_name: str, property_value: typing.Any

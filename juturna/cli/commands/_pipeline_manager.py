@@ -1,5 +1,4 @@
 import uuid
-import sys
 import gc
 import threading
 import shutil
@@ -7,6 +6,7 @@ import logging
 import pathlib
 
 from juturna.components import Pipeline
+from juturna.names import PipelineStatus
 from juturna.meta import JUTURNA_ENV_VAR_PREFIX
 from juturna.utils import jt_utils
 from juturna.cli.commands.models.api import PipelineConfig
@@ -34,10 +34,16 @@ class PipelineManager:
                     cls._instance = super().__new__(cls)
                     cls._instance._pipelines = dict()
 
+                    # the service calls the manager from its thread pool: the
+                    # registry is only read and changed under this lock, and
+                    # the pipelines guard their own lifecycle
+                    cls._instance._registry_lock = threading.Lock()
+
         return cls._instance
 
     def __len__(self):
-        return len(self._pipelines)
+        with self._registry_lock:
+            return len(self._pipelines)
 
     @classmethod
     def set_base_folder(cls, base_folder: str) -> str:
@@ -94,7 +100,8 @@ class PipelineManager:
 
         this_pipeline = Pipeline(pipeline_config.model_dump())
 
-        self._pipelines[this_pipeline.pipe_id] = this_pipeline
+        with self._registry_lock:
+            self._pipelines[this_pipeline.pipe_id] = this_pipeline
 
         return CreatedPipelineDto(
             pipeline_id=this_pipeline.pipe_id,
@@ -102,42 +109,61 @@ class PipelineManager:
             status=this_pipeline.status['self'],
         )
 
-    def warmup_pipeline(self, pipeline_id: str) -> None:
-        if pipeline_id not in self._pipelines:
-            raise InvalidPipelineIdException(pipeline_id)
+    def _get(self, pipeline_id: str) -> Pipeline:
+        with self._registry_lock:
+            try:
+                return self._pipelines[pipeline_id]
+            except KeyError:
+                raise InvalidPipelineIdException(pipeline_id) from None
 
-        self._pipelines[pipeline_id].warmup()
+    def warmup_pipeline(self, pipeline_id: str) -> None:
+        self._get(pipeline_id).warmup()
 
     def start_pipeline(self, pipeline_id: str) -> None:
-        if pipeline_id not in self._pipelines:
-            raise InvalidPipelineIdException(pipeline_id)
-
-        self._pipelines[pipeline_id].start()
+        self._get(pipeline_id).start()
 
     def deploy_pipeline(
         self, pipeline_config: PipelineConfig
     ) -> CreatedPipelineDto:
         created_pipe_dto = self.create_pipeline(pipeline_config)
 
-        for operation in [self.warmup_pipeline, self.start_pipeline]:
-            operation(created_pipe_dto.pipeline_id)
+        try:
+            for operation in [self.warmup_pipeline, self.start_pipeline]:
+                operation(created_pipe_dto.pipeline_id)
+        except BaseException:
+            # the client never gets the id of a failed deploy, so nobody could
+            # delete it: drop it with its folder
+            self._discard(created_pipe_dto.pipeline_id)
+
+            raise
 
         return created_pipe_dto
 
-    def stop_pipeline(self, pipeline_id: str) -> None:
-        if pipeline_id not in self._pipelines:
-            raise InvalidPipelineIdException(pipeline_id)
+    def _discard(self, pipeline_id: str):
+        with self._registry_lock:
+            pipeline = self._pipelines.pop(pipeline_id, None)
 
-        self._pipelines[pipeline_id].stop()
+        if pipeline is None:
+            return
+
+        try:
+            pipeline.destroy()
+        except Exception:
+            logger.exception(f'cannot destroy pipeline {pipeline_id}')
+
+        shutil.rmtree(pipeline.pipe_path, ignore_errors=True)
+
+    def stop_pipeline(self, pipeline_id: str) -> None:
+        self._get(pipeline_id).stop()
 
     def delete_pipeline(self, pipeline_id: str, wipe_folder: bool) -> None:
-        if pipeline_id not in self._pipelines:
-            raise InvalidPipelineIdException(pipeline_id)
+        pipeline = self._get(pipeline_id)
 
-        sys.exc_info()
+        # a pipeline that cannot be destroyed (busy, failing node) stays
+        # registered, so the client can retry
+        pipeline.destroy()
 
-        self._pipelines[pipeline_id].destroy()
-        _target_folder = self._pipelines[pipeline_id].pipe_path
+        _target_folder = pipeline.pipe_path
         if _target_folder and wipe_folder:
             try:
                 shutil.rmtree(_target_folder)
@@ -145,38 +171,54 @@ class PipelineManager:
             except FileNotFoundError:
                 logger.warning(f'pipeline folder {_target_folder} not found')
 
-        del self._pipelines[pipeline_id]
+        with self._registry_lock:
+            self._pipelines.pop(pipeline_id, None)
 
         gc.collect()
 
     def pipeline_status(self, pipeline_id: str):
-        if pipeline_id not in self._pipelines:
-            raise InvalidPipelineIdException(pipeline_id)
+        pipeline = self._get(pipeline_id)
 
         logger.info(f'requested status for pipeline {pipeline_id}')
-        logger.info(self._pipelines[pipeline_id].status)
+        logger.info(pipeline.status)
 
-        return self._pipelines[pipeline_id].status
+        return pipeline.status
 
     def pipeline_telemetry(self, pipeline_id: str):
-        if pipeline_id not in self._pipelines:
-            raise InvalidPipelineIdException(pipeline_id)
+        pipeline = self._get(pipeline_id)
 
-        if not self._pipelines[pipeline_id]._telemetry:
+        if not pipeline._telemetry:
             raise TelemetryNotEnabledException(pipeline_id)
 
-        return self._pipelines[pipeline_id]._telemetry_manager.records()
+        return pipeline._telemetry_manager.records()
 
     def pipeline_list(self) -> dict:
+        with self._registry_lock:
+            pipelines = dict(self._pipelines)
+
         return {
             'pipelines': [
-                {p_id: self._pipelines[p_id].status for p_id in self._pipelines}
+                {p_id: pipeline.status for p_id, pipeline in pipelines.items()}
             ]
         }
 
     def cleanup(self):
-        for _pipeline_id in list(self._pipelines.keys()):
-            self._pipelines[_pipeline_id].stop()
-            self._pipelines[_pipeline_id].destroy()
+        """
+        Release every pipeline, as the service does when it shuts down.
 
-            del self._pipelines[_pipeline_id]
+        Running pipelines are killed rather than stopped, so a node stuck in
+        update() cannot hold the shutdown. A pipeline that fails is logged and
+        the others are still released.
+        """
+        with self._registry_lock:
+            pipelines = dict(self._pipelines)
+            self._pipelines.clear()
+
+        for pipeline_id, pipeline in pipelines.items():
+            try:
+                if pipeline.status['self'] == PipelineStatus.RUNNING:
+                    pipeline.kill()
+
+                pipeline.destroy()
+            except Exception:
+                logger.exception(f'cannot release pipeline {pipeline_id}')
