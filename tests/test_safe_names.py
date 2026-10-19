@@ -1,4 +1,3 @@
-import importlib.util
 import pathlib
 
 import pytest
@@ -99,25 +98,6 @@ def test_warmup_accepts_plain_names():
     assert pathlib.Path(test_pipeline_folder, 'safe_pipeline', '0_src').is_dir()
 
     pipeline.destroy()
-
-
-@pytest.fixture
-def service_client():
-    # the service needs the httpwrapper extra, which CI does not install, and
-    # the starlette test client needs httpx2 (or httpx)
-    pytest.importorskip('fastapi')
-
-    if not any(importlib.util.find_spec(m) for m in ('httpx2', 'httpx')):
-        pytest.skip('the starlette test client needs httpx2')
-
-    from fastapi.testclient import TestClient
-
-    from juturna.cli.commands._juturna_service import app
-    from juturna.components._pipeline_manager import PipelineManager
-
-    PipelineManager.set_base_folder(test_pipeline_folder)
-
-    return TestClient(app)
 
 
 @pytest.mark.parametrize('endpoint', ['new', 'deploy'])
