@@ -54,7 +54,7 @@ def service_app():
         pytest.skip('the starlette test client needs httpx2')
 
     from juturna.cli.commands._juturna_service import app
-    from juturna.components._pipeline_manager import PipelineManager
+    from juturna.cli.commands._pipeline_manager import PipelineManager
 
     PipelineManager.set_base_folder(test_pipeline_folder)
     app.state.token = SERVICE_TOKEN
