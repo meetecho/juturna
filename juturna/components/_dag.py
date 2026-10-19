@@ -15,6 +15,11 @@ class DAG:
             raise ValueError(
                 f"Source node '{src}' or destination node '{dst}' not in DAG"
             )
+        # a repeated edge would be counted twice by in_degree but removed
+        # once by the traversals, and reported as a cycle
+        if (src, dst) in self.edges:
+            raise ValueError(f"Edge '{src}' -> '{dst}' already in DAG")
+
         self.edges.append((src, dst))
         self._adj[src].add(dst)
 

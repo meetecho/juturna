@@ -304,15 +304,20 @@ class Pipeline:
         Node names and the telemetry file name are joined to the pipeline
         folder, so they must be plain file names (see
         ``jt_utils.check_name``): a ``ValueError`` is raised before anything
-        is written otherwise.
+        is written otherwise. So is a link that is repeated, or that names a
+        node missing from the configuration.
+
+        If warmup fails, the nodes built so far are destroyed and the
+        pipeline stays NEW with nothing built, so warmup() can be retried.
         """
         if not self._begin_transition('warmup', _TRANSITION_RULES):
             return
 
         try:
             self._warmup()
-        except Exception:
-            self._abort_transition()
+        except BaseException:
+            # interrupts are rolled back too, or built nodes would leak
+            self._abort_transition(self._rollback_warmup)
 
             raise
         else:
@@ -328,6 +333,8 @@ class Pipeline:
 
         if _tele_file:
             jt_utils.check_name(_tele_file, 'telemetry file')
+
+        self._check_links()
 
         pathlib.Path(self.pipe_path).mkdir(parents=True, exist_ok=True)
 
@@ -348,7 +355,9 @@ class Pipeline:
                 str(self._telemetry_file), transport=self._transport
             )
 
-        nodes = self._raw_config['pipeline']['nodes']
+        # the warp rewrite below changes the node configs: work on a copy, so
+        # that a retry after a failed warmup starts from the original ones
+        nodes = copy.deepcopy(self._raw_config['pipeline']['nodes'])
         links = self._raw_config['pipeline']['links']
 
         local_nodes = [
@@ -436,6 +445,62 @@ class Pipeline:
             self._logger.info(f'warmed up node {node_name}')
 
         self._logger.info('pipe warmed up!')
+
+    def _check_links(self):
+        names = {node['name'] for node in self._raw_config['pipeline']['nodes']}
+        seen = set()
+
+        for link in self._raw_config['pipeline']['links']:
+            from_node, to_node = link['from'], link['to']
+
+            for end in (from_node, to_node):
+                if end not in names:
+                    raise ValueError(
+                        f'pipe {self.name} links {from_node} -> {to_node}, '
+                        f'but has no node {end}'
+                    )
+
+            if (from_node, to_node) in seen:
+                raise ValueError(
+                    f'pipe {self.name} has a duplicate link '
+                    f'{from_node} -> {to_node}'
+                )
+
+            seen.add((from_node, to_node))
+
+    def _rollback_warmup(self):
+        """
+        Undo a partial warmup: destroy the nodes built so far, last built
+        first, and drop the graph, the node states and the telemetry manager,
+        so that warmup() can be retried from scratch.
+        """
+        built, self._nodes = self._nodes, dict()
+
+        if built:
+            self._logger.error(
+                f'warmup of pipe {self.name} failed, destroying the nodes '
+                'already built'
+            )
+
+        for node in list(built.values())[::-1]:
+            try:
+                node.clear_source()
+                node.clear_destinations()
+                node.destroy()
+            except Exception:
+                self._logger.error(
+                    f'failed to destroy node {node.name} during warmup '
+                    'rollback',
+                    exc_info=True,
+                )
+
+        self._links = list()
+        self._dag = DAG()
+        self._node_state_store = dict()
+
+        self._telemetry_manager = None
+        self._telemetry = False
+        self._telemetry_file = None
 
     def update_node(
         self, node_name: str, property_name: str, property_value: typing.Any
