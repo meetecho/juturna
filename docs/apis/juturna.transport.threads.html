@@ -271,12 +271,18 @@
 <li class="toctree-l3"><a class="reference internal" href="juturna.meta.html">juturna.meta package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.names.html">juturna.names package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="juturna.payloads.html">juturna.payloads package</a></li>
-<li class="toctree-l3 current has-children"><a class="reference internal" href="juturna.transport.html">juturna.transport package</a><input aria-label="Toggle navigation of juturna.transport package" checked="" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 has-children"><a class="reference internal" href="juturna.telemetry.html">juturna.telemetry package</a><input aria-label="Toggle navigation of juturna.telemetry package" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="juturna.telemetry.browser.html">juturna.telemetry.browser package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.telemetry.csv.html">juturna.telemetry.csv package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="juturna.telemetry.memory.html">juturna.telemetry.memory package</a></li>
+</ul>
+</li>
+<li class="toctree-l3 current has-children"><a class="reference internal" href="juturna.transport.html">juturna.transport package</a><input aria-label="Toggle navigation of juturna.transport package" checked="" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="juturna.transport.browser.html">juturna.transport.browser package</a></li>
 <li class="toctree-l4 current current-page"><a class="current reference internal" href="#">juturna.transport.threads package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="juturna.utils.jt_utils.html">juturna.utils.jt_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
@@ -337,6 +343,11 @@
 <p>This backend preserves the current concurrency model of <cite>Node</cite> and
 <cite>Buffer</cite>: every worker runs on its own <cite>threading.Thread</cite>, and queues
 are backed by <cite>queue.Queue</cite>.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.transport.threads.ThreadingTransport.capabilities">
+<span class="sig-name descname"><span class="pre">capabilities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">frozenset</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">frozenset({'shared_fs'})</span></em><a class="headerlink" href="#juturna.transport.threads.ThreadingTransport.capabilities" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.transport.threads.ThreadingTransport.is_current">
 <span class="sig-name descname"><span class="pre">is_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handle</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="juturna.transport.html#juturna.transport.WorkerHandle" title="juturna.transport._base.WorkerHandle"><span class="pre">WorkerHandle</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#juturna.transport.threads.ThreadingTransport.is_current" title="Link to this definition">¶</a></dt>
@@ -448,6 +459,7 @@ are backed by <cite>queue.Queue</cite>.</p>
 <li><a class="reference internal" href="#">juturna.transport.threads package</a><ul>
 <li><a class="reference internal" href="#module-juturna.transport.threads">Module contents</a><ul>
 <li><a class="reference internal" href="#juturna.transport.threads.ThreadingTransport"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.transport.threads.ThreadingTransport.capabilities"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.capabilities</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.threads.ThreadingTransport.is_current"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.is_current()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.threads.ThreadingTransport.new_condition"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.new_condition()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.transport.threads.ThreadingTransport.new_event"><code class="docutils literal notranslate"><span class="pre">ThreadingTransport.new_event()</span></code></a></li>

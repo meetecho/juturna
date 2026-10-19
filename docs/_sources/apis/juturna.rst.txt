@@ -11,6 +11,7 @@ Subpackages
    juturna.meta
    juturna.names
    juturna.payloads
+   juturna.telemetry
    juturna.transport
    juturna.utils
 

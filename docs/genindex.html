@@ -269,12 +269,18 @@
 <li class="toctree-l3"><a class="reference internal" href="apis/juturna.meta.html">juturna.meta package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="apis/juturna.names.html">juturna.names package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="apis/juturna.payloads.html">juturna.payloads package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="apis/juturna.transport.html">juturna.transport package</a><input aria-label="Toggle navigation of juturna.transport package" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="apis/juturna.telemetry.html">juturna.telemetry package</a><input aria-label="Toggle navigation of juturna.telemetry package" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="apis/juturna.telemetry.browser.html">juturna.telemetry.browser package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="apis/juturna.telemetry.csv.html">juturna.telemetry.csv package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="apis/juturna.telemetry.memory.html">juturna.telemetry.memory package</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="apis/juturna.transport.html">juturna.transport package</a><input aria-label="Toggle navigation of juturna.transport package" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="apis/juturna.transport.browser.html">juturna.transport.browser package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="apis/juturna.transport.threads.html">juturna.transport.threads package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="apis/juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="apis/juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="apis/juturna.utils.jt_utils.html">juturna.utils.jt_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="apis/juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="apis/juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
@@ -368,9 +374,11 @@
 </li>
         <li><a href="apis/juturna.names.html#juturna.names.PixelFormat.BGRA">BGRA (juturna.names.PixelFormat attribute)</a>
 </li>
+        <li><a href="apis/juturna.utils.log_utils.html#juturna.utils.log_utils.ColoredFormatter.BOLD">BOLD (juturna.utils.log_utils.ColoredFormatter attribute)</a>
+</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
-        <li><a href="apis/juturna.utils.log_utils.html#juturna.utils.log_utils.ColoredFormatter.BOLD">BOLD (juturna.utils.log_utils.ColoredFormatter attribute)</a>
+        <li><a href="apis/juturna.telemetry.browser.html#juturna.telemetry.browser.BrowserTelemetry">BrowserTelemetry (class in juturna.telemetry.browser)</a>
 </li>
         <li><a href="apis/juturna.transport.html#juturna.transport.BrowserTransport">BrowserTransport (class in juturna.transport)</a>
 
@@ -390,9 +398,23 @@
   <h2>C</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="apis/juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.capabilities">capabilities (juturna.transport.browser.BrowserTransport attribute)</a>
+
+        <ul>
+          <li><a href="apis/juturna.transport.html#juturna.transport.BrowserTransport.capabilities">(juturna.transport.BrowserTransport attribute)</a>
+</li>
+          <li><a href="apis/juturna.transport.html#juturna.transport.ThreadingTransport.capabilities">(juturna.transport.ThreadingTransport attribute)</a>
+</li>
+          <li><a href="apis/juturna.transport.threads.html#juturna.transport.threads.ThreadingTransport.capabilities">(juturna.transport.threads.ThreadingTransport attribute)</a>
+</li>
+          <li><a href="apis/juturna.transport.html#juturna.transport.TransportBackend.capabilities">(juturna.transport.TransportBackend attribute)</a>
+</li>
+        </ul></li>
         <li><a href="apis/juturna.payloads.html#juturna.payloads.AudioPayload.channels">channels (juturna.payloads.AudioPayload attribute)</a>
 </li>
         <li><a href="apis/juturna.utils.jt_utils.html#juturna.utils.jt_utils.check_name">check_name() (in module juturna.utils.jt_utils)</a>
+</li>
+        <li><a href="apis/juturna.telemetry.html#juturna.telemetry.check_pipeline_telemetry">check_pipeline_telemetry() (in module juturna.telemetry)</a>
 </li>
         <li><a href="apis/juturna.payloads.html#juturna.payloads.Draft.clear">clear() (juturna.payloads.Draft method)</a>
 
@@ -414,12 +436,12 @@
 </li>
         <li><a href="apis/juturna.payloads.html#juturna.payloads.BytesPayload.cnt">cnt (juturna.payloads.BytesPayload attribute)</a>
 </li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="apis/juturna.payloads.html#juturna.payloads.VideoPayload.codec">codec (juturna.payloads.VideoPayload attribute)</a>
 </li>
         <li><a href="apis/juturna.utils.log_utils.html#juturna.utils.log_utils.ColoredFormatter">ColoredFormatter (class in juturna.utils.log_utils)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="apis/juturna.utils.log_utils.html#juturna.utils.log_utils.ColoredFormatter.COLORS">COLORS (juturna.utils.log_utils.ColoredFormatter attribute)</a>
 </li>
         <li><a href="apis/juturna.payloads.html#juturna.payloads.Draft.compile">compile() (juturna.payloads.Draft method)</a>
@@ -449,6 +471,8 @@
         <li><a href="apis/juturna.components.html#juturna.components.Message.created_at">created_at (juturna.components.Message attribute)</a>
 </li>
         <li><a href="apis/juturna.components.html#juturna.components.Message.creator">creator (juturna.components.Message attribute)</a>
+</li>
+        <li><a href="apis/juturna.telemetry.csv.html#juturna.telemetry.csv.CsvTelemetry">CsvTelemetry (class in juturna.telemetry.csv)</a>
 </li>
     </ul></td>
   </tr></table>
@@ -580,6 +604,8 @@
           <li><a href="apis/juturna.transport.html#juturna.transport.Queue.get_nowait">(juturna.transport.Queue method)</a>
 </li>
         </ul></li>
+        <li><a href="apis/juturna.telemetry.html#juturna.telemetry.get_telemetry">get_telemetry() (in module juturna.telemetry)</a>
+</li>
         <li><a href="apis/juturna.transport.html#juturna.transport.get_transport">get_transport() (in module juturna.transport)</a>
 </li>
         <li><a href="apis/juturna.names.html#juturna.names.PixelFormat.GRAY">GRAY (juturna.names.PixelFormat attribute)</a>
@@ -703,14 +729,42 @@
 </li>
         </ul></li>
         <li>
+    juturna.telemetry
+
+        <ul>
+          <li><a href="apis/juturna.telemetry.html#module-juturna.telemetry">module</a>
+</li>
+        </ul></li>
+        <li>
+    juturna.telemetry.browser
+
+        <ul>
+          <li><a href="apis/juturna.telemetry.browser.html#module-juturna.telemetry.browser">module</a>
+</li>
+        </ul></li>
+        <li>
+    juturna.telemetry.csv
+
+        <ul>
+          <li><a href="apis/juturna.telemetry.csv.html#module-juturna.telemetry.csv">module</a>
+</li>
+        </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
+        <li>
+    juturna.telemetry.memory
+
+        <ul>
+          <li><a href="apis/juturna.telemetry.memory.html#module-juturna.telemetry.memory">module</a>
+</li>
+        </ul></li>
+        <li>
     juturna.transport
 
         <ul>
           <li><a href="apis/juturna.transport.html#module-juturna.transport">module</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li>
     juturna.transport.browser
 
@@ -802,6 +856,8 @@
   <h2>M</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="apis/juturna.telemetry.memory.html#juturna.telemetry.memory.MemoryTelemetry">MemoryTelemetry (class in juturna.telemetry.memory)</a>
+</li>
         <li><a href="apis/juturna.components.html#juturna.components.Message">Message (class in juturna.components)</a>
 </li>
         <li><a href="apis/juturna.transport.browser.html#juturna.transport.browser.message_from_js">message_from_js() (in module juturna.transport.browser)</a>
@@ -827,6 +883,14 @@
           <li><a href="apis/juturna.names.html#module-juturna.names">juturna.names</a>
 </li>
           <li><a href="apis/juturna.payloads.html#module-juturna.payloads">juturna.payloads</a>
+</li>
+          <li><a href="apis/juturna.telemetry.html#module-juturna.telemetry">juturna.telemetry</a>
+</li>
+          <li><a href="apis/juturna.telemetry.browser.html#module-juturna.telemetry.browser">juturna.telemetry.browser</a>
+</li>
+          <li><a href="apis/juturna.telemetry.csv.html#module-juturna.telemetry.csv">juturna.telemetry.csv</a>
+</li>
+          <li><a href="apis/juturna.telemetry.memory.html#module-juturna.telemetry.memory">juturna.telemetry.memory</a>
 </li>
           <li><a href="apis/juturna.transport.html#module-juturna.transport">juturna.transport</a>
 </li>
@@ -964,7 +1028,11 @@
         <li><a href="apis/juturna.components.html#juturna.components.Pipeline.pipe_id">pipe_id (juturna.components.Pipeline property)</a>
 </li>
         <li><a href="apis/juturna.components.html#juturna.components.Pipeline.pipe_path">pipe_path (juturna.components.Pipeline property)</a>
+
+        <ul>
+          <li><a href="apis/juturna.telemetry.html#juturna.telemetry.TelemetryContext.pipe_path">(juturna.telemetry.TelemetryContext attribute)</a>
 </li>
+        </ul></li>
         <li><a href="apis/juturna.components.html#juturna.components.Pipeline">Pipeline (class in juturna.components)</a>
 </li>
         <li><a href="apis/juturna.components.exceptions.html#juturna.components.exceptions.PipelineAlreadyRunningError">PipelineAlreadyRunningError</a>, <a href="apis/juturna.components.html#juturna.components.PipelineAlreadyRunningError">[1]</a>
@@ -977,10 +1045,10 @@
 </li>
         <li><a href="apis/juturna.components.exceptions.html#juturna.components.exceptions.PipelineNotRunningError">PipelineNotRunningError</a>, <a href="apis/juturna.components.html#juturna.components.PipelineNotRunningError">[1]</a>
 </li>
-        <li><a href="apis/juturna.components.exceptions.html#juturna.components.exceptions.PipelineStateError">PipelineStateError</a>, <a href="apis/juturna.components.html#juturna.components.PipelineStateError">[1]</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="apis/juturna.components.exceptions.html#juturna.components.exceptions.PipelineStateError">PipelineStateError</a>, <a href="apis/juturna.components.html#juturna.components.PipelineStateError">[1]</a>
+</li>
         <li><a href="apis/juturna.names.html#juturna.names.PipelineStatus">PipelineStatus (class in juturna.names)</a>
 </li>
         <li><a href="apis/juturna.components.exceptions.html#juturna.components.exceptions.PipelineStoppedError">PipelineStoppedError</a>, <a href="apis/juturna.components.html#juturna.components.PipelineStoppedError">[1]</a>
@@ -1037,6 +1105,24 @@
 </li>
         <li><a href="apis/juturna.utils.net_utils.html#juturna.utils.net_utils.RTPClient.rec">rec() (juturna.utils.net_utils.RTPClient method)</a>
 </li>
+        <li><a href="apis/juturna.telemetry.browser.html#juturna.telemetry.browser.BrowserTelemetry.record_telemetry">record_telemetry() (juturna.telemetry.browser.BrowserTelemetry method)</a>
+
+        <ul>
+          <li><a href="apis/juturna.telemetry.csv.html#juturna.telemetry.csv.CsvTelemetry.record_telemetry">(juturna.telemetry.csv.CsvTelemetry method)</a>
+</li>
+          <li><a href="apis/juturna.telemetry.memory.html#juturna.telemetry.memory.MemoryTelemetry.record_telemetry">(juturna.telemetry.memory.MemoryTelemetry method)</a>
+</li>
+          <li><a href="apis/juturna.telemetry.html#juturna.telemetry.TelemetryManager.record_telemetry">(juturna.telemetry.TelemetryManager method)</a>
+</li>
+        </ul></li>
+        <li><a href="apis/juturna.telemetry.csv.html#juturna.telemetry.csv.CsvTelemetry.records">records() (juturna.telemetry.csv.CsvTelemetry method)</a>
+
+        <ul>
+          <li><a href="apis/juturna.telemetry.memory.html#juturna.telemetry.memory.MemoryTelemetry.records">(juturna.telemetry.memory.MemoryTelemetry method)</a>
+</li>
+          <li><a href="apis/juturna.telemetry.html#juturna.telemetry.TelemetryManager.records">(juturna.telemetry.TelemetryManager method)</a>
+</li>
+        </ul></li>
         <li><a href="apis/juturna.utils.log_utils.html#juturna.utils.log_utils.JuturnaPipelineFilter.register_pipeline">register_pipeline() (juturna.utils.log_utils.JuturnaPipelineFilter class method)</a>
 </li>
         <li><a href="apis/juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.remote_destination">remote_destination() (juturna.transport.browser.BrowserTransport method)</a>
@@ -1051,12 +1137,22 @@
           <li><a href="apis/juturna.transport.html#juturna.transport.TransportBackend.remote_destination">(juturna.transport.TransportBackend method)</a>
 </li>
         </ul></li>
-        <li><a href="apis/juturna.names.html#juturna.names.ServiceStatus.REQUEST_KO">REQUEST_KO (juturna.names.ServiceStatus attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="apis/juturna.names.html#juturna.names.ServiceStatus.REQUEST_KO">REQUEST_KO (juturna.names.ServiceStatus attribute)</a>
+</li>
         <li><a href="apis/juturna.names.html#juturna.names.ServiceStatus.REQUEST_OK">REQUEST_OK (juturna.names.ServiceStatus attribute)</a>
 </li>
+        <li><a href="apis/juturna.telemetry.browser.html#juturna.telemetry.browser.BrowserTelemetry.requires">requires (juturna.telemetry.browser.BrowserTelemetry attribute)</a>
+
+        <ul>
+          <li><a href="apis/juturna.telemetry.csv.html#juturna.telemetry.csv.CsvTelemetry.requires">(juturna.telemetry.csv.CsvTelemetry attribute)</a>
+</li>
+          <li><a href="apis/juturna.telemetry.memory.html#juturna.telemetry.memory.MemoryTelemetry.requires">(juturna.telemetry.memory.MemoryTelemetry attribute)</a>
+</li>
+          <li><a href="apis/juturna.telemetry.html#juturna.telemetry.TelemetryManager.requires">(juturna.telemetry.TelemetryManager attribute)</a>
+</li>
+        </ul></li>
         <li><a href="apis/juturna.utils.proc_utils.html#juturna.utils.proc_utils.rescale_trx_words">rescale_trx_words() (in module juturna.utils.proc_utils)</a>
 </li>
         <li><a href="apis/juturna.utils.log_utils.html#juturna.utils.log_utils.JuturnaPipelineFilter.reserved">reserved() (juturna.utils.log_utils.JuturnaPipelineFilter class method)</a>
@@ -1129,8 +1225,6 @@
           <li><a href="apis/juturna.payloads.html#juturna.payloads.VideoPayload.size_bytes">(juturna.payloads.VideoPayload property)</a>
 </li>
         </ul></li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="apis/juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.spawn">spawn() (juturna.transport.browser.BrowserTransport method)</a>
 
         <ul>
@@ -1143,6 +1237,8 @@
           <li><a href="apis/juturna.transport.html#juturna.transport.TransportBackend.spawn">(juturna.transport.TransportBackend method)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="apis/juturna.payloads.html#juturna.payloads.AudioPayload.start">start (juturna.payloads.AudioPayload attribute)</a>
 
         <ul>
@@ -1153,6 +1249,12 @@
 
         <ul>
           <li><a href="apis/juturna.components.html#juturna.components.Pipeline.start">(juturna.components.Pipeline method)</a>
+</li>
+          <li><a href="apis/juturna.telemetry.csv.html#juturna.telemetry.csv.CsvTelemetry.start">(juturna.telemetry.csv.CsvTelemetry method)</a>
+</li>
+          <li><a href="apis/juturna.telemetry.memory.html#juturna.telemetry.memory.MemoryTelemetry.start">(juturna.telemetry.memory.MemoryTelemetry method)</a>
+</li>
+          <li><a href="apis/juturna.telemetry.html#juturna.telemetry.TelemetryManager.start">(juturna.telemetry.TelemetryManager method)</a>
 </li>
           <li><a href="apis/juturna.transport.html#juturna.transport.WorkerHandle.start">(juturna.transport.WorkerHandle method)</a>
 </li>
@@ -1172,17 +1274,17 @@
         <ul>
           <li><a href="apis/juturna.components.html#juturna.components.Pipeline.stop">(juturna.components.Pipeline method)</a>
 </li>
+          <li><a href="apis/juturna.telemetry.csv.html#juturna.telemetry.csv.CsvTelemetry.stop">(juturna.telemetry.csv.CsvTelemetry method)</a>
+</li>
+          <li><a href="apis/juturna.telemetry.memory.html#juturna.telemetry.memory.MemoryTelemetry.stop">(juturna.telemetry.memory.MemoryTelemetry method)</a>
+</li>
+          <li><a href="apis/juturna.telemetry.html#juturna.telemetry.TelemetryManager.stop">(juturna.telemetry.TelemetryManager method)</a>
+</li>
         </ul></li>
         <li><a href="apis/juturna.names.html#juturna.names.ComponentStatus.STOPPED">STOPPED (juturna.names.ComponentStatus attribute)</a>
 
         <ul>
           <li><a href="apis/juturna.names.html#juturna.names.PipelineStatus.STOPPED">(juturna.names.PipelineStatus attribute)</a>
-</li>
-        </ul></li>
-        <li><a href="apis/juturna.transport.browser.html#juturna.transport.browser.BrowserTransport.supports_telemetry">supports_telemetry (juturna.transport.browser.BrowserTransport attribute)</a>
-
-        <ul>
-          <li><a href="apis/juturna.transport.html#juturna.transport.BrowserTransport.supports_telemetry">(juturna.transport.BrowserTransport attribute)</a>
 </li>
         </ul></li>
     </ul></td>
@@ -1193,6 +1295,12 @@
   <h2>T</h2>
   <table style="width: 100%" class="indextable genindextable"><tr>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="apis/juturna.telemetry.html#juturna.telemetry.tag_records">tag_records() (in module juturna.telemetry)</a>
+</li>
+        <li><a href="apis/juturna.telemetry.html#juturna.telemetry.TelemetryContext">TelemetryContext (class in juturna.telemetry)</a>
+</li>
+        <li><a href="apis/juturna.telemetry.html#juturna.telemetry.TelemetryManager">TelemetryManager (class in juturna.telemetry)</a>
+</li>
         <li><a href="apis/juturna.transport.html#juturna.transport.ThreadingTransport">ThreadingTransport (class in juturna.transport)</a>
 
         <ul>
@@ -1203,10 +1311,10 @@
 </li>
         <li><a href="apis/juturna.components.html#juturna.components.Message.timer">timer() (juturna.components.Message method)</a>
 </li>
-        <li><a href="apis/juturna.components.html#juturna.components.Message.timers">timers (juturna.components.Message attribute)</a>
-</li>
     </ul></td>
     <td style="width: 33%; vertical-align: top;"><ul>
+        <li><a href="apis/juturna.components.html#juturna.components.Message.timers">timers (juturna.components.Message attribute)</a>
+</li>
         <li><a href="apis/juturna.payloads.html#juturna.payloads.ImagePayload.timestamp">timestamp (juturna.payloads.ImagePayload attribute)</a>
 </li>
         <li><a href="apis/juturna.components.html#juturna.components.Message.to_dict">to_dict() (juturna.components.Message method)</a>
@@ -1214,6 +1322,8 @@
         <li><a href="apis/juturna.components.html#juturna.components.Message.to_json">to_json() (juturna.components.Message method)</a>
 </li>
         <li><a href="apis/juturna.components.html#juturna.components.Node.transmit">transmit() (juturna.components.Node method)</a>
+</li>
+        <li><a href="apis/juturna.telemetry.html#juturna.telemetry.TelemetryContext.transport">transport (juturna.telemetry.TelemetryContext attribute)</a>
 </li>
         <li><a href="apis/juturna.transport.html#juturna.transport.TransportBackend">TransportBackend (class in juturna.transport)</a>
 </li>
@@ -1267,15 +1377,17 @@
 </li>
         <li><a href="apis/juturna.components.html#juturna.components.Buffer.wake">wake() (juturna.components.Buffer method)</a>
 </li>
-    </ul></td>
-    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="apis/juturna.components.html#juturna.components.Node.warmup">warmup() (juturna.components.Node method)</a>
 
         <ul>
           <li><a href="apis/juturna.components.html#juturna.components.Pipeline.warmup">(juturna.components.Pipeline method)</a>
 </li>
         </ul></li>
+    </ul></td>
+    <td style="width: 33%; vertical-align: top;"><ul>
         <li><a href="apis/juturna.payloads.html#juturna.payloads.ImagePayload.width">width (juturna.payloads.ImagePayload attribute)</a>
+</li>
+        <li><a href="apis/juturna.telemetry.html#juturna.telemetry.TelemetryContext.worker">worker (juturna.telemetry.TelemetryContext attribute)</a>
 </li>
         <li><a href="apis/juturna.transport.html#juturna.transport.WorkerHandle">WorkerHandle (class in juturna.transport)</a>
 </li>
