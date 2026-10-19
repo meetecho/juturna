@@ -361,6 +361,20 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.payloads.AudioPayload.serialize">
 <em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.payloads.AudioPayload.serialize" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a dataclass payload into JSON-compatible values, field by
+field: arrays become lists, bytes become base64 text, and nested
+payloads use their own <code class="docutils literal notranslate"><span class="pre">serialize</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – If the payload class is not itself a dataclass, so it has no
+    fields to serialise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.payloads.AudioPayload.size_bytes">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size_bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#juturna.payloads.AudioPayload.size_bytes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -381,8 +395,17 @@
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.payloads.BasePayload.serialize">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.BasePayload.serialize" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.payloads.BasePayload.serialize" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a dataclass payload into JSON-compatible values, field by
+field: arrays become lists, bytes become base64 text, and nested
+payloads use their own <code class="docutils literal notranslate"><span class="pre">serialize</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – If the payload class is not itself a dataclass, so it has no
+    fields to serialise.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -398,6 +421,20 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.payloads.Batch.serialize">
 <em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="headerlink" href="#juturna.payloads.Batch.serialize" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a dataclass payload into JSON-compatible values, field by
+field: arrays become lists, bytes become base64 text, and nested
+payloads use their own <code class="docutils literal notranslate"><span class="pre">serialize</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – If the payload class is not itself a dataclass, so it has no
+    fields to serialise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.payloads.Batch.size_bytes">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size_bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#juturna.payloads.Batch.size_bytes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -414,6 +451,20 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.payloads.BytesPayload.serialize">
 <em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.payloads.BytesPayload.serialize" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a dataclass payload into JSON-compatible values, field by
+field: arrays become lists, bytes become base64 text, and nested
+payloads use their own <code class="docutils literal notranslate"><span class="pre">serialize</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – If the payload class is not itself a dataclass, so it has no
+    fields to serialise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.payloads.BytesPayload.size_bytes">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size_bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#juturna.payloads.BytesPayload.size_bytes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -477,6 +528,20 @@ once it is compiled an actual payload will be generated.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.payloads.ImagePayload.serialize">
 <em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.payloads.ImagePayload.serialize" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a dataclass payload into JSON-compatible values, field by
+field: arrays become lists, bytes become base64 text, and nested
+payloads use their own <code class="docutils literal notranslate"><span class="pre">serialize</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – If the payload class is not itself a dataclass, so it has no
+    fields to serialise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.payloads.ImagePayload.size_bytes">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size_bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#juturna.payloads.ImagePayload.size_bytes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -554,7 +619,7 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.payloads.VideoPayload">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">VideoPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video:</span> <span class="pre">list[juturna.payloads._payloads.ImagePayload]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames_per_second:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codec:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.VideoPayload" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">VideoPayload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">video:</span> <span class="pre">tuple[juturna.payloads._payloads.ImagePayload</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">...]</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">frames_per_second:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codec:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">-1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.VideoPayload" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#juturna.payloads.BasePayload" title="juturna.payloads._payloads.BasePayload"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasePayload</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.VideoPayload.codec">
@@ -574,6 +639,20 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.payloads.VideoPayload.serialize">
 <em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.payloads.VideoPayload.serialize" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a dataclass payload into JSON-compatible values, field by
+field: arrays become lists, bytes become base64 text, and nested
+payloads use their own <code class="docutils literal notranslate"><span class="pre">serialize</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>TypeError</strong> – If the payload class is not itself a dataclass, so it has no
+    fields to serialise.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="juturna.payloads.VideoPayload.size_bytes">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size_bytes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#juturna.payloads.VideoPayload.size_bytes" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -583,7 +662,7 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.VideoPayload.video">
-<span class="sig-name descname"><span class="pre">video</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#juturna.payloads.ImagePayload" title="juturna.payloads._payloads.ImagePayload"><span class="pre">ImagePayload</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#juturna.payloads.VideoPayload.video" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">video</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#juturna.payloads.ImagePayload" title="juturna.payloads._payloads.ImagePayload"><span class="pre">ImagePayload</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#juturna.payloads.VideoPayload.video" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -663,6 +742,7 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.end"><code class="docutils literal notranslate"><span class="pre">AudioPayload.end</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.sampling_rate"><code class="docutils literal notranslate"><span class="pre">AudioPayload.sampling_rate</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.serialize"><code class="docutils literal notranslate"><span class="pre">AudioPayload.serialize()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.AudioPayload.size_bytes"><code class="docutils literal notranslate"><span class="pre">AudioPayload.size_bytes</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.AudioPayload.start"><code class="docutils literal notranslate"><span class="pre">AudioPayload.start</span></code></a></li>
 </ul>
 </li>
@@ -674,11 +754,13 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
 <li><a class="reference internal" href="#juturna.payloads.Batch"><code class="docutils literal notranslate"><span class="pre">Batch</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.payloads.Batch.messages"><code class="docutils literal notranslate"><span class="pre">Batch.messages</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.Batch.serialize"><code class="docutils literal notranslate"><span class="pre">Batch.serialize()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.Batch.size_bytes"><code class="docutils literal notranslate"><span class="pre">Batch.size_bytes</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.payloads.BytesPayload"><code class="docutils literal notranslate"><span class="pre">BytesPayload</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.payloads.BytesPayload.cnt"><code class="docutils literal notranslate"><span class="pre">BytesPayload.cnt</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.BytesPayload.serialize"><code class="docutils literal notranslate"><span class="pre">BytesPayload.serialize()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.BytesPayload.size_bytes"><code class="docutils literal notranslate"><span class="pre">BytesPayload.size_bytes</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.payloads.Draft"><code class="docutils literal notranslate"><span class="pre">Draft</span></code></a><ul>
@@ -692,6 +774,7 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload.image"><code class="docutils literal notranslate"><span class="pre">ImagePayload.image</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload.pixel_format"><code class="docutils literal notranslate"><span class="pre">ImagePayload.pixel_format</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload.serialize"><code class="docutils literal notranslate"><span class="pre">ImagePayload.serialize()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.ImagePayload.size_bytes"><code class="docutils literal notranslate"><span class="pre">ImagePayload.size_bytes</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload.timestamp"><code class="docutils literal notranslate"><span class="pre">ImagePayload.timestamp</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ImagePayload.width"><code class="docutils literal notranslate"><span class="pre">ImagePayload.width</span></code></a></li>
 </ul>
@@ -711,6 +794,7 @@ In either case, this is followed by: for k in F:  D[k] = F[k]</p>
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload.end"><code class="docutils literal notranslate"><span class="pre">VideoPayload.end</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload.frames_per_second"><code class="docutils literal notranslate"><span class="pre">VideoPayload.frames_per_second</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload.serialize"><code class="docutils literal notranslate"><span class="pre">VideoPayload.serialize()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.VideoPayload.size_bytes"><code class="docutils literal notranslate"><span class="pre">VideoPayload.size_bytes</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload.start"><code class="docutils literal notranslate"><span class="pre">VideoPayload.start</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.VideoPayload.video"><code class="docutils literal notranslate"><span class="pre">VideoPayload.video</span></code></a></li>
 </ul>
