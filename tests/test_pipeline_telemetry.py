@@ -5,8 +5,6 @@ import pathlib
 import pytest
 
 import juturna as jt
-from juturna.cli.commands.exceptions import TelemetryNotEnabledException
-from juturna.components._pipeline_manager import PipelineManager
 from juturna.telemetry.csv import CsvTelemetry
 from juturna.telemetry.memory import MemoryTelemetry
 
@@ -28,6 +26,11 @@ def _pipeline(telemetry=None, transport=None):
 
 @pytest.fixture
 def manager():
+    # the manager imports the http service, an optional extra
+    pytest.importorskip('fastapi')
+
+    from juturna.components._pipeline_manager import PipelineManager
+
     manager = PipelineManager()
 
     yield manager
@@ -106,6 +109,8 @@ def test_endpoint_without_telemetry(manager):
     pipeline = _pipeline()
     pipeline.warmup()
     manager._pipelines[pipeline.pipe_id] = pipeline
+
+    from juturna.cli.commands.exceptions import TelemetryNotEnabledException
 
     with pytest.raises(TelemetryNotEnabledException):
         manager.pipeline_telemetry(pipeline.pipe_id)
