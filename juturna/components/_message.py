@@ -1,12 +1,100 @@
+import dataclasses
 import typing
 import time
 import json
 import itertools
 
+from collections.abc import Iterator
 from contextlib import contextmanager
 from types import MappingProxyType
 
+import numpy as np
+
+from juturna.payloads import BasePayload
 from juturna.payloads import Draft
+
+
+class _FrozenDict(dict):
+    """A dict that rejects every change, used for nested meta values."""
+
+    def _immutable(self, *args, **kwargs):
+        raise TypeError('frozen message meta cannot be modified')
+
+    __setitem__ = __delitem__ = __ior__ = _immutable
+    update = pop = popitem = clear = setdefault = _immutable
+
+    def __reduce__(self):
+        return (dict, (dict(self),))
+
+
+_SCALARS = frozenset({str, int, float, bool, bytes, type(None)})
+_PAYLOAD_FIELDS: dict[type, tuple[str, ...]] = dict()
+
+
+def _freeze_meta(value: typing.Any) -> typing.Any:
+    """Return a read-only copy of a meta value, converting it in depth."""
+    if type(value) in _SCALARS:
+        return value
+
+    if isinstance(value, dict):
+        return _FrozenDict({k: _freeze_meta(v) for k, v in value.items()})
+
+    if isinstance(value, list | tuple):
+        return tuple(_freeze_meta(v) for v in value)
+
+    if isinstance(value, set | frozenset):
+        return frozenset(value)
+
+    if isinstance(value, np.ndarray):
+        value.setflags(write=False)
+
+    return value
+
+
+def _payload_fields(payload: BasePayload) -> tuple[str, ...]:
+    cls = type(payload)
+
+    if cls not in _PAYLOAD_FIELDS:
+        _PAYLOAD_FIELDS[cls] = tuple(
+            f.name for f in dataclasses.fields(payload)
+        )
+
+    return _PAYLOAD_FIELDS[cls]
+
+
+def _freeze_arrays(payload: typing.Any):
+    """
+    Make the arrays a payload holds read-only: arrays in its fields (or, for
+    an ObjectPayload, in its values), arrays and payloads in list or tuple
+    fields, and nested payloads. Arrays nested in plain lists or dicts are
+    not reached, so the cost stays independent of the size of nested data.
+    """
+    if isinstance(payload, np.ndarray):
+        payload.setflags(write=False)
+
+        return
+
+    if isinstance(payload, dict):
+        children, walk_sequences = payload.values(), False
+    elif isinstance(payload, BasePayload):
+        names = _payload_fields(payload)
+        children = (getattr(payload, name) for name in names)
+        walk_sequences = True
+    else:
+        return
+
+    for child in children:
+        if type(child) in _SCALARS:
+            continue
+
+        if isinstance(child, np.ndarray):
+            child.setflags(write=False)
+        elif isinstance(child, BasePayload):
+            _freeze_arrays(child)
+        elif walk_sequences and type(child) in (list, tuple):
+            for item in child:
+                if isinstance(item, np.ndarray | BasePayload):
+                    _freeze_arrays(item)
 
 
 class Message[T_Input]:
@@ -82,15 +170,26 @@ class Message[T_Input]:
         object.__delattr__(self, key)
 
     def _freeze(self):
-        """Freeze the message, making it immutable."""
+        """
+        Freeze the message, making it immutable.
+
+        Meta is copied, with nested dicts, lists and sets turned into
+        read-only types (lists become tuples). Arrays in the payload and in
+        meta become read-only in place, so neither the sender nor any of the
+        receivers can change data the others are reading.
+        """
         if self._is_frozen:
             return
 
         if isinstance(self.payload, Draft):
             self.payload = self.payload.compile()
 
-        self.meta = MappingProxyType(self.meta)
-        self.timers = MappingProxyType(self.timers)
+        _freeze_arrays(self.payload)
+
+        self.meta = MappingProxyType(
+            {k: _freeze_meta(v) for k, v in self.meta.items()}
+        )
+        self.timers = MappingProxyType(dict(self.timers))
 
         object.__setattr__(self, '_is_frozen', True)
 
@@ -178,33 +277,29 @@ class Message[T_Input]:
         if getattr(self, '_is_frozen', False):
             raise TypeError('frozen messages cannot be modified')
 
-        timer_value = timer_value or time.time()
+        if timer_value is None:
+            timer_value = time.time()
 
         self.timers[timer_name] = timer_value
 
     @contextmanager
-    def timeit(self, timer_name: str) -> typing.Self:
+    def timeit(self, timer_name: str) -> Iterator[None]:
         """
-        Start a timer with the given name.
-        This method is a context manager that will automatically stop the timer
-        when the context is exited.
+        Time the enclosed block, and store its duration in seconds as a timer
+        with the given name when the block exits. The duration is measured
+        with a monotonic clock.
 
         Parameters
         ----------
         timer_name : str
             The name of the timer.
 
-        Returns
-        -------
-        typing.Self
-            The current instance of the Message class.
-
         """
-        start = time.time()
+        start = time.perf_counter()
 
         try:
             yield
         finally:
-            elapsed = time.time() - start
+            elapsed = time.perf_counter() - start
 
             self.timer(timer_name, elapsed)

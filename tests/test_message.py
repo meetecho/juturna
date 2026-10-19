@@ -1,6 +1,8 @@
 import time
 import json
 import dataclasses
+import pickle
+import threading
 
 import pytest
 import numpy as np
@@ -13,6 +15,7 @@ from juturna.payloads._payloads import VideoPayload
 from juturna.payloads._payloads import BytesPayload
 from juturna.payloads._payloads import Batch
 from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads._payloads import BasePayload
 from juturna.payloads._draft import Draft
 
 
@@ -365,3 +368,156 @@ def test_message_immutable_payload():
 
     assert "cannot assign to field 'channels'" in str(context.value)
     assert test_message.payload.channels == 2
+
+
+def _frozen(payload=None, **meta):
+    message = Message(creator='tester', payload=payload)
+    message.meta.update(meta)
+    message._freeze()
+
+    return message
+
+
+@dataclasses.dataclass(frozen=True)
+class _Detections(BasePayload):
+    mask: np.ndarray = dataclasses.field(default_factory=lambda: np.zeros(4))
+    crops: tuple = ()
+    boxes: list = dataclasses.field(default_factory=list)
+    frame: ImagePayload = dataclasses.field(default_factory=ImagePayload)
+
+
+def test_freeze_makes_payload_arrays_read_only():
+    audio = np.zeros(4)
+    message = _frozen(AudioPayload(audio=audio))
+
+    with pytest.raises(ValueError, match='read-only'):
+        message.payload.audio[0] = 99
+
+    # the sender's own reference is the same array
+    with pytest.raises(ValueError, match='read-only'):
+        audio[0] = 99
+
+    assert message.payload.audio.tolist() == [0, 0, 0, 0]
+
+
+def test_freeze_reaches_nested_payloads_and_sequence_fields():
+    payload = _Detections(
+        crops=(ImagePayload(image=np.zeros((2, 2))),),
+        boxes=[np.zeros(4)],
+        frame=ImagePayload(image=np.zeros((2, 2))),
+    )
+
+    _frozen(payload)
+
+    for array in (
+        payload.mask,
+        payload.crops[0].image,
+        payload.boxes[0],
+        payload.frame.image,
+    ):
+        assert not array.flags.writeable
+
+
+def test_freeze_makes_object_payload_arrays_read_only():
+    payload = ObjectPayload(mask=np.zeros(4), label='cat')
+
+    _frozen(payload)
+
+    assert not payload.mask.flags.writeable
+
+
+def test_clone_of_a_frozen_payload_is_writable():
+    message = _frozen(AudioPayload(audio=np.zeros(4)))
+
+    copy = message.payload.clone()
+    copy.audio[0] = 1
+
+    assert copy.audio[0] == 1
+    assert message.payload.audio[0] == 0
+
+
+def test_freeze_makes_nested_meta_read_only():
+    message = _frozen(tags=['x'], vad={'start': 0.1}, ids={1, 2})
+
+    with pytest.raises(AttributeError):
+        message.meta['tags'].append('y')
+
+    with pytest.raises(TypeError, match='frozen message meta'):
+        message.meta['vad']['start'] = 0.5
+
+    with pytest.raises(TypeError, match='frozen message meta'):
+        message.meta['vad'].update(end=1.0)
+
+    assert message.meta['tags'] == ('x',)
+    assert message.meta['vad'] == {'start': 0.1}
+    assert message.meta['ids'] == frozenset({1, 2})
+
+
+def test_sender_changes_after_freeze_do_not_reach_the_message():
+    message = Message(creator='tester')
+    tags = ['x']
+    message.meta['tags'] = tags
+    meta = message.meta
+    timers = message.timers
+
+    message._freeze()
+
+    tags.append('y')
+    meta['late'] = True
+    timers['late'] = 1.0
+
+    assert message.meta == {'tags': ('x',)}
+    assert dict(message.timers) == {}
+
+
+def test_frozen_meta_stays_serialisable():
+    message = _frozen(tags=['x'], vad={'start': 0.1})
+
+    assert json.loads(message.to_json())['meta'] == {
+        'tags': ['x'],
+        'vad': {'start': 0.1},
+    }
+    assert pickle.loads(pickle.dumps(dict(message.meta))) == {
+        'tags': ('x',),
+        'vad': {'start': 0.1},
+    }
+
+
+def test_timer_keeps_a_zero_value():
+    message = Message()
+
+    message.timer('t', 0.0)
+
+    assert message.timers['t'] == 0.0
+
+
+def test_timeit_ignores_wall_clock_jumps(monkeypatch):
+    message = Message()
+    wall_clock = iter([100.0, 1100.0])
+    monkeypatch.setattr(time, 'time', lambda: next(wall_clock, 1100.0))
+
+    with message.timeit('t'):
+        pass
+
+    assert message.timers['t'] < 1.0
+
+
+def test_message_ids_are_unique_across_threads():
+    ids = list()
+    lock = threading.Lock()
+
+    def create():
+        local = [Message().id for _ in range(5_000)]
+
+        with lock:
+            ids.extend(local)
+
+    threads = [threading.Thread(target=create) for _ in range(8)]
+
+    for thread in threads:
+        thread.start()
+
+    for thread in threads:
+        thread.join()
+
+    assert len(set(ids)) == len(ids) == 40_000
