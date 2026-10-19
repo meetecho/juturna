@@ -1,4 +1,6 @@
 import copy
+import dataclasses
+import json
 import pickle
 
 import pytest
@@ -16,6 +18,8 @@ from juturna.payloads._payloads import ImagePayload
 from juturna.payloads._payloads import VideoPayload
 from juturna.payloads._payloads import BytesPayload
 from juturna.payloads._payloads import ObjectPayload
+from juturna.payloads._payloads import BasePayload
+from juturna.payloads._payloads import Batch
 
 from juturna.payloads._draft import Draft
 
@@ -45,7 +49,7 @@ def test_image_empty_init():
 def test_video_empty_init():
     payload = VideoPayload()
 
-    assert payload.video == list()
+    assert payload.video == tuple()
     assert payload.frames_per_second == -1.0
     assert payload.start == -1.0
     assert payload.end == -1.0
@@ -330,3 +334,128 @@ def test_object_payload_size_is_not_computed_without_telemetry():
 
     assert 'size_bytes' in vars(payload)
     assert node._telemetry_buffer[-1][-1] == payload.size_bytes
+
+
+def _frame(value=1):
+    return ImagePayload(image=np.full((2, 2, 3), value, dtype=np.uint8))
+
+
+def test_video_payload_holds_frames():
+    frames = [_frame(1), _frame(2)]
+    payload = VideoPayload(video=frames)
+
+    frames.append(_frame(3))
+
+    assert payload.video == tuple(frames[:2])
+    assert payload.size_bytes == 24
+
+
+def test_video_payload_serializes_its_frames():
+    payload = VideoPayload(video=[_frame(7)], codec='raw')
+
+    serialized = VideoPayload.serialize(payload)
+
+    assert serialized['codec'] == 'raw'
+    assert serialized['video'] == [ImagePayload.serialize(_frame(7))]
+
+
+@pytest.mark.parametrize('payload_type', [AudioPayload, ObjectPayload])
+def test_draft_clear_removes_every_value(payload_type):
+    draft = Draft(payload_type)
+    draft['start' if payload_type is AudioPayload else 'key'] = 1.0
+
+    draft.clear()
+
+    assert draft._draft == {}
+    assert isinstance(draft.compile(), payload_type)
+
+
+@pytest.mark.parametrize(
+    'make',
+    [lambda: Draft(AudioPayload), lambda: ObjectPayload(a=1)],
+    ids=['draft', 'object_payload'],
+)
+def test_missing_attribute_raises_attribute_error(make):
+    item = make()
+
+    with pytest.raises(AttributeError, match='missing'):
+        item.missing
+
+    assert not hasattr(item, 'missing')
+    assert getattr(item, 'missing', 'default') == 'default'
+
+
+def test_draft_can_be_copied_and_pickled():
+    draft = Draft(AudioPayload)
+    draft.sampling_rate = 16000
+
+    for copied in (copy.deepcopy(draft), pickle.loads(pickle.dumps(draft))):
+        assert copied.sampling_rate == 16000
+        assert copied.compile().sampling_rate == 16000
+
+
+@dataclasses.dataclass(frozen=True)
+class _Detection(BasePayload):
+    label: str = ''
+    mask: np.ndarray = dataclasses.field(
+        default_factory=lambda: np.zeros(2, dtype=np.uint8)
+    )
+    raw: bytes = b''
+    crop: ImagePayload = dataclasses.field(default_factory=ImagePayload)
+    boxes: tuple = ()
+    extra: ObjectPayload = dataclasses.field(default_factory=ObjectPayload)
+
+
+def test_custom_payload_serializes_by_default():
+    payload = _Detection(
+        label='cat',
+        raw=b'\x00\x01',
+        crop=_frame(5),
+        boxes=((1, 2), (3, 4)),
+        extra=ObjectPayload(score=np.ones(2, dtype=np.uint8)),
+    )
+
+    dumped = json.loads(Message(creator='src', payload=payload).to_json())
+
+    assert dumped['payload'] == {
+        'label': 'cat',
+        'mask': [0, 0],
+        'raw': 'AAE=',
+        'crop': ImagePayload.serialize(_frame(5)),
+        'boxes': [[1, 2], [3, 4]],
+        'extra': {'score': [1, 1]},
+    }
+
+
+def test_non_dataclass_payload_serialization_names_the_class():
+    class Plain(AudioPayload):
+        pass
+
+    with pytest.raises(TypeError, match='Plain is not a dataclass'):
+        BasePayload.serialize(Plain())
+
+
+@pytest.mark.parametrize(
+    'make',
+    [
+        lambda: AudioPayload(audio=np.zeros(10)),
+        _frame,
+        lambda: VideoPayload(video=[_frame(), _frame()]),
+        lambda: BytesPayload(cnt=b'abcd'),
+        lambda: Batch(messages=(Message(creator='a', payload=_frame()),)),
+    ],
+    ids=['audio', 'image', 'video', 'bytes', 'batch'],
+)
+@pytest.mark.parametrize(
+    'duplicate',
+    [
+        lambda p: pickle.loads(pickle.dumps(p)),
+        copy.deepcopy,
+        lambda p: p.clone(),
+    ],
+    ids=['pickle', 'deepcopy', 'clone'],
+)
+def test_size_bytes_survives_copies(make, duplicate):
+    payload = make()
+
+    assert duplicate(payload).size_bytes == payload.size_bytes > 0

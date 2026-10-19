@@ -71,11 +71,18 @@ class Draft[T]:
         self._draft[key] = value
 
     def __getattr__(self, key: str) -> Any:
-        return self._draft[key]
+        # read _draft without going through __getattr__ again, as it is not
+        # set yet while copy or pickle rebuild the instance
+        try:
+            return object.__getattribute__(self, '_draft')[key]
+        except (KeyError, AttributeError):
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{key}'"
+            ) from None
 
     def clear(self):
         """Clear all stored keys and values"""
-        self._draft = dict()
+        object.__setattr__(self, '_draft', dict())
 
     def compile(self) -> T:
         """
