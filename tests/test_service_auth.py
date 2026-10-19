@@ -239,6 +239,15 @@ def test_serve_binds_localhost_by_default():
 
     assert args.host == '127.0.0.1'
     assert args.allow_env == []
+    assert args.auth is True
+
+
+def test_serve_no_auth_turns_the_token_off():
+    pytest.importorskip('fastapi')
+
+    args = _serve_args('-p', '1234', '-f', 'folder', '--no-auth')
+
+    assert args.auth is False
 
 
 def test_serve_allow_env_is_repeatable():
@@ -310,3 +319,38 @@ def test_run_warns_when_bound_to_the_network(
         _run(monkeypatch, tmp_path, host='0.0.0.0')
 
     assert 'TLS' in caplog.text
+
+
+def test_run_without_auth_accepts_requests_without_a_token(
+    service_app, anonymous_client, monkeypatch, tmp_path, capsys, caplog
+):
+    from juturna.cli.commands._juturna_service import TOKEN_ENV_VAR
+
+    monkeypatch.delenv(TOKEN_ENV_VAR, raising=False)
+
+    with caplog.at_level('WARNING', logger='jt.service'):
+        app = _run(monkeypatch, tmp_path, auth=False)
+
+    assert app.state.token is None
+    assert 'generated service token' not in capsys.readouterr().err
+    assert 'authentication disabled' in caplog.text
+
+    for method, path in _routes(service_app):
+        response = anonymous_client.request(method, path)
+
+        assert response.status_code not in (401, 503), (method, path)
+
+
+def test_run_without_auth_ignores_the_token_from_the_environment(
+    service_app, anonymous_client, monkeypatch, tmp_path, caplog
+):
+    from juturna.cli.commands._juturna_service import TOKEN_ENV_VAR
+
+    monkeypatch.setenv(TOKEN_ENV_VAR, 'operator-token')
+
+    with caplog.at_level('WARNING', logger='jt.service'):
+        app = _run(monkeypatch, tmp_path, auth=False)
+
+    assert app.state.token is None
+    assert f'{TOKEN_ENV_VAR} is set but ignored' in caplog.text
+    assert anonymous_client.get('/pipelines').status_code == 200

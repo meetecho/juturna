@@ -48,7 +48,13 @@ def require_token(
     is rejected, so the service never runs open by mistake. Browsers cannot
     attach the header to a cross-site request without a CORS preflight, so
     this also blocks cross-site requests to the state-changing routes.
+
+    The check is skipped only when ``run()`` was called with ``auth=False``
+    (``serve --no-auth``).
     """
+    if not getattr(request.app.state, 'auth', True):
+        return
+
     expected = getattr(request.app.state, 'token', None) or os.environ.get(
         TOKEN_ENV_VAR
     )
@@ -180,6 +186,7 @@ def run(
     log_config: str,
     dev: bool,
     allow_env: list[str] | None = None,
+    auth: bool = True,
 ):
     if log_config:
         with open(log_config) as f:
@@ -189,9 +196,21 @@ def run(
 
     logger.info('starting juturna service...')
 
-    app.state.token = os.environ.get(TOKEN_ENV_VAR)
+    app.state.auth = auth
+    app.state.token = os.environ.get(TOKEN_ENV_VAR) if auth else None
 
-    if not app.state.token:
+    if not auth:
+        # without the token, any client that reaches the port, and any web
+        # page open in a browser on this host (cross-site simple requests),
+        # can deploy pipelines
+        logger.warning(
+            'authentication disabled: every client that can reach '
+            f'{host}:{port} has full access to the service'
+        )
+
+        if os.environ.get(TOKEN_ENV_VAR):
+            logger.warning(f'{TOKEN_ENV_VAR} is set but ignored')
+    elif not app.state.token:
         app.state.token = secrets.token_urlsafe(32)
 
         # printed on the console only, never logged (logs may be shipped)

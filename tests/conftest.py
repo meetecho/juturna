@@ -58,10 +58,12 @@ def service_app():
 
     PipelineManager.set_base_folder(test_pipeline_folder)
     app.state.token = SERVICE_TOKEN
+    app.state.auth = True
 
     yield app
 
     app.state.token = None
+    app.state.auth = True
     PipelineManager.set_allowed_env_vars(list())
 
 
