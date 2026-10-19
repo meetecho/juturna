@@ -308,7 +308,10 @@ def test_failed_start_stops_the_nodes_already_started(
     config = _sequencer_crasher_config(
         f'failed_start_pipeline_{spawn_first}_{error.__name__}', folder
     )
-    config['pipeline']['telemetry'] = 'telemetry.csv'
+    config['pipeline']['telemetry'] = {
+        'name': 'csv',
+        'target': 'telemetry.csv',
+    }
     pipeline = jt.components.Pipeline(config)
 
     pipeline.warmup()
@@ -341,7 +344,10 @@ def test_start_can_be_retried_after_a_failed_start(
 ):
     folder = test_config['test_pipeline_folder']
     config = _sequencer_crasher_config('retry_start_pipeline', folder)
-    config['pipeline']['telemetry'] = 'telemetry.csv'
+    config['pipeline']['telemetry'] = {
+        'name': 'csv',
+        'target': 'telemetry.csv',
+    }
     pipeline = jt.components.Pipeline(config)
 
     pipeline.warmup()
@@ -431,7 +437,10 @@ def test_failed_warmup_destroys_the_nodes_already_built(
     config = _sequencer_crasher_config(
         'failed_warmup_pipeline', test_config['test_pipeline_folder']
     )
-    config['pipeline']['telemetry'] = 'telemetry.csv'
+    config['pipeline']['telemetry'] = {
+        'name': 'csv',
+        'target': 'telemetry.csv',
+    }
     error = break_warmup(config, monkeypatch)
     pipeline = jt.components.Pipeline(config)
 

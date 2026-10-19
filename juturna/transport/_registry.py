@@ -13,6 +13,23 @@ _TRANSPORTS: dict[str, type[TransportBackend]] = {
 _DEFAULT_TRANSPORT = 'threading'
 
 
+def _split_spec(spec: str | dict | None) -> tuple[str, dict]:
+    if isinstance(spec, dict):
+        options = dict(spec)
+        name = options.pop('name', None)
+    elif spec is None or isinstance(spec, str):
+        options, name = dict(), spec
+    else:
+        raise ValueError(
+            f'transport must be a name or a dict, got {type(spec).__name__}'
+        )
+
+    if name is not None and not isinstance(name, str):
+        raise ValueError(f'transport name must be a string, got {name!r}')
+
+    return name or _DEFAULT_TRANSPORT, options
+
+
 def get_transport(spec: str | dict | None = None) -> TransportBackend:
     """
     Resolve a transport backend from its configuration.
@@ -38,21 +55,20 @@ def get_transport(spec: str | dict | None = None) -> TransportBackend:
         does not accept one of the options.
 
     """
-    options = dict(spec) if isinstance(spec, dict) else dict()
-    name = options.pop('name', None) if options else spec
-    name = name or _DEFAULT_TRANSPORT
-
+    name, options = _split_spec(spec)
     if name not in _TRANSPORTS:
         raise ValueError(
             f'unknown transport backend: {name!r}, '
             f'available: {list(_TRANSPORTS)}'
         )
 
+    transport = _TRANSPORTS[name]
+
     try:
-        inspect.signature(_TRANSPORTS[name]).bind(**options)
+        inspect.signature(transport).bind(**options)
     except TypeError as exc:
         raise ValueError(
             f'invalid options for the {name!r} transport: {exc}'
         ) from exc
 
-    return _TRANSPORTS[name](**options)
+    return transport(**options)

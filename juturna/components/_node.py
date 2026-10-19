@@ -17,7 +17,7 @@ from juturna.utils.log_utils import jt_logger
 
 from juturna.components._buffer import Buffer
 from juturna.components._state import State
-from juturna.components._telemetry_manager import TelemetryManager
+from juturna.telemetry import TelemetryManager
 from juturna.components._synchronisers import _SYNCHRONISERS
 
 

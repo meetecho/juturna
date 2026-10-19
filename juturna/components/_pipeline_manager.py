@@ -165,10 +165,7 @@ class PipelineManager:
         if not self._pipelines[pipeline_id]._telemetry:
             raise TelemetryNotEnabledException(pipeline_id)
 
-        with open(self._pipelines[pipeline_id]._telemetry_file) as f:
-            telemetry_data = f.read()
-
-        return telemetry_data
+        return self._pipelines[pipeline_id]._telemetry_manager.records()
 
     def pipeline_list(self) -> dict:
         return {

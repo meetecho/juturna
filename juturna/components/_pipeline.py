@@ -17,7 +17,6 @@ from juturna.names import PipelineStatus
 from juturna.components._dag import DAG
 from juturna.components._state import State
 from juturna.components._node_builder import _builder
-from juturna.components._telemetry_manager import TelemetryManager
 from juturna.components.exceptions import PipelineNotReadyError
 from juturna.components.exceptions import PipelineNotRunningError
 from juturna.components.exceptions import PipelineAlreadyRunningError
@@ -25,6 +24,9 @@ from juturna.components.exceptions import PipelineStoppedError
 from juturna.components.exceptions import PipelineDestroyedError
 from juturna.components.exceptions import PipelineBusyError
 
+from juturna.telemetry import TelemetryContext
+from juturna.telemetry import TelemetryManager
+from juturna.telemetry import get_telemetry
 from juturna.transport import TransportBackend
 from juturna.transport import get_transport
 
@@ -122,7 +124,6 @@ class Pipeline:
 
         self._telemetry_manager: TelemetryManager | None = None
         self._telemetry = False
-        self._telemetry_file = None
 
         self._status = PipelineStatus.NEW
         self._status_lock = threading.Lock()
@@ -324,36 +325,25 @@ class Pipeline:
             self._end_transition(PipelineStatus.READY)
 
     def _warmup(self):
-        _tele_file = self._raw_config['pipeline'].get('telemetry', None)
-
         # these names become paths under the pipeline folder: a name like
-        # "../x" or "/x" would write (and, for telemetry, read) outside of it
+        # "../x" or "/x" would write outside of it
         for node in self._raw_config['pipeline']['nodes']:
             jt_utils.check_name(node['name'], 'node')
 
-        if _tele_file:
-            jt_utils.check_name(_tele_file, 'telemetry file')
-
         self._check_links()
+
+        # built (it opens nothing) before anything is written, so that a
+        # telemetry the registry refuses leaves no trace on disk
+        self._telemetry_manager = get_telemetry(
+            self._raw_config['pipeline'].get('telemetry'),
+            TelemetryContext(self._transport, self._worker, self.pipe_path),
+        )
+        self._telemetry = self._telemetry_manager is not None
 
         pathlib.Path(self.pipe_path).mkdir(parents=True, exist_ok=True)
 
         with open(pathlib.Path(self.pipe_path, 'config.json'), 'w') as f:
             json.dump(self._raw_config, f, indent=2)
-
-        if _tele_file and not getattr(
-            self._transport, 'supports_telemetry', True
-        ):
-            self._logger.warning(
-                f'the {type(self._transport).__name__} transport does not '
-                'support telemetry: it is disabled for this pipeline'
-            )
-        elif _tele_file:
-            self._telemetry = True
-            self._telemetry_file = pathlib.Path(self.pipe_path, _tele_file)
-            self._telemetry_manager = TelemetryManager(
-                str(self._telemetry_file), transport=self._transport
-            )
 
         # the warp rewrite below changes the node configs: work on a copy, so
         # that a retry after a failed warmup starts from the original ones
