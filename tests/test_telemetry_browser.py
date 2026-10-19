@@ -9,8 +9,14 @@ from juturna.transport import BrowserTransport
 from juturna.transport import ThreadingTransport
 
 
+class _PageTransport(BrowserTransport):
+    # the browser lock needs the `js` module, which exists only in Pyodide
+    def new_lock(self):
+        return ThreadingTransport().new_lock()
+
+
 def _ctx(worker='w1', transport=None):
-    return TelemetryContext(transport or BrowserTransport(), worker, '/tmp')
+    return TelemetryContext(transport or _PageTransport(), worker, '/tmp')
 
 
 def _record(i):

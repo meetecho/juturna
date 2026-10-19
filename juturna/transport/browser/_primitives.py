@@ -58,14 +58,17 @@ class _BrowserLock:
     _CELL = 0
 
     def __init__(self):
-        from js import Int32Array
-        from js import SharedArrayBuffer
-
-        sab = SharedArrayBuffer.new(4)
-        self._cell = Int32Array.new(sab)
+        # allocated on first use, so that a manager built only to validate a
+        # configuration, outside the browser, does not need `js`
+        self._cell = None
 
     def __enter__(self) -> None:
         from js import Atomics
+        from js import Int32Array
+        from js import SharedArrayBuffer
+
+        if self._cell is None:
+            self._cell = Int32Array.new(SharedArrayBuffer.new(4))
 
         while True:
             prev = int(Atomics.compareExchange(self._cell, self._CELL, 0, 1))

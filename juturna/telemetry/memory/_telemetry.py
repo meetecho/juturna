@@ -6,7 +6,6 @@ from juturna.telemetry._base import tag_records
 from juturna.utils.log_utils import jt_logger
 
 DEFAULT_MAX_RECORDS = 10000
-_READ_RETRIES = 3
 
 
 class MemoryTelemetry:
@@ -39,6 +38,10 @@ class MemoryTelemetry:
         self._worker = ctx.worker
         self._records: deque[tuple] = deque(maxlen=max_records)
 
+        # on a free-threaded build a deque cannot be copied while it is
+        # extended; the lock is held for one copy or one extend only
+        self._lock = ctx.transport.new_lock()
+
         # false from a stop to the next start: what arrives is dropped
         self._open = True
         self._logger = jt_logger('telemetry')
@@ -57,22 +60,15 @@ class MemoryTelemetry:
 
     def records(self) -> list[tuple]:
         """The records kept so far, oldest first"""
-        # no lock: a node thread must never wait for a reader, so the reader
-        # retries when a writer changes the deque while it is being copied
-        # (only possible on a free-threaded build)
-        for _ in range(_READ_RETRIES):
-            try:
-                return list(self._records)
-            except RuntimeError:
-                self._logger.warning('records changed while being read: retry')
-
-        return list(self._records)
+        with self._lock:
+            return list(self._records)
 
     def _store(self, record_batch: list[tuple]) -> list[tuple]:
         if not self._open or not record_batch:
             return []
 
         batch = tag_records(record_batch, self._worker)
-        self._records.extend(batch)
+        with self._lock:
+            self._records.extend(batch)
 
         return batch
