@@ -437,26 +437,11 @@ class Pipeline:
         self._logger.info('pipe warmed up!')
 
     def _check_links(self):
-        names = {node['name'] for node in self._raw_config['pipeline']['nodes']}
-        seen = set()
-
-        for link in self._raw_config['pipeline']['links']:
-            from_node, to_node = link['from'], link['to']
-
-            for end in (from_node, to_node):
-                if end not in names:
-                    raise ValueError(
-                        f'pipe {self.name} links {from_node} -> {to_node}, '
-                        f'but has no node {end}'
-                    )
-
-            if (from_node, to_node) in seen:
-                raise ValueError(
-                    f'pipe {self.name} has a duplicate link '
-                    f'{from_node} -> {to_node}'
-                )
-
-            seen.add((from_node, to_node))
+        check_links(
+            self.name,
+            self._raw_config['pipeline']['nodes'],
+            self._raw_config['pipeline']['links'],
+        )
 
     def _rollback_warmup(self):
         """
@@ -733,3 +718,44 @@ class Pipeline:
         log_utils.drop_extra(self._name)
 
         self._logger.info('pipe destroyed')
+
+
+def check_links(pipe_name: str, nodes: list[dict], links: list[dict]):
+    """
+    Check that every link joins two nodes of the pipeline, and only once.
+
+    Parameters
+    ----------
+    pipe_name : str
+        The pipeline name, for the error messages.
+    nodes : list[dict]
+        The node configurations of the pipeline.
+    links : list[dict]
+        The link configurations of the pipeline.
+
+    Raises
+    ------
+    ValueError
+        If a link names a node that does not exist, or is repeated.
+
+    """
+    names = {node['name'] for node in nodes}
+    seen = set()
+
+    for link in links:
+        from_node, to_node = link['from'], link['to']
+
+        for end in (from_node, to_node):
+            if end not in names:
+                raise ValueError(
+                    f'pipe {pipe_name} links {from_node} -> {to_node}, '
+                    f'but has no node {end}'
+                )
+
+        if (from_node, to_node) in seen:
+            raise ValueError(
+                f'pipe {pipe_name} has a duplicate link '
+                f'{from_node} -> {to_node}'
+            )
+
+        seen.add((from_node, to_node))
