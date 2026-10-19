@@ -56,7 +56,7 @@ def _config(name: str, node_name: str = 'node', telemetry=None) -> dict:
     }
 
     if telemetry:
-        pipeline['telemetry'] = telemetry
+        pipeline['telemetry'] = {'name': 'csv', 'target': telemetry}
 
     return {'version': '3.0.0', 'pipeline': pipeline}
 
@@ -108,6 +108,8 @@ def test_warmup_accepts_plain_names():
         ('/abs/escaped', 'node', None),
         ('service_pipe', '../escaped', None),
         ('service_pipe', 'node', '../../id_rsa'),
+        ('service_pipe', 'node', 'config.json'),
+        ('service_pipe', 'node', 'a/b.csv'),
     ],
 )
 def test_service_rejects_unsafe_names(

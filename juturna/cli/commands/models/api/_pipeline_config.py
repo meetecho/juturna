@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from pydantic import field_validator
 
+from juturna.telemetry import check_pipeline_telemetry
 from juturna.utils import jt_utils
 
 
@@ -14,8 +15,9 @@ class PipelineConfig(BaseModel):
     @classmethod
     def _check_names(cls, pipeline: dict) -> dict:
         """
-        Reject pipeline, node and telemetry file names that are not plain file
-        names, since they become paths under the service base folder.
+        Reject pipeline and node names that are not plain file names, and a
+        telemetry configuration the registry refuses (such as an unsafe file
+        name), since they become paths under the service base folder.
         """
         jt_utils.check_name(pipeline.get('name'), 'pipeline')
 
@@ -23,7 +25,7 @@ class PipelineConfig(BaseModel):
             name = node.get('name') if isinstance(node, dict) else None
             jt_utils.check_name(name, 'node')
 
-        if telemetry := pipeline.get('telemetry'):
-            jt_utils.check_name(telemetry, 'telemetry file')
+        if pipeline.get('telemetry') is not None:
+            check_pipeline_telemetry(pipeline)
 
         return pipeline

@@ -34,6 +34,7 @@ serialization and a copy on each side, about 1 ms for a 640x480 RGBA frame.
 import contextlib
 
 from collections.abc import Callable
+from typing import ClassVar
 
 from juturna.transport._base import WorkerHandle
 
@@ -54,9 +55,7 @@ from juturna.transport.browser._worker import _BrowserRemoteDestination
 class BrowserTransport:
     """Transport backend for a pipeline running in a browser (Pyodide)"""
 
-    # the telemetry manager puts batches of tuples on a queue, which a ring
-    # does not accept: `Pipeline` leaves the telemetry off
-    supports_telemetry = False
+    capabilities: ClassVar[frozenset[str]] = frozenset({'page_channel'})
 
     def __init__(
         self,

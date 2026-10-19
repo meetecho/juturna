@@ -3,6 +3,7 @@ import threading
 
 from collections.abc import Callable
 from typing import Any
+from typing import ClassVar
 
 from juturna.transport._base import WorkerHandle
 
@@ -21,6 +22,8 @@ class ThreadingTransport:
     `Buffer`: every worker runs on its own `threading.Thread`, and queues
     are backed by `queue.Queue`.
     """
+
+    capabilities: ClassVar[frozenset[str]] = frozenset({'shared_fs'})
 
     def new_queue(self, maxsize: int = 0, local: bool = False) -> _ThreadQueue:
         # threads share memory: every queue is local already

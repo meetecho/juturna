@@ -6,6 +6,15 @@ from juturna.transport import ThreadingTransport
 from juturna.transport import get_transport
 
 
+def test_transport_capabilities():
+    assert ThreadingTransport.capabilities == frozenset({'shared_fs'}), (
+        f'Unexpected {ThreadingTransport.capabilities}'
+    )
+    assert BrowserTransport.capabilities == frozenset({'page_channel'}), (
+        f'Unexpected {BrowserTransport.capabilities}'
+    )
+
+
 def test_default_transport_is_threading():
     transport = get_transport()
 
@@ -63,3 +72,9 @@ def test_pipeline_configures_its_transport(tmp_path):
     assert transport._max_payload_bytes == 4_000_000, (
         f'Got {transport._max_payload_bytes}'
     )
+
+
+@pytest.mark.parametrize('spec', [['browser'], 5, {'name': ['browser']}])
+def test_spec_of_the_wrong_type_is_a_value_error(spec):
+    with pytest.raises(ValueError, match='transport'):
+        get_transport(spec)

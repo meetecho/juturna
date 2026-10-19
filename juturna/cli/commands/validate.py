@@ -18,6 +18,9 @@ from juturna.cli.commands._validation_tools import ValidationError
 from juturna.cli.commands._validation_tools import DAG
 from juturna.cli.commands._validation_tools import warn
 
+from juturna.telemetry import check_pipeline_telemetry
+from juturna.transport import get_transport
+
 
 def setup_parser(subparsers):  # noqa: D103
     common_parser = _common_pipe_parser.common_parser()
@@ -64,6 +67,8 @@ def _execute(args):
         Check('Nodes well formed', _check_nodes_well_formed), nodes
     ).add_check(
         Check('Links well formed', _check_links_well_formed), links
+    ).add_check(Check('Valid transport', _check_transport), pipeline).add_check(
+        Check('Valid telemetry', _check_telemetry), pipeline
     ).add_check(
         Check('DAG properly formed', _build_dag), nodes, links
     ).add_check(
@@ -85,6 +90,30 @@ def _load_pipeline(cfg_path: pathlib.Path) -> dict[str, typing.Any]:
             return json.load(fh)
     except (OSError, json.JSONDecodeError) as exc:
         raise ValidationError(f'Cannot read JSON: {exc}') from None
+
+
+def _check_transport(pipeline: dict) -> None:
+    req_transport = pipeline.get('transport')
+
+    if req_transport is None:
+        return
+
+    try:
+        get_transport(req_transport)
+    except ValueError as exc:
+        raise ValidationError(f'Invalid transport: {exc}') from exc
+
+
+def _check_telemetry(pipeline: dict) -> None:
+    if pipeline.get('telemetry') is None:
+        return
+
+    try:
+        check_pipeline_telemetry(pipeline)
+    except ValueError as exc:
+        raise ValidationError(
+            f'Invalid telemetry configuration: {exc}'
+        ) from exc
 
 
 def _check_structure(data: dict[str, typing.Any]) -> None:
