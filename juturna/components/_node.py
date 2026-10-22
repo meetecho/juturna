@@ -607,9 +607,9 @@ class Node[T_Input, T_Output]:
         self._last_data_source_evt_id = message.id
 
         try:
-            state = self._resolve_state(batch)
+            state = self._resolve_state(message)
 
-            self.update(batch, state=state)
+            self.update(message, state=state)
         except Exception:
             self._update_failures += 1
             self._last_failure_at = time.time()
