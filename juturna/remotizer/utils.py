@@ -11,13 +11,9 @@ These utilities are essential for the serialization layer of the Remotizer.
 """
 
 import numpy as np
-import base64
 import uuid
 import time
 from typing import Any
-import logging
-from datetime import datetime, date
-from decimal import Decimal
 
 
 from juturna.components import Message
@@ -44,7 +40,6 @@ from juturna.remotizer.c_protos.payloads_pb2 import (
 )
 from google.protobuf.json_format import MessageToDict
 
-logger = logging.getLogger('jt.remotizer.utils')
 
 # ============================================================================
 # PYTHON → PROTOBUF CONVERTERS
@@ -448,7 +443,7 @@ def create_envelope(
     metadata: dict[str, Any],
     creator: str,
     pipe_id: str,
-    state: dict[str, Any],
+    state: dict[str, Any] | None,
     id: str = '',
     priority: int = 1,
     timeout: int = 30,
@@ -457,16 +452,19 @@ def create_envelope(
     request_type: str = '',
     stateless: bool = False,
 ) -> ProtoEnvelope:
-    """Create envelope around message, which is None for an empty response"""
+    """
+    Create envelope around message.
+
+    message is None for a response without output, and state is None when no
+    state is sent.
+    """
     envelope = ProtoEnvelope()
     envelope.id = id or str(uuid.uuid4())
     envelope.sender = creator
     envelope.pipe_id = pipe_id
 
-    if stateless:
-        envelope.typed_state.CopyFrom(to_typed_value(dict(state)))
-    else:
-        envelope.state.update(sanitize_struct_for_proto(state))
+    if state is not None:
+        envelope.state.CopyFrom(to_typed_value(dict(state)))
 
     envelope.created_at = time.time()
     envelope.ttl = int(timeout)
@@ -496,9 +494,9 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
         'sender': envelope.sender,
         'pipe_id': envelope.pipe_id,
         'state': (
-            from_typed_value(envelope.typed_state)
-            if envelope.stateless and envelope.HasField('typed_state')
-            else MessageToDict(envelope.state)
+            from_typed_value(envelope.state)
+            if envelope.HasField('state')
+            else None
         ),
         'configuration': MessageToDict(envelope.configuration),
         'response_to': envelope.response_to,
@@ -509,81 +507,3 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
         'message': message,
     }
     return envelope_dict
-
-
-def to_primitive(obj: Any) -> Any:
-    """
-    Convert any object to JSON-compatible primitives.
-    Returns None for non-convertible objects.
-    """
-    if obj is None or isinstance(obj, (bool, int, float, str)):
-        return obj
-
-    if isinstance(obj, (np.integer, np.floating)):
-        return obj.item()
-    if isinstance(obj, np.ndarray):
-        return obj.tolist()
-
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-
-    if isinstance(obj, Decimal):
-        return float(obj)
-
-    if isinstance(obj, bytes):
-        try:
-            return base64.b64encode(obj).decode('ascii')
-        except UnicodeDecodeError:
-            return None
-
-    if isinstance(obj, dict):
-        result = {}
-        for k, v in obj.items():
-            key = str(k) if not isinstance(k, str) else k
-            value = to_primitive(v)
-            if value is not None or v is None:
-                result[key] = value
-        return result
-
-    if isinstance(obj, (list, tuple)):
-        result = []
-        for item in obj:
-            value = to_primitive(item)
-            if value is not None or item is None:
-                result.append(value)
-        return result
-
-    # Try __dict__ for custom objects
-    if hasattr(obj, '__dict__'):
-        return to_primitive(obj.__dict__)
-
-    logger.warning(f'dropping non-serializable object: {type(obj).__name__}')
-    return None
-
-
-def sanitize_struct_for_proto(meta: dict[str, Any]) -> dict[str, Any]:
-    """
-    Sanitize a metadata dictionary for protobuf Struct serialization.
-
-    Args:
-        meta: Original metadata dictionary
-
-    Returns:
-        Sanitized dictionary compatible with google.protobuf.Struct
-
-    """
-    if not meta:
-        return {}
-
-    logger.info(f'sanitizing metadata with {len(meta)} entries')
-    sanitized = to_primitive(dict(meta))
-
-    if sanitized is None:
-        logger.warning(
-            'entire metadata is non-serializable, returning empty dict'
-        )
-        return {}
-
-    logger.info(f'sanitized metadata: {sanitized}')
-
-    return sanitized

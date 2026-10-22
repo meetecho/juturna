@@ -305,6 +305,56 @@ def test_sticky_state_stays_on_the_replica(replicas):
     assert replicas[0]._state_store[('p', 'w')] == {'pending': [1]}
 
 
+def test_unknown_sticky_client_without_state_is_asked_for_it(replicas):
+    code, details = _call(replicas[0], 'p', 'w', None, n=1)
+
+    assert code.name == 'FAILED_PRECONDITION'
+    assert 'unknown client w' in details
+    assert replicas[0].get_stats()['unknown_client_requests'] == 1
+    assert replicas[0]._state_store == {}
+
+
+def test_known_sticky_client_needs_no_state(replicas):
+    _call(replicas[0], 'p', 'w', {}, n=1)
+    response = _call(replicas[0], 'p', 'w', None, n=2)
+
+    assert response['state'] == {'pending': [1, 2]}
+
+
+def test_sticky_client_recovers_its_state_after_a_restart(replicas):
+    first, restarted = replicas
+    copy = _call(first, 'p', 'w', {}, n=1)['state']
+    copy = _call(first, 'p', 'w', None, n=2)['state']
+
+    # the service restarted: it asks for the state, the client sends its copy
+    code, _ = _call(restarted, 'p', 'w', None, n=3)
+    response = _call(restarted, 'p', 'w', copy, n=3)
+
+    assert code.name == 'FAILED_PRECONDITION'
+    assert response['message'].payload['sum'] == 6
+    assert response['state'] == {'pending': []}
+
+
+def test_sticky_state_that_cannot_be_sent_stays_on_the_service(replicas):
+    records = _Records()
+    remote.logger.addHandler(records)
+
+    try:
+        responses = [_call(replicas[0], 'p', 'w', {}, n=0) for _ in range(2)]
+    finally:
+        remote.logger.removeHandler(records)
+
+    assert [r['state'] for r in responses] == [None, None]
+    assert replicas[0]._state_store[('p', 'w')]['pending'] == [0, 0]
+    assert len([m for m in records.messages if 'cannot be sent' in m]) == 1
+
+
+def test_stateless_request_without_state_is_invalid(replicas):
+    code, _ = _call(replicas[0], 'p', 'w', None, n=1, stateless=True)
+
+    assert code.name == 'INVALID_ARGUMENT'
+
+
 def test_failing_update_is_answered_at_once(replicas):
     start = time.monotonic()
     code, details = _call(replicas[0], 'p', 'w', {}, n=-1)
