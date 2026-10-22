@@ -82,7 +82,7 @@ def test_kill_returns_while_update_is_blocked(monkeypatch):
 
     try:
         assert not kill_thread.is_alive(), "kill() blocked on a busy update()"
-        assert node.health['stuck_workers'] == ['_update_blocked_node']
+        assert node.health['stuck_workers'] == ['_worker_blocked_node']
     finally:
         node.release.set()
 

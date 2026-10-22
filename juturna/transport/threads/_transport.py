@@ -18,9 +18,9 @@ class ThreadingTransport:
     """
     Default transport backend, based on real OS threads.
 
-    This backend preserves the current concurrency model of `Node` and
-    `Buffer`: every worker runs on its own `threading.Thread`, and queues
-    are backed by `queue.Queue`.
+    This backend preserves the current concurrency model of `Node`: every
+    worker runs on its own `threading.Thread`, and queues are backed by
+    `queue.Queue`.
     """
 
     capabilities: ClassVar[frozenset[str]] = frozenset({'shared_fs'})

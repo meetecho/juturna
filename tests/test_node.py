@@ -226,7 +226,6 @@ def test_pipeline_kill_discards_pending_messages(test_config, wait_for_condition
 
     for node in pipeline._nodes.values():
         assert node._queue.empty(), f"{node.name} input queue not cleared"
-        assert node._buffer.empty(), f"{node.name} buffer not cleared"
 
 
 def test_node_survives_exception_in_update(wait_for_condition):
@@ -249,7 +248,7 @@ def test_node_survives_exception_in_update(wait_for_condition):
         time.sleep(0.1)
 
     assert wait_for_condition(lambda: node.calls == 5, timeout=5), 'node died'
-    assert node._update_thread.is_alive()
+    assert node._worker_thread.is_alive()
     assert node._update_failures == 5
 
     assert node.health['source_failures'] == 0
@@ -352,3 +351,87 @@ def test_stop_interrupts_source_backoff():
 
     assert node.health['source_failures'] == 1
     assert time.monotonic() - start < 1.0, 'stop() waited for the backoff'
+
+
+class _Joiner(jt.components.Node):
+    """Pair one message from each of two creators, waiting in the state"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        self.received = list()
+        self.pairs = list()
+
+    def update(self, message, **kwargs):
+        self.received.append(message)
+
+        pending = kwargs['state'].setdefault('pending', {'a': [], 'b': []})
+        pending[message.creator].append(message)
+
+        if pending['a'] and pending['b']:
+            self.pairs.append(
+                (pending['a'].pop(0).version, pending['b'].pop(0).version)
+            )
+
+
+def test_messages_from_several_creators_arrive_one_at_a_time(
+    wait_for_condition,
+):
+    node = _Joiner(node_name='joiner', pipe_name='p')
+    state = jt.components.State()
+    node.link_state(state)
+    node.start()
+
+    try:
+        for version in range(3):
+            node.put(jt.components.Message(creator='a', version=version))
+
+        for version in range(2):
+            node.put(jt.components.Message(creator='b', version=version))
+
+        assert wait_for_condition(lambda: len(node.received) == 5, timeout=5)
+    finally:
+        node.stop()
+
+    assert all(
+        isinstance(m.payload, jt.payloads.Batch) is False
+        for m in node.received
+    ), 'messages must not be wrapped in a batch'
+    assert [m.creator for m in node.received] == ['a', 'a', 'a', 'b', 'b']
+    assert node.pairs == [(0, 0), (1, 1)]
+    assert [m.version for m in state['pending']['a']] == [2], (
+        'the unmatched message must wait in the state'
+    )
+    assert state['pending']['b'] == []
+
+
+def test_state_survives_a_restart(wait_for_condition):
+    node = _Joiner(node_name='restarted', pipe_name='p')
+    state = jt.components.State()
+    node.link_state(state)
+
+    node.start()
+    node.put(jt.components.Message(creator='a', version=0))
+    assert wait_for_condition(lambda: len(node.received) == 1, timeout=5)
+    node.stop()
+
+    node.start()
+    node.put(jt.components.Message(creator='b', version=0))
+    assert wait_for_condition(lambda: len(node.received) == 2, timeout=5)
+    node.stop()
+
+    assert node.pairs == [(0, 0)]
+
+
+def test_node_runs_a_single_worker_thread():
+    node = jt.components.Node(node_name='single', pipe_name='p')
+    node.start()
+
+    try:
+        names = {t.name for t in threading.enumerate()}
+
+        assert '_worker_single' in names
+        assert not any(n.endswith('_single') and n != '_worker_single'
+                       for n in names), names
+    finally:
+        node.stop()

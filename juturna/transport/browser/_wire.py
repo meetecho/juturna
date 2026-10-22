@@ -105,9 +105,8 @@ def _serialize_message(msg) -> tuple[bytes, int, int, tuple[int, ...], Any]:
         )
 
     # VideoPayload, Batch, ObjectPayload, or any custom payload type: no
-    # known binary layout, fall back to pickle. Correct,
-    # not on the fast path - Buffer._consume() emits Batch for multi-input
-    # nodes, so this is a real path, not a hypothetical.
+    # known binary layout, fall back to pickle. Correct, but not on the fast
+    # path.
     meta['kind'] = _KIND_PICKLE
     meta['payload_meta'] = {}
     payload_buf = pickle.dumps(payload)

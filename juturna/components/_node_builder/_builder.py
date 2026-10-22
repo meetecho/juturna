@@ -3,7 +3,6 @@ import importlib
 import importlib.resources
 
 from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
-from juturna.components._synchronisers import _SYNCHRONISERS
 
 from juturna.components._node_builder._utils import _resolve_env_var
 from juturna.components._node_builder._utils import _update_local_with_remote
@@ -22,7 +21,6 @@ def _get_node(
 ):
     node_full_path = node['type']
     node_configuration = node['configuration']
-    node_sync = node.get('sync')
 
     # node_name = node_full_path.split('.')[-1]
 
@@ -48,13 +46,11 @@ def _get_node(
         }
     )
 
-    synchroniser = _SYNCHRONISERS.get(node_sync)
     concrete_node = node_class(
         **operational_config,
         **{
             'node_name': node['name'],
             'pipe_name': pipe_name,
-            'synchroniser': synchroniser,
             'transport': transport,
         },
     )
