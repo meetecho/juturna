@@ -377,6 +377,31 @@ received from the local pipe.</p>
 <a class="reference internal image-reference" href="../_images/remote_structure.svg"><img alt="remote juturna" class="align-center" src="../_images/remote_structure.svg" style="width: 80%;" />
 </a>
 </section>
+<section id="state-and-replicas">
+<h2>State and replicas<a class="headerlink" href="#state-and-replicas" title="Link to this heading">¶</a></h2>
+<p>The concrete node keeps its state between messages, like a local one. Each warp
+node gets its own state on the remote side, even when one remote service serves
+several pipelines, and the <code class="docutils literal notranslate"><span class="pre">sticky</span></code> flag of the warped node tells where that
+state lives:</p>
+<ul class="simple">
+<li><p><strong>sticky</strong> (the default): the remote service keeps the state of each warp
+node, and sends a copy back with every response. The warp node must always
+reach the same service.</p></li>
+<li><p><strong>not sticky</strong>: the remote service keeps nothing. The warp node sends its
+state with every request, the remote node updates it, and the response brings
+it back. Any replica behind a load balancer can serve any request, and a
+replica going down loses no state. The state travels on every request, so
+keep it small. Its values keep their exact types: <code class="docutils literal notranslate"><span class="pre">None</span></code>, booleans, ints,
+floats, strings, bytes, lists, tuples, dictionaries, numpy arrays and
+scalars, and messages. A state holding anything else (a set, an open file, a
+model) fails the request: keep such objects in the node instead.</p></li>
+</ul>
+<p>In both cases the remote service answers when <code class="docutils literal notranslate"><span class="pre">update()</span></code> returns. A message
+that the node keeps in its state without transmitting anything gets an empty
+response at once, and the warp node transmits nothing downstream. When
+<code class="docutils literal notranslate"><span class="pre">update()</span></code> transmits more than once, only the first message reaches the warp
+node.</p>
+</section>
 <section id="developer-notes">
 <h2>Developer notes<a class="headerlink" href="#developer-notes" title="Link to this heading">¶</a></h2>
 <p>Juturna installation includes pre-compiled protobuf classes, ready to use out of
@@ -459,6 +484,7 @@ contributing to the Warp node implementation.</p>
             <ul>
 <li><a class="reference internal" href="#">Remote components</a><ul>
 <li><a class="reference internal" href="#warping-fundamentals">Warping fundamentals</a></li>
+<li><a class="reference internal" href="#state-and-replicas">State and replicas</a></li>
 <li><a class="reference internal" href="#developer-notes">Developer notes</a></li>
 </ul>
 </li>

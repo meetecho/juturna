@@ -599,6 +599,17 @@ without calling <code class="docutils literal notranslate"><span class="pre">upd
 <span class="sig-name descname"><span class="pre">link_telemetry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">manager</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="juturna.telemetry.html#juturna.telemetry.TelemetryManager" title="juturna.telemetry._base.TelemetryManager"><span class="pre">TelemetryManager</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.link_telemetry" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.Node.link_update_observer">
+<span class="sig-name descname"><span class="pre">link_update_observer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Exception</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">None</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.link_update_observer" title="Link to this definition">¶</a></dt>
+<dd><p>Get notified every time <code class="docutils literal notranslate"><span class="pre">update()</span></code> returns.</p>
+<p>The observer is called on the update thread, after <code class="docutils literal notranslate"><span class="pre">update()</span></code> has
+processed a message, with that message and the exception it raised,
+or <code class="docutils literal notranslate"><span class="pre">None</span></code>. Messages skipped by the state resolver are not reported.
+The remote service uses it to answer a request when its update is
+over, whether it transmitted something or not. <code class="docutils literal notranslate"><span class="pre">None</span></code> removes it.</p>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="juturna.components.Node.origins">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">origins</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span></em><a class="headerlink" href="#juturna.components.Node.origins" title="Link to this definition">¶</a></dt>
@@ -1055,6 +1066,7 @@ pipeline created in its place.</p>
 <li><a class="reference internal" href="#juturna.components.Node.link_state"><code class="docutils literal notranslate"><span class="pre">Node.link_state()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.link_state_resolver"><code class="docutils literal notranslate"><span class="pre">Node.link_state_resolver()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.link_telemetry"><code class="docutils literal notranslate"><span class="pre">Node.link_telemetry()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.Node.link_update_observer"><code class="docutils literal notranslate"><span class="pre">Node.link_update_observer()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.origins"><code class="docutils literal notranslate"><span class="pre">Node.origins</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.prepare_template"><code class="docutils literal notranslate"><span class="pre">Node.prepare_template()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.put"><code class="docutils literal notranslate"><span class="pre">Node.put()</span></code></a></li>

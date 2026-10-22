@@ -420,6 +420,14 @@ hosted</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code>, how long is the warp node supposed to wait for an answer from the
 remote service</p></li>
 </ul>
+<p>Next to <code class="docutils literal notranslate"><span class="pre">warped</span></code>, the optional <code class="docutils literal notranslate"><span class="pre">sticky</span></code> flag tells where the node state
+lives. With <code class="docutils literal notranslate"><span class="pre">&quot;sticky&quot;:</span> <span class="pre">true</span></code>, the default, the warp node always reaches the
+same remote service, which keeps the state between requests. With
+<code class="docutils literal notranslate"><span class="pre">&quot;sticky&quot;:</span> <span class="pre">false</span></code>, the remote service keeps nothing: the state travels with
+every request and comes back with the response, so <code class="docutils literal notranslate"><span class="pre">grpc_host</span></code> can point to a
+load balancer in front of several replicas of the service. In that case the
+node state can only hold plain values, numpy arrays and messages, and a request
+whose state cannot travel fails. See <a class="reference internal" href="../explain/remote.html#explain-remote"><span class="std std-ref">Remote components</span></a> for the details.</p>
 </section>
 <section id="start-the-remote-service">
 <h2>Start the remote service<a class="headerlink" href="#start-the-remote-service" title="Link to this heading">¶</a></h2>

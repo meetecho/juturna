@@ -95,6 +95,15 @@ In the ``warp_configuration`` object, we added:
 - ``timeout``, how long is the warp node supposed to wait for an answer from the
   remote service
 
+Next to ``warped``, the optional ``sticky`` flag tells where the node state
+lives. With ``"sticky": true``, the default, the warp node always reaches the
+same remote service, which keeps the state between requests. With
+``"sticky": false``, the remote service keeps nothing: the state travels with
+every request and comes back with the response, so ``grpc_host`` can point to a
+load balancer in front of several replicas of the service. In that case the
+node state can only hold plain values, numpy arrays and messages, and a request
+whose state cannot travel fails. See :ref:`explain_remote` for the details.
+
 Start the remote service
 ------------------------
 
