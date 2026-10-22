@@ -21,6 +21,7 @@ from decimal import Decimal
 
 
 from juturna.components import Message
+from juturna.components._message import _FrozenDict
 from juturna.payloads import (
     AudioPayload,
     ImagePayload,
@@ -41,7 +42,6 @@ from juturna.remotizer.c_protos.payloads_pb2 import (
     BatchProto,
     TypedValue,
 )
-from google.protobuf.struct_pb2 import Struct
 from google.protobuf.json_format import MessageToDict
 
 logger = logging.getLogger('jt.remotizer.utils')
@@ -63,6 +63,7 @@ def _audio_to_proto(audio: AudioPayload) -> AudioProtoPayload:
     # Copy metadata
     proto.sampling_rate = audio.sampling_rate
     proto.channels = audio.channels
+    proto.audio_format = audio.audio_format
     proto.start = audio.start
     proto.end = audio.end
 
@@ -116,11 +117,7 @@ def _bytes_to_proto(bytes_payload: BytesPayload) -> BytesProtoPayload:
 def _object_to_proto(obj: ObjectPayload) -> ObjectProtoPayload:
     """Convert Python ObjectPayload (dict) to Protobuf ObjectProtoPayload"""
     proto = ObjectProtoPayload()
-
-    # Convert dict to Struct
-    struct = Struct()
-    struct.update(dict(obj))
-    proto.data.CopyFrom(struct)
+    proto.data.CopyFrom(to_typed_value(dict(obj)))
 
     return proto
 
@@ -174,7 +171,7 @@ def message_to_proto(message: Message) -> ProtoMessage:
     proto.version = message.version
     proto.id = message.id
 
-    proto.meta.update(sanitize_struct_for_proto(message.meta))
+    proto.meta.CopyFrom(to_typed_value(dict(message.meta)))
     proto.timers.update(dict(message.timers))
 
     if message.payload is not None:
@@ -220,7 +217,9 @@ def deserialize_message(message: ProtoMessage) -> Message:
         payload=None,  # to be filled below
     )
     message_obj.created_at = message.created_at
-    message_obj.meta.update(dict(message.meta))
+    if message.HasField('meta'):
+        message_obj.meta.update(from_typed_value(message.meta))
+
     message_obj.timers.update(dict(message.timers))
     message_obj.id = message.id
 
@@ -266,6 +265,7 @@ def _deserialize_audio_payload(payload: AudioProtoPayload) -> AudioPayload:
         audio=audio_data,
         sampling_rate=payload.sampling_rate,
         channels=payload.channels,
+        audio_format=payload.audio_format,
         start=payload.start,
         end=payload.end,
     )
@@ -297,7 +297,7 @@ def _deserialize_video_payload(payload: VideoProtoPayload) -> VideoPayload:
     frames = [_deserialize_image_payload(frame) for frame in payload.frames]
 
     return VideoPayload(
-        video=frames,
+        video=tuple(frames),
         frames_per_second=payload.frames_per_second,
         codec=payload.codec,
         start=payload.start,
@@ -313,33 +313,40 @@ def _deserialize_bytes_payload(payload: BytesProtoPayload) -> BytesPayload:
 
 
 def _deserialize_object_payload(payload: ObjectProtoPayload) -> ObjectPayload:
-    """Deserialize ObjectProtoPayload (Struct) to ObjectPayload (dict)"""
-    proto_dict = MessageToDict(payload)
-    return ObjectPayload.from_dict(proto_dict.get('data', {}))
+    """Deserialize ObjectProtoPayload to ObjectPayload (dict)"""
+    if not payload.HasField('data'):
+        return ObjectPayload()
+
+    return ObjectPayload.from_dict(from_typed_value(payload.data))
 
 
 def _deserialize_batch_payload(payload: BatchProto) -> Batch:
     """Deserialize BatchProto to Batch"""
-    return Batch(messages=tuple(payload.messages))
+    return Batch(
+        messages=tuple(deserialize_message(m) for m in payload.messages)
+    )
 
 
 # ============================================================================
-# TYPED VALUES (node state of stateless clients)
+# TYPED VALUES
 # ============================================================================
 
 
 def to_typed_value(value: Any) -> TypedValue:
     """
-    Convert a value of a node state to a TypedValue, keeping its type.
+    Convert a value to a TypedValue, keeping its type.
 
-    Supported: None, bool, int, float, str, bytes, list, tuple, dict (with
-    keys of any supported type), numpy arrays and scalars, and messages.
+    Used for message meta, object payloads and the state of stateless
+    clients. Supported: None, bool, int, float, str, bytes, list, tuple,
+    frozenset, dict (with keys of any supported type), numpy arrays and
+    scalars, and messages. The read-only dicts of a frozen meta come back as
+    plain dicts.
 
     Raises
     ------
     TypeError
-        If the value, or anything inside it, has another type. The state of a
-        stateless client exists only on the wire, so nothing is dropped.
+        If the value, or anything inside it, has another type: nothing is
+        dropped silently.
 
     """
     proto = TypedValue()
@@ -364,7 +371,10 @@ def to_typed_value(value: Any) -> TypedValue:
         case tuple() if type(value) is tuple:
             proto.tuple_value.SetInParent()
             proto.tuple_value.items.extend(map(to_typed_value, value))
-        case dict() if type(value) is dict:
+        case frozenset() if type(value) is frozenset:
+            proto.frozenset_value.SetInParent()
+            proto.frozenset_value.items.extend(map(to_typed_value, value))
+        case dict() if type(value) in (dict, _FrozenDict):
             proto.dict_value.SetInParent()
 
             for key, item in value.items():
@@ -382,8 +392,8 @@ def to_typed_value(value: Any) -> TypedValue:
             proto.message_value.CopyFrom(message_to_proto(value))
         case _:
             raise TypeError(
-                f'a {type(value).__name__} cannot be part of the state of a '
-                'stateless client'
+                f'a {type(value).__name__} cannot be sent to or from a remote '
+                'node'
             )
 
     return proto
@@ -400,6 +410,10 @@ def from_typed_value(proto: TypedValue) -> Any:
             return tuple(
                 from_typed_value(item) for item in proto.tuple_value.items
             )
+        case 'frozenset_value':
+            return frozenset(
+                from_typed_value(item) for item in proto.frozenset_value.items
+            )
         case 'dict_value':
             return {
                 from_typed_value(entry.key): from_typed_value(entry.value)
@@ -415,7 +429,7 @@ def from_typed_value(proto: TypedValue) -> Any:
             return array[()] if typed.scalar else array.copy()
         case 'message_value':
             message = deserialize_message(proto.message_value)
-            # messages reach a state frozen, by transmit() or put()
+            # messages inside a value were frozen, by transmit() or put()
             message._freeze()
 
             return message
