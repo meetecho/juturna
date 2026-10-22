@@ -56,6 +56,21 @@ class Accumulator(Node):
         if message.payload['n'] == 0:
             state['unsupported'] = {1, 2}
 
+        if message.payload['n'] == 7:
+            for twin in ('first', 'second'):
+                self.transmit(
+                    Message(creator=self.name, payload=ObjectPayload(t=twin))
+                )
+
+            return
+
+        if message.payload['n'] == 8:
+            # transmitted once update() returned, e.g. by a thread of the node
+            late = Message(creator=self.name, payload=ObjectPayload(t='late'))
+            threading.Timer(0.05, self.transmit, args=(late,)).start()
+
+            return
+
         pending = state.setdefault('pending', list())
         pending.append(message.payload['n'])
 
@@ -242,14 +257,18 @@ def test_ignored_configuration_is_reported_once_per_client(service):
     assert len(ignored) == 2
 
 
-@pytest.fixture
-def replicas():
+@pytest.fixture(params=[False], ids=['lenient'])
+def replicas(request):
     services = list()
 
     for name in ('a', 'b'):
         node = Accumulator(node_name=f'acc_{name}', pipe_name='remote')
         node.start()
-        services.append(remote.MessagingServiceImpl(node, remote_name='r'))
+        services.append(
+            remote.MessagingServiceImpl(
+                node, remote_name='r', strict=request.param
+            )
+        )
 
     yield services
 
@@ -335,18 +354,82 @@ def test_sticky_client_recovers_its_state_after_a_restart(replicas):
     assert response['state'] == {'pending': []}
 
 
-def test_sticky_state_that_cannot_be_sent_stays_on_the_service(replicas):
+@pytest.mark.parametrize('stateless', [False, True], ids=['sticky', 'stateless'])
+def test_values_that_cannot_be_sent_are_left_out_once_reported(
+    replicas, stateless
+):
     records = _Records()
     remote.logger.addHandler(records)
 
     try:
-        responses = [_call(replicas[0], 'p', 'w', {}, n=0) for _ in range(2)]
+        state = {}
+
+        for _ in range(2):
+            state = _call(
+                replicas[0], 'p', 'w', state, n=0, stateless=stateless
+            )['state']
     finally:
         remote.logger.removeHandler(records)
 
-    assert [r['state'] for r in responses] == [None, None]
-    assert replicas[0]._state_store[('p', 'w')]['pending'] == [0, 0]
-    assert len([m for m in records.messages if 'cannot be sent' in m]) == 1
+    assert state == {'pending': [0, 0]}, state
+    assert 'unsupported' not in state
+    warnings = [m for m in records.messages if 'cannot be sent' in m]
+    assert len(warnings) == 1, warnings
+    assert "state['unsupported'] (set)" in warnings[0]
+
+
+def test_only_the_first_message_of_an_update_is_sent(replicas):
+    responses = [_call(replicas[0], 'p', 'w', {}, n=7) for _ in range(2)]
+
+    assert [r['message'].payload['t'] for r in responses] == ['first'] * 2
+
+
+def test_a_message_transmitted_late_is_dropped(replicas):
+    response = _call(replicas[0], 'p', 'w', {}, n=8)
+    time.sleep(0.2)
+
+    assert response['message'] is None
+    assert _call(replicas[0], 'p', 'w', None, n=1)['state'] == {
+        'pending': [1]
+    }
+
+
+@pytest.mark.parametrize('replicas', [True], ids=['strict'], indirect=True)
+@pytest.mark.parametrize('stateless', [False, True], ids=['sticky', 'stateless'])
+def test_strict_service_fails_every_request_with_values_it_cannot_send(
+    replicas, stateless
+):
+    for _ in range(2):
+        code, details = _call(
+            replicas[0], 'p', 'w', {}, n=0, stateless=stateless
+        )
+
+        assert code.name == 'DATA_LOSS'
+        assert "state['unsupported']: a set cannot be sent" in details
+
+    assert replicas[0].get_stats()['data_loss_requests'] == 2
+
+
+@pytest.mark.parametrize('replicas', [True], ids=['strict'], indirect=True)
+def test_strict_service_fails_an_update_with_two_messages(replicas):
+    code, details = _call(replicas[0], 'p', 'w', {}, n=7)
+
+    assert code.name == 'DATA_LOSS'
+    assert 'a second message' in details
+
+
+@pytest.mark.parametrize('replicas', [True], ids=['strict'], indirect=True)
+def test_strict_service_fails_the_request_after_a_late_message(replicas):
+    assert _call(replicas[0], 'p', 'w', {}, n=8)['message'] is None
+    time.sleep(0.2)
+
+    code, details = _call(replicas[0], 'p', 'w', None, n=1)
+    after = _call(replicas[0], 'p', 'w', None, n=2)
+
+    assert code.name == 'DATA_LOSS'
+    assert 'after its update returned' in details
+    assert 'not processed' in details
+    assert after['state'] == {'pending': [2]}, 'the failed message was processed'
 
 
 def test_stateless_request_without_state_is_invalid(replicas):
@@ -362,13 +445,6 @@ def test_failing_update_is_answered_at_once(replicas):
     assert time.monotonic() - start < 1, 'request waited for its timeout'
     assert code.name == 'INTERNAL'
     assert 'negative value' in details
-
-
-def test_stateless_state_with_unsupported_values_fails(replicas):
-    code, details = _call(replicas[0], 'p', 'w', {}, n=0, stateless=True)
-
-    assert code.name == 'INTERNAL'
-    assert 'a set cannot be sent' in details
 
 
 def test_stateless_state_keeps_its_types_between_replicas(replicas):

@@ -187,3 +187,30 @@ def test_messages_inside_a_value_come_back_frozen():
 
     assert back._is_frozen
     assert back.payload.cnt == b'a'
+
+
+def test_values_that_cannot_be_sent_can_be_left_out():
+    dropped = list()
+    value = {'keep': [1, {2}, 3], 'ids': {1}, frozenset({1}): 'key', 'n': 1}
+
+    back = from_typed_value(to_typed_value(value, dropped, 'state'))
+
+    assert back == {'keep': [1, 3], frozenset({1}): 'key', 'n': 1}
+    assert dropped == ["state['keep'][1] (set)", "state['ids'] (set)"]
+
+
+def test_messages_can_leave_out_what_cannot_be_sent():
+    inner = Message(creator='mic', payload=ObjectPayload(ok=1, ids={1}))
+    inner.meta['seq'] = 1
+    message = Message(creator='agg', payload=Batch(messages=(inner,)))
+    message.meta.update(origin='x', ids={2})
+    dropped = list()
+
+    back = deserialize_message(message_to_proto(message, dropped))
+
+    assert dict(back.meta) == {'origin': 'x'}
+    assert dict(back.payload.messages[0].payload) == {'ok': 1}
+    assert dropped == [
+        "message.meta['ids'] (set)",
+        "message.payload[0].payload['ids'] (set)",
+    ]
