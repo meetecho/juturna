@@ -51,6 +51,13 @@ def setup_parser(subparsers):  # noqa: D103
     )
 
     parser.add_argument(
+        '--strict',
+        action='store_true',
+        help='fail requests with DATA_LOSS instead of leaving out, with a '
+        'warning, what cannot be sent to the client',
+    )
+
+    parser.add_argument(
         '--log-level',
         '-l',
         type=str,

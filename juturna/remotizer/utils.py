@@ -109,19 +109,23 @@ def _bytes_to_proto(bytes_payload: BytesPayload) -> BytesProtoPayload:
     return proto
 
 
-def _object_to_proto(obj: ObjectPayload) -> ObjectProtoPayload:
+def _object_to_proto(
+    obj: ObjectPayload, dropped: list[str] | None = None, path: str = 'payload'
+) -> ObjectProtoPayload:
     """Convert Python ObjectPayload (dict) to Protobuf ObjectProtoPayload"""
     proto = ObjectProtoPayload()
-    proto.data.CopyFrom(to_typed_value(dict(obj)))
+    proto.data.CopyFrom(to_typed_value(dict(obj), dropped, path))
 
     return proto
 
 
-def _batch_to_proto(batch: Batch) -> BatchProto:
+def _batch_to_proto(
+    batch: Batch, dropped: list[str] | None = None, path: str = 'payload'
+) -> BatchProto:
     """Convert Python Batch to Protobuf BatchProto"""
     proto = BatchProto()
-    for message in batch.messages:
-        message_proto = message_to_proto(message)
+    for index, message in enumerate(batch.messages):
+        message_proto = message_to_proto(message, dropped, f'{path}[{index}]')
         proto.messages.append(message_proto)
     return proto
 
@@ -136,7 +140,9 @@ PROTOBUF_PAYLOAD_TYPE_MAP = {
 }
 
 
-def message_to_proto(message: Message) -> ProtoMessage:
+def message_to_proto(
+    message: Message, dropped: list[str] | None = None, path: str = 'message'
+) -> ProtoMessage:
     """
     Convert Python Message to Protobuf ProtoMessage
 
@@ -152,6 +158,12 @@ def message_to_proto(message: Message) -> ProtoMessage:
     ----------
     message : Message
         Python Message object with any payload type
+    dropped : list[str] | None
+        None to refuse meta and object payload values that cannot be sent,
+        or a list collecting the paths of the ones left out (see
+        to_typed_value).
+    path : str
+        Name of the message, used in those paths.
 
     Returns
     -------
@@ -166,14 +178,24 @@ def message_to_proto(message: Message) -> ProtoMessage:
     proto.version = message.version
     proto.id = message.id
 
-    proto.meta.CopyFrom(to_typed_value(dict(message.meta)))
+    proto.meta.CopyFrom(
+        to_typed_value(dict(message.meta), dropped, f'{path}.meta')
+    )
     proto.timers.update(dict(message.timers))
 
     if message.payload is not None:
         protocol_converter = PROTOBUF_PAYLOAD_TYPE_MAP.get(
             type(message.payload)
         )
-        payload_proto = protocol_converter(message.payload)
+
+        # only these payloads hold values that may not be sent
+        if protocol_converter in (_object_to_proto, _batch_to_proto):
+            payload_proto = protocol_converter(
+                message.payload, dropped, f'{path}.payload'
+            )
+        else:
+            payload_proto = protocol_converter(message.payload)
+
         proto.payload.Pack(payload_proto)
     return proto
 
@@ -327,24 +349,50 @@ def _deserialize_batch_payload(payload: BatchProto) -> Batch:
 # ============================================================================
 
 
-def to_typed_value(value: Any) -> TypedValue:
+def to_typed_value(
+    value: Any, dropped: list[str] | None = None, path: str = 'value'
+) -> TypedValue | None:
     """
     Convert a value to a TypedValue, keeping its type.
 
-    Used for message meta, object payloads and the state of stateless
-    clients. Supported: None, bool, int, float, str, bytes, list, tuple,
-    frozenset, dict (with keys of any supported type), numpy arrays and
-    scalars, and messages. The read-only dicts of a frozen meta come back as
-    plain dicts.
+    Used for message meta, object payloads and node states. Supported: None,
+    bool, int, float, str, bytes, list, tuple, frozenset, dict (with keys of
+    any supported type), numpy arrays and scalars, and messages. The
+    read-only dicts of a frozen meta come back as plain dicts.
+
+    Parameters
+    ----------
+    value : Any
+        The value to convert.
+    dropped : list[str] | None
+        None to refuse values of other types. A list to leave them out
+        instead: a dict loses the entry, a sequence the item, and the path of
+        each value left out is appended to the list.
+    path : str
+        Name of the value, used in the paths of the values left out.
+
+    Returns
+    -------
+    TypedValue | None
+        The converted value, or None when the value itself was left out.
 
     Raises
     ------
     TypeError
-        If the value, or anything inside it, has another type: nothing is
-        dropped silently.
+        If dropped is None and the value, or anything inside it, has another
+        type.
 
     """
     proto = TypedValue()
+
+    def items(values, sequence):
+        sequence.SetInParent()
+
+        for index, item in enumerate(values):
+            typed = to_typed_value(item, dropped, f'{path}[{index}]')
+
+            if typed is not None:
+                sequence.items.append(typed)
 
     # exact type checks: bool is an int, and subclasses would not come back
     match value:
@@ -361,21 +409,25 @@ def to_typed_value(value: Any) -> TypedValue:
         case bytes() if type(value) is bytes:
             proto.bytes_value = value
         case list() if type(value) is list:
-            proto.list_value.SetInParent()
-            proto.list_value.items.extend(map(to_typed_value, value))
+            items(value, proto.list_value)
         case tuple() if type(value) is tuple:
-            proto.tuple_value.SetInParent()
-            proto.tuple_value.items.extend(map(to_typed_value, value))
+            items(value, proto.tuple_value)
         case frozenset() if type(value) is frozenset:
-            proto.frozenset_value.SetInParent()
-            proto.frozenset_value.items.extend(map(to_typed_value, value))
+            items(value, proto.frozenset_value)
         case dict() if type(value) in (dict, _FrozenDict):
             proto.dict_value.SetInParent()
 
             for key, item in value.items():
+                item_path = f'{path}[{key!r}]'
+                typed_key = to_typed_value(key, dropped, item_path)
+                typed_item = to_typed_value(item, dropped, item_path)
+
+                if typed_key is None or typed_item is None:
+                    continue
+
                 entry = proto.dict_value.entries.add()
-                entry.key.CopyFrom(to_typed_value(key))
-                entry.value.CopyFrom(to_typed_value(item))
+                entry.key.CopyFrom(typed_key)
+                entry.value.CopyFrom(typed_item)
         case np.ndarray() | np.generic():
             array = np.asarray(value)
 
@@ -384,11 +436,15 @@ def to_typed_value(value: Any) -> TypedValue:
             proto.array_value.data = array.tobytes()
             proto.array_value.scalar = isinstance(value, np.generic)
         case Message():
-            proto.message_value.CopyFrom(message_to_proto(value))
+            proto.message_value.CopyFrom(message_to_proto(value, dropped, path))
+        case _ if dropped is not None:
+            dropped.append(f'{path} ({type(value).__name__})')
+
+            return None
         case _:
             raise TypeError(
-                f'a {type(value).__name__} cannot be sent to or from a remote '
-                'node'
+                f'{path}: a {type(value).__name__} cannot be sent to or from '
+                'a remote node'
             )
 
     return proto
@@ -451,12 +507,13 @@ def create_envelope(
     response_type: str = '',
     request_type: str = '',
     stateless: bool = False,
+    dropped: list[str] | None = None,
 ) -> ProtoEnvelope:
     """
     Create envelope around message.
 
     message is None for a response without output, and state is None when no
-    state is sent.
+    state is sent. dropped works as in to_typed_value, for the state.
     """
     envelope = ProtoEnvelope()
     envelope.id = id or str(uuid.uuid4())
@@ -464,7 +521,7 @@ def create_envelope(
     envelope.pipe_id = pipe_id
 
     if state is not None:
-        envelope.state.CopyFrom(to_typed_value(dict(state)))
+        envelope.state.CopyFrom(to_typed_value(dict(state), dropped, 'state'))
 
     envelope.created_at = time.time()
     envelope.ttl = int(timeout)

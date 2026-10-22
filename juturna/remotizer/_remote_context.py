@@ -28,6 +28,8 @@ class RequestContext:
         # set for a stateless client only, otherwise the state is in the store
         self.state = state
         self.output: Message | None = None
+        # what the update produced that cannot reach the client, strict mode
+        self.data_loss: str | None = None
         self.created_at = time.time()
 
     def is_valid_response(self, message: Message | None) -> bool:
