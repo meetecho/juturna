@@ -609,6 +609,9 @@ class Node[T_Input, T_Output]:
         try:
             state = self._resolve_state(message)
 
+            if state is Node.SKIP_UPDATE:
+                return
+
             self.update(message, state=state)
         except Exception:
             self._update_failures += 1

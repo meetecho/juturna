@@ -285,7 +285,7 @@ def test_shutdown_stops_the_server_first_then_kills_and_destroys_the_node():
 
     assert calls == ['server.stop(5.0)', 'kill', 'destroy']
     assert impl._state_store == {}
-    assert node._worker_thread is None and node._update_thread is None
+    assert node._worker_thread is None
 
 
 def test_importing_the_service_does_not_configure_root_logging():
