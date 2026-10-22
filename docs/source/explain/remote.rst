@@ -57,6 +57,32 @@ received from the local pipe.
    :width: 80%
    :align: center
 
+State and replicas
+------------------
+
+The concrete node keeps its state between messages, like a local one. Each warp
+node gets its own state on the remote side, even when one remote service serves
+several pipelines, and the ``sticky`` flag of the warped node tells where that
+state lives:
+
+- **sticky** (the default): the remote service keeps the state of each warp
+  node, and sends a copy back with every response. The warp node must always
+  reach the same service.
+- **not sticky**: the remote service keeps nothing. The warp node sends its
+  state with every request, the remote node updates it, and the response brings
+  it back. Any replica behind a load balancer can serve any request, and a
+  replica going down loses no state. The state travels on every request, so
+  keep it small. Its values keep their exact types: ``None``, booleans, ints,
+  floats, strings, bytes, lists, tuples, dictionaries, numpy arrays and
+  scalars, and messages. A state holding anything else (a set, an open file, a
+  model) fails the request: keep such objects in the node instead.
+
+In both cases the remote service answers when ``update()`` returns. A message
+that the node keeps in its state without transmitting anything gets an empty
+response at once, and the warp node transmits nothing downstream. When
+``update()`` transmits more than once, only the first message reaches the warp
+node.
+
 Developer notes
 ---------------
 

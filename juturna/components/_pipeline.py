@@ -384,6 +384,7 @@ class Pipeline:
                 node['type'] = 'Warp'
                 node['configuration'] = node['warp_configuration']
                 node['configuration']['remote_config'] = warped_node_cfg
+                node['configuration']['sticky'] = node.get('sticky', True)
 
                 self._logger.info(f'{node_name} warped')
                 self._logger.info(node)

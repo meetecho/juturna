@@ -128,6 +128,45 @@ message ProtoMessage {
 
 }
 
+// A Python value of a node state, kept with its exact type: unlike Struct,
+// ints stay ints, tuples stay tuples, bytes and arrays travel as they are
+message TypedValue {
+  oneof kind {
+    bool none = 1;
+    bool bool_value = 2;
+    sint64 int_value = 3;
+    double float_value = 4;
+    string str_value = 5;
+    bytes bytes_value = 6;
+    TypedSequence list_value = 7;
+    TypedSequence tuple_value = 8;
+    TypedMapping dict_value = 9;
+    TypedArray array_value = 10;
+    ProtoMessage message_value = 11;
+  }
+}
+
+message TypedSequence {
+  repeated TypedValue items = 1;
+}
+
+message TypedMapping {
+  message Entry {
+    TypedValue key = 1;
+    TypedValue value = 2;
+  }
+
+  repeated Entry entries = 1;
+}
+
+// A numpy array, or a numpy scalar when scalar is set
+message TypedArray {
+  string dtype = 1;
+  repeated int64 shape = 2;
+  bytes data = 3;
+  bool scalar = 4;
+}
+
 // ProtoEnvelope is the top-level message sent over the wire
 // It wraps a ProtoMessage and adds routing, correlation, and lifecycle information
 message ProtoEnvelope {
@@ -179,6 +218,13 @@ message ProtoEnvelope {
   // response payload (not proto) type hint for faster serialization
   // e.g., "ImagePayload"
   string response_type = 14;
+
+  // The remote service keeps no state for this client: the state travels with
+  // every request and response (sticky false in the pipeline configuration)
+  bool stateless = 15;
+
+  // Node state of a stateless client, sent instead of state
+  TypedValue typed_state = 16;
 
 }
 

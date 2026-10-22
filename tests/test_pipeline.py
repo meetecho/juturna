@@ -494,6 +494,42 @@ def test_failed_warmup_leaves_the_warped_node_config_unchanged(test_config):
 
 
 @pytest.mark.parametrize(
+    'node_keys, sticky',
+    [({}, True), ({'sticky': True}, True), ({'sticky': False}, False)],
+    ids=['default', 'sticky', 'not_sticky'],
+)
+def test_warped_node_passes_sticky_to_the_warp(
+    test_config, monkeypatch, node_keys, sticky
+):
+    config = _sequencer_crasher_config(
+        f'warped_sticky_{sticky}', test_config['test_pipeline_folder']
+    )
+    config['pipeline']['nodes'][1].update(
+        {'warped': True, 'warp_configuration': {}, **node_keys}
+    )
+    built = dict()
+    original = jt.components._node_builder._builder._get_node
+
+    def get_node(node, **kwargs):
+        if node['name'] != 'sink_1':
+            return original(node, **kwargs)
+
+        built[node['name']] = node
+
+        raise RuntimeError('stop after the warp configuration')
+
+    monkeypatch.setattr(
+        jt.components._node_builder._builder, '_get_node', get_node
+    )
+    pipeline = jt.components.Pipeline(config)
+
+    with pytest.raises(RuntimeError):
+        pipeline.warmup()
+
+    assert built['sink_1']['configuration']['sticky'] is sticky
+
+
+@pytest.mark.parametrize(
     'link, message',
     [
         ({'from': 'source_1', 'to': 'sink_1'}, 'duplicate link source_1 -> sink_1'),

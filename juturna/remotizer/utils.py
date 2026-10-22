@@ -39,6 +39,7 @@ from juturna.remotizer.c_protos.payloads_pb2 import (
     BytesProtoPayload,
     ObjectProtoPayload,
     BatchProto,
+    TypedValue,
 )
 from google.protobuf.struct_pb2 import Struct
 from google.protobuf.json_format import MessageToDict
@@ -322,11 +323,113 @@ def _deserialize_batch_payload(payload: BatchProto) -> Batch:
     return Batch(messages=tuple(payload.messages))
 
 
+# ============================================================================
+# TYPED VALUES (node state of stateless clients)
+# ============================================================================
+
+
+def to_typed_value(value: Any) -> TypedValue:
+    """
+    Convert a value of a node state to a TypedValue, keeping its type.
+
+    Supported: None, bool, int, float, str, bytes, list, tuple, dict (with
+    keys of any supported type), numpy arrays and scalars, and messages.
+
+    Raises
+    ------
+    TypeError
+        If the value, or anything inside it, has another type. The state of a
+        stateless client exists only on the wire, so nothing is dropped.
+
+    """
+    proto = TypedValue()
+
+    # exact type checks: bool is an int, and subclasses would not come back
+    match value:
+        case None:
+            proto.none = True
+        case bool():
+            proto.bool_value = value
+        case int() if type(value) is int:
+            proto.int_value = value
+        case float() if type(value) is float:
+            proto.float_value = value
+        case str() if type(value) is str:
+            proto.str_value = value
+        case bytes() if type(value) is bytes:
+            proto.bytes_value = value
+        case list() if type(value) is list:
+            proto.list_value.SetInParent()
+            proto.list_value.items.extend(map(to_typed_value, value))
+        case tuple() if type(value) is tuple:
+            proto.tuple_value.SetInParent()
+            proto.tuple_value.items.extend(map(to_typed_value, value))
+        case dict() if type(value) is dict:
+            proto.dict_value.SetInParent()
+
+            for key, item in value.items():
+                entry = proto.dict_value.entries.add()
+                entry.key.CopyFrom(to_typed_value(key))
+                entry.value.CopyFrom(to_typed_value(item))
+        case np.ndarray() | np.generic():
+            array = np.asarray(value)
+
+            proto.array_value.dtype = array.dtype.str
+            proto.array_value.shape.extend(array.shape)
+            proto.array_value.data = array.tobytes()
+            proto.array_value.scalar = isinstance(value, np.generic)
+        case Message():
+            proto.message_value.CopyFrom(message_to_proto(value))
+        case _:
+            raise TypeError(
+                f'a {type(value).__name__} cannot be part of the state of a '
+                'stateless client'
+            )
+
+    return proto
+
+
+def from_typed_value(proto: TypedValue) -> Any:
+    """Convert a TypedValue back to the value it was made from"""
+    match proto.WhichOneof('kind'):
+        case 'none':
+            return None
+        case 'list_value':
+            return [from_typed_value(item) for item in proto.list_value.items]
+        case 'tuple_value':
+            return tuple(
+                from_typed_value(item) for item in proto.tuple_value.items
+            )
+        case 'dict_value':
+            return {
+                from_typed_value(entry.key): from_typed_value(entry.value)
+                for entry in proto.dict_value.entries
+            }
+        case 'array_value':
+            typed = proto.array_value
+            # copied: the protobuf buffer is read-only, the node may write
+            array = np.frombuffer(typed.data, dtype=typed.dtype).reshape(
+                tuple(typed.shape)
+            )
+
+            return array[()] if typed.scalar else array.copy()
+        case 'message_value':
+            message = deserialize_message(proto.message_value)
+            # messages reach a state frozen, by transmit() or put()
+            message._freeze()
+
+            return message
+        case None:
+            raise ValueError('empty TypedValue')
+        case kind:
+            return getattr(proto, kind)
+
+
 # ! FIXME: probably we should change the request_type and response_type
 # ! signature: they are meaningful only in the context of requests,
 # ! for responses they should be empty, or with a different naming
 def create_envelope(
-    message: ProtoMessage,
+    message: ProtoMessage | None,
     configuration: dict[str, Any],
     metadata: dict[str, Any],
     creator: str,
@@ -338,15 +441,19 @@ def create_envelope(
     response_to: str = None,
     response_type: str = '',
     request_type: str = '',
+    stateless: bool = False,
 ) -> ProtoEnvelope:
-    """Create envelope around message"""
-    assert message is not None
-
+    """Create envelope around message, which is None for an empty response"""
     envelope = ProtoEnvelope()
     envelope.id = id or str(uuid.uuid4())
     envelope.sender = creator
     envelope.pipe_id = pipe_id
-    envelope.state.update(sanitize_struct_for_proto(state))
+
+    if stateless:
+        envelope.typed_state.CopyFrom(to_typed_value(dict(state)))
+    else:
+        envelope.state.update(sanitize_struct_for_proto(state))
+
     envelope.created_at = time.time()
     envelope.ttl = int(timeout)
     envelope.request_type = request_type
@@ -355,24 +462,36 @@ def create_envelope(
     envelope.response_to = response_to if response_to is not None else ''
     envelope.configuration.update(configuration)
     envelope.metadata.update(metadata)
-    envelope.message.CopyFrom(message)
+    envelope.stateless = stateless
+
+    if message is not None:
+        envelope.message.CopyFrom(message)
 
     return envelope
 
 
 def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
     """Deserialize ProtoEnvelope to dictionary"""
-    message = deserialize_message(envelope.message)
+    message = (
+        deserialize_message(envelope.message)
+        if envelope.HasField('message')
+        else None
+    )
     envelope_dict = {
         'id': envelope.id,
         'sender': envelope.sender,
         'pipe_id': envelope.pipe_id,
-        'state': MessageToDict(envelope.state),
+        'state': (
+            from_typed_value(envelope.typed_state)
+            if envelope.stateless and envelope.HasField('typed_state')
+            else MessageToDict(envelope.state)
+        ),
         'configuration': MessageToDict(envelope.configuration),
         'response_to': envelope.response_to,
         'ttl': envelope.ttl,
         'request_type': envelope.request_type,
         'response_type': envelope.response_type,
+        'stateless': envelope.stateless,
         'message': message,
     }
     return envelope_dict

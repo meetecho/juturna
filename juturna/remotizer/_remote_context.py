@@ -1,5 +1,6 @@
-from juturna.components import Message
+from juturna.components import Message, State
 from concurrent import futures
+import contextlib
 from typing import Any
 import time
 
@@ -15,6 +16,7 @@ class RequestContext:
         timeout: float,
         response_type: str = None,
         state_key: tuple[str, str] | None = None,
+        state: State | None = None,
     ):
         self.sender = sender
         self.envelope_id = envelope_id
@@ -23,6 +25,9 @@ class RequestContext:
         self.timeout = timeout
         self.response_type = response_type
         self.state_key = state_key
+        # set for a stateless client only, otherwise the state is in the store
+        self.state = state
+        self.output: Message | None = None
         self.created_at = time.time()
 
     def is_valid_response(self, message: Message | None) -> bool:
@@ -37,7 +42,8 @@ class RequestContext:
 
     def cancel(self, reason: str):
         """Cancel the request with a reason"""
-        if not self.future.done():
+        # the node may settle it at the same time
+        with contextlib.suppress(futures.InvalidStateError):
             self.future.set_exception(TimeoutError(reason))
 
     def done(self) -> bool:

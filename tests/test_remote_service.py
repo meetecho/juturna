@@ -4,10 +4,11 @@ import sys
 import threading
 import time
 
+import numpy as np
 import pytest
 
 from juturna.components import Message, Node, State
-from juturna.payloads import Batch, ObjectPayload
+from juturna.payloads import AudioPayload, ObjectPayload
 
 pytest.importorskip('grpc')
 
@@ -45,6 +46,28 @@ class Counter(Node):
         )
 
 
+class Accumulator(Node):
+    """Keep values in state["pending"], reply with their sum every 3."""
+
+    def update(self, message, state=None):
+        if message.payload['n'] < 0:
+            raise ValueError('negative value')
+
+        if message.payload['n'] == 0:
+            state['unsupported'] = {1, 2}
+
+        pending = state.setdefault('pending', list())
+        pending.append(message.payload['n'])
+
+        if len(pending) < 3:
+            return
+
+        self.transmit(
+            Message(creator=self.name, payload=ObjectPayload(sum=sum(pending)))
+        )
+        pending.clear()
+
+
 class _Context:
     def __init__(self):
         self.aborted = None
@@ -66,10 +89,12 @@ def service():
     node.kill()
 
 
-def _envelope(pipe_id, sender, state, timeout=30, configuration=None):
+def _envelope(
+    pipe_id, sender, state, timeout=30, configuration=None, n=1, stateless=False
+):
     return create_envelope(
         message=message_to_proto(
-            Message(creator=sender, payload=ObjectPayload(n=1))
+            Message(creator=sender, payload=ObjectPayload(n=n))
         ),
         configuration=configuration or {},
         metadata={},
@@ -77,6 +102,7 @@ def _envelope(pipe_id, sender, state, timeout=30, configuration=None):
         pipe_id=pipe_id,
         state=state,
         timeout=timeout,
+        stateless=stateless,
     )
 
 
@@ -216,28 +242,129 @@ def test_ignored_configuration_is_reported_once_per_client(service):
     assert len(ignored) == 2
 
 
-def test_batch_with_messages_of_two_clients_is_rejected(service):
-    service._seed_state(('p', 'a'), {})
-    service._seed_state(('p', 'b'), {})
+@pytest.fixture
+def replicas():
+    services = list()
 
-    with service.requests_lock:
-        service.pending_requests[101] = remote.RequestContext(
-            'a', 'e1', 1, 30, state_key=('p', 'a')
-        )
-        service.pending_requests[102] = remote.RequestContext(
-            'b', 'e2', 2, 30, state_key=('p', 'b')
-        )
+    for name in ('a', 'b'):
+        node = Accumulator(node_name=f'acc_{name}', pipe_name='remote')
+        node.start()
+        services.append(remote.MessagingServiceImpl(node, remote_name='r'))
 
-    inner = [Message(creator='x', payload=ObjectPayload()) for _ in range(2)]
-    inner[0].id, inner[1].id = 101, 102
+    yield services
 
-    with pytest.raises(ValueError, match='mixes messages'):
-        service._resolve_state(Message(payload=Batch(messages=tuple(inner))))
+    for service in services:
+        service.shutdown()
+        service.node.kill()
 
-    inner[1].id = 101
-    state = service._resolve_state(Message(payload=Batch(messages=tuple(inner))))
 
-    assert state is service._state_store[('p', 'a')]
+@pytest.mark.parametrize('stateless', [False, True], ids=['sticky', 'stateless'])
+def test_update_without_output_is_answered_at_once(replicas, stateless):
+    service = replicas[0]
+    state = dict()
+    responses = list()
+    start = time.monotonic()
+
+    for n in (1, 2, 3):
+        response = _call(service, 'p', 'w', state, n=n, stateless=stateless)
+        state = response['state']
+        responses.append(response)
+
+    assert time.monotonic() - start < 1, 'requests waited for their timeout'
+    assert [r['message'] for r in responses[:2]] == [None, None]
+    assert [r['state'] for r in responses] == [
+        {'pending': [1]},
+        {'pending': [1, 2]},
+        {'pending': []},
+    ]
+    assert responses[2]['message'].payload['sum'] == 6
+    assert all(r['stateless'] == stateless for r in responses)
+
+
+def test_stateless_clients_can_switch_replica_at_every_request(replicas):
+    state = dict()
+    sums = list()
+
+    for n in range(1, 7):
+        replica = replicas[n % 2]
+        response = _call(replica, 'p', 'w', state, n=n, stateless=True)
+        state = response['state']
+
+        if response['message'] is not None:
+            sums.append(response['message'].payload['sum'])
+
+    assert sums == [6, 15], f'Expected sums [6, 15], got {sums}'
+    assert all(replica._state_store == {} for replica in replicas)
+
+
+def test_sticky_state_stays_on_the_replica(replicas):
+    _call(replicas[0], 'p', 'w', {}, n=1)
+    response = _call(replicas[1], 'p', 'w', {'pending': [1]}, n=2)
+
+    assert response['state'] == {'pending': [1, 2]}
+    assert replicas[0]._state_store[('p', 'w')] == {'pending': [1]}
+
+
+def test_failing_update_is_answered_at_once(replicas):
+    start = time.monotonic()
+    code, details = _call(replicas[0], 'p', 'w', {}, n=-1)
+
+    assert time.monotonic() - start < 1, 'request waited for its timeout'
+    assert code.name == 'INTERNAL'
+    assert 'negative value' in details
+
+
+def test_stateless_state_with_unsupported_values_fails(replicas):
+    code, details = _call(replicas[0], 'p', 'w', {}, n=0, stateless=True)
+
+    assert code.name == 'INTERNAL'
+    assert 'a set cannot be part of the state' in details
+
+
+def test_stateless_state_keeps_its_types_between_replicas(replicas):
+    audio = Message(
+        creator='mic',
+        version=2,
+        payload=AudioPayload(audio=np.arange(4, dtype=np.float32)),
+    )
+    audio._freeze()
+    state = {
+        'count': 3,
+        'ratio': 1.0,
+        'span': (1, 2),
+        'raw': b'\x00\xff',
+        'context': np.arange(6, dtype=np.int16).reshape(2, 3),
+        'gain': np.float32(0.5),
+        'by_index': {1: [None, True]},
+        'last': audio,
+    }
+
+    for replica in replicas:
+        state = _call(replica, 'p', 'w', state, n=1, stateless=True)['state']
+
+    assert type(state['count']) is int and state['count'] == 3
+    assert type(state['ratio']) is float
+    assert state['span'] == (1, 2) and type(state['span']) is tuple
+    assert state['raw'] == b'\x00\xff'
+    assert state['context'].dtype == np.int16
+    assert state['context'].shape == (2, 3)
+    assert np.array_equal(state['context'], np.arange(6).reshape(2, 3))
+    assert type(state['gain']) is np.float32 and state['gain'] == 0.5
+    assert state['by_index'] == {1: [None, True]}
+    assert state['pending'] == [1, 1]
+    assert np.array_equal(state['last'].payload.audio, audio.payload.audio)
+    assert state['last'].version == 2
+    assert state['last']._is_frozen
+
+
+def test_envelope_without_message_is_invalid(service):
+    envelope = _envelope('pipe', 'warp', {})
+    envelope.ClearField('message')
+
+    context = _Context()
+    service.SendAndReceive(envelope, context)
+
+    assert context.aborted[0].name == 'INVALID_ARGUMENT'
 
 
 def test_idle_states_are_evicted_unless_in_use(service):

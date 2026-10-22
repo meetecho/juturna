@@ -435,3 +435,47 @@ def test_node_runs_a_single_worker_thread():
                        for n in names), names
     finally:
         node.stop()
+
+
+class _Summer(jt.components.Node):
+    def update(self, message, state=None):
+        if message.payload['n'] < 0:
+            raise ValueError('negative value')
+
+        state['sum'] = state.get('sum', 0) + message.payload['n']
+
+
+def test_update_observer_sees_every_update_but_skipped_ones(
+    wait_for_condition,
+):
+    seen = list()
+    node = _Summer(node_name='local', pipe_name='p')
+    node.link_state(jt.components.State())
+    node.link_state_resolver(
+        lambda message: (
+            jt.components.Node.SKIP_UPDATE
+            if message.payload['n'] == 9
+            else node._state
+        )
+    )
+    node.link_update_observer(
+        lambda message, error: seen.append((message.payload['n'], error))
+    )
+    node.start()
+
+    try:
+        for n in (1, 9, -1):
+            node.put(
+                jt.components.Message(
+                    creator='src', payload=jt.payloads.ObjectPayload(n=n)
+                )
+            )
+
+        assert wait_for_condition(lambda: len(seen) == 2)
+        time.sleep(0.1)
+
+        assert [n for n, _ in seen] == [1, -1], f'Unexpected updates {seen}'
+        assert seen[0][1] is None
+        assert isinstance(seen[1][1], ValueError)
+    finally:
+        node.kill()
