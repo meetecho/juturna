@@ -543,17 +543,15 @@ allows pipeline manipulation.</p>
 <p><span class="sd-sphinx-override sd-badge sd-bg-primary sd-bg-text-primary">warp</span></p>
 <p>Launch the remote service to expose a node for delocalised pipelines to use.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp gp-VirtualEnv">(.venv)</span> <span class="gp">user:~/$ </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>remotize<span class="w"> </span>--help
-<span class="go">usage: juturna remotize [-h] --node-name NODE_NAME --node-mark NODE_MARK --plugin-dir PLUGIN_DIR [--pipe-name PIPE_NAME] [--port PORT]</span>
-<span class="go">                        [--default-config FILE] [--max-workers MAX_WORKERS]</span>
+<span class="go">usage: juturna remotize [-h] --node-name NODE_NAME --node-type NODE_TYPE [--pipe-name PIPE_NAME] [--port PORT] [--default-config FILE]</span>
+<span class="go">                        [--max-workers MAX_WORKERS] [--strict] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}]</span>
 
 <span class="go">options:</span>
 <span class="go">  -h, --help            show this help message and exit</span>
 <span class="go">  --node-name NODE_NAME, -n NODE_NAME</span>
 <span class="go">                        name of the node to run</span>
-<span class="go">  --node-mark NODE_MARK, -m NODE_MARK</span>
-<span class="go">                        mark of the node to run</span>
-<span class="go">  --plugin-dir PLUGIN_DIR, -P PLUGIN_DIR</span>
-<span class="go">                        path to plugins directory</span>
+<span class="go">  --node-type NODE_TYPE, -t NODE_TYPE</span>
+<span class="go">                        type of the node to run</span>
 <span class="go">  --pipe-name PIPE_NAME, -N PIPE_NAME</span>
 <span class="go">                        pipeline name context</span>
 <span class="go">  --port PORT, -p PORT  port to listen on</span>
@@ -561,6 +559,9 @@ allows pipeline manipulation.</p>
 <span class="go">                        default configuration as JSON string</span>
 <span class="go">  --max-workers MAX_WORKERS, -w MAX_WORKERS</span>
 <span class="go">                        maximum number of worker threads</span>
+<span class="go">  --strict              fail requests with DATA_LOSS instead of leaving out, with a warning, what cannot be sent to the client</span>
+<span class="go">  --log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}, -l {NOTSET,DEBUG,INFO,WARNING,ERROR}</span>
+<span class="go">                        log level of the service and the node (default: INFO)</span>
 </pre></div>
 </div>
 </section>

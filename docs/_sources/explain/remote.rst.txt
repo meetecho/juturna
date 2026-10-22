@@ -69,24 +69,43 @@ state lives:
   node, and sends a copy back with every response. The warp node must always
   reach the same service. It sends its copy only when the service answers that
   it does not know it, after a restart or once an idle state was dropped, and
-  the service starts again from that copy. When the state holds values that
-  cannot be sent (see below), the responses carry no copy and the state lives
-  only in the service: if the service loses it, the node starts again from an
-  empty state.
+  the service starts again from that copy.
 - **not sticky**: the remote service keeps nothing. The warp node sends its
   state with every request, the remote node updates it, and the response brings
   it back. Any replica behind a load balancer can serve any request, and a
   replica going down loses no state. The state travels on every request, so
-  keep it small. Its values keep their exact types: ``None``, booleans, ints,
-  floats, strings, bytes, lists, tuples, dictionaries, numpy arrays and
-  scalars, and messages. A state holding anything else (a set, an open file, a
-  model) fails the request: keep such objects in the node instead.
+  keep it small.
 
 In both cases the remote service answers when ``update()`` returns. A message
 that the node keeps in its state without transmitting anything gets an empty
-response at once, and the warp node transmits nothing downstream. When
-``update()`` transmits more than once, only the first message reaches the warp
-node.
+response at once, and the warp node transmits nothing downstream.
+
+What cannot reach the client
+----------------------------
+
+Messages and states keep their exact types on the wire: ``None``, booleans,
+ints, floats, strings, bytes, lists, tuples, frozensets, dictionaries, numpy
+arrays and scalars, and messages. Some things still cannot reach the warp node:
+
+- a value of another type (a set, an open file, a model) in the ``meta`` of a
+  message, in an ``ObjectPayload`` or in the state;
+- a second message transmitted by the same ``update()``: only the first one is
+  sent back;
+- a message transmitted after ``update()`` returned, for example by a thread of
+  the node: its request was already answered.
+
+By default the remote service leaves them out and logs a warning, once for
+each client and for each kind of loss: a dictionary loses the entry, a list or
+a tuple the item, and everything else is sent. A state that loses an entry
+loses it for good, in the copy kept by a sticky warp node as well, so keep
+such objects in the node rather than in its state. The warp node does the same
+with the messages it sends.
+
+Started with ``--strict``, the remote service fails the request with the
+``DATA_LOSS`` gRPC status instead, every time. A message transmitted late fails
+the next request of its warp node, which is not processed. The warp node
+counts the failure in its health, and the pipeline goes on with the next
+message.
 
 Developer notes
 ---------------
