@@ -75,8 +75,8 @@ Juturna offers a number of built-in media and structural payloads.
 - ``VideoPayload`` holds to a list of ``ImagePayload``, with metadata on frames
   per second and duration (start and end timestamps).
 - ``BytesPayload`` only contains an array of bytes.
-- ``Batch`` contains a list of messages. A batch is usually produced by a node
-  buffer whenever its synchroniser marked multiple messages for processing.
+- ``Batch`` contains a list of messages, for nodes that collect several messages
+  and transmit them together.
 - ``ObjectPayload`` is a subclass of ``dict`` design to hold arbitrary key-value
   pairs.
 

@@ -393,8 +393,8 @@ timestamp.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">VideoPayload</span></code> holds to a list of <code class="docutils literal notranslate"><span class="pre">ImagePayload</span></code>, with metadata on frames
 per second and duration (start and end timestamps).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">BytesPayload</span></code> only contains an array of bytes.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Batch</span></code> contains a list of messages. A batch is usually produced by a node
-buffer whenever its synchroniser marked multiple messages for processing.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Batch</span></code> contains a list of messages, for nodes that collect several messages
+and transmit them together.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ObjectPayload</span></code> is a subclass of <code class="docutils literal notranslate"><span class="pre">dict</span></code> design to hold arbitrary key-value
 pairs.</p></li>
 </ul>

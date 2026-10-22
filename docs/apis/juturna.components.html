@@ -356,46 +356,6 @@
 <section id="module-juturna.components">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.components" title="Link to this heading">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="juturna.components.Buffer">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">Buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">creator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synchroniser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="juturna.transport.html#juturna.transport.TransportBackend" title="juturna.transport._base.TransportBackend"><span class="pre">TransportBackend</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">abort</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="juturna.transport.html#juturna.transport.Event" title="juturna.transport._base.Event"><span class="pre">Event</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Buffer" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="juturna.components.Buffer.empty">
-<span class="sig-name descname"><span class="pre">empty</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#juturna.components.Buffer.empty" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="juturna.components.Buffer.flush">
-<span class="sig-name descname"><span class="pre">flush</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Buffer.flush" title="Link to this definition">¶</a></dt>
-<dd><p>Flush the buffer content</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="juturna.components.Buffer.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#juturna.components.Buffer.get" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="juturna.components.Buffer.get_nowait">
-<span class="sig-name descname"><span class="pre">get_nowait</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#juturna.components.Buffer.get_nowait" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="juturna.components.Buffer.put">
-<span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Buffer.put" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="juturna.components.Buffer.wake">
-<span class="sig-name descname"><span class="pre">wake</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">token</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Buffer.wake" title="Link to this definition">¶</a></dt>
-<dd><p>Wake up a consumer blocked on get() by putting a token in the out
-queue. If the queue is full, the consumer is not blocked and the token
-is not needed, so it is dropped.</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
 <dt class="sig sig-object py" id="juturna.components.Message">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">Message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">creator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">payload</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T_Input</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timers_from</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Message" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></p>
@@ -506,7 +466,7 @@ JSON encoder.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="juturna.components.Node">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipe_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">synchroniser</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="juturna.transport.html#juturna.transport.TransportBackend" title="juturna.transport._base.TransportBackend"><span class="pre">TransportBackend</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.</span></span><span class="sig-name descname"><span class="pre">Node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pipe_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transport</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="juturna.transport.html#juturna.transport.TransportBackend" title="juturna.transport._base.TransportBackend"><span class="pre">TransportBackend</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></p>
 <p>Use this class to design custom nodes. BaseNode comes with a number of
 utility methods and fields that can be either used as they are or extended
@@ -519,11 +479,6 @@ in the derived classes.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.add_destination">
 <span class="sig-name descname"><span class="pre">add_destination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Node" title="juturna.components._node.Node"><span class="pre">Node</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.add_destination" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="juturna.components.Node.clear_buffer">
-<span class="sig-name descname"><span class="pre">clear_buffer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.clear_buffer" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -613,8 +568,9 @@ fully shut down before its resources are released.</p>
 <span class="sig-name descname"><span class="pre">kill</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.kill" title="Link to this definition">¶</a></dt>
 <dd><p>Stop the node without processing pending data. All threads are
 signalled at once and exit as soon as their current iteration is
-over: any message still in the input queue or in the buffer is
-discarded. Subclass cleanup in <code class="docutils literal notranslate"><span class="pre">stop()</span></code> still runs.</p>
+over: any message still in the input queue is discarded. Messages a
+node keeps in its state are left there. Subclass cleanup in <code class="docutils literal notranslate"><span class="pre">stop()</span></code>
+still runs.</p>
 <p>Unlike <code class="docutils literal notranslate"><span class="pre">stop()</span></code>, kill() does not wait for a busy <code class="docutils literal notranslate"><span class="pre">update()</span></code> or
 source call to return: each thread gets <code class="docutils literal notranslate"><span class="pre">JUTURNA_THREAD_JOIN_TIMEOUT</span></code>
 seconds, then it is left behind (it exits on its own as soon as the
@@ -750,11 +706,11 @@ node.</p>
 when the parent pipeline is stopped. If you override this method in
 your custom node class, make sure to call the parent method to ensure
 the node is stopped correctly.</p>
-<p>Threads are stopped one at a time, each one after its upstream has
-terminated: source first, then worker, then update. Every thread
-consumes its own pending data before exiting, so all the messages
-received before the stop call are processed, and stop() waits for
-an <code class="docutils literal notranslate"><span class="pre">update()</span></code> call in progress to return, however long it takes.</p>
+<p>Threads are stopped one at a time: the source first, then the worker
+once the source has terminated. The worker consumes the messages left
+in the input queue before exiting, so all the messages received before
+the stop call are processed, and stop() waits for an <code class="docutils literal notranslate"><span class="pre">update()</span></code> call
+in progress to return, however long it takes.</p>
 <p>When the node is being killed (see <code class="docutils literal notranslate"><span class="pre">kill()</span></code>), each thread is only
 waited for <code class="docutils literal notranslate"><span class="pre">JUTURNA_THREAD_JOIN_TIMEOUT</span></code> seconds: a thread still
 busy after that is left behind, and listed in <code class="docutils literal notranslate"><span class="pre">health</span></code> under
@@ -777,7 +733,22 @@ immutability is ensured.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.update">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.update" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Process a message. Override this method in your custom node class.</p>
+<p>Messages are delivered one at a time, in the order they reach the input
+queue, whatever node sent them (<code class="docutils literal notranslate"><span class="pre">message.creator</span></code> tells which). A
+node that needs several messages before producing an output, for
+example to join the outputs of more upstream nodes, keeps the pending
+ones in <code class="docutils literal notranslate"><span class="pre">kwargs['state']</span></code>, and removes them once they are used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>message</strong> (<a class="reference internal" href="#juturna.components.Message" title="juturna.components.Message"><em>Message</em></a>) – The message received from an upstream node.</p></li>
+<li><p><strong>kwargs</strong> (<em>dict</em>) – <code class="docutils literal notranslate"><span class="pre">state</span></code> is the <code class="docutils literal notranslate"><span class="pre">State</span></code> the pipeline keeps for the node across
+messages.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.warmup">
@@ -1051,15 +1022,6 @@ pipeline created in its place.</p>
 <li><a class="reference internal" href="#">juturna.components package</a><ul>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#module-juturna.components">Module contents</a><ul>
-<li><a class="reference internal" href="#juturna.components.Buffer"><code class="docutils literal notranslate"><span class="pre">Buffer</span></code></a><ul>
-<li><a class="reference internal" href="#juturna.components.Buffer.empty"><code class="docutils literal notranslate"><span class="pre">Buffer.empty()</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Buffer.flush"><code class="docutils literal notranslate"><span class="pre">Buffer.flush()</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Buffer.get"><code class="docutils literal notranslate"><span class="pre">Buffer.get()</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Buffer.get_nowait"><code class="docutils literal notranslate"><span class="pre">Buffer.get_nowait()</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Buffer.put"><code class="docutils literal notranslate"><span class="pre">Buffer.put()</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Buffer.wake"><code class="docutils literal notranslate"><span class="pre">Buffer.wake()</span></code></a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#juturna.components.Message"><code class="docutils literal notranslate"><span class="pre">Message</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.components.Message.created_at"><code class="docutils literal notranslate"><span class="pre">Message.created_at</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Message.creator"><code class="docutils literal notranslate"><span class="pre">Message.creator</span></code></a></li>
@@ -1077,7 +1039,6 @@ pipeline created in its place.</p>
 <li><a class="reference internal" href="#juturna.components.Node"><code class="docutils literal notranslate"><span class="pre">Node</span></code></a><ul>
 <li><a class="reference internal" href="#juturna.components.Node.SKIP_UPDATE"><code class="docutils literal notranslate"><span class="pre">Node.SKIP_UPDATE</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.add_destination"><code class="docutils literal notranslate"><span class="pre">Node.add_destination()</span></code></a></li>
-<li><a class="reference internal" href="#juturna.components.Node.clear_buffer"><code class="docutils literal notranslate"><span class="pre">Node.clear_buffer()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.clear_destination"><code class="docutils literal notranslate"><span class="pre">Node.clear_destination()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.clear_destinations"><code class="docutils literal notranslate"><span class="pre">Node.clear_destinations()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.clear_source"><code class="docutils literal notranslate"><span class="pre">Node.clear_source()</span></code></a></li>

@@ -440,13 +440,11 @@ red_cat_detector.py</label><div class="sd-tab-content docutils">
 <span class="w">        </span><span class="sd">"""Destroy the node"""</span>
         <span class="o">...</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">BasePayload</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">BasePayload</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""Receive data from upstream, transmit data downstream"""</span>
+        <span class="c1"># keep messages that wait for others in the node state</span>
+        <span class="c1"># state = kwargs['state']</span>
         <span class="o">...</span>
-
-    <span class="c1"># uncomment next_batch to design custom synchronisation policy</span>
-    <span class="c1"># def next_batch(sources: dict) -&gt; dict:</span>
-    <span class="c1">#     ...</span>
 </pre></div>
 </div>
 </div>

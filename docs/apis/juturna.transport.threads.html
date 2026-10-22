@@ -340,9 +340,9 @@
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.transport.threads.</span></span><span class="sig-name descname"><span class="pre">ThreadingTransport</span></span><a class="headerlink" href="#juturna.transport.threads.ThreadingTransport" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Default transport backend, based on real OS threads.</p>
-<p>This backend preserves the current concurrency model of <cite>Node</cite> and
-<cite>Buffer</cite>: every worker runs on its own <cite>threading.Thread</cite>, and queues
-are backed by <cite>queue.Queue</cite>.</p>
+<p>This backend preserves the current concurrency model of <cite>Node</cite>: every
+worker runs on its own <cite>threading.Thread</cite>, and queues are backed by
+<cite>queue.Queue</cite>.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.transport.threads.ThreadingTransport.capabilities">
 <span class="sig-name descname"><span class="pre">capabilities</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ClassVar</span><span class="p"><span class="pre">[</span></span><span class="pre">frozenset</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">frozenset({'shared_fs'})</span></em><a class="headerlink" href="#juturna.transport.threads.ThreadingTransport.capabilities" title="Link to this definition">¶</a></dt>

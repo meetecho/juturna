@@ -389,103 +389,72 @@ matches the folder where the node code lives (we’ll get to that later).</p>
 </section>
 <section id="threading-model">
 <h2>Threading model<a class="headerlink" href="#threading-model" title="Link to this heading">¶</a></h2>
-<p>Every node runs up to three independent threads, each with a singular
+<p>Every node runs up to two independent threads, each with a singular
 responsibility. This separation of concerns is the key to the framework’s
 responsiveness and fault isolation.</p>
 <a class="reference internal image-reference" href="../_images/node.svg"><img alt="node" class="align-center" src="../_images/node.svg" style="width: 100%;" />
 </a>
-<p>The <code class="docutils literal notranslate"><span class="pre">_worker</span></code> thread is the node’s inbound gatekeeper. It runs in every node,
+<p>The <code class="docutils literal notranslate"><span class="pre">_worker</span></code> thread is the node’s processing engine. It runs in every node,
 and blocks on the node’s inbound queue, waiting for incoming messages from
-upstream nodes. When a message arrives, the worker immediately buffers it, thus
-decoupling the message reception from its processing. By placing the message
-into a buffer rather than processing it directly, the worker thread can quickly
-return to listening for new messages, preventing backpressure from rippling
-upstream.</p>
+upstream nodes. When a message arrives, the worker records it in the telemetry
+and calls the node’s <code class="docutils literal notranslate"><span class="pre">update()</span></code> method with it. This is the only place where
+user-defined processing logic should run, ensuring that the framework maintains
+full control over threading, error boundaries, and lifecycle management.</p>
 <div class="note admonition">
 <p class="admonition-title">The inbound queue (1.0.1-beta)</p>
-<p>Nodes and Buffer classes now use FIFO (First-In, First-Out) queues. This
-ensures messages are processed in the order they are produced, even when a
-source node generates data faster than its descendants can consume it. The
-previous LIFO-based design could reorder messages during such bursts, leading
-to incorrect processing. Further refinements to the inbound queue may be
-introduced in the future.</p>
+<p>Nodes use FIFO (First-In, First-Out) queues. This ensures messages are
+processed in the order they are produced, even when a source node generates
+data faster than its descendants can consume it. While <code class="docutils literal notranslate"><span class="pre">update()</span></code> is busy,
+new messages wait in the inbound queue; once the queue is full, upstream
+nodes block on it until there is room again.</p>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">_update</span></code> thread represents the node’s processing engine. It consumes
-messages from the buffer in batches, not individually. This batching is where
-Juturna’s synchronisation logic becomes visible. The buffer doesn’t simply store
-messages, it coordinates them. When a node has multiple upstream origins, the
-buffer’s synchroniser determines when enough messages have arrived to form a
-coherent batch for processing. The default synchroniser implements a simple
-passthrough policy, forwarding messages as-is. However, custom synchronisers can
-be designed with more complex policies in mind: waiting for matching keys across
-streams, enforcing timeouts, or aggregating windows of data. The choice of
-synchroniser can be specified in the node configuration using the <code class="docutils literal notranslate"><span class="pre">sync</span></code> key.</p>
-<p>When a batch is ready, the <code class="docutils literal notranslate"><span class="pre">_update</span></code> thread calls the node’s <code class="docutils literal notranslate"><span class="pre">update()</span></code>
-method. This is the only place where user-defined processing logic should run,
-ensuring that the framework maintains full control over threading, error
-boundaries, and lifecycle management.</p>
-<p>For source nodes, the <code class="docutils literal notranslate"><span class="pre">_source</span></code> thread runs in parallel to the <code class="docutils literal notranslate"><span class="pre">_worker</span></code> and
-<code class="docutils literal notranslate"><span class="pre">_update</span></code> threads. Its sole purpose is to repeatedly invoke a user-provided
-callable (<code class="docutils literal notranslate"><span class="pre">_source_f</span></code>) and inject the resulting messages into the node’s own
-queue. The <em>pre</em> and <em>post</em> sleep modes allow fine-tuning of polling
-behavior, such as waiting before generating data (useful for rate-limiting) or
-after (useful for ensuring minimum intervals between calls).</p>
+<p>For source nodes, the <code class="docutils literal notranslate"><span class="pre">_source</span></code> thread runs in parallel to the <code class="docutils literal notranslate"><span class="pre">_worker</span></code>
+thread. Its sole purpose is to repeatedly invoke a user-provided callable
+(<code class="docutils literal notranslate"><span class="pre">_source_f</span></code>) and inject the resulting messages into the node’s own queue.
+The <em>pre</em> and <em>post</em> sleep modes allow fine-tuning of polling behavior, such as
+waiting before generating data (useful for rate-limiting) or after (useful for
+ensuring minimum intervals between calls).</p>
 <p>In short:</p>
 <ol class="arabic simple">
 <li><p>A message is pushed in the node’s inbound queue - a source node will write
-the message itsels through the <code class="docutils literal notranslate"><span class="pre">_source</span></code> thread, while intermediate nodes
-will received messages from other upstream nodes;</p></li>
-<li><p>the <code class="docutils literal notranslate"><span class="pre">_worker</span></code> thread pops the received message from the queue, and writes
-it in the node buffer, which is a simple map <code class="docutils literal notranslate"><span class="pre">{</span> <span class="pre">node_name:</span> <span class="pre">message_list</span> <span class="pre">}</span></code>;</p></li>
-<li><p>for every new message received, the buffer will invoke the synchroniser, a
-method responsible for aggregating buffered messages in a batch according to
-a specific policy;</p></li>
-<li><p>every time a batch is available, the buffer writes it on an outbound queue;</p></li>
-<li><p>the <code class="docutils literal notranslate"><span class="pre">_update</span></code> thread reads on the outbound queue, and whenever a new batch
-is available, it invokes the blocking <code class="docutils literal notranslate"><span class="pre">update()</span></code> method, where the actual
-data elaboration and subsequent transmission downstream take place.</p></li>
+the message itself through the <code class="docutils literal notranslate"><span class="pre">_source</span></code> thread, while intermediate nodes
+will receive messages from other upstream nodes;</p></li>
+<li><p>the <code class="docutils literal notranslate"><span class="pre">_worker</span></code> thread pops the received message from the queue, and invokes
+the blocking <code class="docutils literal notranslate"><span class="pre">update()</span></code> method with it, where the actual data elaboration
+and subsequent transmission downstream take place.</p></li>
 </ol>
 </section>
-<section id="buffer">
-<h2>Buffer<a class="headerlink" href="#buffer" title="Link to this heading">¶</a></h2>
-<p>While the <code class="docutils literal notranslate"><span class="pre">_worker</span></code> thread uses a simple queue for inbound message transfer,
-the buffer sits between worker and update, providing three critical services:</p>
-<ul class="simple">
-<li><p><strong>Per-origin message tracking</strong>: messages are stored in a dictionary that maps
-node names to message lists, allowing the synchroniser to reason about which
-upstream nodes sent which messages.</p></li>
-<li><p><strong>Synchronisation policy application</strong>: the <code class="docutils literal notranslate"><span class="pre">get()</span></code> method on the node
-buffer doesn’t dequeue messages, it rather invokes the synchroniser on the
-entire data structure to decide what constitutes a processable batch.</p></li>
-<li><p><strong>Stateful consumption</strong>: the <code class="docutils literal notranslate"><span class="pre">_consume</span></code> method on the node buffer pops
-specific messages, based on the synchroniser’s <em>marks</em>, then places either a
-single message or a batch into the outbound queue.</p></li>
-</ul>
-<p>Having a buffer that decides which messages are ready for processing prevents
-the <code class="docutils literal notranslate"><span class="pre">update()</span></code> method from being called with partial or inconsistent data when
-multiple upstream nodes feed into a single processor.</p>
-</section>
-<section id="synchronising-data">
-<h2>Synchronising data<a class="headerlink" href="#synchronising-data" title="Link to this heading">¶</a></h2>
-<p>Unless differently specified in the node configuration, a buffer adopts the
-passthrough synchronisation policy, that simply lets every available message
-move into the outboud queue. However, if a node implements the <code class="docutils literal notranslate"><span class="pre">next_batch()</span></code>
-method, that one will be picked as synchroniser. The synchroniser priority can
-be described as follows:</p>
-<ul class="simple">
-<li><p>the default synchroniser for a node is the <code class="docutils literal notranslate"><span class="pre">passthrough</span></code> (it will be applied
-for every node without any <code class="docutils literal notranslate"><span class="pre">sync</span></code> value in its configuration, nor a
-<code class="docutils literal notranslate"><span class="pre">next_batch()</span></code> method implementation);</p></li>
-<li><p>if a <code class="docutils literal notranslate"><span class="pre">next_batch()</span></code> method is implemented on the node, it will be used
-instead of the default synchroniser (no need to specify anything in the
-configuration, but can be explicitly put there with <code class="docutils literal notranslate"><span class="pre">&quot;sync&quot;:</span> <span class="pre">&quot;local&quot;</span></code>).</p></li>
-<li><p>any other built-in synchroniser can be set as <code class="docutils literal notranslate"><span class="pre">sync</span></code> value in the node
-configuration, and will be used.</p></li>
-</ul>
+<section id="multiple-inputs">
+<h2>Multiple inputs<a class="headerlink" href="#multiple-inputs" title="Link to this heading">¶</a></h2>
+<p>A node with several upstream nodes receives their messages one at a time, in
+the order they reach its inbound queue. <code class="docutils literal notranslate"><span class="pre">message.creator</span></code> tells which node
+sent each of them. When a node needs messages from more upstream nodes before
+producing an output (matching keys across streams, aggregating windows of data,
+enforcing timeouts), it keeps the pending ones in its state, available in
+<code class="docutils literal notranslate"><span class="pre">update()</span></code> as <code class="docutils literal notranslate"><span class="pre">kwargs['state']</span></code>, and removes them once they are used:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">pending</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">'state'</span><span class="p">]</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">'pending'</span><span class="p">,</span> <span class="p">{</span><span class="s1">'audio'</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">'video'</span><span class="p">:</span> <span class="p">[]})</span>
+    <span class="n">pending</span><span class="p">[</span><span class="n">message</span><span class="o">.</span><span class="n">creator</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">pending</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">]</span> <span class="ow">and</span> <span class="n">pending</span><span class="p">[</span><span class="s1">'video'</span><span class="p">]):</span>
+        <span class="k">return</span>
+
+    <span class="n">audio</span> <span class="o">=</span> <span class="n">pending</span><span class="p">[</span><span class="s1">'audio'</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">video</span> <span class="o">=</span> <span class="n">pending</span><span class="p">[</span><span class="s1">'video'</span><span class="p">]</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>The state is kept by the pipeline for the whole life of the node, across
+<code class="docutils literal notranslate"><span class="pre">stop()</span></code> and <code class="docutils literal notranslate"><span class="pre">start()</span></code>, and <code class="docutils literal notranslate"><span class="pre">kill()</span></code> does not clear it. A node is
+responsible for discarding the messages it no longer needs, so that its state
+does not grow forever.</p>
 <div class="note admonition">
-<p class="admonition-title">Built-in synchronisers (1.0.1-beta)</p>
-<p>Currently Juturna only implements a single built-in synchroniser, the
-passthrough one. Stay tuned, more are coming!</p>
+<p class="admonition-title">Synchronisers (1.0.1-beta)</p>
+<p>Earlier versions put a buffer and a synchroniser between the inbound queue
+and <code class="docutils literal notranslate"><span class="pre">update()</span></code>. The buffer, the <code class="docutils literal notranslate"><span class="pre">next_batch()</span></code> method and the <code class="docutils literal notranslate"><span class="pre">sync</span></code>
+node configuration key were removed: implement the same policies in
+<code class="docutils literal notranslate"><span class="pre">update()</span></code>, using the node state.</p>
 </div>
 </section>
 <section id="node-lifecycle">
@@ -499,8 +468,7 @@ state machine explicit.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">start()</span></code> method’s logic reveals the framework’s defensive design. It
 checks for <code class="docutils literal notranslate"><span class="pre">None</span></code> on thread references before spawning new ones, preventing
 accidental restarts. Stopping is equally nuanced. The stop sequence puts a
-sentinel <code class="docutils literal notranslate"><span class="pre">None</span></code> value into the queue, which gracefully unwinds the worker and
-update threads.</p>
+sentinel value into the queue, which gracefully unwinds the worker thread.</p>
 </section>
 </section>
 
@@ -570,8 +538,7 @@ update threads.</p>
 <li><a class="reference internal" href="#">Nodes</a><ul>
 <li><a class="reference internal" href="#a-simple-message-processor">A simple message processor</a></li>
 <li><a class="reference internal" href="#threading-model">Threading model</a></li>
-<li><a class="reference internal" href="#buffer">Buffer</a></li>
-<li><a class="reference internal" href="#synchronising-data">Synchronising data</a></li>
+<li><a class="reference internal" href="#multiple-inputs">Multiple inputs</a></li>
 <li><a class="reference internal" href="#node-lifecycle">Node lifecycle</a></li>
 </ul>
 </li>
