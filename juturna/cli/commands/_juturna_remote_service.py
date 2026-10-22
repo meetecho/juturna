@@ -207,6 +207,13 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         else:
             logger.error(f'{what} is lost, and its client is unknown')
 
+    def _mark_answered(self, tracking_id: int, client: tuple[str, str]):
+        # called with requests_lock held
+        self._answered[tracking_id] = client
+
+        if len(self._answered) > self.MAX_WARNED_CLIENTS:
+            self._answered.popitem(last=False)
+
     def _warn_once(self, client: tuple[str, str] | None, kind: str, text: str):
         with self.requests_lock:
             if (client, kind) in self._warned:
@@ -224,8 +231,13 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         )
 
     def _update_done(self, message: Message, error: Exception | None):
+        # removed here, not once the response is sent: a message transmitted
+        # in between must count as late, not as the output of the request
         with self.requests_lock:
-            request = self.pending_requests.get(message.id)
+            request = self.pending_requests.pop(message.id, None)
+
+            if request is not None:
+                self._mark_answered(message.id, request.state_key)
 
         if request is None:
             return
@@ -414,11 +426,8 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             finally:
                 # once removed, a message still queued is skipped by the node
                 with self.requests_lock:
-                    self.pending_requests.pop(tracking_id, None)
-                    self._answered[tracking_id] = state_key
-
-                    if len(self._answered) > self.MAX_WARNED_CLIENTS:
-                        self._answered.popitem(last=False)
+                    if self.pending_requests.pop(tracking_id, None) is not None:
+                        self._mark_answered(tracking_id, state_key)
 
             response_state = (
                 dict(request_context.state)
@@ -454,12 +463,18 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                     stateless=stateless,
                     dropped=dropped,
                 )
-            except TypeError as e:  # only raised in strict mode
-                raise DataLossError(str(e)) from e
+            except TypeError as e:
+                if self.strict:
+                    raise DataLossError(str(e)) from e
 
-            for path in dropped or ():
+                raise
+
+            # once per client: paths holding keys or indices are always new
+            if dropped:
                 self._warn_once(
-                    state_key, path, f'{path} cannot be sent, it is left out'
+                    state_key,
+                    'cannot be sent',
+                    f'{", ".join(dropped)} cannot be sent, left out',
                 )
 
             self._increment_stat('successful_requests')
