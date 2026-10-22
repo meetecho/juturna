@@ -428,7 +428,8 @@ def to_typed_value(
                 entry = proto.dict_value.entries.add()
                 entry.key.CopyFrom(typed_key)
                 entry.value.CopyFrom(typed_item)
-        case np.ndarray() | np.generic():
+        # an object array holds pointers, not values
+        case np.ndarray() | np.generic() if not value.dtype.hasobject:
             array = np.asarray(value)
 
             proto.array_value.dtype = array.dtype.str

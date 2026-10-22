@@ -199,6 +199,19 @@ def test_values_that_cannot_be_sent_can_be_left_out():
     assert dropped == ["state['keep'][1] (set)", "state['ids'] (set)"]
 
 
+def test_object_arrays_cannot_be_sent():
+    value = {'ok': np.arange(2), 'objects': np.array([{1}, None])}
+    dropped = list()
+
+    back = from_typed_value(to_typed_value(value, dropped, 'state'))
+
+    assert list(back) == ['ok'], back
+    assert dropped == ["state['objects'] (ndarray)"]
+
+    with pytest.raises(TypeError, match='ndarray cannot be sent'):
+        to_typed_value(value)
+
+
 def test_messages_can_leave_out_what_cannot_be_sent():
     inner = Message(creator='mic', payload=ObjectPayload(ok=1, ids={1}))
     inner.meta['seq'] = 1

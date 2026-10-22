@@ -384,11 +384,23 @@ def test_only_the_first_message_of_an_update_is_sent(replicas):
     assert [r['message'].payload['t'] for r in responses] == ['first'] * 2
 
 
-def test_a_message_transmitted_late_is_dropped(replicas):
-    response = _call(replicas[0], 'p', 'w', {}, n=8)
-    time.sleep(0.2)
+def test_a_message_transmitted_late_is_dropped(replicas, wait_for_condition):
+    records = _Records()
+    remote.logger.addHandler(records)
+
+    try:
+        response = _call(replicas[0], 'p', 'w', {}, n=8)
+        reported = wait_for_condition(
+            lambda: any(
+                'after its update returned' in m for m in records.messages
+            ),
+            timeout=5.0,
+        )
+    finally:
+        remote.logger.removeHandler(records)
 
     assert response['message'] is None
+    assert reported, f'late message not reported: {records.messages}'
     assert _call(replicas[0], 'p', 'w', None, n=1)['state'] == {
         'pending': [1]
     }
@@ -419,9 +431,11 @@ def test_strict_service_fails_an_update_with_two_messages(replicas):
 
 
 @pytest.mark.parametrize('replicas', [True], ids=['strict'], indirect=True)
-def test_strict_service_fails_the_request_after_a_late_message(replicas):
+def test_strict_service_fails_the_request_after_a_late_message(
+    replicas, wait_for_condition
+):
     assert _call(replicas[0], 'p', 'w', {}, n=8)['message'] is None
-    time.sleep(0.2)
+    assert wait_for_condition(lambda: replicas[0]._late_outputs, timeout=5.0)
 
     code, details = _call(replicas[0], 'p', 'w', None, n=1)
     after = _call(replicas[0], 'p', 'w', None, n=2)
@@ -430,6 +444,34 @@ def test_strict_service_fails_the_request_after_a_late_message(replicas):
     assert 'after its update returned' in details
     assert 'not processed' in details
     assert after['state'] == {'pending': [2]}, 'the failed message was processed'
+
+
+@pytest.mark.parametrize('replicas', [True], ids=['strict'], indirect=True)
+def test_message_transmitted_before_the_response_is_sent_counts_as_late(
+    replicas,
+):
+    service = replicas[0]
+    fired = list()
+
+    # a thread of the node transmitting between the end of update() and the
+    # response being sent
+    def done_then_transmit(message, error):
+        service._update_done(message, error)
+
+        if not fired:
+            late = Message(creator='acc', payload=ObjectPayload(t='late'))
+            late._data_source_id = message.id
+            fired.append(late)
+            service.put(late)
+
+    service.node.link_update_observer(done_then_transmit)
+
+    first = _call(service, 'p', 'w', {}, n=1)
+    code, details = _call(service, 'p', 'w', None, n=2)
+
+    assert first['message'] is None, first
+    assert code.name == 'DATA_LOSS', (code, details)
+    assert 'after its update returned' in details
 
 
 def test_stateless_request_without_state_is_invalid(replicas):
