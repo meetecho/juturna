@@ -511,6 +511,11 @@ JSON encoder.</p></li>
 <p>Use this class to design custom nodes. BaseNode comes with a number of
 utility methods and fields that can be either used as they are or extended
 in the derived classes.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="juturna.components.Node.SKIP_UPDATE">
+<span class="sig-name descname"><span class="pre">SKIP_UPDATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#juturna.components.Node.SKIP_UPDATE" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.add_destination">
 <span class="sig-name descname"><span class="pre">add_destination</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">destination</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Node" title="juturna.components._node.Node"><span class="pre">Node</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.add_destination" title="Link to this definition">¶</a></dt>
@@ -620,6 +625,18 @@ call returns, without processing anything else).</p>
 <dt class="sig sig-object py" id="juturna.components.Node.link_state">
 <span class="sig-name descname"><span class="pre">link_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.State" title="juturna.components._state.State"><span class="pre">State</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.link_state" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.Node.link_state_resolver">
+<span class="sig-name descname"><span class="pre">link_state_resolver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resolver</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.link_state_resolver" title="Link to this definition">¶</a></dt>
+<dd><p>Pick the state passed to <code class="docutils literal notranslate"><span class="pre">update()</span></code> for each message.</p>
+<p>By default every message is processed with the state linked by
+<code class="docutils literal notranslate"><span class="pre">link_state()</span></code>. A node shared by several pipelines (the remote
+service) needs a different state per message instead: the resolver is
+called with the message about to be processed, on the update thread,
+and returns its state, or <code class="docutils literal notranslate"><span class="pre">Node.SKIP_UPDATE</span></code> to drop the message
+without calling <code class="docutils literal notranslate"><span class="pre">update()</span></code>. <code class="docutils literal notranslate"><span class="pre">None</span></code> restores the default.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.link_telemetry">
@@ -1058,6 +1075,7 @@ pipeline created in its place.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#juturna.components.Node"><code class="docutils literal notranslate"><span class="pre">Node</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.components.Node.SKIP_UPDATE"><code class="docutils literal notranslate"><span class="pre">Node.SKIP_UPDATE</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.add_destination"><code class="docutils literal notranslate"><span class="pre">Node.add_destination()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.clear_buffer"><code class="docutils literal notranslate"><span class="pre">Node.clear_buffer()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.clear_destination"><code class="docutils literal notranslate"><span class="pre">Node.clear_destination()</span></code></a></li>
@@ -1074,6 +1092,7 @@ pipeline created in its place.</p>
 <li><a class="reference internal" href="#juturna.components.Node.join"><code class="docutils literal notranslate"><span class="pre">Node.join()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.kill"><code class="docutils literal notranslate"><span class="pre">Node.kill()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.link_state"><code class="docutils literal notranslate"><span class="pre">Node.link_state()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.components.Node.link_state_resolver"><code class="docutils literal notranslate"><span class="pre">Node.link_state_resolver()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.link_telemetry"><code class="docutils literal notranslate"><span class="pre">Node.link_telemetry()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.origins"><code class="docutils literal notranslate"><span class="pre">Node.origins</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Node.prepare_template"><code class="docutils literal notranslate"><span class="pre">Node.prepare_template()</span></code></a></li>
