@@ -120,13 +120,11 @@ This will generate a node skeleton.
                     """Destroy the node"""
                     ...
 
-                def update(self, message: Message[BasePayload]):
+                def update(self, message: Message[BasePayload], **kwargs):
                     """Receive data from upstream, transmit data downstream"""
+                    # keep messages that wait for others in the node state
+                    # state = kwargs['state']
                     ...
-
-                # uncomment next_batch to design custom synchronisation policy
-                # def next_batch(sources: dict) -> dict:
-                #     ...
 
     .. tab-item:: config.toml
 

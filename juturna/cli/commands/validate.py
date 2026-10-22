@@ -21,7 +21,6 @@ from juturna.cli.commands._validation_tools import warn
 
 from juturna.components._node_builder import _builder
 from juturna.components._pipeline import check_links
-from juturna.components._synchronisers import _SYNCHRONISERS
 from juturna.meta import JUTURNA_ENV_VAR_PREFIX
 from juturna.telemetry import check_pipeline_telemetry
 from juturna.transport import get_transport
@@ -243,13 +242,10 @@ def _check_node_types(nodes: list[dict]) -> None:
         if unknown := sorted(node['configuration'].keys() - arguments.keys()):
             warn(f'node {name}: unknown configuration keys {unknown}')
 
-        sync = node.get('sync')
-
-        if sync is not None and sync not in _SYNCHRONISERS:
-            warn(
-                f'node {name}: unknown sync {sync!r}, '
-                f'available: {list(_SYNCHRONISERS)}'
-            )
+        # synchronisers were removed: nodes now keep pending messages in
+        # their state, and the key is ignored
+        if 'sync' in node:
+            warn(f'node {name}: sync is not supported anymore, ignored')
 
         for key, value in node['configuration'].items():
             if not (

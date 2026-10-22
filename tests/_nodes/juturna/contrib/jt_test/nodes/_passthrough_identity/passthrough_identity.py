@@ -51,10 +51,3 @@ class PassthroughIdentity(Node[BasePayload, BasePayload]):
             time.sleep(self._delay)
 
         self.transmit(to_send)
-
-    def next_batch(self, sources: dict) -> dict:
-        """Synchronisation policy"""
-        self.logger.info('using custom policy')
-        self.logger.info(f'expected sources: {self.origins}')
-
-        return {source: list(range(len(sources[source]))) for source in sources}

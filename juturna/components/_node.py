@@ -15,10 +15,8 @@ from juturna.components import Message
 from juturna.names import ComponentStatus
 from juturna.utils.log_utils import jt_logger
 
-from juturna.components._buffer import Buffer
 from juturna.components._state import State
 from juturna.telemetry import TelemetryManager
-from juturna.components._synchronisers import _SYNCHRONISERS
 
 
 _WAKE = object()
@@ -38,7 +36,6 @@ class Node[T_Input, T_Output]:
         self,
         node_name: str = '',
         pipe_name: str = '',
-        synchroniser: Callable | None = None,
         transport: jt.transport.TransportBackend | None = None,
     ):
         """
@@ -48,8 +45,6 @@ class Node[T_Input, T_Output]:
             The name to assign to the node.
         pipe_name : str
             The name of the pipe this node belongs to.
-        synchroniser : Callable
-            Management options for multi-input nodes.
         transport : TransportBackend
             The concurrency backend used to run and synchronise the node's
             internal workers. Defaults to a thread-based backend.
@@ -64,12 +59,6 @@ class Node[T_Input, T_Output]:
         self.logger = jt_logger(_logger_name)
         self.logger.propagate = True
 
-        self.synchroniser = synchroniser or (
-            self.next_batch
-            if hasattr(self, 'next_batch')
-            else _SYNCHRONISERS['passthrough']
-        )
-
         self._status: ComponentStatus | None = None
         self._state: State | None = None
         self._state_resolver: Callable[[Message], Any] | None = None
@@ -83,11 +72,9 @@ class Node[T_Input, T_Output]:
         )
         self._worker_thread: jt.transport.WorkerHandle | None = None
         self._source_thread: jt.transport.WorkerHandle | None = None
-        self._update_thread: jt.transport.WorkerHandle | None = None
 
         self._stop_worker_event = self._transport.new_event()
         self._stop_source_event = self._transport.new_event()
-        self._stop_update_event = self._transport.new_event()
         self._kill_event = self._transport.new_event()
 
         self._update_failures = 0
@@ -97,13 +84,6 @@ class Node[T_Input, T_Output]:
         self._stuck_workers: list[str] = list()
 
         self._auto_dump = False
-
-        self._buffer = Buffer(
-            _logger_name,
-            self.synchroniser,
-            transport=self._transport,
-            abort=self._kill_event,
-        )
 
         self._source_f: Callable | None = None
         self._source_sleep = -1
@@ -324,9 +304,6 @@ class Node[T_Input, T_Output]:
     def clear_destinations(self):
         self._destinations = dict()
 
-    def clear_buffer(self):
-        self._buffer.flush()
-
     def transmit(self, message: Message[T_Output]):
         """
         Transmit a message. This method is used to send data from the node to
@@ -362,7 +339,6 @@ class Node[T_Input, T_Output]:
         """
         self._stop_source_event.clear()
         self._stop_worker_event.clear()
-        self._stop_update_event.clear()
         self._kill_event.clear()
 
         if self._worker_thread is None:
@@ -374,15 +350,6 @@ class Node[T_Input, T_Output]:
 
             self._worker_thread.start()
             self._status = ComponentStatus.RUNNING
-
-        if self._update_thread is None:
-            self._update_thread = self._transport.spawn(
-                target=self._update,
-                name=f'_update_{self.name}',
-                daemon=True,
-            )
-
-            self._update_thread.start()
 
         if self._source_f is None:
             return
@@ -403,11 +370,11 @@ class Node[T_Input, T_Output]:
         your custom node class, make sure to call the parent method to ensure
         the node is stopped correctly.
 
-        Threads are stopped one at a time, each one after its upstream has
-        terminated: source first, then worker, then update. Every thread
-        consumes its own pending data before exiting, so all the messages
-        received before the stop call are processed, and stop() waits for
-        an ``update()`` call in progress to return, however long it takes.
+        Threads are stopped one at a time: the source first, then the worker
+        once the source has terminated. The worker consumes the messages left
+        in the input queue before exiting, so all the messages received before
+        the stop call are processed, and stop() waits for an ``update()`` call
+        in progress to return, however long it takes.
 
         When the node is being killed (see ``kill()``), each thread is only
         waited for ``JUTURNA_THREAD_JOIN_TIMEOUT`` seconds: a thread still
@@ -428,7 +395,6 @@ class Node[T_Input, T_Output]:
         for _evt, _t, _wake in [
             (self._stop_source_event, self._source_thread, None),
             (self._stop_worker_event, self._worker_thread, self._wake_worker),
-            (self._stop_update_event, self._update_thread, self._wake_update),
         ]:
             _evt.set()
 
@@ -449,7 +415,6 @@ class Node[T_Input, T_Output]:
 
         self._worker_thread = None
         self._source_thread = None
-        self._update_thread = None
         self._status = ComponentStatus.STOPPED
 
         self.logger.info('node stopped')
@@ -463,17 +428,16 @@ class Node[T_Input, T_Output]:
         self._kill_event.set()
         self._stop_source_event.set()
         self._stop_worker_event.set()
-        self._stop_update_event.set()
 
         self._wake_worker()
-        self._wake_update()
 
     def kill(self):
         """
         Stop the node without processing pending data. All threads are
         signalled at once and exit as soon as their current iteration is
-        over: any message still in the input queue or in the buffer is
-        discarded. Subclass cleanup in ``stop()`` still runs.
+        over: any message still in the input queue is discarded. Messages a
+        node keeps in its state are left there. Subclass cleanup in ``stop()``
+        still runs.
 
         Unlike ``stop()``, kill() does not wait for a busy ``update()`` or
         source call to return: each thread gets ``JUTURNA_THREAD_JOIN_TIMEOUT``
@@ -492,8 +456,6 @@ class Node[T_Input, T_Output]:
             except jt.transport.Empty:
                 break
 
-        self.clear_buffer()
-
         self.logger.info('node killed')
 
     def join(self):
@@ -505,7 +467,6 @@ class Node[T_Input, T_Output]:
         for _t in [
             self._source_thread,
             self._worker_thread,
-            self._update_thread,
         ]:
             if (
                 _t is not None
@@ -516,7 +477,26 @@ class Node[T_Input, T_Output]:
 
     def configure(self): ...
 
-    def update(self, message: Message[T_Input], **kwargs): ...
+    def update(self, message: Message[T_Input], **kwargs):
+        """
+        Process a message. Override this method in your custom node class.
+
+        Messages are delivered one at a time, in the order they reach the input
+        queue, whatever node sent them (``message.creator`` tells which). A
+        node that needs several messages before producing an output, for
+        example to join the outputs of more upstream nodes, keeps the pending
+        ones in ``kwargs['state']``, and removes them once they are used.
+
+        Parameters
+        ----------
+        message : Message
+            The message received from an upstream node.
+        kwargs : dict
+            ``state`` is the ``State`` the pipeline keeps for the node across
+            messages.
+
+        """
+        ...
 
     def set_on_config(self, prop: str, value: Any): ...
 
@@ -527,9 +507,6 @@ class Node[T_Input, T_Output]:
     def _wake_worker(self):
         with contextlib.suppress(jt.transport.Full):
             self._queue.put_nowait(_WAKE)
-
-    def _wake_update(self):
-        self._buffer.wake(_WAKE)
 
     def _worker(self):
         while not self._stop_worker_event.is_set():
@@ -552,28 +529,6 @@ class Node[T_Input, T_Output]:
                 break
 
             self._ingest(message)
-
-    def _update(self):
-        while not self._stop_update_event.is_set():
-            try:
-                batch = self._buffer.get(
-                    timeout=jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT
-                )
-            except jt.transport.Empty:
-                continue
-
-            self._process(batch)
-
-        if self._kill_event.is_set():
-            return
-
-        while True:
-            try:
-                batch = self._buffer.get_nowait()
-            except jt.transport.Empty:
-                break
-
-            self._process(batch)
 
     def _source(self):
         consecutive_failures = 0
@@ -634,8 +589,6 @@ class Node[T_Input, T_Output]:
             return
 
         try:
-            self._buffer.put(message)
-
             if isinstance(message, Message):
                 self._rec_telemetry(message, 'rx')
         except Exception:
@@ -648,28 +601,22 @@ class Node[T_Input, T_Output]:
                 exc_info=True,
             )
 
-    def _process(self, batch: Message):
-        if batch is _WAKE:
-            return
+        self._process(message)
 
-        self._last_data_source_evt_id = batch.id
+    def _process(self, message: Message):
+        self._last_data_source_evt_id = message.id
 
         try:
-            state = self._resolve_state(batch)
+            state = self._resolve_state(message)
 
-            if state is Node.SKIP_UPDATE:
-                self.logger.debug(f'skipping message id {batch.id}')
-
-                return
-
-            self.update(batch, state=state)
+            self.update(message, state=state)
         except Exception:
             self._update_failures += 1
             self._last_failure_at = time.time()
             self.logger.error(
                 f'unhandled exception in update() '
                 f'(failure {self._update_failures}), '
-                f'for message id {getattr(batch, "id", "?")}',
+                f'for message id {getattr(message, "id", "?")}',
                 exc_info=True,
             )
 

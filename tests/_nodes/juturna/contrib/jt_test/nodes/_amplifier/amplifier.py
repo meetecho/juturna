@@ -59,7 +59,3 @@ class Amplifier(Node[BasePayload, BasePayload]):
     def update(self, message: Message[BasePayload], **kwargs):
         """Receive data from upstream, transmit data downstream"""
         ...
-
-    # uncomment next_batch to design custom synchronisation policy
-    # def next_batch(sources: dict) -> dict:
-    #     ...

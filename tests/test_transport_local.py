@@ -1,6 +1,6 @@
 import contextlib
 
-from juturna.components import Buffer, Node, Pipeline
+from juturna.components import Node, Pipeline
 from juturna.transport import ThreadingTransport
 
 from tests.test_pipeline_workers import Collector, _config
@@ -41,24 +41,13 @@ def test_local_hint_gives_a_working_queue():
     assert queue.qsize() == 1, f'Expected 1 item, got {queue.qsize()}'
 
 
-def test_buffer_asks_for_a_local_queue():
-    transport = RecordingTransport()
-
-    Buffer('creator', transport=transport)
-
-    assert transport.queues == [True], (
-        f'The out queue must be local, got {transport.queues}'
-    )
-
-
 def test_node_inbound_queue_is_not_declared_local():
     transport = RecordingTransport()
 
     Node(node_name='n', pipe_name='p', transport=transport)
 
-    # first the inbound queue, then the one of its buffer
-    assert transport.queues == [False, True], (
-        f'Expected [inbound, buffer] = [False, True], got {transport.queues}'
+    assert transport.queues == [False], (
+        f'Expected only the inbound queue, got {transport.queues}'
     )
 
 

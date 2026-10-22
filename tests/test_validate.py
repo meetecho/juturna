@@ -157,7 +157,9 @@ def test_warnings_do_not_fail_the_validation(tmp_path, monkeypatch):
     assert code == 0
     warnings = report['Node types and arguments']['warnings']
 
-    assert any("unknown sync 'nope'" in w for w in warnings), warnings
+    assert any('sync is not supported anymore' in w for w in warnings), (
+        warnings
+    )
     assert any("unknown configuration keys ['colour']" in w for w in warnings)
     assert any('NOT_SET_FOR_VALIDATE' in w for w in warnings), warnings
 

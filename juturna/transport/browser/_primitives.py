@@ -51,8 +51,8 @@ class _BrowserEvent:
 
 class _BrowserLock:
     """
-    Mutual exclusion on an Int32 cell. Not reentrant: `Node` and `Buffer`
-    never nest acquisitions.
+    Mutual exclusion on an Int32 cell. Not reentrant: `Node` never nests
+    acquisitions.
     """
 
     _CELL = 0

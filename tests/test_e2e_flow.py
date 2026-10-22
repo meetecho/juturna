@@ -101,7 +101,7 @@ def test_simple_pipe_dumped_messages(test_config):
         assert audio.shape == (32_000, 1)
 
 
-def test_simple_pipe_synchroniser(test_config):
+def test_simple_pipe_aggregates_in_state(test_config):
     p = test_config['test_pipeline_folder']
 
     pipeline_config = {

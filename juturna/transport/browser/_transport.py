@@ -25,8 +25,8 @@ Differences from `ThreadingTransport`:
   else is pickled.
 
 A queue is a ring only when its messages can reach another Worker. Those that
-never leave it (`Buffer._out_queue`, and the inbound queue of a node that
-nothing in another Worker writes to, see `node_scope()`) are
+never leave it (the inbound queue of a node that nothing in another Worker
+writes to, see `node_scope()`, or a queue asked for with ``local=True``) are
 `_BrowserLocalQueue`: the messages stay Python objects, which saves a
 serialization and a copy on each side, about 1 ms for a 640x480 RGBA frame.
 """
