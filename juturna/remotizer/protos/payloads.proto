@@ -185,8 +185,7 @@ message ProtoEnvelope {
   // Original pipe id
   string pipe_id = 5;
 
-  // Node state object
-  google.protobuf.Struct state = 6;
+  reserved 6;
 
   // Response-to field: ID of the envelope this is responding to
   // Enables explicit request/response tracking
@@ -223,8 +222,10 @@ message ProtoEnvelope {
   // every request and response (sticky false in the pipeline configuration)
   bool stateless = 15;
 
-  // Node state of a stateless client, sent instead of state
-  TypedValue typed_state = 16;
+  // Node state. A stateless client sends it with every request; a sticky
+  // client only when the service answered that it does not know it. Every
+  // response carries it, except a sticky one whose state cannot be sent
+  TypedValue state = 16;
 
 }
 

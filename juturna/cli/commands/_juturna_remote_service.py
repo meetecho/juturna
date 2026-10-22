@@ -27,6 +27,10 @@ from juturna.utils.log_utils import jt_logger
 logger = jt_logger('remote_service')
 
 
+class UnknownClientError(LookupError):
+    """A sticky client sent no state, and the service has none for it"""
+
+
 class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
     """
     Implementation of the gRPC Messaging Service (Async/Concurrent)
@@ -35,8 +39,10 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
     is identified by ``(pipe_id, sender)``, and is served in one of two ways:
 
     - sticky (the default): the client always reaches this service, which
-      keeps its state, created from the copy sent with its first request and
-      returned to it as a snapshot with every response;
+      keeps its state and returns a copy of it with every response. The
+      client sends its copy only when the service does not know it, after a
+      restart or once its state was dropped for being idle, and the service
+      starts again from that copy;
     - stateless: the client may reach any replica behind a balancer, so the
       state travels with every request, is used for that request only and
       returned with the response. It is sent with its exact types, and a
@@ -69,6 +75,7 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         self._state_last_used: dict[tuple[str, str], float] = {}
         self._state_lock = threading.Lock()
         self._ignored_configuration: set[tuple[str, str]] = set()
+        self._unsent_states: set[tuple[str, str]] = set()
 
         self._stop_event = threading.Event()
 
@@ -78,6 +85,7 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             'failed_requests': 0,
             'invalid_requests': 0,
             'timeout_requests': 0,
+            'unknown_client_requests': 0,
         }
 
         self.stats_lock = threading.Lock()
@@ -165,7 +173,9 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         except futures.InvalidStateError:
             logger.debug(f'request {message.id} already settled')
 
-    def _seed_state(self, state_key: tuple[str, str], client_state: dict):
+    def _seed_state(
+        self, state_key: tuple[str, str], client_state: dict | None
+    ):
         """
         Create the state of a client from its copy, if it is not known yet.
 
@@ -173,9 +183,21 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         client copy only mirrors it through the response snapshots. A client
         copy sent later is not applied, or it could undo the changes made by
         requests the client has not seen the response of yet.
+
+        Raises
+        ------
+        UnknownClientError
+            If the client is not known and sent no copy.
+
         """
         with self._state_lock:
             if state_key not in self._state_store:
+                if client_state is None:
+                    raise UnknownClientError(
+                        f'unknown client {state_key[1]} of pipeline '
+                        f'{state_key[0]}: send the state with the request'
+                    )
+
                 self._state_store[state_key] = State(client_state)
 
                 logger.info(f'created state for {state_key}')
@@ -206,6 +228,18 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             'with --default-config'
         )
 
+    def _warn_unsent_state(self, state_key: tuple[str, str], error: Exception):
+        if state_key in self._unsent_states:
+            return
+
+        self._unsent_states.add(state_key)
+
+        logger.warning(
+            f'the state of {state_key[1]} of pipeline {state_key[0]} cannot be '
+            f'sent back ({error}): the client keeps no copy, and starts from '
+            'an empty state if this service loses it'
+        )
+
     def _evict_idle_states(self):
         now = time.time()
 
@@ -223,6 +257,7 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 del self._state_store[key]
                 del self._state_last_used[key]
                 self._ignored_configuration.discard(key)
+                self._unsent_states.discard(key)
 
                 logger.info(f'dropped idle state for {key}')
 
@@ -270,7 +305,10 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
 
             state_key = (pipe_id, sender)
             stateless = envelope_dict['stateless']
-            client_state = envelope_dict.get('state') or dict()
+            client_state = envelope_dict['state']
+
+            if stateless and client_state is None:
+                raise ValueError('Missing state in a stateless request')
 
             if not stateless:
                 self._seed_state(state_key, client_state)
@@ -317,7 +355,7 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 else self._state_snapshot(state_key)
             )
 
-            response_envelope = create_envelope(
+            envelope_args = dict(
                 message=(
                     None
                     if response_message is None
@@ -325,7 +363,6 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 ),
                 creator=self.remote_name,
                 pipe_id=pipe_id,
-                state=response_state,
                 configuration={},
                 metadata={
                     'processing_time': time.time() - request_context.created_at
@@ -341,10 +378,28 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 stateless=stateless,
             )
 
+            try:
+                response_envelope = create_envelope(
+                    state=response_state, **envelope_args
+                )
+            except TypeError as e:
+                if stateless:
+                    raise
+
+                # the state stays here: the client only loses its copy, and
+                # starts from an empty state if this service forgets it
+                self._warn_unsent_state(state_key, e)
+                response_envelope = create_envelope(state=None, **envelope_args)
+
             self._increment_stat('successful_requests')
 
             return response_envelope
 
+        except UnknownClientError as e:
+            self._increment_stat('unknown_client_requests')
+            logger.info(str(e))
+            context.abort(grpc.StatusCode.FAILED_PRECONDITION, str(e))
+            return ProtoEnvelope()
         except TimeoutError as e:
             self._increment_stat('timeout_requests')
             logger.error(f'Timeout for {tracking_id}: {e}')
