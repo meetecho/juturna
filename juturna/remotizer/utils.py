@@ -368,6 +368,7 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
         'sender': envelope.sender,
         'pipe_id': envelope.pipe_id,
         'state': MessageToDict(envelope.state),
+        'configuration': MessageToDict(envelope.configuration),
         'response_to': envelope.response_to,
         'ttl': envelope.ttl,
         'request_type': envelope.request_type,

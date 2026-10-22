@@ -14,6 +14,7 @@ class RequestContext:
         message_id: int,
         timeout: float,
         response_type: str = None,
+        state_key: tuple[str, str] | None = None,
     ):
         self.sender = sender
         self.envelope_id = envelope_id
@@ -21,6 +22,7 @@ class RequestContext:
         self.future = futures.Future()
         self.timeout = timeout
         self.response_type = response_type
+        self.state_key = state_key
         self.created_at = time.time()
 
     def is_valid_response(self, message: Message | None) -> bool:

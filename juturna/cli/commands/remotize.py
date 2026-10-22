@@ -2,7 +2,9 @@
 Start a remote service to remotize nodes
 
 This command can be used to instantiate concrete nodes that can be invoked
-through the remote juturna service.
+through the remote juturna service. One remote node can serve several
+pipelines: each client warp node gets its own state, and the node is
+configured once, at startup, with the default configuration file.
 """
 
 from juturna.cli import _cli_utils
@@ -46,6 +48,15 @@ def setup_parser(subparsers):  # noqa: D103
         type=int,
         default=10,
         help='maximum number of worker threads',
+    )
+
+    parser.add_argument(
+        '--log-level',
+        '-l',
+        type=str,
+        default='INFO',
+        choices=['NOTSET', 'DEBUG', 'INFO', 'WARNING', 'ERROR'],
+        help='log level of the service and the node (default: INFO)',
     )
 
 

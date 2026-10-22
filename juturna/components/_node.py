@@ -31,6 +31,9 @@ class Node[T_Input, T_Output]:
     in the derived classes.
     """
 
+    # returned by a state resolver to drop a message without processing it
+    SKIP_UPDATE = object()
+
     def __init__(
         self,
         node_name: str = '',
@@ -69,6 +72,7 @@ class Node[T_Input, T_Output]:
 
         self._status: ComponentStatus | None = None
         self._state: State | None = None
+        self._state_resolver: Callable[[Message], Any] | None = None
 
         self._transport: jt.transport.TransportBackend = (
             transport or jt.transport.ThreadingTransport()
@@ -164,6 +168,25 @@ class Node[T_Input, T_Output]:
 
     def link_state(self, state: State):
         self._state = state
+
+    def link_state_resolver(self, resolver: Callable[[Message], Any] | None):
+        """
+        Pick the state passed to ``update()`` for each message.
+
+        By default every message is processed with the state linked by
+        ``link_state()``. A node shared by several pipelines (the remote
+        service) needs a different state per message instead: the resolver is
+        called with the message about to be processed, on the update thread,
+        and returns its state, or ``Node.SKIP_UPDATE`` to drop the message
+        without calling ``update()``. ``None`` restores the default.
+        """
+        self._state_resolver = resolver
+
+    def _resolve_state(self, message: Message) -> Any:
+        if self._state_resolver is None:
+            return self._state
+
+        return self._state_resolver(message)
 
     def put(self, message: Message):
         while not self._kill_event.is_set():
@@ -632,7 +655,14 @@ class Node[T_Input, T_Output]:
         self._last_data_source_evt_id = batch.id
 
         try:
-            self.update(batch, state=self._state)
+            state = self._resolve_state(batch)
+
+            if state is Node.SKIP_UPDATE:
+                self.logger.debug(f'skipping message id {batch.id}')
+
+                return
+
+            self.update(batch, state=state)
         except Exception:
             self._update_failures += 1
             self._last_failure_at = time.time()
