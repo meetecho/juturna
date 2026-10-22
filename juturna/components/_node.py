@@ -62,6 +62,9 @@ class Node[T_Input, T_Output]:
         self._status: ComponentStatus | None = None
         self._state: State | None = None
         self._state_resolver: Callable[[Message], Any] | None = None
+        self._update_observer: (
+            Callable[[Message, Exception | None], None] | None
+        ) = None
 
         self._transport: jt.transport.TransportBackend = (
             transport or jt.transport.ThreadingTransport()
@@ -161,6 +164,20 @@ class Node[T_Input, T_Output]:
         without calling ``update()``. ``None`` restores the default.
         """
         self._state_resolver = resolver
+
+    def link_update_observer(
+        self, observer: Callable[[Message, Exception | None], None] | None
+    ):
+        """
+        Get notified every time ``update()`` returns.
+
+        The observer is called on the update thread, after ``update()`` has
+        processed a message, with that message and the exception it raised,
+        or ``None``. Messages skipped by the state resolver are not reported.
+        The remote service uses it to answer a request when its update is
+        over, whether it transmitted something or not. ``None`` removes it.
+        """
+        self._update_observer = observer
 
     def _resolve_state(self, message: Message) -> Any:
         if self._state_resolver is None:
@@ -605,6 +622,7 @@ class Node[T_Input, T_Output]:
 
     def _process(self, message: Message):
         self._last_data_source_evt_id = message.id
+        error = None
 
         try:
             state = self._resolve_state(message)
@@ -613,13 +631,25 @@ class Node[T_Input, T_Output]:
                 return
 
             self.update(message, state=state)
-        except Exception:
+        except Exception as e:
+            error = e
             self._update_failures += 1
             self._last_failure_at = time.time()
             self.logger.error(
                 f'unhandled exception in update() '
                 f'(failure {self._update_failures}), '
                 f'for message id {getattr(message, "id", "?")}',
+                exc_info=True,
+            )
+
+        if self._update_observer is None:
+            return
+
+        try:
+            self._update_observer(message, error)
+        except Exception:
+            self.logger.error(
+                f'update observer failed for message id {message.id}',
                 exc_info=True,
             )
 
