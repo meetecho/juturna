@@ -318,7 +318,7 @@ def test_stateless_state_with_unsupported_values_fails(replicas):
     code, details = _call(replicas[0], 'p', 'w', {}, n=0, stateless=True)
 
     assert code.name == 'INTERNAL'
-    assert 'a set cannot be part of the state' in details
+    assert 'a set cannot be sent' in details
 
 
 def test_stateless_state_keeps_its_types_between_replicas(replicas):
