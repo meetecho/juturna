@@ -88,11 +88,14 @@ ints, floats, strings, bytes, lists, tuples, frozensets, dictionaries, numpy
 arrays and scalars, and messages. Some things still cannot reach the warp node:
 
 - a value of another type (a set, an open file, a model) in the ``meta`` of a
-  message, in an ``ObjectPayload`` or in the state;
+  message, in an ``ObjectPayload`` or in the state, as well as an integer
+  outside the 64-bit range and a string that is not valid Unicode;
 - a second message transmitted by the same ``update()``: only the first one is
   sent back;
-- a message transmitted after ``update()`` returned, for example by a thread of
-  the node: its request was already answered.
+- a message transmitted after ``update()`` returned, or by a thread of the
+  node other than the one running ``update()``: it never answers a request,
+  since the request being processed at that moment may belong to another
+  pipeline.
 
 By default the remote service leaves them out and logs a warning, once for
 each client and for each kind of loss: a dictionary loses the entry, a list or
@@ -106,6 +109,25 @@ Started with ``--strict``, the remote service fails the request with the
 the next request of its warp node, which is not processed. The warp node
 counts the failure in its health, and the pipeline goes on with the next
 message.
+
+The remote service can only tell which warp node a late message was meant for
+while the node is idle. A message transmitted by another thread while the node
+processes a message is logged as an error instead, in both modes, and fails no
+request. A node meant to run remotely transmits from ``update()`` only.
+
+Limits
+------
+
+The remote service keeps the state of at most ``--max-clients`` sticky warp
+nodes (1024 by default) and refuses new ones with the ``RESOURCE_EXHAUSTED``
+status, until a state is dropped after an hour without requests. It accepts
+``--max-requests`` requests at once (10 for each worker by default), in
+progress or waiting for a worker, and refuses the others with the same
+status. A request whose warp node cancels it or disconnects is not processed
+if it is still waiting.
+
+``juturna remotize`` exits with status 1 when the node cannot be built or the
+port is already in use: two services never share a port.
 
 Developer notes
 ---------------

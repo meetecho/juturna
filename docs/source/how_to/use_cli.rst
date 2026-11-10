@@ -212,7 +212,8 @@ Launch the remote service to expose a node for delocalised pipelines to use.
 
     (.venv) user:~/$ python -m juturna remotize --help
     usage: juturna remotize [-h] --node-name NODE_NAME --node-type NODE_TYPE [--pipe-name PIPE_NAME] [--port PORT] [--default-config FILE]
-                            [--max-workers MAX_WORKERS] [--strict] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}]
+                            [--max-workers MAX_WORKERS] [--max-requests MAX_REQUESTS] [--max-clients MAX_CLIENTS] [--strict]
+                            [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}]
 
     options:
       -h, --help            show this help message and exit
@@ -227,6 +228,10 @@ Launch the remote service to expose a node for delocalised pipelines to use.
                             default configuration as JSON string
       --max-workers MAX_WORKERS, -w MAX_WORKERS
                             maximum number of worker threads
+      --max-requests MAX_REQUESTS
+                            requests accepted at once, in progress or waiting for a worker; more are refused (default: 10 for each worker)
+      --max-clients MAX_CLIENTS
+                            sticky clients the service keeps a state for; new ones are refused beyond that (default: 1024)
       --strict              fail requests with DATA_LOSS instead of leaving out, with a warning, what cannot be sent to the client
       --log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}, -l {NOTSET,DEBUG,INFO,WARNING,ERROR}
                             log level of the service and the node (default: INFO)

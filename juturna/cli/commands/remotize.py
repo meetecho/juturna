@@ -51,6 +51,22 @@ def setup_parser(subparsers):  # noqa: D103
     )
 
     parser.add_argument(
+        '--max-requests',
+        type=int,
+        default=None,
+        help='requests accepted at once, in progress or waiting for a '
+        'worker; more are refused (default: 10 for each worker)',
+    )
+
+    parser.add_argument(
+        '--max-clients',
+        type=int,
+        default=1024,
+        help='sticky clients the service keeps a state for; new ones are '
+        'refused beyond that (default: 1024)',
+    )
+
+    parser.add_argument(
         '--strict',
         action='store_true',
         help='fail requests with DATA_LOSS instead of leaving out, with a '
@@ -68,4 +84,4 @@ def setup_parser(subparsers):  # noqa: D103
 
 
 def _execute(args):
-    serve(args)
+    return serve(args)

@@ -41,6 +41,31 @@ from juturna.remotizer.c_protos.payloads_pb2 import (
 from google.protobuf.json_format import MessageToDict
 
 
+_INT64_MIN = -(2**63)
+_INT64_MAX = 2**63 - 1
+
+
+def _is_unicode(value: str) -> bool:
+    # a str holding lone surrogates cannot be encoded on the wire
+    try:
+        value.encode('utf-8')
+    except UnicodeEncodeError:
+        return False
+
+    return True
+
+
+def _describe(value: Any) -> str:
+    # name what cannot be sent, where its type alone would not tell why
+    if type(value) is int:
+        return 'number outside the 64-bit range'
+
+    if type(value) is str:
+        return 'str that is not valid Unicode'
+
+    return type(value).__name__
+
+
 # ============================================================================
 # PYTHON → PROTOBUF CONVERTERS
 # ============================================================================
@@ -173,6 +198,12 @@ def message_to_proto(
     """
     proto = ProtoMessage()
 
+    if not isinstance(message.creator, str):
+        raise TypeError(
+            f'{path}.creator: {message.creator!r} cannot be sent to or from '
+            'a remote node, set the creator of the message'
+        )
+
     proto.created_at = message.created_at
     proto.creator = message.creator
     proto.version = message.version
@@ -187,6 +218,12 @@ def message_to_proto(
         protocol_converter = PROTOBUF_PAYLOAD_TYPE_MAP.get(
             type(message.payload)
         )
+
+        if protocol_converter is None:
+            raise TypeError(
+                f'{path}.payload: a {type(message.payload).__name__} payload '
+                'cannot be sent to or from a remote node'
+            )
 
         # only these payloads hold values that may not be sent
         if protocol_converter in (_object_to_proto, _batch_to_proto):
@@ -356,9 +393,10 @@ def to_typed_value(
     Convert a value to a TypedValue, keeping its type.
 
     Used for message meta, object payloads and node states. Supported: None,
-    bool, int, float, str, bytes, list, tuple, frozenset, dict (with keys of
-    any supported type), numpy arrays and scalars, and messages. The
-    read-only dicts of a frozen meta come back as plain dicts.
+    bool, int (64-bit), float, str (valid Unicode), bytes, list, tuple,
+    frozenset, dict (with keys of any supported type), numpy arrays and
+    scalars, and messages. The read-only dicts of a frozen meta come back as
+    plain dicts.
 
     Parameters
     ----------
@@ -380,7 +418,7 @@ def to_typed_value(
     ------
     TypeError
         If dropped is None and the value, or anything inside it, has another
-        type.
+        type, or is an int or a str the wire format cannot hold.
 
     """
     proto = TypedValue()
@@ -400,11 +438,13 @@ def to_typed_value(
             proto.none = True
         case bool():
             proto.bool_value = value
-        case int() if type(value) is int:
+        case int() if type(value) is int and (
+            _INT64_MIN <= value <= _INT64_MAX
+        ):
             proto.int_value = value
         case float() if type(value) is float:
             proto.float_value = value
-        case str() if type(value) is str:
+        case str() if type(value) is str and _is_unicode(value):
             proto.str_value = value
         case bytes() if type(value) is bytes:
             proto.bytes_value = value
@@ -439,12 +479,12 @@ def to_typed_value(
         case Message():
             proto.message_value.CopyFrom(message_to_proto(value, dropped, path))
         case _ if dropped is not None:
-            dropped.append(f'{path} ({type(value).__name__})')
+            dropped.append(f'{path} ({_describe(value)})')
 
             return None
         case _:
             raise TypeError(
-                f'{path}: a {type(value).__name__} cannot be sent to or from '
+                f'{path}: a {_describe(value)} cannot be sent to or from '
                 'a remote node'
             )
 

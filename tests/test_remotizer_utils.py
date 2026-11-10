@@ -227,3 +227,38 @@ def test_messages_can_leave_out_what_cannot_be_sent():
         "message.meta['ids'] (set)",
         "message.payload[0].payload['ids'] (set)",
     ]
+
+
+@pytest.mark.parametrize(
+    'value, reason',
+    [
+        (2**70, 'number outside the 64-bit range'),
+        (-(2**63) - 1, 'number outside the 64-bit range'),
+        ('\ud800', 'str that is not valid Unicode'),
+    ],
+)
+def test_values_the_wire_cannot_hold_are_refused_or_left_out(value, reason):
+    with pytest.raises(TypeError, match=f"state\\['bad'\\]: a {reason}"):
+        to_typed_value({'bad': value, 'kept': 1}, path='state')
+
+    dropped = list()
+    typed = to_typed_value({'bad': value, 'kept': 1}, dropped, 'state')
+
+    assert from_typed_value(typed) == {'kept': 1}
+    assert dropped == [f"state['bad'] ({reason})"]
+
+
+def test_the_limits_of_the_64_bit_range_are_sent():
+    value = [2**63 - 1, -(2**63)]
+
+    assert from_typed_value(to_typed_value(value)) == value
+
+
+def test_message_without_creator_is_refused_with_a_clear_error():
+    with pytest.raises(TypeError, match='message.creator: None cannot be'):
+        message_to_proto(Message(payload=BytesPayload(cnt=b'x')))
+
+
+def test_payload_of_an_unknown_type_is_refused_with_a_clear_error():
+    with pytest.raises(TypeError, match='a dict payload cannot be sent'):
+        message_to_proto(Message(creator='src', payload={'a': 1}))

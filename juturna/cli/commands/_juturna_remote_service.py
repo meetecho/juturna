@@ -1,3 +1,4 @@
+import functools
 import json
 import signal
 import threading
@@ -28,6 +29,9 @@ from juturna.utils.log_utils import jt_logger
 
 logger = jt_logger('remote_service')
 
+# requests accepted at once for each worker thread, when not set explicitly
+REQUESTS_PER_WORKER = 10
+
 
 class UnknownClientError(LookupError):
     """A sticky client sent no state, and the service has none for it"""
@@ -35,6 +39,14 @@ class UnknownClientError(LookupError):
 
 class DataLossError(RuntimeError):
     """In strict mode, part of what the node produced cannot reach a client"""
+
+
+class InvalidRequestError(ValueError):
+    """The request cannot be read, or lacks what the service needs"""
+
+
+class TooManyClientsError(RuntimeError):
+    """The service already keeps as many client states as it is allowed to"""
 
 
 class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
@@ -56,14 +68,20 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
     The node is never re-linked to a state: each message is processed with
     the state of the request it belongs to, picked when the node's update
     thread gets to it. A request is answered when ``update()`` returns, with
-    the first message it transmitted, or with no message at all.
+    the first message it transmitted from the update thread, or with no
+    message at all.
 
     Messages and states travel with their exact types. What cannot reach the
-    client (a value of a type that cannot be sent, a second message
-    transmitted by one update, a message transmitted after its update
-    returned) is left out, with a warning the first time for each client. In
+    client (a value that cannot be sent, a second message transmitted by one
+    update, a message transmitted after its update returned or by another
+    thread) is left out, with a warning the first time for each client. In
     strict mode it fails the request with DATA_LOSS instead, every time: for
     a message transmitted late, the next request of its client.
+
+    A message transmitted outside ``update()`` never answers a request. Its
+    client is the one of the last message processed only while the node is
+    idle; when another message is being processed, the client cannot be
+    told, and the loss is logged as an error.
     """
 
     DEFAULT_TIMEOUT = 30.0
@@ -71,11 +89,19 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
     CLEANUP_INTERVAL = 10.0
     STATE_IDLE_TIMEOUT = 3600.0
     MAX_WARNED_CLIENTS = 1024
+    DEFAULT_MAX_CLIENTS = 1024
 
-    def __init__(self, node: Node, remote_name: str, strict: bool = False):
+    def __init__(
+        self,
+        node: Node,
+        remote_name: str,
+        strict: bool = False,
+        max_clients: int = DEFAULT_MAX_CLIENTS,
+    ):
         self.node = node
         self.remote_name = remote_name
         self.strict = strict
+        self.max_clients = max_clients
         self._tracking_id_counter = itertools.count(start=1)
 
         self.node.add_destination('grpc_messaging_service', self)
@@ -83,6 +109,10 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         # tracking id -> request, also used to find the state of a message
         self.pending_requests: dict[int, RequestContext] = {}
         self.requests_lock = threading.RLock()
+
+        # tracking id of the message inside update(), and the thread running
+        # it: only that thread can transmit the output of that request
+        self._current: tuple[int, int] | None = None
 
         self._state_store: dict[tuple[str, str], State] = {}
         self._state_last_used: dict[tuple[str, str], float] = {}
@@ -105,6 +135,7 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             'timeout_requests': 0,
             'unknown_client_requests': 0,
             'data_loss_requests': 0,
+            'refused_requests': 0,
         }
 
         self.stats_lock = threading.Lock()
@@ -131,11 +162,18 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         Return the state of the request a message belongs to.
 
         Called by the node's update thread for every message it processes.
-        Messages of a request that is gone (timed out, or cancelled on
-        shutdown) are skipped, since nobody is waiting for their result.
+        Messages of a request that is gone (timed out, cancelled by its
+        client or on shutdown) are skipped, since nobody is waiting for
+        their result. So is a message the service did not queue itself, such
+        as one produced by a source of the node: it belongs to no client.
         """
         with self.requests_lock:
+            self._current = None
             request = self.pending_requests.get(message.id)
+
+            # tracking ids and the ids of other messages can be the same
+            if request is not None and request.message is not message:
+                request = None
 
         if request is None:
             logger.warning(
@@ -145,31 +183,71 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             return Node.SKIP_UPDATE
 
         if request.state is not None:
-            return request.state
+            state = request.state
+        else:
+            with self._state_lock:
+                state = self._state_store.get(
+                    request.state_key, Node.SKIP_UPDATE
+                )
 
-        with self._state_lock:
-            return self._state_store.get(request.state_key, Node.SKIP_UPDATE)
+        if state is not Node.SKIP_UPDATE:
+            with self.requests_lock:
+                self._current = (message.id, threading.get_ident())
+
+        return state
 
     def put(self, message: Message):
         """
         Collect a message transmitted by the node.
 
-        The service is a destination of the node, so this runs on the update
-        thread, inside ``update()``: the message is kept on its request,
-        which is answered once ``update()`` returns. Only the first message
-        of a request is kept.
-        """
-        tracking_id = message._data_source_id
+        The service is a destination of the node. A message transmitted by
+        the update thread, inside ``update()``, is kept on the request being
+        processed, which is answered once ``update()`` returns. Only the
+        first message of a request is kept.
 
+        Any other message was transmitted after its update returned, or by
+        another thread of the node, and is never given to a request: the
+        request being processed at that moment may belong to another client.
+        """
         with self.requests_lock:
-            request = self.pending_requests.get(tracking_id)
-            client = (
-                request.state_key
-                if request is not None
-                else self._answered.get(tracking_id)
+            current = self._current
+            in_update = (
+                current is not None and current[1] == threading.get_ident()
             )
 
-        if request is None:
+            if in_update:
+                tracking_id = current[0]
+                request = self.pending_requests.get(tracking_id)
+                client = (
+                    request.state_key
+                    if request is not None
+                    else self._answered.get(tracking_id)
+                )
+            else:
+                request = None
+                tracking_id = getattr(message, '_data_source_id', None)
+                # transmit() stamps the id of the last message processed:
+                # while another one is in update(), that says nothing about
+                # the client this message was made for
+                client = (
+                    self._answered.get(tracking_id) if current is None else None
+                )
+
+        if in_update and request is None:
+            self._lose(
+                client,
+                'late message',
+                f'a message transmitted for message {tracking_id} after its '
+                'request was given up',
+            )
+        elif not in_update and current is not None:
+            self._lose(
+                None,
+                'foreign message',
+                'a message transmitted by another thread while message '
+                f'{current[0]} was being processed',
+            )
+        elif not in_update:
             self._lose(
                 client,
                 'late message',
@@ -203,6 +281,13 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             request.data_loss = what
         elif client is not None:
             with self.requests_lock:
+                # clients that never come back must not pile up here
+                if (
+                    client not in self._late_outputs
+                    and len(self._late_outputs) >= self.MAX_WARNED_CLIENTS
+                ):
+                    del self._late_outputs[next(iter(self._late_outputs))]
+
                 self._late_outputs[client] = what
         else:
             logger.error(f'{what} is lost, and its client is unknown')
@@ -227,13 +312,14 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         sender, pipe_id = (client[1], client[0]) if client else ('?', '?')
 
         logger.warning(
-            f'{text} (client {sender} of pipeline {pipe_id}; reported once)'
+            f'{text} (client {sender!r} of pipeline {pipe_id!r}; reported once)'
         )
 
     def _update_done(self, message: Message, error: Exception | None):
         # removed here, not once the response is sent: a message transmitted
         # in between must count as late, not as the output of the request
         with self.requests_lock:
+            self._current = None
             request = self.pending_requests.pop(message.id, None)
 
             if request is not None:
@@ -271,6 +357,9 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         ------
         UnknownClientError
             If the client is not known and sent no copy.
+        TooManyClientsError
+            If the client is not known and the service keeps as many states
+            as it is allowed to.
 
         """
         with self._state_lock:
@@ -279,6 +368,13 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                     raise UnknownClientError(
                         f'unknown client {state_key[1]} of pipeline '
                         f'{state_key[0]}: send the state with the request'
+                    )
+
+                if len(self._state_store) >= self.max_clients:
+                    raise TooManyClientsError(
+                        f'the service already keeps the state of '
+                        f'{self.max_clients} clients, and drops one after '
+                        f'{self.STATE_IDLE_TIMEOUT:.0f}s without requests'
                     )
 
                 self._state_store[state_key] = State(client_state)
@@ -296,19 +392,23 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
 
     def _check_configuration(self, state_key: tuple[str, str], config: dict):
         # the node serves every client, so it is only configured at startup
-        if not config or state_key in self._ignored_configuration:
+        if not config:
             return
 
-        # stateless clients are never evicted, so the set is bounded here
-        if len(self._ignored_configuration) >= self.MAX_WARNED_CLIENTS:
-            self._ignored_configuration.clear()
+        with self._state_lock:
+            if state_key in self._ignored_configuration:
+                return
 
-        self._ignored_configuration.add(state_key)
+            # stateless clients are never evicted, so the set is bounded here
+            if len(self._ignored_configuration) >= self.MAX_WARNED_CLIENTS:
+                self._ignored_configuration.clear()
+
+            self._ignored_configuration.add(state_key)
 
         logger.warning(
-            f'configuration sent by {state_key[1]} of pipeline {state_key[0]} '
-            'is ignored: the remote node is configured once, at startup, '
-            'with --default-config'
+            f'configuration sent by {state_key[1]!r} of pipeline '
+            f'{state_key[0]!r} is ignored: the remote node is configured '
+            'once, at startup, with --default-config'
         )
 
     def _evict_idle_states(self):
@@ -354,6 +454,48 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             except Exception as e:
                 logger.error(f'Error in cleanup loop: {e}', exc_info=True)
 
+    def _give_up(self, tracking_id: int, reason: str):
+        """Stop waiting for a request: its message is skipped if still queued"""
+        with self.requests_lock:
+            request = self.pending_requests.pop(tracking_id, None)
+
+            if request is not None:
+                self._mark_answered(tracking_id, request.state_key)
+
+        if request is not None:
+            request.cancel(reason)
+
+    def _read_request(self, request: ProtoEnvelope) -> dict:
+        """
+        Read the envelope of a request.
+
+        Raises
+        ------
+        InvalidRequestError
+            If the envelope cannot be read, or lacks what the service needs.
+
+        """
+        try:
+            envelope_dict = deserialize_envelope(request)
+        except (TypeError, ValueError) as e:
+            raise InvalidRequestError(f'Malformed envelope: {e}') from e
+
+        if not envelope_dict.get('sender') or not envelope_dict.get('pipe_id'):
+            raise InvalidRequestError('Missing sender or pipe_id in envelope')
+
+        if envelope_dict['message'] is None:
+            raise InvalidRequestError('Missing message in envelope')
+
+        client_state = envelope_dict['state']
+
+        if client_state is not None and not isinstance(client_state, dict):
+            raise InvalidRequestError('The state in the envelope is not a dict')
+
+        if envelope_dict['stateless'] and client_state is None:
+            raise InvalidRequestError('Missing state in a stateless request')
+
+        return envelope_dict
+
     def SendAndReceive(self, request: ProtoEnvelope, context):
         """Handle request-response pattern asynchronously"""
         tracking_id = None
@@ -361,24 +503,15 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         try:
             self._increment_stat('total_requests')
 
-            envelope_dict = deserialize_envelope(request)
+            envelope_dict = self._read_request(request)
             request_message = envelope_dict['message']
-            sender = envelope_dict.get('sender')
+            sender = envelope_dict['sender']
             envelope_id = envelope_dict.get('id')
-            pipe_id = envelope_dict.get('pipe_id')
-
-            if not sender or not pipe_id:
-                raise ValueError('Missing sender or pipe_id in envelope')
-
-            if request_message is None:
-                raise ValueError('Missing message in envelope')
+            pipe_id = envelope_dict['pipe_id']
 
             state_key = (pipe_id, sender)
             stateless = envelope_dict['stateless']
             client_state = envelope_dict['state']
-
-            if stateless and client_state is None:
-                raise ValueError('Missing state in a stateless request')
 
             if self.strict:
                 with self.requests_lock:
@@ -408,10 +541,19 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 response_type=envelope_dict.get('response_type', None),
                 state_key=state_key,
                 state=State(client_state) if stateless else None,
+                message=request_message,
             )
 
             with self.requests_lock:
                 self.pending_requests[tracking_id] = request_context
+
+            # a client that cancels or disconnects is not waited for
+            client_gone = functools.partial(
+                self._give_up, tracking_id, 'Client gone'
+            )
+
+            if not context.add_callback(client_gone):
+                client_gone()
 
             request_message.id = tracking_id
             request_message._freeze()
@@ -419,9 +561,11 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
 
             try:
                 response_message = request_context.future.result(timeout)
-            except futures.TimeoutError as te:  # a different TimeoutError
+            except futures.TimeoutError as te:
+                # raised by the wait, or with the reason the request was
+                # given up for
                 raise TimeoutError(
-                    f'Node processing timed out after {timeout}s'
+                    str(te) or f'Node processing timed out after {timeout}s'
                 ) from te
             finally:
                 # once removed, a message still queued is skipped by the node
@@ -438,12 +582,19 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             dropped = None if self.strict else list()
 
             try:
+                response_proto = (
+                    None
+                    if response_message is None
+                    else message_to_proto(response_message, dropped)
+                )
+
+                # a request message the node forwarded goes back under the
+                # id its client gave it, not the tracking id
+                if response_message is request_message:
+                    response_proto.id = request_context.message_id
+
                 response_envelope = create_envelope(
-                    message=(
-                        None
-                        if response_message is None
-                        else message_to_proto(response_message, dropped)
-                    ),
+                    message=response_proto,
                     creator=self.remote_name,
                     pipe_id=pipe_id,
                     state=response_state,
@@ -463,11 +614,12 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                     stateless=stateless,
                     dropped=dropped,
                 )
-            except TypeError as e:
+            except (TypeError, ValueError) as e:
                 if self.strict:
                     raise DataLossError(str(e)) from e
 
-                raise
+                # not the fault of the request: never INVALID_ARGUMENT
+                raise RuntimeError(f'The response cannot be sent: {e}') from e
 
             # once per client: paths holding keys or indices are always new
             if dropped:
@@ -496,7 +648,12 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             logger.error(f'Timeout for {tracking_id}: {e}')
             context.abort(grpc.StatusCode.DEADLINE_EXCEEDED, str(e))
             return ProtoEnvelope()
-        except ValueError as ve:
+        except TooManyClientsError as e:
+            self._increment_stat('refused_requests')
+            logger.warning(f'Request refused: {e}')
+            context.abort(grpc.StatusCode.RESOURCE_EXHAUSTED, str(e))
+            return ProtoEnvelope()
+        except InvalidRequestError as ve:
             self._increment_stat('invalid_requests')
             logger.error(f'Invalid request: {ve}')
             context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(ve))
@@ -534,7 +691,17 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             return self.stats.copy()
 
 
-def serve(args):
+def serve(args) -> int:
+    """
+    Build the node and serve it until SIGINT or SIGTERM.
+
+    Returns
+    -------
+    int
+        The exit code of the command: 0 after a clean stop, 1 when the node
+        cannot be built or the port cannot be used.
+
+    """
     jt_logger().setLevel(args.log_level)
 
     if args.default_config:
@@ -555,16 +722,19 @@ def serve(args):
 
         if node_instance is None:
             logger.error('Failed to build node.')
-            return
+            return 1
 
         logger.info(f"Node '{node_instance.name}' built successfully.")
 
     except Exception as e:
         logger.error(f'Failed to instantiate node: {e}', exc_info=True)
-        return
+        return 1
 
     service_impl = MessagingServiceImpl(
-        node_instance, remote_name=args.pipe_name, strict=args.strict
+        node_instance,
+        remote_name=args.pipe_name,
+        strict=args.strict,
+        max_clients=args.max_clients,
     )
 
     server = grpc.server(
@@ -572,7 +742,13 @@ def serve(args):
         options=[
             ('grpc.max_send_message_length', 100 * 1024 * 1024),
             ('grpc.max_receive_message_length', 100 * 1024 * 1024),
+            # a second service on the same port must fail, not share it
+            ('grpc.so_reuseport', 0),
         ],
+        # requests beyond this are refused, they do not queue in memory
+        maximum_concurrent_rpcs=(
+            args.max_requests or args.max_workers * REQUESTS_PER_WORKER
+        ),
     )
 
     messaging_service_pb2_grpc.add_MessagingServiceServicer_to_server(
@@ -580,7 +756,18 @@ def serve(args):
         server,
     )
 
-    server.add_insecure_port(f'[::]:{args.port}')
+    try:
+        bound_port = server.add_insecure_port(f'[::]:{args.port}')
+    except RuntimeError as e:
+        logger.error(f'Cannot listen on port {args.port}: {e}')
+        bound_port = 0
+
+    if not bound_port:
+        service_impl.shutdown()
+        node_instance.kill()
+        node_instance.destroy()
+
+        return 1
 
     stop_requested = threading.Event()
 
@@ -598,6 +785,8 @@ def serve(args):
         pass
 
     shutdown(server, service_impl, node_instance)
+
+    return 0
 
 
 def shutdown(server, service_impl: MessagingServiceImpl, node: Node):
