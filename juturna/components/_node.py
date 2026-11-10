@@ -333,10 +333,9 @@ class Node[T_Input, T_Output]:
             The message to be transmitted.
 
         """
-        object.__setattr__(
-            message, '_data_source_id', self._last_data_source_evt_id
-        )
-        _ = message._freeze() if isinstance(message, Message) else None
+        if isinstance(message, Message) and not message._is_frozen:
+            message._data_source_id = self._last_data_source_evt_id
+            message._freeze()
 
         for node_name in self._destinations:
             self._destinations[node_name].put(message)
