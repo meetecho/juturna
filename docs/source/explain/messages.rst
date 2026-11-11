@@ -22,7 +22,7 @@ This design favours:
 - **observability**, as every message carries its own timing and provenance
   data;
 - **isolation** as a direct consequence of the nature of messages (at any given
-  time, a message can be evaulated without extra information needed on its
+  time, a message can be evaluated without extra information needed on its
   context).
 
 .. image:: ../_static/img/message.svg
@@ -35,7 +35,7 @@ Messages
 
 As said, a message is just a simple data container. It carries a payload, plus
 some extra fields that can be useful to determine who generated it, when, and in
-which order comared to other messages.
+which order compared to other messages.
 
 Other than its basic properties, such as ``creator``, ``version``, ``payload``,
 ``meta`` and ``timers``, a message offers a few methods that can help with
@@ -70,15 +70,15 @@ Juturna offers a number of built-in media and structural payloads.
 - ``AudioPayload`` carries ``np.ndarray`` audio waveforms with metadata
   (sampling rate, channels, start/end timestamps).
 - ``ImagePayload`` wraps multidimensional ``np.ndarray`` arrays containing
-  images, attaching metadata such as width, height, dept, pixel format, and
+  images, attaching metadata such as width, height, depth, pixel format, and
   timestamp.
-- ``VideoPayload`` holds to a list of ``ImagePayload``, with metadata on frames
+- ``VideoPayload`` holds a tuple of ``ImagePayload``, with metadata on frames
   per second and duration (start and end timestamps).
 - ``BytesPayload`` only contains an array of bytes.
 - ``Batch`` contains a tuple of messages, for nodes that collect several
   messages and transmit them together. The messages can be given as any
   sequence, and are frozen together with the message that carries the batch.
-- ``ObjectPayload`` is a subclass of ``dict`` design to hold arbitrary key-value
+- ``ObjectPayload`` is a subclass of ``dict`` designed to hold arbitrary key-value
   pairs. Two of them are equal when their content is (arrays included), and an
   ``ObjectPayload`` is equal to a plain ``dict`` with the same content. Like a
   ``dict``, it cannot be hashed, so it cannot be a dictionary key or a set item.
@@ -93,7 +93,7 @@ Immutability
 The key aspect of both messages and payloads is **immutability**. In short:
 
 - received messages within a node are immutable;
-- playloads are always immutable, so they cannot be modified once created;
+- payloads are always immutable, so they cannot be modified once created;
 - messages can be `drafted`, so they can be modified before being finalised for
   transmission.
 
@@ -123,7 +123,7 @@ other object.
   File "<string>", line 4, in __setattr__
   dataclasses.FrozenInstanceError: cannot assign to field 'channels'
 
-There are situations where it might be conveniente to iteratively create a
+There are situations where it might be convenient to iteratively create a
 payload, without the need to store its attribute values somewhere and assign
 them only once. In this case, a message can be created with a payload draft. A
 payload draft accepts the type of payload it will eventually be turned into as

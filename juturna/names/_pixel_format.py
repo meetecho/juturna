@@ -6,6 +6,7 @@ from enum import unique
 class PixelFormat(StrEnum):
     """
     Supported pixel formats for image and video payloads.
+
     - RGB / BGR (24-bit):
       ``RGB24``, ``BGR24``
     - RGBA (32-bit with alpha):

@@ -1,37 +1,38 @@
-Docker
-======
+Build a Docker image
+====================
 
 In the Juturna repository you will find a ``Dockerfile`` that can be used to
-create a base Juturna image. To build it, symply navigate within the repo
+create a base Juturna image. To build it, navigate within the repo
 folder and run:
 
 .. code-block:: console
 
     $ docker build -t juturna:latest .
 
-The created image will include the core Juturna code, and all its plugins. You
-can find them in the ``/root/juturna`` folder.
+The image contains the core Juturna library, installed from the repository
+folder, with the ``full`` optional group (``httpwrapper``, ``pipebuilder`` and
+``warp``). It contains no nodes: install ``juturna-nodes``, or your own node
+packages, in an image built on top of it.
 
-By default, this image contains all the available juturna optional dependency
-groups. This can be changed by passing the `JT_VERSION` variable to the build
-command. Installing the core package only, for instance, can be done with:
+The optional groups can be changed with the ``JT_VERSION`` build argument.
+To install the core package only:
 
 .. code-block:: console
 
     $ docker build --build-arg JT_VERSION="" -t juturna:latest .
 
-Other individual groups can be targeted as well:
+Or a single group:
 
 .. code-block:: console
+
     $ docker build --build-arg JT_VERSION="[warp]" -t juturna:latest .
 
 Dev image
 ---------
 
-Should you require to build a Docker image for development purposes, you can do
-so by adding a few extra items in the ``Dockerfile``. Whilst plugins do not
-require reinstalling Juturna to be updated, changing the code does. This can be
-automated with the following:
+While working on Juturna itself, it is handy to have a container that
+reinstalls the library whenever its code changes. This can be automated with
+the following files:
 
 .. tab-set::
 
@@ -42,10 +43,6 @@ automated with the following:
             FROM python:3.12-slim
 
             RUN mkdir -p /juturna_dev
-
-            COPY ./requirements.txt /juturna_dev
-
-            RUN pip install -r /juturna_dev/requirements.txt
 
             RUN apt-get update -y && apt-get install -y --no-install-recommends \
                 git jq libgl1 libglib2.0-0 libsm6 libxext6 ffmpeg \
@@ -67,7 +64,7 @@ automated with the following:
             pip install --no-cache /juturna
             echo "Starting file watcher..."
 
-            while inotifywait -r -e modify,create,delete /juturna /jutest/plugins \
+            while inotifywait -r -e modify,create,delete /juturna \
                               --exclude '(__pycache__|\.pyc|\.git)'; do
                 echo "Changes detected, reinstalling..."
                 pip install --no-cache /juturna
@@ -87,12 +84,11 @@ automated with the following:
 
             docker run \
                    -d \
-                   -vvv \
                    --name juturna_dev \
                    --network host \
                    --volume $1:/juturna \
                    juturna_dev:latest \
-                   /usr/local/bin/./watch.sh
+                   /usr/local/bin/watcher.sh
 
             sleep 3
 

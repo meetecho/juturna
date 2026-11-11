@@ -1,7 +1,15 @@
 .. _reference:
 
-Explore the APIs
-================
+Python API
+==========
 
-This section contains the compiled docstrings for all the relevant bits of the
-juturna library.
+The documentation of the public modules of the ``juturna`` package, generated
+from their docstrings.
+
+The names you will use most are ``juturna.components`` (``Pipeline``,
+``Node``, ``Message``) and ``juturna.payloads``.
+
+.. toctree::
+   :maxdepth: 2
+
+   juturna

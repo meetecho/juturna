@@ -62,7 +62,7 @@ available to all its downstream destinations.
 So, a node receives data, and spits out data.
 
 Broadly speaking, nodes can be split into three logical categories, depending on
-the task they are programmed to performed:
+the task they are programmed to perform:
 
 **Source nodes** are root nodes that either consume external data (obtained from
 real-time streams, remote or local files, databases, HTTP or websocket
@@ -76,7 +76,7 @@ pipeline. In the above pipeline examples, source nodes are the green ones.
 
 **Processing nodes** (proc node if you are in a hurry) are intermediate nodes in
 the pipeline. A processing node receives data from all its upstream connections,
-processes them, and send the results downstream into the pipeline. Looking back
+processes them, and sends the results downstream into the pipeline. Looking back
 at the previous audio/video pipeline example, ``stt`` is a proc node with a
 single input and multiple outputs, ``translate`` is a proc node with a single
 input and a single output, and ``subtitles`` is a proc node with multiple inputs
@@ -102,11 +102,13 @@ destination you need to reach, you can still create a custom node for it!
 When designing a pipeline, there are some alternatives for how to get the nodes
 you need:
 
-#. use Juturna **built-in nodes**, that are, all those nodes that are available
-   within the Juturna library itself
-#. use community **plugin nodes**, that are, nodes that can be distributed
-   through GitHub, the Juturna Hub facility, or any other tool you can think of
+#. use the **official nodes** of the ``juturna-nodes`` package, maintained by
+   the Juturna team
+#. use **community nodes**, distributed like any other Python package
 #. implement your own **custom nodes** (this is the fun solution!)
+
+The core library itself ships no nodes: it finds the ones installed in your
+environment.
 
 Messages and payloads
 ---------------------
@@ -116,4 +118,4 @@ Nodes within a pipeline pass data around using
 utilities attached to it. Also, messages can be created with the definition of
 the type of data they are going to encapsulate (a **payload**). This comes
 especially helpful when nodes are defined, so that users can have an idea of
-what kinda of data a node expects at the input, and produces at the output.
+what kind of data a node expects at the input, and produces at the output.

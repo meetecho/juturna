@@ -20,8 +20,8 @@ specific deployment of Juturna.
 This policy covers security vulnerabilities in:
 
 - the Juturna Python library (source code hosted in this repository);
-- official plugins and nodes distributed through the Juturna hub under
-  the `meetecho` organisation;
+- official nodes distributed in the `juturna-nodes` package under the
+  `meetecho` organisation;
 - the packaging, build and release pipeline (CI/CD, Dockerfile, published
   packages) used to distribute Juturna.
 

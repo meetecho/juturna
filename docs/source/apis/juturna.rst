@@ -8,11 +8,11 @@ Subpackages
    :maxdepth: 4
 
    juturna.components
-   juturna.hub
    juturna.meta
    juturna.names
-   juturna.nodes
    juturna.payloads
+   juturna.telemetry
+   juturna.transport
    juturna.utils
 
 Module contents

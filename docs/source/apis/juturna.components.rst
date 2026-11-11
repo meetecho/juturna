@@ -1,6 +1,14 @@
 juturna.components package
 ==========================
 
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   juturna.components.exceptions
+
 Module contents
 ---------------
 

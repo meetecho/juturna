@@ -15,17 +15,53 @@ breaking changes between releases, so you can upgrade with confidence.
 useful for fast prototyping multimedia, **real-time** data applications, as
 well as exploring and testing AI models, in a modular and flexible fashion.
 
-Among its many features, there are a few keypoints to highligh about Juturna:
+Among its many features, there are a few keypoints to highlight about Juturna:
 
-* **Real-Time Streaming:** continuouusly process audio, video and
+* **Real-Time Streaming:** continuously process audio, video and
   arbitrary data streams
-* **Modularity:** create your own nodes and share them through
-  the Juturna hub
+* **Modularity:** create your own nodes and share them as Python packages
 * **Composable workloads:** design pipelines to solve complex tasks in
   minutes
 * **Parallelism & Batching:** parallel, non-blocking execution for high
   throughput
 * **Observability:** built-in logging and metrics support
+
+## Quick start
+
+Juturna needs Python 3.12 or newer.
+
+```bash
+pip install juturna          # the core library and its CLI
+pip install juturna-nodes    # the officially supported nodes
+```
+
+A pipeline is a JSON file that lists nodes and the links between them:
+
+```json
+{
+  "version": "3.0.0",
+  "pipeline": {
+    "name": "http_echo",
+    "id": "http_echo_01",
+    "folder": "./run",
+    "nodes": [
+      { "name": "receiver", "type": "JsonHTTP", "configuration": {} },
+      { "name": "delay", "type": "PassthroughIdentity", "configuration": {} }
+    ],
+    "links": [
+      { "from": "receiver", "to": "delay" }
+    ]
+  }
+}
+```
+
+```bash
+python -m juturna validate --config pipeline.json
+python -m juturna launch --config pipeline.json
+```
+
+The documentation has a tutorial that builds a pipeline from scratch, nodes
+included, and a guide to upgrade from Juturna 2.x.
 
 Documentation: [https://meetecho.github.io/juturna/index.html](https://meetecho.github.io/juturna/index.html)
 
