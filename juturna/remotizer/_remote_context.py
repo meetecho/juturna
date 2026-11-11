@@ -17,6 +17,7 @@ class RequestContext:
         response_type: str = None,
         state_key: tuple[str, str] | None = None,
         state: State | None = None,
+        message: Message | None = None,
     ):
         self.sender = sender
         self.envelope_id = envelope_id
@@ -27,6 +28,8 @@ class RequestContext:
         self.state_key = state_key
         # set for a stateless client only, otherwise the state is in the store
         self.state = state
+        # the message queued on the node for this request
+        self.message = message
         self.output: Message | None = None
         # what the update produced that cannot reach the client, strict mode
         self.data_loss: str | None = None

@@ -17,6 +17,7 @@ from juturna.remotizer.utils import (  # noqa: E402
     create_envelope,
     deserialize_envelope,
     message_to_proto,
+    to_typed_value,
 )
 
 
@@ -86,9 +87,15 @@ class Accumulator(Node):
 class _Context:
     def __init__(self):
         self.aborted = None
+        self.callbacks = list()
 
     def abort(self, code, details):
         self.aborted = (code, details)
+
+    def add_callback(self, callback):
+        self.callbacks.append(callback)
+
+        return True
 
 
 @pytest.fixture
@@ -643,3 +650,260 @@ def test_skipped_messages_never_reach_update(wait_for_condition):
         assert node.calls == 2
     finally:
         node.kill()
+
+
+class Crossing(Node):
+    """Answer n=1 from another thread, later; keep n=2 busy; forward n=3."""
+
+    def update(self, message, state=None):
+        n = message.payload['n']
+        state['seen'] = state.get('seen', 0) + 1
+
+        if n == 1:
+            late = Message(
+                creator=self.name, payload=ObjectPayload(secret_of='first')
+            )
+            threading.Timer(0.1, self.transmit, args=(late,)).start()
+        elif n == 2:
+            time.sleep(0.5)
+        elif n == 3:
+            self.transmit(message)
+        elif n == 4:
+            state['big'] = 2**70
+        elif n == 5:
+            self.transmit(Message(payload=ObjectPayload(n=n)))
+
+
+@pytest.fixture(params=[False, True], ids=['lenient', 'strict'])
+def crossing(request):
+    node = Crossing(node_name='crossing', pipe_name='remote')
+    node.start()
+
+    impl = remote.MessagingServiceImpl(
+        node, remote_name='remote', strict=request.param
+    )
+
+    yield impl
+
+    impl.shutdown()
+    node.kill()
+
+
+def test_message_of_another_thread_never_answers_another_client(crossing):
+    records = _Records()
+    remote.logger.addHandler(records)
+
+    try:
+        first = _call(crossing, 'pipe_a', 'warp', {}, n=1)
+        # the message made for the first client is transmitted while the
+        # message of the second one is inside update()
+        second = _call(crossing, 'pipe_b', 'warp', {}, n=2)
+    finally:
+        remote.logger.removeHandler(records)
+
+    assert first['message'] is None
+    assert second['message'] is None, 'output of another client delivered'
+    assert second['state'] == {'seen': 1}
+    assert any('by another thread' in m for m in records.messages), (
+        records.messages
+    )
+
+    # the client of that message is not known, so no client pays for it
+    assert _call(crossing, 'pipe_b', 'warp', None, n=2)['message'] is None
+
+
+def test_forwarded_request_message_keeps_the_id_of_its_client(crossing):
+    envelope = _envelope('pipe', 'warp', {}, n=3)
+    envelope.message.id = 777777
+
+    response = deserialize_envelope(
+        crossing.SendAndReceive(envelope, _Context())
+    )
+
+    assert response['message'].payload['n'] == 3
+    assert response['message'].id == 777777
+
+
+def test_message_with_the_id_of_a_request_is_not_taken_for_it(service):
+    queued = Message(creator='warp', payload=ObjectPayload(n=1))
+    queued.id = 5
+    other = Message(creator='source', payload=ObjectPayload(n=1))
+    other.id = 5
+
+    service.pending_requests[5] = remote.RequestContext(
+        sender='warp',
+        envelope_id='e',
+        message_id=1,
+        timeout=30,
+        state_key=('pipe', 'warp'),
+        state=State(count=2),
+        message=queued,
+    )
+
+    assert service._resolve_state(other) is Node.SKIP_UPDATE
+    assert service._resolve_state(queued) == {'count': 2}
+
+
+def test_state_value_that_cannot_be_sent_does_not_break_the_client(crossing):
+    first = _call(crossing, 'pipe', 'warp', {}, n=4)
+    after = _call(crossing, 'pipe', 'warp', None, n=2)
+
+    if crossing.strict:
+        for code, details in (first, after):
+            assert code.name == 'DATA_LOSS'
+            assert "state['big']: a number outside the 64-bit range" in details
+    else:
+        assert first['state'] == {'seen': 1}
+        assert after['state'] == {'seen': 2}
+
+    assert crossing.get_stats()['invalid_requests'] == 0
+
+
+def test_response_that_cannot_be_sent_is_not_an_invalid_request(crossing):
+    code, details = _call(crossing, 'pipe', 'warp', {}, n=5)
+
+    assert code.name == ('DATA_LOSS' if crossing.strict else 'INTERNAL')
+    assert 'message.creator: None cannot be sent' in details
+    assert crossing.get_stats()['invalid_requests'] == 0
+
+
+def test_new_sticky_clients_are_refused_beyond_the_limit():
+    node = Counter(node_name='counter', pipe_name='remote')
+    node.start()
+    service = remote.MessagingServiceImpl(node, remote_name='r', max_clients=1)
+
+    try:
+        known = _call(service, 'pipe_a', 'warp', {})
+        code, details = _call(service, 'pipe_b', 'warp', {})
+        stateless = _call(service, 'pipe_c', 'warp', {}, stateless=True)
+
+        assert known['state'] == {'count': 1}
+        assert code.name == 'RESOURCE_EXHAUSTED'
+        assert 'state of 1 clients' in details
+        assert stateless['state'] == {'count': 1}, 'stateless clients refused'
+        assert _call(service, 'pipe_a', 'warp', None)['state'] == {'count': 2}
+        assert service.get_stats()['refused_requests'] == 1
+    finally:
+        service.shutdown()
+        node.kill()
+
+
+def test_message_of_a_client_that_left_is_skipped(service, wait_for_condition):
+    service.node.gate.clear()
+    contexts = [_Context(), _Context()]
+    results = dict()
+
+    def send(index):
+        response = service.SendAndReceive(
+            _envelope('pipe', f'warp_{index}', {}), contexts[index]
+        )
+        results[index] = contexts[index].aborted or response
+
+    senders = [threading.Thread(target=send, args=(i,)) for i in range(2)]
+
+    for sender in senders:
+        sender.start()
+        assert wait_for_condition(
+            lambda: len(service.pending_requests) == senders.index(sender) + 1,
+            interval=0.01,
+        )
+
+    # the first message is inside update(), the second one is still queued
+    # when its client cancels the call
+    for callback in contexts[1].callbacks:
+        callback()
+
+    senders[1].join(timeout=5.0)
+    service.node.gate.set()
+    senders[0].join(timeout=5.0)
+
+    assert results[1][0].name == 'DEADLINE_EXCEEDED'
+    assert 'Client gone' in results[1][1]
+    assert deserialize_envelope(results[0])['state'] == {'count': 1}
+    assert wait_for_condition(lambda: service.node._queue.empty())
+    assert service.node.calls == 1
+
+
+@pytest.mark.parametrize('state', [3, [1, 2]], ids=['int', 'list'])
+def test_state_that_is_not_a_dict_is_invalid(service, state):
+    envelope = _envelope('pipe', 'warp', {})
+    envelope.state.CopyFrom(to_typed_value(state))
+
+    context = _Context()
+    service.SendAndReceive(envelope, context)
+
+    assert context.aborted[0].name == 'INVALID_ARGUMENT'
+    assert service.node.calls == 0
+
+
+def _remotize_args(tmp_path, monkeypatch, *arguments):
+    import argparse
+
+    from juturna.cli.commands import remotize
+
+    # the service creates its runtime folder in the working directory
+    monkeypatch.chdir(tmp_path)
+
+    parser = argparse.ArgumentParser()
+    remotize.setup_parser(parser.add_subparsers())
+
+    return parser.parse_args(['remotize', '-n', 'node', *arguments])
+
+
+def test_serve_fails_when_the_node_cannot_be_built(tmp_path, monkeypatch):
+    args = _remotize_args(
+        tmp_path, monkeypatch, '-t', 'contrib.jt_test.nodes.Missing'
+    )
+
+    assert remote.serve(args) == 1
+
+
+def test_serve_fails_when_the_port_is_taken(tmp_path, monkeypatch):
+    import socket
+
+    try:
+        taken = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        taken.bind(('::', 0))
+    except OSError:
+        pytest.skip('no IPv6 socket available')
+
+    taken.listen()
+    destroyed = list()
+
+    from juturna.contrib.jt_test.nodes import PassthroughIdentity
+
+    monkeypatch.setattr(
+        PassthroughIdentity, 'destroy', lambda self: destroyed.append(self)
+    )
+
+    try:
+        args = _remotize_args(
+            tmp_path,
+            monkeypatch,
+            '-t',
+            'contrib.jt_test.nodes.PassthroughIdentity',
+            '-p',
+            str(taken.getsockname()[1]),
+        )
+
+        assert remote.serve(args) == 1
+    finally:
+        taken.close()
+
+    assert len(destroyed) == 1, 'the node built for the service was kept'
+    assert destroyed[0]._worker_thread is None
+
+
+def test_remotize_command_exits_with_the_code_of_the_service(tmp_path):
+    import os
+
+    out = subprocess.run(
+        [sys.executable, '-m', 'juturna', 'remotize', '-n', 'node']
+        + ['-t', 'contrib.jt_test.nodes.Missing'],
+        capture_output=True,
+        text=True,
+        cwd=tmp_path,
+        env={**os.environ, 'PYTHONPATH': os.pathsep.join(sys.path)},
+    )
+
+    assert out.returncode == 1, out.stderr
