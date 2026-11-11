@@ -37,7 +37,7 @@ repos:
         args: ["--ini", ".bandit"]
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.8
+    rev: v0.17.4
     hooks:
       - id: ruff
         args: [--fix]
