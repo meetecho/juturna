@@ -21,6 +21,9 @@ from juturna.telemetry import TelemetryManager
 
 _WAKE = object()
 
+# how often a stop() waiting for a worker checks whether it became a kill
+_JOIN_POLL = 0.1
+
 
 class Node[T_Input, T_Output]:
     """
@@ -83,8 +86,10 @@ class Node[T_Input, T_Output]:
         self._update_failures = 0
         self._source_failures = 0
         self._worker_failures = 0
+        self._rejected_items = 0
         self._last_failure_at = None
         self._stuck_workers: list[str] = list()
+        self._health_lock: jt.transport.Lock = self._transport.new_lock()
 
         self._auto_dump = False
 
@@ -115,12 +120,15 @@ class Node[T_Input, T_Output]:
         """
         Counter of how many failues the node experienced across its threads.
         Values are split per-thread, so it will give the total for update,
-        worker and source (if present).
+        worker and source (if present). ``rejected_items`` counts the items
+        that were not a ``Message`` and were refused, wherever they came from
+        (the source, ``put()`` or ``transmit()``).
         """
         return {
             'update_failures': self._update_failures,
             'worker_failures': self._worker_failures,
             'source_failures': self._source_failures,
+            'rejected_items': self._rejected_items,
             'last_failure_at': self._last_failure_at,
             'stuck_workers': list(self._stuck_workers),
         }
@@ -186,7 +194,24 @@ class Node[T_Input, T_Output]:
         return self._state_resolver(message)
 
     def put(self, message: Message):
+        """
+        Deliver a message to the node, waiting for a free slot in its input
+        queue.
+
+        Only ``Message`` objects are accepted: anything else is refused,
+        logged and counted in ``health`` under ``rejected_items``. A message
+        for a node that is stopped or being killed is discarded, so that a
+        sender never waits for a node that will not read its queue again.
+        """
+        if not isinstance(message, Message):
+            self._reject(message, 'put()')
+
+            return
+
         while not self._kill_event.is_set():
+            if self._status == ComponentStatus.STOPPED:
+                return
+
             try:
                 self._queue.put(message, timeout=0.1)
 
@@ -329,22 +354,47 @@ class Node[T_Input, T_Output]:
 
         Parameters
         ----------
-        message : Message | None
-            The message to be transmitted.
+        message : Message
+            The message to be transmitted. Anything that is not a ``Message``
+            is refused: it is logged, counted in ``health`` under
+            ``rejected_items``, and not delivered.
+
+        Raises
+        ------
+        Exception
+            The first error raised by a destination, once the message has
+            been offered to all of them.
 
         """
-        if isinstance(message, Message) and not message._is_frozen:
+        if not isinstance(message, Message):
+            self._reject(message, 'transmit()')
+
+            return
+
+        if not message._is_frozen:
             message._data_source_id = self._last_data_source_evt_id
             message._freeze()
 
-        for node_name in self._destinations:
-            self._destinations[node_name].put(message)
+        first_error = None
 
-        if isinstance(message, Message):
-            self._rec_telemetry(message, 'tx')
+        # every destination gets the message, whatever happens to the others
+        for node_name, destination in list(self._destinations.items()):
+            try:
+                destination.put(message)
+            except Exception as error:
+                first_error = first_error or error
+                self.logger.error(
+                    f'cannot deliver message id {message.id} to {node_name}',
+                    exc_info=True,
+                )
+
+        self._rec_telemetry(message, 'tx')
 
         if self._auto_dump:
             self.dump_json(message, f'auto_{message.id}.json')
+
+        if first_error is not None:
+            raise first_error
 
     def start(self):
         """
@@ -395,18 +445,12 @@ class Node[T_Input, T_Output]:
         When the node is being killed (see ``kill()``), each thread is only
         waited for ``JUTURNA_THREAD_JOIN_TIMEOUT`` seconds: a thread still
         busy after that is left behind, and listed in ``health`` under
-        ``stuck_workers``.
+        ``stuck_workers``. This holds for a kill that arrives while stop() is
+        already waiting, too: ``signal_kill()`` from another thread ends the
+        wait, and the messages left in the input queue are discarded.
         """
         if self._status == ComponentStatus.STOPPED:
             return
-
-        # the kill event is the only signal available here: subclasses call
-        # super().stop() without arguments, so kill() cannot pass a timeout
-        join_timeout = (
-            jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT
-            if self._kill_event.is_set()
-            else None
-        )
 
         for _evt, _t, _wake in [
             (self._stop_source_event, self._source_thread, None),
@@ -420,12 +464,11 @@ class Node[T_Input, T_Output]:
             if _t is None or self._transport.is_current(_t):
                 continue
 
-            _t.join(timeout=join_timeout)
-
-            if _t.is_alive():
+            if not self._join_worker(_t):
                 self._stuck_workers.append(_t.name)
                 self.logger.warning(
-                    f'worker {_t.name} did not exit within {join_timeout}s, '
+                    f'worker {_t.name} did not exit within '
+                    f'{jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT}s, '
                     'leaving it behind'
                 )
 
@@ -433,7 +476,36 @@ class Node[T_Input, T_Output]:
         self._source_thread = None
         self._status = ComponentStatus.STOPPED
 
+        if self._kill_event.is_set():
+            self._discard_queue()
+
         self.logger.info('node stopped')
+
+    def _join_worker(self, handle: jt.transport.WorkerHandle) -> bool:
+        """
+        Wait for a worker to exit: for as long as it takes, or for
+        ``JUTURNA_THREAD_JOIN_TIMEOUT`` seconds from the moment the node is
+        killed. Return whether the worker exited.
+        """
+        # the kill event is the only signal available here: subclasses call
+        # super().stop() without arguments, so kill() cannot pass a timeout.
+        # It is polled, as a kill can arrive while stop() is already waiting
+        while not self._kill_event.is_set():
+            handle.join(timeout=_JOIN_POLL)
+
+            if not handle.is_alive():
+                return True
+
+        handle.join(timeout=jt.meta.JUTURNA_THREAD_JOIN_TIMEOUT)
+
+        return not handle.is_alive()
+
+    def _discard_queue(self):
+        while True:
+            try:
+                self._queue.get_nowait()
+            except jt.transport.Empty:
+                break
 
     def signal_kill(self):
         """
@@ -465,12 +537,7 @@ class Node[T_Input, T_Output]:
 
         self.signal_kill()
         self.stop()
-
-        while True:
-            try:
-                self._queue.get_nowait()
-            except jt.transport.Empty:
-                break
+        self._discard_queue()
 
         self.logger.info('node killed')
 
@@ -574,6 +641,19 @@ class Node[T_Input, T_Output]:
 
                 continue
 
+            if message is not None and not isinstance(message, Message):
+                # backs off like a failing call, or a source that returns
+                # the wrong thing every time would spin and flood the log
+                consecutive_failures += 1
+                self._reject(message, 'the source function')
+
+                if self._stop_source_event.wait(
+                    self._source_backoff(consecutive_failures)
+                ):
+                    return
+
+                continue
+
             consecutive_failures = 0
 
             if self._stop_source_event.is_set():
@@ -600,13 +680,28 @@ class Node[T_Input, T_Output]:
             max(jt.meta.JUTURNA_SOURCE_MAX_BACKOFF, base),
         )
 
+    def _reject(self, item: Any, origin: str):
+        with self._health_lock:
+            self._rejected_items += 1
+            rejected = self._rejected_items
+
+        self.logger.error(
+            f'{type(item).__name__} from {origin} is not a Message, '
+            f'rejected ({rejected} so far)'
+        )
+
     def _ingest(self, message: Message):
         if message is _WAKE:
             return
 
+        # a queue shared with another worker is not filled through put()
+        if not isinstance(message, Message):
+            self._reject(message, 'the input queue')
+
+            return
+
         try:
-            if isinstance(message, Message):
-                self._rec_telemetry(message, 'rx')
+            self._rec_telemetry(message, 'rx')
         except Exception:
             self._worker_failures += 1
             self._last_failure_at = time.time()

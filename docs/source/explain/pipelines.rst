@@ -133,6 +133,48 @@ node in the pipeline.
 ``destroy()`` can be invoked if any kind of custom memory management should be
 performed by any of its composing nodes.
 
+``kill()`` stops a running pipeline without processing the messages still in
+the queues of its nodes, and without waiting for a node that is busy: every
+node thread gets ``JUTURNA_THREAD_JOIN_TIMEOUT`` seconds to exit, then it is
+left behind.
+
+Stopping when something goes wrong
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+``stop()`` waits for every ``update()`` call in progress, however long it
+takes. When a node does not come back, call ``kill()`` from another thread:
+it is the only lifecycle method allowed while a ``stop()`` is in progress
+(every other one raises ``PipelineBusyError``). The kill reaches every node,
+the stop in progress no longer waits and discards the pending messages, and
+``kill()`` returns once that stop is over. The same holds for the stop that
+``destroy()`` runs on a running pipeline.
+
+.. code-block:: python
+
+   stopper = threading.Thread(target=pipeline.stop)
+   stopper.start()
+   stopper.join(timeout=30)
+
+   if stopper.is_alive():
+       pipeline.kill()
+
+``stop()``, ``kill()`` and ``destroy()`` always go through all the nodes. When
+the ``stop()`` or the ``destroy()`` of a node raises, the error is logged, the
+threads of that node are stopped all the same, and the other nodes follow. The
+pipeline reaches ``STOPPED`` (or ``DESTROYED``), and only then the first error
+is raised to the caller: a pipeline with a node that fails to clean up can
+still be destroyed.
+
+An interrupt (``ctrl+c``) during ``stop()`` or ``destroy()`` leaves the
+pipeline free for another call, which goes on with the nodes that are left.
+
+A node that stops on its own does not hold the others: the messages sent to a
+stopped node are discarded, so the nodes before it never wait for it.
+
+``update_node()`` changes a property of a node from the thread of the caller.
+It raises ``PipelineNotReadyError`` before the warm up and
+``PipelineDestroyedError`` after the destruction.
+
 Any call sequence that does not respect the state transitions here discussed
 will generate an exception:
 

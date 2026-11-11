@@ -145,8 +145,10 @@ class Pipeline:
         self._telemetry = False
 
         self._status = PipelineStatus.NEW
-        self._status_lock = threading.Lock()
+        # a condition, so that kill() can wait for the stop() it pre-empts
+        self._status_lock = threading.Condition()
         self._transitioning = False
+        self._transition_op: str | None = None
         self._started_nodes: list[str] = list()
 
         self.created_at = time.time()
@@ -281,6 +283,7 @@ class Pipeline:
                 raise illegal[current](self.name, message)
 
             self._transitioning = True
+            self._transition_op = op_name
 
             return True
 
@@ -289,6 +292,8 @@ class Pipeline:
         with self._status_lock:
             self._status = new_status
             self._transitioning = False
+            self._transition_op = None
+            self._status_lock.notify_all()
 
     def _abort_transition(
         self, rollback: typing.Callable[[], None] | None = None
@@ -310,6 +315,8 @@ class Pipeline:
         finally:
             with self._status_lock:
                 self._transitioning = False
+                self._transition_op = None
+                self._status_lock.notify_all()
 
     def warmup(self):
         """
@@ -572,10 +579,51 @@ class Pipeline:
     def update_node(
         self, node_name: str, property_name: str, property_value: typing.Any
     ):
-        if node := self._nodes.get(node_name):
-            node.set_on_config(property_name, property_value)
-        else:
+        """
+        Change a property of a node, through its ``set_on_config()``.
+
+        The call runs in the thread of the caller, while the node may be
+        processing a message: a node that accepts changes this way protects
+        whatever ``update()`` reads as well.
+
+        Raises
+        ------
+        PipelineNotReadyError
+            If the pipeline was not warmed up, so it has no node yet.
+        PipelineDestroyedError
+            If the pipeline was destroyed.
+        PipelineBusyError
+            If the pipeline is being destroyed.
+
+        """
+        with self._status_lock:
+            if self._status == PipelineStatus.DESTROYED:
+                raise PipelineDestroyedError(
+                    self.name,
+                    f'pipeline {self.name} is destroyed, cannot update '
+                    f'node {node_name}',
+                )
+
+            if self._transition_op == 'destroy':
+                raise PipelineBusyError(
+                    self.name,
+                    f'pipeline {self.name} is being destroyed, cannot '
+                    f'update node {node_name}',
+                )
+
+            if self._status == PipelineStatus.NEW:
+                raise PipelineNotReadyError(
+                    self.name, f'pipeline {self.name} is not ready'
+                )
+
+            node = (self._nodes or dict()).get(node_name)
+
+        if node is None:
             self._logger.warning(f'node {node_name} not in pipeline')
+
+            return
+
+        node.set_on_config(property_name, property_value)
 
     def start(self):
         """
@@ -676,40 +724,113 @@ class Pipeline:
         This method stops all the nodes in the pipeline, sending a
         stopping signal to each node that will cause them to stop processing
         upcoming data and to propagate the stopping signal to their destinations
+
+        Every node is stopped, whatever happens to the others. When the
+        ``stop()`` of a node raises, the error is logged, the workers of that
+        node are stopped all the same, and the remaining nodes follow: the
+        pipeline ends STOPPED, then the first error is raised.
+
+        stop() waits for every ``update()`` in progress, however long it
+        takes: call ``kill()`` from another thread to cut the wait. An
+        interrupt (ctrl+c) leaves the pipeline RUNNING and free for another
+        stop() or kill().
         """
         if not self._begin_transition('stop', _TRANSITION_RULES):
             return
 
         try:
-            self._stop()
-        except Exception:
+            errors = self._stop()
+        except BaseException:
+            # interrupts too, or the pipeline would stay busy forever
             self._abort_transition()
 
             raise
-        else:
-            self._end_transition(PipelineStatus.STOPPED)
 
-    def _stop(self):
-        if not self._nodes:
-            raise RuntimeError(f'pipeline {self.name} is not configured')
+        self._end_transition(PipelineStatus.STOPPED)
+        self._raise_first(errors)
+
+    def _live_nodes(self) -> list[Node]:
+        # destroy() replaces the nodes it released with None
+        return [n for n in (self._nodes or dict()).values() if n is not None]
+
+    def _halt_node(self, node: Node, kill: bool = False) -> list[Exception]:
+        """
+        Stop or kill one node, and return the error of its cleanup, if any.
+        The workers of a node whose own ``stop()`` raises are stopped by the
+        base class, so that they never outlive a failing cleanup.
+        """
+        try:
+            if kill:
+                node.kill()
+            else:
+                node.stop()
+        except Exception as error:
+            self._logger.error(
+                f'node {node.name} failed to {"kill" if kill else "stop"}, '
+                'stopping its workers',
+                exc_info=True,
+            )
+
+            try:
+                Node.stop(node)
+            except Exception:
+                self._logger.error(
+                    f'cannot stop the workers of node {node.name}',
+                    exc_info=True,
+                )
+
+            return [error]
+
+        return list()
+
+    def _stop_telemetry(self) -> list[Exception]:
+        if not self._telemetry:
+            return list()
+
+        try:
+            for node in self._live_nodes():
+                node.flush_telemetry()
+
+            self._telemetry_manager.stop()
+        except Exception as error:
+            self._logger.error('cannot stop telemetry', exc_info=True)
+
+            return [error]
+
+        return list()
+
+    @staticmethod
+    def _raise_first(errors: list[Exception]):
+        # every error is logged where it happens: the caller gets the first
+        if errors:
+            raise errors[0]
+
+    def _stop(self) -> list[Exception]:
+        errors = list()
+        nodes = self._nodes or dict()
 
         for layer in self._dag.BFS():
             self._logger.info(f'stopping layer {layer}')
 
-            for node_name in layer:
-                self._logger.info(f'stopping node {node_name}')
-                self._nodes[node_name].stop()
+            layer_nodes = [
+                nodes[node_name]
+                for node_name in layer
+                if nodes.get(node_name) is not None
+            ]
 
-            for node_name in layer:
-                self._nodes[node_name].join()
+            for node in layer_nodes:
+                self._logger.info(f'stopping node {node.name}')
+                errors += self._halt_node(node)
 
-        if self._telemetry:
-            for node in self._nodes.values():
-                node.flush_telemetry()
+            for node in layer_nodes:
+                try:
+                    node.join()
+                except Exception:
+                    self._logger.error(
+                        f'cannot join node {node.name}', exc_info=True
+                    )
 
-            self._telemetry_manager.stop()
-
-        # self._status = PipelineStatus.READY
+        return errors + self._stop_telemetry()
 
     def kill(self):
         """
@@ -718,35 +839,81 @@ class Pipeline:
         Unlike stop(), pending messages in the nodes are not processed: all
         nodes are signalled at once, then each one is joined and its input
         queue and buffer are discarded.
+
+        kill() is the one lifecycle call allowed while a ``stop()`` is in
+        progress (also the one ``destroy()`` runs on a running pipeline): it
+        signals every node, so the stop no longer waits for a busy
+        ``update()`` and discards the pending messages, then it returns once
+        that stop (or destroy) is over.
+
+        Like stop(), every node is killed whatever happens to the others,
+        the pipeline ends STOPPED, then the first error is raised.
         """
+        if self._preempt_stop():
+            return
+
         if not self._begin_transition('kill', _TRANSITION_RULES):
             return
 
         try:
-            self._kill()
-        except Exception:
+            errors = self._kill()
+        except BaseException:
             self._abort_transition()
 
             raise
-        else:
-            self._end_transition(PipelineStatus.STOPPED)
 
-    def _kill(self):
-        if not self._nodes:
-            raise RuntimeError(f'pipeline {self.name} is not configured')
+        self._end_transition(PipelineStatus.STOPPED)
+        self._raise_first(errors)
 
-        for node in self._nodes.values():
-            node.signal_kill()
+    def _preempt_stop(self) -> bool:
+        """
+        Turn the stop in progress, if any, into a kill, and wait for it.
+        Return whether the pipeline was stopped that way.
+        """
+        with self._status_lock:
+            if not self._transitioning or self._transition_op != 'stop':
+                return False
 
-        for node_name, node in self._nodes.items():
-            self._logger.info(f'killing node {node_name}')
-            node.kill()
+            self._logger.warning(
+                f'kill() called while pipeline {self.name} is stopping, '
+                'killing its nodes'
+            )
 
-        if self._telemetry:
-            for node in self._nodes.values():
-                node.flush_telemetry()
+            # signal_kill() does not block, so the lock is held meanwhile
+            # and the nodes cannot be destroyed under it
+            for node in self._live_nodes():
+                try:
+                    node.signal_kill()
+                except Exception:
+                    self._logger.error(
+                        f'cannot signal node {node.name}', exc_info=True
+                    )
 
-            self._telemetry_manager.stop()
+            self._status_lock.wait_for(lambda: not self._transitioning)
+
+            # still RUNNING when the stop was interrupted: kill() goes on
+            return self._status in (
+                PipelineStatus.STOPPED,
+                PipelineStatus.DESTROYED,
+            )
+
+    def _kill(self) -> list[Exception]:
+        errors = list()
+        nodes = self._live_nodes()
+
+        for node in nodes:
+            try:
+                node.signal_kill()
+            except Exception:
+                self._logger.error(
+                    f'cannot signal node {node.name}', exc_info=True
+                )
+
+        for node in nodes:
+            self._logger.info(f'killing node {node.name}')
+            errors += self._halt_node(node, kill=True)
+
+        return errors + self._stop_telemetry()
 
     def destroy(self):
         """
@@ -765,6 +932,12 @@ class Pipeline:
         methods, it claims the pipeline before doing any work, so a
         concurrent call raises `PipelineBusyError` instead of racing on
         `_nodes`.
+
+        Every node is destroyed, whatever happens to the others. When a node
+        fails to stop or to be destroyed, the error is logged and the
+        remaining nodes follow: the pipeline ends DESTROYED, then the first
+        error is raised. An interrupt (ctrl+c) leaves the pipeline free for
+        another destroy(), which goes on with the nodes that are left.
         """
         with self._status_lock:
             if self._status == PipelineStatus.DESTROYED:
@@ -784,21 +957,20 @@ class Pipeline:
 
             was_running = self._status == PipelineStatus.RUNNING
             self._transitioning = True
+            # a running pipeline is stopped first, and kill() can cut that
+            self._transition_op = 'stop' if was_running else 'destroy'
+
+        errors = list()
 
         try:
             if was_running:
-                self._stop()
+                errors += self._stop()
 
-            if self._nodes:
-                for node_name in list(self._nodes.keys())[::-1]:
-                    self._nodes[node_name].clear_source()
-                    self._nodes[node_name].clear_destinations()
-                    self._nodes[node_name].destroy()
+                with self._status_lock:
+                    self._transition_op = 'destroy'
 
-                    self._nodes[node_name] = None
-
-            self._nodes = None
-        except Exception:
+            errors += self._destroy_nodes()
+        except BaseException:
             self._abort_transition()
 
             raise
@@ -810,6 +982,35 @@ class Pipeline:
         log_utils.drop_extra(self._name)
 
         self._logger.info('pipe destroyed')
+        self._raise_first(errors)
+
+    def _destroy_nodes(self) -> list[Exception]:
+        errors = list()
+        nodes = self._nodes or dict()
+
+        for node_name in list(nodes)[::-1]:
+            node = nodes[node_name]
+
+            # released by a destroy() that was interrupted
+            if node is None:
+                continue
+
+            try:
+                node.clear_source()
+                node.clear_destinations()
+                node.destroy()
+            except Exception as error:
+                errors.append(error)
+                self._logger.error(
+                    f'failed to destroy node {node_name}', exc_info=True
+                )
+
+            # the entry is kept: status is read while the nodes are released
+            nodes[node_name] = None
+
+        self._nodes = None
+
+        return errors
 
 
 def check_links(pipe_name: str, nodes: list[dict], links: list[dict]):
