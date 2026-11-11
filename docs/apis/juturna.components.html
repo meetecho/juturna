@@ -584,7 +584,9 @@ in the derived classes.</p>
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">health</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#juturna.components.Node.health" title="Link to this definition">¶</a></dt>
 <dd><p>Counter of how many failues the node experienced across its threads.
 Values are split per-thread, so it will give the total for update,
-worker and source (if present). <code class="docutils literal notranslate"><span class="pre">rejected_items</span></code> counts the items
+worker and source (if present). <code class="docutils literal notranslate"><span class="pre">last_failure</span></code> is the error of the
+most recent one (class and message, without the traceback, which is
+in the log). <code class="docutils literal notranslate"><span class="pre">rejected_items</span></code> counts the items
 that were not a <code class="docutils literal notranslate"><span class="pre">Message</span></code> and were refused, wherever they came from
 (the source, <code class="docutils literal notranslate"><span class="pre">put()</span></code> or <code class="docutils literal notranslate"><span class="pre">transmit()</span></code>).</p>
 </dd></dl>
