@@ -419,6 +419,9 @@ payloads use their own <code class="docutils literal notranslate"><span class="p
 <dt class="sig sig-object py" id="juturna.payloads.Batch">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.payloads.</span></span><span class="sig-name descname"><span class="pre">Batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">messages:</span> <span class="pre">tuple</span> <span class="pre">=</span> <span class="pre">&lt;factory&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.payloads.Batch" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#juturna.payloads.BasePayload" title="juturna.payloads._payloads.BasePayload"><code class="xref py py-class docutils literal notranslate"><span class="pre">BasePayload</span></code></a></p>
+<p>A group of messages travelling as one payload.</p>
+<p>The messages are kept in a tuple, whatever sequence they are given in.
+They are frozen together with the message that carries the batch.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.payloads.Batch.messages">
 <span class="sig-name descname"><span class="pre">messages</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">tuple</span></em><a class="headerlink" href="#juturna.payloads.Batch.messages" title="Link to this definition">¶</a></dt>
@@ -570,6 +573,9 @@ payloads use their own <code class="docutils literal notranslate"><span class="p
 <p>Every dict method that changes the content raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code>. Only the
 top level is frozen: mutable values (lists, dicts, arrays) can still be
 changed in place, and should be treated as read-only.</p>
+<p>Two payloads are equal when their content is, arrays included, and a
+payload is equal to a plain dict with the same content. Like a dict, it
+cannot be hashed, so it cannot be a dict key or a set item.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.payloads.ObjectPayload.clear">
 <span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Remove</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">from</span> <span class="pre">D.</span></span></span><a class="headerlink" href="#juturna.payloads.ObjectPayload.clear" title="Link to this definition">¶</a></dt>
@@ -593,6 +599,14 @@ raise a KeyError.</p>
 <dd><p>Remove and return a (key, value) pair as a 2-tuple.</p>
 <p>Pairs are returned in LIFO (last-in, first-out) order.
 Raises KeyError if the dict is empty.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.payloads.ObjectPayload.serialize">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span></span></span><a class="headerlink" href="#juturna.payloads.ObjectPayload.serialize" title="Link to this definition">¶</a></dt>
+<dd><p>Convert the content into JSON-compatible values: arrays become
+lists, bytes become base64 text, and nested payloads use their own
+<code class="docutils literal notranslate"><span class="pre">serialize</span></code>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -790,6 +804,7 @@ payloads use their own <code class="docutils literal notranslate"><span class="p
 <li><a class="reference internal" href="#juturna.payloads.ObjectPayload.from_dict"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.from_dict()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ObjectPayload.pop"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.pop()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ObjectPayload.popitem"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.popitem()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.payloads.ObjectPayload.serialize"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.serialize()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ObjectPayload.setdefault"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.setdefault()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ObjectPayload.size_bytes"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.size_bytes</span></code></a></li>
 <li><a class="reference internal" href="#juturna.payloads.ObjectPayload.update"><code class="docutils literal notranslate"><span class="pre">ObjectPayload.update()</span></code></a></li>

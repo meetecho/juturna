@@ -362,6 +362,35 @@
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code></p>
 <p>A message is a container object that all nodes produce and read to and from
 buffers, plus offering few extra utilities.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="juturna.components.Message.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">creator</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#juturna.components.Message" title="juturna.components.Message"><span class="pre">Message</span></a><span class="p"><span class="pre">[</span></span><span class="pre">T_Input</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#juturna.components.Message.copy" title="Link to this definition">¶</a></dt>
+<dd><p>Return a new message with the content of this one, free to be
+changed. This is how a node gets a message it can edit from one it
+received, as received messages are frozen.</p>
+<p>The copy is a message of its own: it has a new <code class="docutils literal notranslate"><span class="pre">id</span></code> and creation
+time. Version, meta and timers are copied, and meta can be changed
+again in depth (lists that freezing turned into tuples stay tuples).
+The payload is the same object: payloads cannot be changed, so
+assign a new one, built with <code class="docutils literal notranslate"><span class="pre">Draft</span></code> or <code class="docutils literal notranslate"><span class="pre">payload.clone()</span></code>, to
+send different data.</p>
+<p><code class="docutils literal notranslate"><span class="pre">copy.copy()</span></code> and <code class="docutils literal notranslate"><span class="pre">copy.deepcopy()</span></code> work differently: they
+return the same message again, with the same <code class="docutils literal notranslate"><span class="pre">id</span></code>, and frozen if
+this one is.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>creator</strong> (<em>str</em><em>, </em><em>optional</em>) – The creator of the new message, usually the name of the node
+making the copy. The creator of this message when not given.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The new message, not frozen.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#juturna.components.Message" title="juturna.components.Message">Message</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py attribute">
 <dt class="sig sig-object py" id="juturna.components.Message.created_at">
 <span class="sig-name descname"><span class="pre">created_at</span></span><a class="headerlink" href="#juturna.components.Message.created_at" title="Link to this definition">¶</a></dt>
@@ -440,7 +469,9 @@ If no value is provided, the current time is used.</p>
 <span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoder</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#juturna.components.Message.to_json" title="Link to this definition">¶</a></dt>
 <dd><p>Convert the message to a JSON string. A custom encoder can be provided
 to serialise non-serialisable content, otherwise the default serialize
-method defined on the payload will be used.</p>
+method defined on the payload will be used. With the default encoder,
+arrays become lists, bytes become base64 text and sets become lists,
+wherever they are: in the payload, in an <code class="docutils literal notranslate"><span class="pre">ObjectPayload</span></code> or in meta.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1086,6 +1117,7 @@ pipeline created in its place.</p>
 <li><a class="reference internal" href="#subpackages">Subpackages</a></li>
 <li><a class="reference internal" href="#module-juturna.components">Module contents</a><ul>
 <li><a class="reference internal" href="#juturna.components.Message"><code class="docutils literal notranslate"><span class="pre">Message</span></code></a><ul>
+<li><a class="reference internal" href="#juturna.components.Message.copy"><code class="docutils literal notranslate"><span class="pre">Message.copy()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Message.created_at"><code class="docutils literal notranslate"><span class="pre">Message.created_at</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Message.creator"><code class="docutils literal notranslate"><span class="pre">Message.creator</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.Message.id"><code class="docutils literal notranslate"><span class="pre">Message.id</span></code></a></li>

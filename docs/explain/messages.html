@@ -393,11 +393,17 @@ timestamp.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">VideoPayload</span></code> holds to a list of <code class="docutils literal notranslate"><span class="pre">ImagePayload</span></code>, with metadata on frames
 per second and duration (start and end timestamps).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">BytesPayload</span></code> only contains an array of bytes.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Batch</span></code> contains a list of messages, for nodes that collect several messages
-and transmit them together.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Batch</span></code> contains a tuple of messages, for nodes that collect several
+messages and transmit them together. The messages can be given as any
+sequence, and are frozen together with the message that carries the batch.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">ObjectPayload</span></code> is a subclass of <code class="docutils literal notranslate"><span class="pre">dict</span></code> design to hold arbitrary key-value
-pairs.</p></li>
+pairs. Two of them are equal when their content is (arrays included), and an
+<code class="docutils literal notranslate"><span class="pre">ObjectPayload</span></code> is equal to a plain <code class="docutils literal notranslate"><span class="pre">dict</span></code> with the same content. Like a
+<code class="docutils literal notranslate"><span class="pre">dict</span></code>, it cannot be hashed, so it cannot be a dictionary key or a set item.</p></li>
 </ul>
+<p><code class="docutils literal notranslate"><span class="pre">message.to_json()</span></code> writes the payload with its <code class="docutils literal notranslate"><span class="pre">serialize</span></code> method. Arrays
+become lists, bytes become base64 text and sets become lists, also when they
+are values of an <code class="docutils literal notranslate"><span class="pre">ObjectPayload</span></code> or of the message <code class="docutils literal notranslate"><span class="pre">meta</span></code>.</p>
 </section>
 <section id="immutability">
 <h2>Immutability<a class="headerlink" href="#immutability" title="Link to this heading">¶</a></h2>
@@ -451,12 +457,35 @@ argument. Other than that, it behaves exactly like a normal payload.</p>
 <span class="n">message</span><span class="o">.</span><span class="n">payload</span><span class="o">.</span><span class="n">channels</span> <span class="o">=</span> <span class="mi">2</span>
 </pre></div>
 </div>
-<p>Messages can be explicitly made immutable by calling <code class="docutils literal notranslate"><span class="pre">message.freeze()</span></code>.
-However, nodes take care of that internally before sending out messages.</p>
+<p>Nodes make a message immutable (they <cite>freeze</cite> it) when they transmit it, so
+there is nothing to call.</p>
+<section id="changing-a-received-message">
+<h3>Changing a received message<a class="headerlink" href="#changing-a-received-message" title="Link to this heading">¶</a></h3>
+<p>A message received in <code class="docutils literal notranslate"><span class="pre">update()</span></code> is frozen. To send it on with changes, ask
+it for a copy:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">to_send</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">creator</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="n">to_send</span><span class="o">.</span><span class="n">meta</span><span class="p">[</span><span class="s1">'checked'</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">to_send</span><span class="o">.</span><span class="n">version</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">transmit</span><span class="p">(</span><span class="n">to_send</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">copy()</span></code> returns a new message, with its own <code class="docutils literal notranslate"><span class="pre">id</span></code> and creation time, that
+is not frozen. Version, meta and timers are copied, and meta can be changed
+again at every level (a list that freezing turned into a tuple stays a tuple).
+The payload is the same object, as payloads never change: to send different
+data, assign a new payload, built with a <code class="docutils literal notranslate"><span class="pre">Draft</span></code> or from
+<code class="docutils literal notranslate"><span class="pre">message.payload.clone()</span></code>.</p>
+<p>The standard <code class="docutils literal notranslate"><span class="pre">copy.copy()</span></code>, <code class="docutils literal notranslate"><span class="pre">copy.deepcopy()</span></code> and <code class="docutils literal notranslate"><span class="pre">pickle</span></code> work on
+messages too, with a different meaning: they give the same message again,
+with the same <code class="docutils literal notranslate"><span class="pre">id</span></code>, and frozen if the original is.</p>
 <p>Message and payload immutability is a powerful feature: it allows for zero-copy
 transmission of every bit of data flowing through a pipeline, ensuring integrity
 and consistency (multiple nodes receiving the same message can be sure the data
 within that message were not modified by any other node).</p>
+</section>
 </section>
 </section>
 
@@ -526,7 +555,10 @@ within that message were not modified by any other node).</p>
 <li><a class="reference internal" href="#">Messages and payloads</a><ul>
 <li><a class="reference internal" href="#messages">Messages</a></li>
 <li><a class="reference internal" href="#payloads">Payloads</a></li>
-<li><a class="reference internal" href="#immutability">Immutability</a></li>
+<li><a class="reference internal" href="#immutability">Immutability</a><ul>
+<li><a class="reference internal" href="#changing-a-received-message">Changing a received message</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

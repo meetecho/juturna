@@ -75,10 +75,17 @@ Juturna offers a number of built-in media and structural payloads.
 - ``VideoPayload`` holds to a list of ``ImagePayload``, with metadata on frames
   per second and duration (start and end timestamps).
 - ``BytesPayload`` only contains an array of bytes.
-- ``Batch`` contains a list of messages, for nodes that collect several messages
-  and transmit them together.
+- ``Batch`` contains a tuple of messages, for nodes that collect several
+  messages and transmit them together. The messages can be given as any
+  sequence, and are frozen together with the message that carries the batch.
 - ``ObjectPayload`` is a subclass of ``dict`` design to hold arbitrary key-value
-  pairs.
+  pairs. Two of them are equal when their content is (arrays included), and an
+  ``ObjectPayload`` is equal to a plain ``dict`` with the same content. Like a
+  ``dict``, it cannot be hashed, so it cannot be a dictionary key or a set item.
+
+``message.to_json()`` writes the payload with its ``serialize`` method. Arrays
+become lists, bytes become base64 text and sets become lists, also when they
+are values of an ``ObjectPayload`` or of the message ``meta``.
 
 Immutability
 ------------
@@ -137,8 +144,35 @@ argument. Other than that, it behaves exactly like a normal payload.
   # this is allowed now
   message.payload.channels = 2
 
-Messages can be explicitly made immutable by calling ``message.freeze()``.
-However, nodes take care of that internally before sending out messages.
+Nodes make a message immutable (they `freeze` it) when they transmit it, so
+there is nothing to call.
+
+Changing a received message
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A message received in ``update()`` is frozen. To send it on with changes, ask
+it for a copy:
+
+.. code-block:: python
+
+  def update(self, message: Message, **kwargs):
+      to_send = message.copy(creator=self.name)
+
+      to_send.meta['checked'] = True
+      to_send.version += 1
+
+      self.transmit(to_send)
+
+``copy()`` returns a new message, with its own ``id`` and creation time, that
+is not frozen. Version, meta and timers are copied, and meta can be changed
+again at every level (a list that freezing turned into a tuple stays a tuple).
+The payload is the same object, as payloads never change: to send different
+data, assign a new payload, built with a ``Draft`` or from
+``message.payload.clone()``.
+
+The standard ``copy.copy()``, ``copy.deepcopy()`` and ``pickle`` work on
+messages too, with a different meaning: they give the same message again,
+with the same ``id``, and frozen if the original is.
 
 Message and payload immutability is a powerful feature: it allows for zero-copy
 transmission of every bit of data flowing through a pipeline, ensuring integrity
