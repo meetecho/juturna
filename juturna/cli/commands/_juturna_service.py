@@ -10,20 +10,26 @@ import logging.config
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from typing import Annotated
+from typing import Any
 
 import uvicorn
 
+from fastapi import Body
 from fastapi import Depends
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from fastapi.security import HTTPBearer
 
 import juturna as jt
 
+from juturna.cli.commands._node_catalogue import node_catalogue
 from juturna.cli.commands._pipeline_manager import PipelineManager
+from juturna.cli.commands.validate import validate_configuration
 from juturna.cli.commands.models.api import PipelineConfig
 from juturna.cli.commands.models.api import SuccessfulResponse
 from juturna.cli.commands.exceptions import (
@@ -33,7 +39,32 @@ from juturna.cli.commands.exceptions import (
 
 TOKEN_ENV_VAR = 'JUTURNA_SERVICE_TOKEN'
 
+# the largest request body the service reads: pipeline configurations are
+# small, and the body is held in memory while it is parsed
+MAX_BODY_BYTES = 1024 * 1024
+
 _bearer = HTTPBearer(auto_error=False)
+
+
+def _token_problem(state: Any, token: str | None) -> tuple[int, str] | None:
+    """
+    Compare a bearer token with the one of the service. Return ``None`` when
+    the request can go on, or the status code and the reason to answer.
+    """
+    if not getattr(state, 'auth', True):
+        return None
+
+    expected = getattr(state, 'token', None) or os.environ.get(TOKEN_ENV_VAR)
+
+    if not expected:
+        return 503, 'service token not configured'
+
+    if token is None or not secrets.compare_digest(
+        token.encode(), expected.encode()
+    ):
+        return 401, 'missing or invalid service token'
+
+    return None
 
 
 def require_token(
@@ -53,27 +84,133 @@ def require_token(
 
     The check is skipped only when ``run()`` was called with ``auth=False``
     (``serve --no-auth``).
-    """
-    if not getattr(request.app.state, 'auth', True):
-        return
 
-    expected = getattr(request.app.state, 'token', None) or os.environ.get(
-        TOKEN_ENV_VAR
+    The same check runs earlier, in ``_Guard``, for every path and before
+    the body is read. This dependency stays so that the routes declare the
+    credential they need in the OpenAPI document.
+    """
+    problem = _token_problem(
+        request.app.state,
+        None if credentials is None else credentials.credentials,
     )
 
-    if not expected:
-        raise HTTPException(
-            status_code=503, detail='service token not configured'
+    if problem is not None:
+        raise _auth_error(*problem)
+
+
+def _auth_error(status_code: int, detail: str) -> HTTPException:
+    return HTTPException(
+        status_code=status_code,
+        detail=detail,
+        headers={'WWW-Authenticate': 'Bearer'} if status_code == 401 else None,
+    )
+
+
+class _Guard:
+    """
+    Check every request before any of it is handled: the token first, then
+    the size of the body.
+
+    A route dependency runs after the body is read and parsed, so without
+    this an anonymous client could make the service read a body of any size,
+    and learn from the answer (422, not 401) how its content was understood.
+    It also covers the paths that have no dependency: ``/docs``, ``/redoc``
+    and ``/openapi.json``.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope['type'] != 'http':
+            await self.app(scope, receive, send)
+
+            return
+
+        state = scope['app'].state
+        headers = {
+            name.decode('latin-1').lower(): value.decode('latin-1')
+            for name, value in scope['headers']
+        }
+
+        problem = _token_problem(
+            state, _bearer_token(headers.get('authorization'))
         )
 
-    if credentials is None or not secrets.compare_digest(
-        credentials.credentials.encode(), expected.encode()
-    ):
-        raise HTTPException(
-            status_code=401,
-            detail='missing or invalid service token',
-            headers={'WWW-Authenticate': 'Bearer'},
-        )
+        if problem is None:
+            problem = _length_problem(state, headers.get('content-length'))
+
+        if problem is not None:
+            status_code, detail = problem
+            response = JSONResponse(
+                status_code=status_code,
+                content={'detail': detail},
+                headers=(
+                    {'WWW-Authenticate': 'Bearer'}
+                    if status_code == 401
+                    else None
+                ),
+            )
+
+            await response(scope, receive, send)
+
+            return
+
+        await self.app(scope, _capped(receive, _max_body(state)), send)
+
+
+def _bearer_token(authorization: str | None) -> str | None:
+    scheme, _, token = (authorization or '').partition(' ')
+
+    if scheme.lower() != 'bearer' or not token.strip():
+        return None
+
+    return token.strip()
+
+
+def _max_body(state: Any) -> int:
+    return getattr(state, 'max_body_bytes', None) or MAX_BODY_BYTES
+
+
+def _length_problem(
+    state: Any, content_length: str | None
+) -> tuple[int, str] | None:
+    if content_length is None:
+        return None
+
+    if not content_length.isdigit():
+        return 400, 'invalid Content-Length'
+
+    if int(content_length) > _max_body(state):
+        return 413, f'request body larger than {_max_body(state)} bytes'
+
+    return None
+
+
+def _capped(receive, limit: int):
+    """
+    Count the body as it arrives: a client that sends it in chunks declares
+    no length, and one that declares a length can still send more.
+    """
+    received = 0
+
+    async def capped_receive():
+        nonlocal received
+
+        message = await receive()
+
+        if message['type'] == 'http.request':
+            received += len(message.get('body', b''))
+
+            if received > limit:
+                raise HTTPException(
+                    status_code=413,
+                    detail=f'request body larger than {limit} bytes',
+                )
+
+        return message
+
+    return capped_receive
 
 
 @asynccontextmanager
@@ -87,6 +224,11 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(dependencies=[Depends(require_token)], lifespan=_lifespan)
 logger = logging.getLogger('jt.service')
+
+# added first, so it stays inside the CORS middleware of the development
+# mode: preflight requests carry no token, and the answers of the guard
+# still get the CORS headers
+app.add_middleware(_Guard)
 
 # register exception handlers
 register_pipeline_exception_handlers(app)
@@ -127,9 +269,25 @@ def configuration():
     }
 
 
+@app.get('/nodes')
+def nodes():
+    """The node types installed on the service, with their defaults"""
+    return {'nodes': node_catalogue()}
+
+
 @app.get('/pipelines')
 def pipelines():
     return PipelineManager().pipeline_list()
+
+
+@app.post('/pipelines/validate')
+def validate_pipeline(configuration: Annotated[Any, Body()]):
+    """
+    Check a configuration as ``juturna validate`` does, without creating
+    anything. The answer is always the report, valid or not: any JSON
+    document is accepted, so that the report can say what is wrong with it.
+    """
+    return validate_configuration(configuration).to_dict()
 
 
 @app.post('/pipelines/new', response_model=SuccessfulResponse)
@@ -180,6 +338,39 @@ def pipeline_status(pipeline_id: str):
     status = PipelineManager().pipeline_status(pipeline_id)
 
     return status
+
+
+@app.get('/pipelines/{pipeline_id}/config')
+def pipeline_config(pipeline_id: str):
+    return PipelineManager().pipeline_config(pipeline_id)
+
+
+@app.get('/pipelines/{pipeline_id}/logs')
+def pipeline_logs(pipeline_id: str, since: float | None = None):
+    logs = PipelineManager().pipeline_logs(pipeline_id, since)
+
+    return {'pipeline': pipeline_id, 'logs': logs}
+
+
+@app.get('/pipelines/{pipeline_id}/files')
+def pipeline_files(pipeline_id: str):
+    files = PipelineManager().pipeline_files(pipeline_id)
+
+    return {'pipeline': pipeline_id, 'files': files}
+
+
+@app.get('/pipelines/{pipeline_id}/files/{file_path:path}')
+def pipeline_file(pipeline_id: str, file_path: str):
+    path = PipelineManager().pipeline_file(pipeline_id, file_path)
+
+    # always a download, never a page: a pipeline can write any content, and
+    # a browser must not render it as coming from the service
+    return FileResponse(
+        path,
+        media_type='application/octet-stream',
+        filename=path.name,
+        headers={'X-Content-Type-Options': 'nosniff'},
+    )
 
 
 @app.get('/pipelines/{pipeline_id}/telemetry')

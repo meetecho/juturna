@@ -47,6 +47,8 @@ def test_pipeline_new_status():
 
     assert test_pipeline.status == {
         'pipe_id': '1234567890',
+        'name': 'test_basic_pipeline',
+        'created_at': test_pipeline.created_at,
         'folder': './tests/running_pipelines/basic_pipeline',
         'self': 'pipeline_created',
         'nodes': dict()
