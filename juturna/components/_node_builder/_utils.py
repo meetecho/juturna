@@ -4,16 +4,26 @@ import os
 from juturna.utils.log_utils import jt_logger
 from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
 from juturna.utils.jt_utils._get_env_var import get_env_var
+from juturna.components.exceptions import EnvVarNotAllowedError
 
 
 _logger = jt_logger('builder.utils')
 
 
 def _resolve_env_var(
-    key: str, value: str, node_name: str, local_arguments: dict
+    key: str,
+    value: str,
+    node_name: str,
+    local_arguments: dict,
+    allowed_env_vars: frozenset[str] | None = None,
 ) -> str:
     env_var_name = value[len(JUTURNA_ENV_VAR_PREFIX) :]
     default_value = local_arguments[key]
+
+    # checked here, where every value is resolved, so that no configuration
+    # (of a node, or of the warp in front of it) can get around the list
+    if allowed_env_vars is not None and env_var_name not in allowed_env_vars:
+        raise EnvVarNotAllowedError(env_var_name, node_name)
 
     if env_var_name not in os.environ:
         error_msg = (

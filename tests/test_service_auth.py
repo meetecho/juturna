@@ -173,6 +173,48 @@ def test_service_rejects_env_vars_not_allowed(service_client, endpoint):
     assert len(PipelineManager()) == before
 
 
+@pytest.mark.parametrize('endpoint', ['new', 'deploy'])
+def test_service_rejects_env_vars_of_the_warp_configuration(
+    service_client, endpoint
+):
+    from juturna.cli.commands._pipeline_manager import PipelineManager
+
+    config = _config('env_warp_pipe')
+    config['pipeline']['nodes'][0].update(
+        {
+            'warped': True,
+            'warp_configuration': {'grpc_host': '$JT_ENV_SERVICE_SECRET'},
+        }
+    )
+    before = len(PipelineManager())
+    response = service_client.post(f'/pipelines/{endpoint}', json=config)
+
+    assert response.status_code == 403
+    assert 'SERVICE_SECRET' in response.json()['message']
+    assert len(PipelineManager()) == before
+
+
+def test_service_rejects_env_vars_the_builder_finds(service_client, monkeypatch):
+    # whatever gets past the first check is refused when the node is built,
+    # with the same answer, and the failed deploy leaves no pipeline
+    import juturna as jt
+
+    from juturna.cli.commands._pipeline_manager import PipelineManager
+
+    monkeypatch.setattr(
+        jt.components.Pipeline, '_check_env_vars', lambda self: None
+    )
+    before = len(PipelineManager())
+    response = service_client.post(
+        '/pipelines/deploy',
+        json=_config('env_builder_pipe', {'delay': '$JT_ENV_SERVICE_SECRET'}),
+    )
+
+    assert response.status_code == 403
+    assert 'SERVICE_SECRET' in response.json()['message']
+    assert len(PipelineManager()) == before
+
+
 def test_service_accepts_allowed_env_vars(service_client):
     from juturna.cli.commands._pipeline_manager import PipelineManager
 

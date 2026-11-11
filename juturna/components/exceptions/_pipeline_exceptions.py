@@ -69,3 +69,32 @@ class PipelineBusyError(PipelineStateError):
     DAG, node threads) until it completes, so a concurrent call cannot be
     safely evaluated against the pipeline's current status.
     """
+
+
+class EnvVarNotAllowedError(PermissionError):
+    """
+    Raised when a node configuration reads an environment variable the
+    pipeline is not allowed to resolve.
+
+    A pipeline resolves any variable by default. The pipeline service builds
+    its pipelines with the list of variables its operator allowed, so that a
+    configuration sent by a client cannot read the secrets of the service.
+    """
+
+    def __init__(self, var_name: str, node_name: str):
+        """
+        Parameters
+        ----------
+        var_name : str
+            Name of the environment variable.
+        node_name : str
+            Name of the node whose configuration reads it.
+
+        """
+        super().__init__(
+            f'node {node_name} reads environment variable {var_name}, '
+            'which is not allowed'
+        )
+
+        self.var_name = var_name
+        self.node_name = node_name
