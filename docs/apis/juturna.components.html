@@ -553,7 +553,9 @@ in the derived classes.</p>
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">health</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span></em><a class="headerlink" href="#juturna.components.Node.health" title="Link to this definition">¶</a></dt>
 <dd><p>Counter of how many failues the node experienced across its threads.
 Values are split per-thread, so it will give the total for update,
-worker and source (if present).</p>
+worker and source (if present). <code class="docutils literal notranslate"><span class="pre">rejected_items</span></code> counts the items
+that were not a <code class="docutils literal notranslate"><span class="pre">Message</span></code> and were refused, wherever they came from
+(the source, <code class="docutils literal notranslate"><span class="pre">put()</span></code> or <code class="docutils literal notranslate"><span class="pre">transmit()</span></code>).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -645,7 +647,13 @@ with basic substitution of the passed arguments.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.put">
 <span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#juturna.components.Message" title="juturna.components._message.Message"><span class="pre">Message</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Node.put" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Deliver a message to the node, waiting for a free slot in its input
+queue.</p>
+<p>Only <code class="docutils literal notranslate"><span class="pre">Message</span></code> objects are accepted: anything else is refused,
+logged and counted in <code class="docutils literal notranslate"><span class="pre">health</span></code> under <code class="docutils literal notranslate"><span class="pre">rejected_items</span></code>. A message
+for a node that is stopped or being killed is discarded, so that a
+sender never waits for a node that will not read its queue again.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Node.set_on_config">
@@ -726,7 +734,9 @@ in progress to return, however long it takes.</p>
 <p>When the node is being killed (see <code class="docutils literal notranslate"><span class="pre">kill()</span></code>), each thread is only
 waited for <code class="docutils literal notranslate"><span class="pre">JUTURNA_THREAD_JOIN_TIMEOUT</span></code> seconds: a thread still
 busy after that is left behind, and listed in <code class="docutils literal notranslate"><span class="pre">health</span></code> under
-<code class="docutils literal notranslate"><span class="pre">stuck_workers</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">stuck_workers</span></code>. This holds for a kill that arrives while stop() is
+already waiting, too: <code class="docutils literal notranslate"><span class="pre">signal_kill()</span></code> from another thread ends the
+wait, and the messages left in the input queue are discarded.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -737,7 +747,13 @@ its destinations. Messages are frozen before transmission, so that
 immutability is ensured.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>message</strong> (<a class="reference internal" href="#juturna.components.Message" title="juturna.components.Message"><em>Message</em></a><em> | </em><em>None</em>) – The message to be transmitted.</p>
+<dd class="field-odd"><p><strong>message</strong> (<a class="reference internal" href="#juturna.components.Message" title="juturna.components.Message"><em>Message</em></a>) – The message to be transmitted. Anything that is not a <code class="docutils literal notranslate"><span class="pre">Message</span></code>
+is refused: it is logged, counted in <code class="docutils literal notranslate"><span class="pre">health</span></code> under
+<code class="docutils literal notranslate"><span class="pre">rejected_items</span></code>, and not delivered.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>Exception</strong> – The first error raised by a destination, once the message has
+    been offered to all of them.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -796,6 +812,11 @@ from a caller’s try/finally) do not raise. Like the other lifecycle
 methods, it claims the pipeline before doing any work, so a
 concurrent call raises <cite>PipelineBusyError</cite> instead of racing on
 <cite>_nodes</cite>.</p>
+<p>Every node is destroyed, whatever happens to the others. When a node
+fails to stop or to be destroyed, the error is logged and the
+remaining nodes follow: the pipeline ends DESTROYED, then the first
+error is raised. An interrupt (ctrl+c) leaves the pipeline free for
+another destroy(), which goes on with the nodes that are left.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -826,6 +847,13 @@ rather than from the actual configuration content.</p>
 <p>Unlike stop(), pending messages in the nodes are not processed: all
 nodes are signalled at once, then each one is joined and its input
 queue and buffer are discarded.</p>
+<p>kill() is the one lifecycle call allowed while a <code class="docutils literal notranslate"><span class="pre">stop()</span></code> is in
+progress (also the one <code class="docutils literal notranslate"><span class="pre">destroy()</span></code> runs on a running pipeline): it
+signals every node, so the stop no longer waits for a busy
+<code class="docutils literal notranslate"><span class="pre">update()</span></code> and discards the pending messages, then it returns once
+that stop (or destroy) is over.</p>
+<p>Like stop(), every node is killed whatever happens to the others,
+the pipeline ends STOPPED, then the first error is raised.</p>
 </dd></dl>
 
 <dl class="py property">
@@ -870,12 +898,33 @@ can be retried, or the pipeline destroyed.</p>
 <p>This method stops all the nodes in the pipeline, sending a
 stopping signal to each node that will cause them to stop processing
 upcoming data and to propagate the stopping signal to their destinations</p>
+<p>Every node is stopped, whatever happens to the others. When the
+<code class="docutils literal notranslate"><span class="pre">stop()</span></code> of a node raises, the error is logged, the workers of that
+node are stopped all the same, and the remaining nodes follow: the
+pipeline ends STOPPED, then the first error is raised.</p>
+<p>stop() waits for every <code class="docutils literal notranslate"><span class="pre">update()</span></code> in progress, however long it
+takes: call <code class="docutils literal notranslate"><span class="pre">kill()</span></code> from another thread to cut the wait. An
+interrupt (ctrl+c) leaves the pipeline RUNNING and free for another
+stop() or kill().</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Pipeline.update_node">
 <span class="sig-name descname"><span class="pre">update_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">property_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.Pipeline.update_node" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Change a property of a node, through its <code class="docutils literal notranslate"><span class="pre">set_on_config()</span></code>.</p>
+<p>The call runs in the thread of the caller, while the node may be
+processing a message: a node that accepts changes this way protects
+whatever <code class="docutils literal notranslate"><span class="pre">update()</span></code> reads as well.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference internal" href="#juturna.components.PipelineNotReadyError" title="juturna.components.PipelineNotReadyError"><strong>PipelineNotReadyError</strong></a> – If the pipeline was not warmed up, so it has no node yet.</p></li>
+<li><p><a class="reference internal" href="#juturna.components.PipelineDestroyedError" title="juturna.components.PipelineDestroyedError"><strong>PipelineDestroyedError</strong></a> – If the pipeline was destroyed.</p></li>
+<li><p><a class="reference internal" href="#juturna.components.PipelineBusyError" title="juturna.components.PipelineBusyError"><strong>PipelineBusyError</strong></a> – If the pipeline is being destroyed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="juturna.components.Pipeline.warmup">
@@ -918,6 +967,8 @@ already in progress on the same pipeline.</p>
 the transition in flight owns the pipeline’s internal state (nodes,
 DAG, node threads) until it completes, so a concurrent call cannot be
 safely evaluated against the pipeline’s current status.</p>
+<p>kill() during a stop() is the exception: it turns the stop in progress
+into a kill, and returns when that is over.</p>
 </dd></dl>
 
 <dl class="py exception">

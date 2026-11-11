@@ -436,6 +436,40 @@ node in the pipeline.</p>
 <code class="docutils literal notranslate"><span class="pre">READY</span></code>. Again, this call is propagated to every node in the pipe.</p>
 <p><code class="docutils literal notranslate"><span class="pre">destroy()</span></code> can be invoked if any kind of custom memory management should be
 performed by any of its composing nodes.</p>
+<p><code class="docutils literal notranslate"><span class="pre">kill()</span></code> stops a running pipeline without processing the messages still in
+the queues of its nodes, and without waiting for a node that is busy: every
+node thread gets <code class="docutils literal notranslate"><span class="pre">JUTURNA_THREAD_JOIN_TIMEOUT</span></code> seconds to exit, then it is
+left behind.</p>
+<section id="stopping-when-something-goes-wrong">
+<h3>Stopping when something goes wrong<a class="headerlink" href="#stopping-when-something-goes-wrong" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">stop()</span></code> waits for every <code class="docutils literal notranslate"><span class="pre">update()</span></code> call in progress, however long it
+takes. When a node does not come back, call <code class="docutils literal notranslate"><span class="pre">kill()</span></code> from another thread:
+it is the only lifecycle method allowed while a <code class="docutils literal notranslate"><span class="pre">stop()</span></code> is in progress
+(every other one raises <code class="docutils literal notranslate"><span class="pre">PipelineBusyError</span></code>). The kill reaches every node,
+the stop in progress no longer waits and discards the pending messages, and
+<code class="docutils literal notranslate"><span class="pre">kill()</span></code> returns once that stop is over. The same holds for the stop that
+<code class="docutils literal notranslate"><span class="pre">destroy()</span></code> runs on a running pipeline.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stopper</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">pipeline</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+<span class="n">stopper</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">stopper</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">stopper</span><span class="o">.</span><span class="n">is_alive</span><span class="p">():</span>
+    <span class="n">pipeline</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">stop()</span></code>, <code class="docutils literal notranslate"><span class="pre">kill()</span></code> and <code class="docutils literal notranslate"><span class="pre">destroy()</span></code> always go through all the nodes. When
+the <code class="docutils literal notranslate"><span class="pre">stop()</span></code> or the <code class="docutils literal notranslate"><span class="pre">destroy()</span></code> of a node raises, the error is logged, the
+threads of that node are stopped all the same, and the other nodes follow. The
+pipeline reaches <code class="docutils literal notranslate"><span class="pre">STOPPED</span></code> (or <code class="docutils literal notranslate"><span class="pre">DESTROYED</span></code>), and only then the first error
+is raised to the caller: a pipeline with a node that fails to clean up can
+still be destroyed.</p>
+<p>An interrupt (<code class="docutils literal notranslate"><span class="pre">ctrl+c</span></code>) during <code class="docutils literal notranslate"><span class="pre">stop()</span></code> or <code class="docutils literal notranslate"><span class="pre">destroy()</span></code> leaves the
+pipeline free for another call, which goes on with the nodes that are left.</p>
+<p>A node that stops on its own does not hold the others: the messages sent to a
+stopped node are discarded, so the nodes before it never wait for it.</p>
+<p><code class="docutils literal notranslate"><span class="pre">update_node()</span></code> changes a property of a node from the thread of the caller.
+It raises <code class="docutils literal notranslate"><span class="pre">PipelineNotReadyError</span></code> before the warm up and
+<code class="docutils literal notranslate"><span class="pre">PipelineDestroyedError</span></code> after the destruction.</p>
 <p>Any call sequence that does not respect the state transitions here discussed
 will generate an exception:</p>
 <ol class="arabic simple">
@@ -459,6 +493,7 @@ workflow, please assume <strong>pipelines cannot be restarted once stopped, only
 destroyed</strong>. If you need to stop a pipeline and later restart it, destroy it
 and create a new pipe instead.</p>
 </div>
+</section>
 </section>
 </section>
 
@@ -527,7 +562,10 @@ and create a new pipe instead.</p>
             <ul>
 <li><a class="reference internal" href="#">Pipelines</a><ul>
 <li><a class="reference internal" href="#configuration-items">Configuration items</a></li>
-<li><a class="reference internal" href="#pipeline-lifecycle">Pipeline lifecycle</a></li>
+<li><a class="reference internal" href="#pipeline-lifecycle">Pipeline lifecycle</a><ul>
+<li><a class="reference internal" href="#stopping-when-something-goes-wrong">Stopping when something goes wrong</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -145,6 +145,19 @@ does not grow forever.
    node configuration key were removed: implement the same policies in
    ``update()``, using the node state.
 
+Only messages travel
+--------------------
+
+A node accepts ``Message`` objects only. Anything else is refused, wherever it
+comes from: returned by the source function, passed to ``put()`` or to
+``transmit()``, or found in the inbound queue. A refused item is logged as an
+error and counted in the ``health`` of the node under ``rejected_items``; it
+never reaches ``update()``, and the node goes on with the next message. A
+source function with nothing to deliver returns ``None``, which is not counted.
+
+``transmit()`` offers the message to every destination. When a destination
+fails, the others still receive it, then the first error is raised.
+
 Node lifecycle
 --------------
 

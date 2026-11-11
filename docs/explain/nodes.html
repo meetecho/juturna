@@ -457,6 +457,17 @@ node configuration key were removed: implement the same policies in
 <code class="docutils literal notranslate"><span class="pre">update()</span></code>, using the node state.</p>
 </div>
 </section>
+<section id="only-messages-travel">
+<h2>Only messages travel<a class="headerlink" href="#only-messages-travel" title="Link to this heading">¶</a></h2>
+<p>A node accepts <code class="docutils literal notranslate"><span class="pre">Message</span></code> objects only. Anything else is refused, wherever it
+comes from: returned by the source function, passed to <code class="docutils literal notranslate"><span class="pre">put()</span></code> or to
+<code class="docutils literal notranslate"><span class="pre">transmit()</span></code>, or found in the inbound queue. A refused item is logged as an
+error and counted in the <code class="docutils literal notranslate"><span class="pre">health</span></code> of the node under <code class="docutils literal notranslate"><span class="pre">rejected_items</span></code>; it
+never reaches <code class="docutils literal notranslate"><span class="pre">update()</span></code>, and the node goes on with the next message. A
+source function with nothing to deliver returns <code class="docutils literal notranslate"><span class="pre">None</span></code>, which is not counted.</p>
+<p><code class="docutils literal notranslate"><span class="pre">transmit()</span></code> offers the message to every destination. When a destination
+fails, the others still receive it, then the first error is raised.</p>
+</section>
 <section id="node-lifecycle">
 <h2>Node lifecycle<a class="headerlink" href="#node-lifecycle" title="Link to this heading">¶</a></h2>
 <p>A node’s life follows a clear progression managed by the pipeline:</p>
@@ -539,6 +550,7 @@ sentinel value into the queue, which gracefully unwinds the worker thread.</p>
 <li><a class="reference internal" href="#a-simple-message-processor">A simple message processor</a></li>
 <li><a class="reference internal" href="#threading-model">Threading model</a></li>
 <li><a class="reference internal" href="#multiple-inputs">Multiple inputs</a></li>
+<li><a class="reference internal" href="#only-messages-travel">Only messages travel</a></li>
 <li><a class="reference internal" href="#node-lifecycle">Node lifecycle</a></li>
 </ul>
 </li>
