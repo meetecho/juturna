@@ -1,5 +1,5 @@
-juturna.nodes package
-=====================
+juturna.transport package
+=========================
 
 Subpackages
 -----------
@@ -7,14 +7,13 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
-   juturna.nodes.proc
-   juturna.nodes.sink
-   juturna.nodes.source
+   juturna.transport.browser
+   juturna.transport.threads
 
 Module contents
 ---------------
 
-.. automodule:: juturna.nodes
+.. automodule:: juturna.transport
    :members:
    :show-inheritance:
    :undoc-members:

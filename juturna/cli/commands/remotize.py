@@ -53,7 +53,7 @@ def setup_parser(subparsers):  # noqa: D103
         metavar='FILE',
         type=_cli_utils._is_file_ok,
         required=False,
-        help='default configuration as JSON string',
+        help='JSON file with the configuration of the node',
     )
 
     parser.add_argument(

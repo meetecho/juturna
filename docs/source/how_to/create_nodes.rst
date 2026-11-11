@@ -1,210 +1,85 @@
-Create custom nodes
-===================
+Write and package a node
+========================
 
-This guide contains the basic instructions you can follow to create custom nodes
-to use within Juturna pipelines. Other than an overview of how to assemble all
-the pieces to design useful custom components, this document will offer the
-required steps to create a node called ``RedCatDetector``, a processing node in
-charge of using a custom YOLO model to detect the possible presence of red cats
-in any input image.
+This guide shows how to write a custom node and make it available to your
+pipelines. As an example we build ``RedCatDetector``, a processing node that
+uses a YOLO model to detect red cats in the images it receives.
 
-Setup the environment
----------------------
+If you have never written a node, the :ref:`tutorial <tutorial>` is a gentler
+start.
 
-Make sure you are working on a virtual environment, and you have Juturna
-installed alongside all the extra dependencies you need for your node.
-
-.. code-block:: console
-
-    user:~/prj$ python3 -m venv .venv
-    user:~/prj$ source .venv/bin/activate
-    (.venv) user:~/prj$ pip install juturna
-    (.venv) user:~/prj$ mkdir plugins
-
-With the last command, we created the ``plugins`` folder where we are going to
-store our custom node.
-
-Create the node skeleton
-------------------------
-
-Every node has the same base content structure. A node called ``<NODE_NAME>`` of
-type ``<NODE_TYPE>`` will be stored as:
-
-.. code-block::
-
-  ./plugins
-    └── nodes
-        └── <NODE_TYPE>
-            └── _<NODE_NAME>
-                ├── <NODE_NAME>.py
-                ├── config.toml
-                ├── requirements.txt
-                └── readme.md
-
-Since ``RedCatDetector`` is a proc node, we can go ahead and create all the
-required files under ``./plugins/nodes/proc/_red_cat_detector/``. Alternatively,
-we can let Juturna handle that for us with the CLI ``stub`` command:
-
-.. code-block:: console
-
-    (.venv) user:~/prj$ python -m juturna stub \
-                               -n red_cat_detector \
-                               -t proc \
-                               -d ./plugins/nodes \
-                               -a "Cat Watcher" \
-                               -e watch@cat.com
-
-This will generate a node skeleton.
-
-.. tab-set::
-
-    .. tab-item:: red_cat_detector.py
-
-        .. code-block:: python
-
-            """
-            CatDetector
-
-            @author: Cat Watcher
-            @email: watch@cat.com
-            @created_at: 2025-11-10 12:56
-
-            Automatically generated with jt.utils.node_utils.node_stub
-            """
-            import typing
-
-            from juturna.components import Node
-            from juturna.components import Message
-
-            # BasePayload type is intended to be a placehoder for the input-output types
-            # you intend to use in the node implementation
-            from juturna.payloads._payloads import BasePayload
-
-
-            class RedCatDetector(Node[BasePayload, BasePayload]):
-                """Node implementation class"""
-
-                def __init__(self, **kwargs):
-                    """
-                    Parameters
-                    ----------
-                    kwargs : dict
-                        Supernode arguments.
-
-                    """
-                    super().__init__(**kwargs)
-
-                def configure(self):
-                    """Configure the node"""
-                    ...
-
-                def warmup(self):
-                    """Warmup the node"""
-                    ...
-
-                def set_on_config(self, prop: str, value: typing.Any):
-                    """Hot-swap node properties"""
-                    ...
-
-                def start(self):
-                    """Start the node"""
-                    # after custom start code, invoke base node start
-                    super().start()
-
-                def stop(self):
-                    """Stop the node"""
-                    # after custom stop code, invoke base node stop
-                    super().stop()
-
-                def destroy(self):
-                    """Destroy the node"""
-                    ...
-
-                def update(self, message: Message[BasePayload], **kwargs):
-                    """Receive data from upstream, transmit data downstream"""
-                    # keep messages that wait for others in the node state
-                    # state = kwargs['state']
-                    ...
-
-    .. tab-item:: config.toml
-
-        .. code-block:: toml
-
-            [arguments]
-
-            [meta]
-
-    .. tab-item:: README.md
-
-        .. code-block:: markdown
-
-            # cat_detector
-
-            ## Node type: proc
-
-            ## Node class name: CatDetector
-
-            ## Node name: cat_detector
-
-    .. tab-item:: requirements.txt
-
-        .. code-block:: text
-
-            // this file is empty
-
-If you decide to create your node files manually:
-
-- make sure the node folder name starts with an underscore (``_``) (in our
-  example, the node code is in the folder
-  ``./plugins/nodes/proc/_red_cat_detector``)
-- make sure the node class file has the same name of its parent folder, just
-  without the underscore (in our example, the node class file is
-  ``./plugins/nodes/proc/_red_cat_detector/red_cat_detector.py``)
-- keep in mind that a ``README.md`` file is not required, but **higly
-  recommended!**
-
-Add dependencies
+Where nodes live
 ----------------
 
-We know our node will use a custom `YOLO <https://docs.ultralytics.com/>`_ model
-to detect the presence of cats, so when executing the pipeline we need to
-make sure all the YOLO dependencies are satisfied. We then install the
-``ultralytics`` package, and include it in the requirement file. We also install
-``opencv-python`` to get a better support when checking alarmingly high levels
-of orangeness in our detected entities.
+Juturna finds nodes in installed Python packages, under three namespaces:
 
-.. code-block:: bash
+- ``juturna.nodes``, for the official ``juturna-nodes`` package;
+- ``juturna.extensions``, for extension packages;
+- ``juturna.contrib.<package>.nodes``, for everybody else. This is where
+  your nodes go, with ``<package>`` being your name or the name of your
+  organisation.
 
-    (.venv) user:~/prj$ echo "ultralytics==8.3.79\n" >> plugins/nodes/proc/_red_cat_detector/requirements.txt
-    (.venv) user:~/prj$ echo "opencv-python==4.13.0.92" >> plugins/nodes/proc/_red_cat_detector/requirements.txt
-    (.venv) user:~/prj$ pip install -r plugins/nodes/proc/_red_cat_detector/requirements.txt
+A node repository has this layout:
 
-.. admonition:: Dependencies are not automatically managed (|version|-|release|)
-    :class: :ATTENTION:
+.. code-block:: text
 
-    Juturna does not manage Python dependencies automatically, so always
-    remember to gather the dependencies of any plugin nodes you want to use, and
-    install them. This process may also lead to conflicts; if that happens, you
-    can try to solve them manually, or in the worst case, edit the conflicting
-    nodes or create new ones!
+    my-nodes/
+    ├── pyproject.toml
+    └── src/juturna/contrib/<package>/
+        ├── __init__.py
+        └── nodes/
+            ├── __init__.py
+            └── _<node_name>/
+                ├── <node_name>.py
+                ├── config.toml
+                ├── requirements.txt
+                └── README.md
 
-Add configuration items
------------------------
+``juturna`` and ``juturna/contrib`` are namespaces shared by every node
+package installed, so they must **not** have an ``__init__.py`` file.
 
-For our cat detector, we want to specify a few arguments that will be available
-for the node implementation. In juturna, this is done by declaring all the
-essential arguments the node accepts, alongside their default values, in the
-``config.toml`` file. In our case, this is
-``./plugins/nodes/proc/_red_cat_detector/config.toml``.
+Create the skeleton
+-------------------
 
-We can imagine the node needs to know:
+From the root of the repository, let the ``stub`` command create the files:
 
-- the inference model to use,
-- the device to run inference on (whether on CPU or GPU),
-- inference arguments such as confidence threshold and precision.
+.. code-block:: console
 
-We pack all this in the node configuration file, where we can define the node
-arguments and their corresponding default values.
+    (.venv) $ python -m juturna stub \
+                     --node-name red_cat_detector \
+                     --package catwatch \
+                     --author "Cat Watcher" \
+                     --email watch@cat.com
+    Node creation successful! Node type: contrib.catwatch.nodes.RedCatDetector
+
+The command writes the node folder in
+``src/juturna/contrib/catwatch/nodes/_red_cat_detector/`` and registers the
+class in ``nodes/__init__.py``:
+
+.. code-block:: python
+
+    _AVAILABLE_PLUGINS: dict[str, str] = {
+        'RedCatDetector': '._red_cat_detector.red_cat_detector',
+    }
+
+The node type it prints is what goes in the ``type`` field of a pipeline
+configuration.
+
+If you create the files by hand:
+
+- the node folder name starts with an underscore
+  (``_red_cat_detector``);
+- the module has the name of the folder, without the underscore
+  (``red_cat_detector.py``);
+- the class must be added to ``_AVAILABLE_PLUGINS``, or Juturna will not
+  find it.
+
+Declare the arguments
+---------------------
+
+The arguments a node accepts, with their default values, are declared in its
+``config.toml``. Our detector needs to know which model to use, where to run
+it, and two thresholds:
 
 .. code-block:: toml
 
@@ -214,51 +89,71 @@ arguments and their corresponding default values.
     cat_min_confidence = 0.4
     orangeness_threshold = 0.6
 
+    [meta]
+
+A pipeline configuration can override any of them. Keys that are not declared
+here are dropped (``juturna validate`` warns about them), so every argument
+needs a default.
+
+Add dependencies
+----------------
+
+The node uses `YOLO <https://docs.ultralytics.com/>`_ and OpenCV. List them in
+the dependencies of your package (see `Package the nodes`_), and install them
+in your environment:
+
+.. code-block:: console
+
+    (.venv) $ pip install ultralytics opencv-python
+
+Juturna does not install the dependencies of a node for you: they come with
+the package the node is in.
+
 Implement the node
 ------------------
 
-The items specified in the node config file are also available to the node
-``__init__`` method. We start implementing the node class:
-
-- we import the node dependencies (in this case, ``ultralytics``, ``cv2`` and
-  ``numpy``),
-- we modify the constructor signature to include the node arguments,
-- we change the input and output types for the node (we receive images to
-  segment as input, and we produce annotated images as output)
+The arguments of ``config.toml`` reach the node as arguments of ``__init__``.
+Everything else (the node name, the pipeline name) travels in ``kwargs`` and
+goes to the base class.
 
 .. code-block:: python
 
-    import ultralytics
-    import cv2
+    import typing
 
+    import cv2
     import numpy as np
 
+    from ultralytics import YOLO
+
+    from juturna.components import Message
+    from juturna.components import Node
     from juturna.payloads import ImagePayload
 
 
     class RedCatDetector(Node[ImagePayload, ImagePayload]):
-        def __init__(self,
-                     model: str,
-                     device: str,
-                     cat_min_confidence: float,
-                     orangeness_threshold: float,
-                     **kwargs):
-            # this automatically instantiates the base node
+        def __init__(
+            self,
+            model: str,
+            device: str,
+            cat_min_confidence: float,
+            orangeness_threshold: float,
+            **kwargs,
+        ):
             super().__init__(**kwargs)
 
             self.model_name = model
             self.device = device
             self.cat_min_confidence = cat_min_confidence
             self.orangeness_threshold = orangeness_threshold
-            self.model = None
 
+            self.model = None
             self._target_class = list()
 
-Our node doesn't need much else. It only instantiates a YOLO model, and that can
-be done in the ``warmup`` method. Similarly, we isolate the key corresponding to
-the class ``cat`` among all the possible targets of the YOLO model (we are
-only interested in detecting cats), and store that in a list so that we can
-later pass it to the model directly.
+The two type parameters of ``Node`` are the payload the node receives and the
+one it transmits: here images in, annotated images out.
+
+Loading the model takes time and memory, so it belongs in ``warmup()``, which
+the pipeline calls once before starting:
 
 .. code-block:: python
 
@@ -266,62 +161,49 @@ later pass it to the model directly.
         self.model = YOLO(self.model_name)
         self.model.to(self.device)
 
-        self._target_class = [k for k, v in model.names.items() if v == 'cat']
+        # we only care about cats
+        self._target_class = [
+            k for k, v in self.model.names.items() if v == 'cat'
+        ]
 
-        # we can use the built-in logger
-        self.logger.info('model instantiated and ready')
+        self.logger.info('model ready')
 
-The processing logic of the node is pretty simple, and can be fully contained in
-the ``update`` method. What we want to do is:
+The work happens in ``update()``, called once for every message received:
 
-- receive an image and run it through our model;
-- check the YOLO results for the presence of cats;
-- isolate orange cats among all other cats;
-- transmit an alert whenever one of those little devils is found.
+- run the image through the model;
+- keep the cats that are orange enough;
+- transmit an annotated image when at least one is found.
 
 .. image:: ../_static/img/tutorial_create_node_flow_diagram.svg
    :alt: node flow
    :width: 100%
    :align: center
 
-The ``update`` code might then look something like this:
-
 .. code-block:: python
 
-    def update(self, message: Message[ImagePayload]):
-        # the image to segment is contained in the payload of the received
-        # message
+    def update(self, message: Message[ImagePayload], **kwargs):
+        image = message.payload.image
+
         results = self.model.predict(
-            message.payload.image,
+            image,
             verbose=False,
             conf=self.cat_min_confidence,
             classes=self._target_class,
         )
 
-        # no cat was found, we can return
-        if len(results[0].boxes) == 0:
-            return
-
         orange_cats = list()
 
-        # check all the crops for orangeness, we only want orange cats!
         for idx, box in enumerate(results[0].boxes):
-            bx = box.xyxy[0]
-            x1, y1, x2, y2 = map(int, bx)
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-            crop = image_rgb[y1:y2, x1:x2]
-
-            if self._is_cat_orange(crop)[0]:
+            if self._is_cat_orange(image[y1:y2, x1:x2]):
                 orange_cats.append(idx)
 
-        # cats were found, but none of them were orange enough
-        if len(orange_cats) == 0:
+        # no cat, or none of them orange enough: nothing to send
+        if not orange_cats:
             return
 
-        # we drop all the other boxes and only keep the ones containing orange
-        # cats
         results[0].boxes = results[0].boxes[orange_cats]
-
         annotated = results[0].plot()
 
         to_send = Message[ImagePayload](
@@ -338,68 +220,74 @@ The ``update`` code might then look something like this:
             timers_from=message,
         )
 
-        to_send.meta['annotations'] = results[0]
+        to_send.meta['orange_cats'] = len(orange_cats)
 
         self.transmit(to_send)
 
-The utility function ``_is_cat_orange`` simply uses the HSV version of the
-cropped region to check the level of orangeness. This might fail under some
-specific circumstances (maybe you, just like me, have an orange wall), but for
-now we'll make do.
+    def _is_cat_orange(self, crop_rgb: np.ndarray) -> bool:
+        hsv = cv2.cvtColor(crop_rgb, cv2.COLOR_RGB2HSV)
+        mask = cv2.inRange(
+            hsv, np.array([5, 50, 50]), np.array([25, 255, 255])
+        )
+
+        return np.count_nonzero(mask) / mask.size > self.orangeness_threshold
+
+A few rules worth remembering:
+
+- ``update()`` always takes ``**kwargs``: the pipeline passes the node state
+  in ``kwargs['state']`` (see `Keep data between messages`_);
+- a received message is frozen. To send it on with changes use
+  ``message.copy()``, to send new data build a new ``Message``
+  (see :ref:`explain_messages`);
+- only ``Message`` objects can be transmitted;
+- an exception raised by ``update()`` is logged and counted in the node
+  health, and the node goes on with the next message.
+
+The orangeness check is rough (it may fail if you, just like me, have an
+orange wall), but for now we'll make do.
+
+Keep data between messages
+--------------------------
+
+A node that needs to remember something from one message to the next uses its
+state, a dictionary the pipeline keeps for it:
 
 .. code-block:: python
 
-    def is_orange_cat(self, crop_rgb):
-        if crop_rgb.dtype != np.uint8:
-            crop_rgb = (crop_rgb * 255).astype(np.uint8)
+    def update(self, message: Message[ImagePayload], **kwargs):
+        state = kwargs['state']
+        state['seen'] = state.get('seen', 0) + 1
 
-        hsv = cv2.cvtColor(crop_rgb, cv2.COLOR_RGB2HSV)
+The same goes for a node with several inputs that needs a message from each
+before producing its output: it keeps the pending ones in the state. See
+:ref:`explain_nodes` for an example.
 
-        lower_orange = np.array([5, 50, 50])
-        upper_orange = np.array([25, 255, 255])
+Write a source node
+-------------------
 
-        mask = cv2.inRange(hsv, lower_orange, upper_orange)
+A source node produces messages instead of receiving them. In ``__init__``
+it registers a function with ``set_source()``:
 
-        orange_pixel_count = np.count_nonzero(mask)
-        total_pixels = mask.size
-        orange_fraction = orange_pixel_count / total_pixels
+.. code-block:: python
 
-        return orange_fraction > self.orangeness_threshold, orange_fraction
+    def __init__(self, interval: float, **kwargs):
+        super().__init__(**kwargs)
 
-Once this is done, we are all set to start using our custom node. Assuming we
-have a YOLO model readily available, we can place it in a ``models`` folder in
-our project, then fill in the node configuration in a pipeline JSON file.
+        self.set_source(self._read_frame, by=interval, mode='pre')
 
-.. code-block:: bash
+The function returns a ``Message``, or ``None`` when it has nothing to
+deliver. With ``mode='pre'`` the node waits ``by`` seconds before each call,
+with ``mode='post'`` (the default) after it. With ``by=0`` the function is
+called again right away, so it should block until data is available.
 
-    (.venv) user:~/prj$ mkdir models
-    (.venv) user:~/prj$ cp path/to/model/yolo11x.pt ./models
+The messages it returns arrive in ``update()``, which normally just transmits
+them.
 
-In the pipeline configuration file, the node will be represented by the
-following:
+Change a node while it runs
+---------------------------
 
-.. code-block:: json
-
-    {
-      "name": "detector",
-      "type": "proc",
-      "mark": "red_cat_detector",
-      "configuration": {
-        "model": "./models/yolo11x.pt",
-        "device": "cuda",
-        "cat_min_confidence": 0.5,
-        "orangeness_threshold": 0.6
-      }
-    }
-
-Live node update
-----------------
-
-There might be cases where we need to tweak the node while the pipeline is
-running. For the red cat detector, this could mean changing the model used for
-inference, or making the inference itself stricter or looser. To do so, we can
-implement the ``set_on_config`` method. In here, we can specify what to do when
-a new value for a particular property needs to be set on the node.
+To let a property change while the pipeline is running, implement
+``set_on_config()``:
 
 .. code-block:: python
 
@@ -408,9 +296,63 @@ a new value for a particular property needs to be set on the node.
             self.cat_min_confidence = value
         elif prop == 'orangeness_threshold':
             self.orangeness_threshold = value
-        elif prop == 'model':
-            self.model_name = value
-            self.model = YOLO(self.model_name)
-            self.model.to(self.device)
         else:
-            self.logger.info(f'cannot update node with property {prop}')
+            self.logger.warning(f'cannot update property {prop}')
+
+It is called through the pipeline:
+
+.. code-block:: python
+
+    pipeline.update_node('detector', 'cat_min_confidence', 0.7)
+
+The call runs in the thread of the caller, possibly while ``update()`` is
+working: if the two touch more than a simple value, protect it with a lock.
+
+Package the nodes
+-----------------
+
+A node repository is a normal Python package. A minimal ``pyproject.toml``,
+using ``hatchling``:
+
+.. code-block:: toml
+
+    [project]
+    name = "catwatch-nodes"
+    version = "0.1.0"
+    requires-python = ">=3.12"
+    dependencies = ["juturna>=3.0.0", "ultralytics", "opencv-python"]
+
+    [build-system]
+    requires = ["hatchling"]
+    build-backend = "hatchling.build"
+
+    [tool.hatch.build.targets.wheel]
+    only-include = ["src/juturna/contrib/catwatch"]
+    sources = ["src"]
+
+Install it in the environment where your pipelines run:
+
+.. code-block:: console
+
+    (.venv) $ pip install .
+
+While developing, ``export PYTHONPATH=src`` from the root of the repository
+does the same job without installing anything.
+
+Use the node
+------------
+
+In a pipeline configuration, the node is:
+
+.. code-block:: json
+
+    {
+      "name": "detector",
+      "type": "contrib.catwatch.nodes.RedCatDetector",
+      "configuration": {
+        "model": "./models/yolo11x.pt",
+        "cat_min_confidence": 0.5
+      }
+    }
+
+``device`` and ``orangeness_threshold`` keep the defaults of ``config.toml``.

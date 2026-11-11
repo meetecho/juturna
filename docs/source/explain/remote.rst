@@ -27,12 +27,13 @@ Also, sharing and scaling are strong suits of remote nodes, as they can serve
 multiple pipelines simultaneously, or be made redundant and masked by a load
 balancer.
 
-.. admonition:: Remotisation features might be unstable (|version|-|release|)
+.. admonition:: Remotisation is young
     :class: :WARNING:
 
     The infrastructure to deploy juturna nodes remotely is still under
-    active development. We do not recommend using it in production scenarios, or
-    for mission-critical components.
+    active development. The remote service has no authentication and no
+    encryption (see `Who can reach the service`_), so it is meant for trusted
+    networks only.
 
 Warping fundamentals
 --------------------
