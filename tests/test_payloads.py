@@ -241,14 +241,6 @@ def test_object_payload_or_returns_a_new_dict():
     assert payload == {'prop_a': 10}
 
 
-def test_object_payload_copies_keep_working():
-    payload = ObjectPayload(prop_a=[1, 2], prop_b='value')
-
-    assert pickle.loads(pickle.dumps(payload)) == payload
-    assert copy.deepcopy(payload) == payload
-    assert payload.clone() == payload
-
-
 def test_object_payload_size_is_computed_on_first_access(monkeypatch):
     calls = list()
     real_deep_size = _payloads._deep_size
@@ -459,3 +451,135 @@ def test_size_bytes_survives_copies(make, duplicate):
     payload = make()
 
     assert duplicate(payload).size_bytes == payload.size_bytes > 0
+
+
+# -- ObjectPayload is compared, printed and serialised by content ------------
+
+
+def test_object_payload_equality_looks_at_the_content():
+    assert ObjectPayload(a=1) == ObjectPayload(a=1)
+    assert ObjectPayload(a=1) != ObjectPayload(a=2)
+
+    # == and != are separate methods, and used to disagree
+    assert not (ObjectPayload(a=1) == ObjectPayload(a=2))
+    assert not (ObjectPayload(a=1) != ObjectPayload(a=1))
+    assert not (ObjectPayload(a=1) == {'a': 2})
+    assert ObjectPayload(a=1) != ObjectPayload(b=1)
+    assert ObjectPayload(a=1) != ObjectPayload(a=1, b=2)
+    assert ObjectPayload() != ObjectPayload(a=1)
+
+    assert ObjectPayload(a=1) == {'a': 1}
+    assert {'a': 1} == ObjectPayload(a=1)
+    assert ObjectPayload(a=1) != {'a': 2}
+    assert {'a': 2} != ObjectPayload(a=1)
+    assert ObjectPayload(a=1) != 'a'
+
+
+def test_object_payload_equality_compares_arrays():
+    def payload(*values, dtype=np.int16):
+        return ObjectPayload(
+            nested={'samples': [np.array(values, dtype=dtype)]}, rate=16_000
+        )
+
+    assert payload(1, 2, 3) == payload(1, 2, 3)
+    assert payload(1, 2, 3) != payload(1, 2, 4)
+    assert payload(1, 2, 3) != payload(1, 2)
+    assert payload(1, 2, 3) != payload(1, 2, 3, dtype=np.float32)
+    assert ObjectPayload(a=np.zeros(2)) != ObjectPayload(a=[0.0, 0.0])
+
+
+def test_object_payload_copies_have_the_same_content():
+    payload = ObjectPayload(
+        prop_a=[1, 2], prop_b='value', prop_c=np.arange(4), prop_d=b'\x00'
+    )
+    other = ObjectPayload(prop_a=[1, 3], prop_b='value')
+
+    for duplicate in (
+        pickle.loads(pickle.dumps(payload)),
+        copy.deepcopy(payload),
+        payload.clone(),
+    ):
+        assert type(duplicate) is ObjectPayload
+        assert duplicate == payload
+        assert duplicate != other
+        assert duplicate is not payload
+
+
+def test_object_payload_repr_shows_the_content():
+    assert repr(ObjectPayload()) == 'ObjectPayload({})'
+    assert repr(ObjectPayload(a=1, b='x')) == "ObjectPayload({'a': 1, 'b': 'x'})"
+
+
+def test_object_payload_cannot_be_hashed():
+    with pytest.raises(TypeError):
+        hash(ObjectPayload(a=1))
+
+    with pytest.raises(TypeError):
+        {ObjectPayload(a=1)}
+
+
+def test_object_payload_serialize_converts_the_content():
+    payload = ObjectPayload(
+        samples=np.array([1, 2], dtype=np.int16),
+        raw=b'\x00\x01',
+        peak=np.float32(0.5),
+        tags={'a'},
+        nested={'frame': np.zeros((1, 2), dtype=np.uint8)},
+        inner=BytesPayload(cnt=b'\x02'),
+    )
+
+    serialised = ObjectPayload.serialize(payload)
+
+    assert serialised == {
+        'samples': [1, 2],
+        'raw': 'AAE=',
+        'peak': 0.5,
+        'tags': ['a'],
+        'nested': {'frame': [[0, 0]]},
+        'inner': {'cnt': 'Ag=='},
+    }
+    assert json.loads(json.dumps(serialised)) == serialised
+
+
+def test_message_with_an_object_payload_of_arrays_goes_to_json():
+    message = Message(
+        creator='node',
+        payload=ObjectPayload(
+            samples=np.array([1, 2], dtype=np.int16),
+            raw=b'\x00\x01',
+            nested={'frame': np.zeros((1, 2), dtype=np.uint8)},
+        ),
+    )
+    message.meta['shape'] = np.array([1, 2])
+    message.meta['tags'] = {'a'}
+    message._freeze()
+
+    back = json.loads(message.to_json())
+
+    assert back['payload'] == {
+        'samples': [1, 2],
+        'raw': 'AAE=',
+        'nested': {'frame': [[0, 0]]},
+    }
+    assert back['meta'] == {'shape': [1, 2], 'tags': ['a']}
+
+
+def test_to_json_still_refuses_what_it_cannot_write():
+    message = Message(creator='node', payload=ObjectPayload(thing=object()))
+
+    with pytest.raises(TypeError):
+        message.to_json()
+
+
+# -- Batch -------------------------------------------------------------------
+
+
+def test_batch_keeps_its_messages_in_a_tuple():
+    messages = [Message(creator='a'), Message(creator='b')]
+    batch = Batch(messages=messages)
+
+    messages.append(Message(creator='c'))
+
+    assert type(batch.messages) is tuple
+    assert len(batch.messages) == 2
+    assert Batch().messages == ()

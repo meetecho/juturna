@@ -1,3 +1,4 @@
+import copy
 import time
 import json
 import dataclasses
@@ -521,3 +522,169 @@ def test_message_ids_are_unique_across_threads():
         thread.join()
 
     assert len(set(ids)) == len(ids) == 40_000
+
+
+# -- frozen messages can be copied and pickled -------------------------------
+
+
+def _received_message() -> Message:
+    message = Message(
+        creator='source',
+        version=3,
+        payload=AudioPayload(audio=np.arange(4, dtype=np.int16)),
+    )
+    message.meta['tags'] = ['a', 'b']
+    message.meta['nested'] = {'levels': [1, 2], 'mask': np.ones(2)}
+    message.timer('produced', 1.5)
+    message._data_source_id = 9
+    message._freeze()
+
+    return message
+
+
+@pytest.mark.parametrize(
+    'duplicate',
+    [
+        lambda m: pickle.loads(pickle.dumps(m)),
+        lambda m: pickle.loads(pickle.dumps(m, protocol=2)),
+        copy.deepcopy,
+        copy.copy,
+    ],
+    ids=['pickle', 'pickle-2', 'deepcopy', 'copy'],
+)
+def test_a_frozen_message_can_be_duplicated(duplicate):
+    message = _received_message()
+    back = duplicate(message)
+
+    assert back is not message
+    assert (back.id, back.created_at) == (message.id, message.created_at)
+    assert (back.creator, back.version) == ('source', 3)
+    assert back._data_source_id == 9
+    assert dict(back.timers) == {'produced': 1.5}
+    assert back.meta['tags'] == ('a', 'b')
+    assert back.meta['nested']['levels'] == (1, 2)
+    assert np.array_equal(back.payload.audio, message.payload.audio)
+
+    # still frozen, in depth
+    assert back._is_frozen
+
+    with pytest.raises(TypeError):
+        back.version = 4
+
+    with pytest.raises(TypeError):
+        back.meta['other'] = 1
+
+    with pytest.raises(TypeError):
+        back.meta['nested']['levels'] = ()
+
+    with pytest.raises(TypeError):
+        back.timers['other'] = 1
+
+    with pytest.raises(ValueError):
+        back.payload.audio[0] = 7
+
+    with pytest.raises(ValueError):
+        back.meta['nested']['mask'][0] = 7
+
+
+def test_a_message_that_is_not_frozen_stays_so_when_duplicated():
+    message = Message(creator='source', version=3)
+    message.meta['tags'] = ['a']
+
+    back = pickle.loads(pickle.dumps(message))
+    back.meta['tags'].append('b')
+    back.version = 4
+
+    assert not back._is_frozen
+    assert back.id == message.id
+    assert back.meta == {'tags': ['a', 'b']}
+    assert message.meta == {'tags': ['a']}
+
+
+def test_copy_gives_a_message_that_can_be_changed():
+    message = _received_message()
+    copied = message.copy()
+
+    assert not copied._is_frozen
+    assert copied.id != message.id
+    assert (copied.creator, copied.version) == ('source', 3)
+    assert copied.payload is message.payload
+    assert copied._data_source_id is None
+
+    copied.version = 4
+    copied.meta['other'] = 1
+    copied.meta['nested']['levels'] = [3]
+    copied.timer('copied', 2.5)
+    copied.payload = BytesPayload(cnt=b'x')
+
+    # the received message is untouched
+    assert message.version == 3
+    assert dict(message.timers) == {'produced': 1.5}
+    assert sorted(message.meta) == ['nested', 'tags']
+    assert message.meta['nested']['levels'] == (1, 2)
+    assert isinstance(message.payload, AudioPayload)
+
+    assert dict(copied.timers) == {'produced': 1.5, 'copied': 2.5}
+
+
+def test_copy_takes_a_new_creator():
+    message = _received_message()
+
+    assert message.copy(creator='relay').creator == 'relay'
+    assert Message(creator='a').copy().creator == 'a'
+
+
+def test_copy_of_a_message_that_is_not_frozen_is_independent():
+    message = Message(creator='source')
+    message.meta['nested'] = {'levels': [1]}
+
+    copied = message.copy()
+    copied.meta['nested']['other'] = 1
+
+    assert message.meta == {'nested': {'levels': [1]}}
+
+
+# -- a batch is frozen with the message that carries it ----------------------
+
+
+def test_freezing_a_batch_freezes_its_messages():
+    inner = Message(
+        creator='source', payload=AudioPayload(audio=np.zeros(2))
+    )
+    inner.meta['tags'] = ['a']
+    outer = Message(creator='aggregator', payload=Batch(messages=[inner]))
+
+    outer._freeze()
+
+    assert inner._is_frozen
+    assert type(outer.payload.messages) is tuple
+
+    with pytest.raises(TypeError):
+        inner.version = 4
+
+    with pytest.raises(TypeError):
+        inner.meta['other'] = 1
+
+    with pytest.raises(ValueError):
+        inner.payload.audio[0] = 1
+
+
+def test_a_batch_of_received_messages_can_be_pickled():
+    outer = Message(
+        creator='aggregator',
+        payload=Batch(messages=(_received_message(), _received_message())),
+    )
+    outer._freeze()
+
+    # the browser transport pickles the payloads it has no layout for
+    payload = pickle.loads(pickle.dumps(outer.payload))
+
+    assert [m.version for m in payload.messages] == [3, 3]
+    assert all(m._is_frozen for m in payload.messages)
+    assert payload.size_bytes == outer.payload.size_bytes == 16
+
+    cloned = outer.payload.clone()
+
+    assert [m.id for m in cloned.messages] == [
+        m.id for m in outer.payload.messages
+    ]
