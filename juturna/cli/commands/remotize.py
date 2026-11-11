@@ -30,7 +30,21 @@ def setup_parser(subparsers):  # noqa: D103
     )
 
     parser.add_argument(
-        '--port', '-p', type=int, default=50051, help='port to listen on'
+        '--host',
+        '-H',
+        default='127.0.0.1',
+        help='address to listen on (default: 127.0.0.1, this machine only). '
+        'The service has no authentication and no encryption: listen on '
+        'another address, such as 0.0.0.0 for all of them, on trusted '
+        'networks only',
+    )
+
+    parser.add_argument(
+        '--port',
+        '-p',
+        type=int,
+        default=50051,
+        help='port to listen on (default: 50051)',
     )
 
     parser.add_argument(

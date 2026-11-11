@@ -76,6 +76,15 @@ state lives:
   replica going down loses no state. The state travels on every request, so
   keep it small.
 
+A warp node makes a random **session** identifier every time it warms up, and
+sends it with every request. The service keeps a sticky state under the
+pipeline id, the name of the warp node and that session. So another client
+that only knows the pipeline id and the node name gets a state of its own,
+and a pipeline that is started again does not continue from the state of its
+previous run: it is asked for its copy, like any client the service does not
+know. When a sticky warp node is destroyed it tells the service, which drops
+its state at once.
+
 In both cases the remote service answers when ``update()`` returns. A message
 that the node keeps in its state without transmitting anything gets an empty
 response at once, and the warp node transmits nothing downstream.
@@ -115,6 +124,37 @@ while the node is idle. A message transmitted by another thread while the node
 processes a message is logged as an error instead, in both modes, and fails no
 request. A node meant to run remotely transmits from ``update()`` only.
 
+Who can reach the service
+-------------------------
+
+The remote service has **no authentication and no encryption**. Whoever can
+connect to it can send messages to the node and read what comes back, and
+whoever can read the traffic sees everything, sessions included. The session
+keeps well-behaved clients apart; it is not a password.
+
+For this reason ``juturna remotize`` listens on ``127.0.0.1`` by default,
+reachable from the same machine only. To serve pipelines on other machines,
+pass the address to listen on with ``--host`` (``0.0.0.0`` for every
+interface), and do it **on trusted networks only**: a private network between
+your own machines, or behind a proxy or a tunnel that authenticates and
+encrypts. The service logs a warning when it listens on anything but the
+loopback address.
+
+Protocol version
+----------------
+
+The warp node and the remote service must speak the same version of the remote
+protocol, which is version 1 in juturna 3.0. Every request and response carries
+it. The service refuses a request of another version with the
+``UNIMPLEMENTED`` status, and the warp node refuses a response of another
+version, so two sides that do not match fail on the first message with an
+error that says so. A message whose payload is of a type the receiver does not
+know is refused too, on both sides.
+
+The version changes whenever an older peer would not understand the new one.
+Install matching versions of juturna on both sides: on the local side that is
+the version ``juturna-nodes`` was installed with.
+
 Limits
 ------
 
@@ -127,7 +167,7 @@ status. A request whose warp node cancels it or disconnects is not processed
 if it is still waiting.
 
 ``juturna remotize`` exits with status 1 when the node cannot be built or the
-port is already in use: two services never share a port.
+address is already in use: two services never share a port.
 
 Developer notes
 ---------------
