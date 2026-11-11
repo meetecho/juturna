@@ -68,6 +68,9 @@ class PipelineBusyError(PipelineStateError):
     the transition in flight owns the pipeline's internal state (nodes,
     DAG, node threads) until it completes, so a concurrent call cannot be
     safely evaluated against the pipeline's current status.
+
+    kill() during a stop() is the exception: it turns the stop in progress
+    into a kill, and returns when that is over.
     """
 
 
