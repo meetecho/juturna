@@ -17,6 +17,9 @@ def _to_json(value: Any) -> Any:
     if isinstance(value, np.ndarray):
         return value.tolist()
 
+    if isinstance(value, np.generic):
+        return value.item()
+
     if isinstance(value, bytes | bytearray):
         return base64.b64encode(value).decode('ascii')
 
@@ -27,10 +30,36 @@ def _to_json(value: Any) -> Any:
     if isinstance(value, BasePayload):
         return type(value).serialize(value)
 
-    if isinstance(value, list | tuple):
+    if isinstance(value, list | tuple | set | frozenset):
         return [_to_json(v) for v in value]
 
     return value
+
+
+def _same_content(left: Any, right: Any) -> bool:
+    """
+    Compare two values in depth. Arrays are equal when shape, type and
+    elements are, which ``==`` cannot tell: it compares element by element.
+    """
+    if isinstance(left, np.ndarray) or isinstance(right, np.ndarray):
+        return (
+            isinstance(left, np.ndarray)
+            and isinstance(right, np.ndarray)
+            and left.dtype == right.dtype
+            and np.array_equal(left, right)
+        )
+
+    if isinstance(left, dict) and isinstance(right, dict):
+        return left.keys() == right.keys() and all(
+            _same_content(value, right[key]) for key, value in left.items()
+        )
+
+    if type(left) in (list, tuple) and type(left) is type(right):
+        return len(left) == len(right) and all(
+            _same_content(a, b) for a, b in zip(left, right, strict=True)
+        )
+
+    return bool(left == right)
 
 
 @dataclass(frozen=True, slots=True)
@@ -157,7 +186,19 @@ class BytesPayload(BasePayload):
 
 @dataclass(frozen=True)
 class Batch(BasePayload):
+    """
+    A group of messages travelling as one payload.
+
+    The messages are kept in a tuple, whatever sequence they are given in.
+    They are frozen together with the message that carries the batch.
+    """
+
     messages: tuple = field(default_factory=tuple)
+
+    def __post_init__(self):
+        # a tuple, so the frozen payload cannot be changed through the list
+        # it was built from
+        object.__setattr__(self, 'messages', tuple(self.messages))
 
     @property
     def size_bytes(self) -> int:
@@ -218,7 +259,10 @@ def _deep_size(obj: Any, max_visits: int) -> int:
     return size
 
 
-@dataclass(frozen=True)
+# eq and repr are written below: the ones a dataclass generates look at its
+# fields, and this class has none, so every instance would be equal to, and
+# print like, any other
+@dataclass(frozen=True, eq=False, repr=False)
 class ObjectPayload(dict, BasePayload):
     """
     Immutable dictionary payload, with items also readable as attributes.
@@ -226,10 +270,40 @@ class ObjectPayload(dict, BasePayload):
     Every dict method that changes the content raises ``TypeError``. Only the
     top level is frozen: mutable values (lists, dicts, arrays) can still be
     changed in place, and should be treated as read-only.
+
+    Two payloads are equal when their content is, arrays included, and a
+    payload is equal to a plain dict with the same content. Like a dict, it
+    cannot be hashed, so it cannot be a dict key or a set item.
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, dict):
+            return NotImplemented
+
+        return _same_content(self, other)
+
+    def __ne__(self, other: Any) -> bool:
+        if not isinstance(other, dict):
+            return NotImplemented
+
+        return not _same_content(self, other)
+
+    __hash__ = None
+
+    def __repr__(self) -> str:
+        return f'{type(self).__name__}({dict.__repr__(self)})'
+
+    @staticmethod
+    def serialize(obj) -> dict:
+        """
+        Convert the content into JSON-compatible values: arrays become
+        lists, bytes become base64 text, and nested payloads use their own
+        ``serialize``.
+        """
+        return {key: _to_json(value) for key, value in obj.items()}
 
     @functools.cached_property
     def size_bytes(self) -> int:

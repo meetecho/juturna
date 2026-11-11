@@ -12,6 +12,7 @@ import numpy as np
 
 from juturna.payloads import BasePayload
 from juturna.payloads import Draft
+from juturna.payloads._payloads import _to_json
 
 
 class _FrozenDict(dict):
@@ -51,6 +52,21 @@ def _freeze_meta(value: typing.Any) -> typing.Any:
     return value
 
 
+def _thaw_meta(value: typing.Any) -> typing.Any:
+    """
+    Return a copy of a frozen meta value that can be changed again. Tuples
+    and frozensets are kept: nothing tells the ones freezing made from the
+    ones the sender wrote. Arrays are shared, and stay read-only.
+    """
+    if isinstance(value, dict | MappingProxyType):
+        return {k: _thaw_meta(v) for k, v in value.items()}
+
+    if isinstance(value, tuple):
+        return tuple(_thaw_meta(v) for v in value)
+
+    return value
+
+
 def _payload_fields(payload: BasePayload) -> tuple[str, ...]:
     cls = type(payload)
 
@@ -68,6 +84,9 @@ def _freeze_arrays(payload: typing.Any):
     an ObjectPayload, in its values), arrays and payloads in list or tuple
     fields, and nested payloads. Arrays nested in plain lists or dicts are
     not reached, so the cost stays independent of the size of nested data.
+
+    The messages a payload carries (in a field, or in a list or tuple field,
+    like those of a Batch) are frozen as well.
     """
     if isinstance(payload, np.ndarray):
         payload.setflags(write=False)
@@ -91,10 +110,14 @@ def _freeze_arrays(payload: typing.Any):
             child.setflags(write=False)
         elif isinstance(child, BasePayload):
             _freeze_arrays(child)
+        elif isinstance(child, Message):
+            child._freeze()
         elif walk_sequences and type(child) in (list, tuple):
             for item in child:
                 if isinstance(item, np.ndarray | BasePayload):
                     _freeze_arrays(item)
+                elif isinstance(item, Message):
+                    item._freeze()
 
 
 class Message[T_Input]:
@@ -193,6 +216,77 @@ class Message[T_Input]:
 
         object.__setattr__(self, '_is_frozen', True)
 
+    def __getstate__(self) -> dict:
+        # the read-only views freezing puts on meta and timers cannot be
+        # pickled, and copy.copy() and copy.deepcopy() go through here too
+        return {
+            'id': self.id,
+            'created_at': self.created_at,
+            'creator': self.creator,
+            'version': self.version,
+            'meta': dict(self.meta),
+            'timers': dict(self.timers),
+            'payload': self._payload,
+            'data_source_id': self._data_source_id,
+            'frozen': self._is_frozen,
+        }
+
+    def __setstate__(self, state: dict):
+        object.__setattr__(self, '_is_frozen', False)
+
+        self.id = state['id']
+        self.created_at = state['created_at']
+        self.creator = state['creator']
+        self.version = state['version']
+        self.meta = state['meta']
+        self.timers = state['timers']
+        self.payload = state['payload']
+        self._data_source_id = state['data_source_id']
+
+        # a frozen message stays frozen: its arrays and nested meta come
+        # back writable from a pickle, so they are frozen again
+        if state['frozen']:
+            self._freeze()
+
+    def copy(self, creator: str | None = None) -> 'Message[T_Input]':
+        """
+        Return a new message with the content of this one, free to be
+        changed. This is how a node gets a message it can edit from one it
+        received, as received messages are frozen.
+
+        The copy is a message of its own: it has a new ``id`` and creation
+        time. Version, meta and timers are copied, and meta can be changed
+        again in depth (lists that freezing turned into tuples stay tuples).
+        The payload is the same object: payloads cannot be changed, so
+        assign a new one, built with ``Draft`` or ``payload.clone()``, to
+        send different data.
+
+        ``copy.copy()`` and ``copy.deepcopy()`` work differently: they
+        return the same message again, with the same ``id``, and frozen if
+        this one is.
+
+        Parameters
+        ----------
+        creator : str, optional
+            The creator of the new message, usually the name of the node
+            making the copy. The creator of this message when not given.
+
+        Returns
+        -------
+        Message
+            The new message, not frozen.
+
+        """
+        message = Message(
+            creator=self.creator if creator is None else creator,
+            version=self.version,
+            payload=self._payload,
+            timers_from=self,
+        )
+        message.meta = _thaw_meta(self.meta)
+
+        return message
+
     def to_dict(self) -> dict:
         """
         Convert the message to a dictionary representation.
@@ -219,7 +313,9 @@ class Message[T_Input]:
         """
         Convert the message to a JSON string. A custom encoder can be provided
         to serialise non-serialisable content, otherwise the default serialize
-        method defined on the payload will be used.
+        method defined on the payload will be used. With the default encoder,
+        arrays become lists, bytes become base64 text and sets become lists,
+        wherever they are: in the payload, in an ``ObjectPayload`` or in meta.
 
         Parameters
         ----------
@@ -239,6 +335,12 @@ class Message[T_Input]:
         def default_serializer(obj):
             if hasattr(obj, 'serialize'):
                 return obj.serialize(obj)
+
+            # what json cannot write on its own: arrays, bytes, sets
+            converted = _to_json(obj)
+
+            if converted is not obj:
+                return converted
 
             raise TypeError(
                 f'type {obj.__class__.__name__} is not JSON serializable'
