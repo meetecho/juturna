@@ -406,11 +406,14 @@ ints, floats, strings, bytes, lists, tuples, frozensets, dictionaries, numpy
 arrays and scalars, and messages. Some things still cannot reach the warp node:</p>
 <ul class="simple">
 <li><p>a value of another type (a set, an open file, a model) in the <code class="docutils literal notranslate"><span class="pre">meta</span></code> of a
-message, in an <code class="docutils literal notranslate"><span class="pre">ObjectPayload</span></code> or in the state;</p></li>
+message, in an <code class="docutils literal notranslate"><span class="pre">ObjectPayload</span></code> or in the state, as well as an integer
+outside the 64-bit range and a string that is not valid Unicode;</p></li>
 <li><p>a second message transmitted by the same <code class="docutils literal notranslate"><span class="pre">update()</span></code>: only the first one is
 sent back;</p></li>
-<li><p>a message transmitted after <code class="docutils literal notranslate"><span class="pre">update()</span></code> returned, for example by a thread of
-the node: its request was already answered.</p></li>
+<li><p>a message transmitted after <code class="docutils literal notranslate"><span class="pre">update()</span></code> returned, or by a thread of the
+node other than the one running <code class="docutils literal notranslate"><span class="pre">update()</span></code>: it never answers a request,
+since the request being processed at that moment may belong to another
+pipeline.</p></li>
 </ul>
 <p>By default the remote service leaves them out and logs a warning, once for
 each client and for each kind of loss: a dictionary loses the entry, a list or
@@ -423,6 +426,22 @@ with the messages it sends.</p>
 the next request of its warp node, which is not processed. The warp node
 counts the failure in its health, and the pipeline goes on with the next
 message.</p>
+<p>The remote service can only tell which warp node a late message was meant for
+while the node is idle. A message transmitted by another thread while the node
+processes a message is logged as an error instead, in both modes, and fails no
+request. A node meant to run remotely transmits from <code class="docutils literal notranslate"><span class="pre">update()</span></code> only.</p>
+</section>
+<section id="limits">
+<h2>Limits<a class="headerlink" href="#limits" title="Link to this heading">¶</a></h2>
+<p>The remote service keeps the state of at most <code class="docutils literal notranslate"><span class="pre">--max-clients</span></code> sticky warp
+nodes (1024 by default) and refuses new ones with the <code class="docutils literal notranslate"><span class="pre">RESOURCE_EXHAUSTED</span></code>
+status, until a state is dropped after an hour without requests. It accepts
+<code class="docutils literal notranslate"><span class="pre">--max-requests</span></code> requests at once (10 for each worker by default), in
+progress or waiting for a worker, and refuses the others with the same
+status. A request whose warp node cancels it or disconnects is not processed
+if it is still waiting.</p>
+<p><code class="docutils literal notranslate"><span class="pre">juturna</span> <span class="pre">remotize</span></code> exits with status 1 when the node cannot be built or the
+port is already in use: two services never share a port.</p>
 </section>
 <section id="developer-notes">
 <h2>Developer notes<a class="headerlink" href="#developer-notes" title="Link to this heading">¶</a></h2>
@@ -508,6 +527,7 @@ contributing to the Warp node implementation.</p>
 <li><a class="reference internal" href="#warping-fundamentals">Warping fundamentals</a></li>
 <li><a class="reference internal" href="#state-and-replicas">State and replicas</a></li>
 <li><a class="reference internal" href="#what-cannot-reach-the-client">What cannot reach the client</a></li>
+<li><a class="reference internal" href="#limits">Limits</a></li>
 <li><a class="reference internal" href="#developer-notes">Developer notes</a></li>
 </ul>
 </li>
