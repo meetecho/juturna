@@ -336,6 +336,17 @@
 <section id="module-juturna.components.exceptions">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.components.exceptions" title="Link to this heading">¶</a></h2>
 <dl class="py exception">
+<dt class="sig sig-object py" id="juturna.components.exceptions.EnvVarNotAllowedError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.exceptions.</span></span><span class="sig-name descname"><span class="pre">EnvVarNotAllowedError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">node_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.exceptions.EnvVarNotAllowedError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">PermissionError</span></code></p>
+<p>Raised when a node configuration reads an environment variable the
+pipeline is not allowed to resolve.</p>
+<p>A pipeline resolves any variable by default. The pipeline service builds
+its pipelines with the list of variables its operator allowed, so that a
+configuration sent by a client cannot read the secrets of the service.</p>
+</dd></dl>
+
+<dl class="py exception">
 <dt class="sig sig-object py" id="juturna.components.exceptions.PipelineAlreadyRunningError">
 <em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.components.exceptions.</span></span><span class="sig-name descname"><span class="pre">PipelineAlreadyRunningError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pipeline_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#juturna.components.exceptions.PipelineAlreadyRunningError" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#juturna.components.exceptions.PipelineStateError" title="juturna.components.exceptions._pipeline_exceptions.PipelineStateError"><code class="xref py py-class docutils literal notranslate"><span class="pre">PipelineStateError</span></code></a></p>
@@ -461,6 +472,7 @@ pipeline created in its place.</p>
             <ul>
 <li><a class="reference internal" href="#">juturna.components.exceptions package</a><ul>
 <li><a class="reference internal" href="#module-juturna.components.exceptions">Module contents</a><ul>
+<li><a class="reference internal" href="#juturna.components.exceptions.EnvVarNotAllowedError"><code class="docutils literal notranslate"><span class="pre">EnvVarNotAllowedError</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.exceptions.PipelineAlreadyRunningError"><code class="docutils literal notranslate"><span class="pre">PipelineAlreadyRunningError</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.exceptions.PipelineBusyError"><code class="docutils literal notranslate"><span class="pre">PipelineBusyError</span></code></a></li>
 <li><a class="reference internal" href="#juturna.components.exceptions.PipelineDestroyedError"><code class="docutils literal notranslate"><span class="pre">PipelineDestroyedError</span></code></a></li>

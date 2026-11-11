@@ -420,6 +420,14 @@ hosted</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code>, how long is the warp node supposed to wait for an answer from the
 remote service</p></li>
 </ul>
+<p>A warped node needs its <code class="docutils literal notranslate"><span class="pre">warp_configuration</span></code> object: without it, the pipeline
+refuses to warm up. The local side also needs the <code class="docutils literal notranslate"><span class="pre">Warp</span></code> node, which is part
+of the <code class="docutils literal notranslate"><span class="pre">juturna-nodes</span></code> package and not of juturna itself:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"juturna-nodes[warp]"</span>
+</pre></div>
+</div>
+<p>The values of both configurations are never written to the logs, as they can
+hold secrets.</p>
 <p>Next to <code class="docutils literal notranslate"><span class="pre">warped</span></code>, the optional <code class="docutils literal notranslate"><span class="pre">sticky</span></code> flag tells where the node state
 lives. With <code class="docutils literal notranslate"><span class="pre">&quot;sticky&quot;:</span> <span class="pre">true</span></code>, the default, the warp node always reaches the
 same remote service, which keeps the state between requests. With

@@ -497,6 +497,28 @@ replace the item in the configuration with:</p>
 </div>
 <p>In short: environment variables used in configuration should be prefixed with
 <code class="docutils literal notranslate"><span class="pre">$JT_ENV</span></code>.</p>
+<section id="limiting-the-variables-a-configuration-can-read">
+<h3>Limiting the variables a configuration can read<a class="headerlink" href="#limiting-the-variables-a-configuration-can-read" title="Link to this heading">¶</a></h3>
+<p>A pipeline you build yourself, or launch with <code class="docutils literal notranslate"><span class="pre">juturna</span> <span class="pre">launch</span></code>, can read any
+variable of the environment. This is not what you want when the configuration
+comes from somebody else, who could point a node at any secret of your process.</p>
+<p>The pipeline service (<code class="docutils literal notranslate"><span class="pre">juturna</span> <span class="pre">serve</span></code>) reads no variable by default: a
+configuration that references one is refused with <code class="docutils literal notranslate"><span class="pre">403</span></code>. Name the variables
+its clients can use with <code class="docutils literal notranslate"><span class="pre">--allow-env</span></code>, once per variable:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>serve<span class="w"> </span>-f<span class="w"> </span>./pipelines<span class="w"> </span>--allow-env<span class="w"> </span>AUTH_TOKEN<span class="w"> </span>--allow-env<span class="w"> </span>MODEL_DIR
+</pre></div>
+</div>
+<p>The list covers both the <code class="docutils literal notranslate"><span class="pre">configuration</span></code> and the <code class="docutils literal notranslate"><span class="pre">warp_configuration</span></code> of a
+node.</p>
+<p>The same list is available when you build pipelines in your own code from
+configurations you do not control:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">jt</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">allowed_env_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">'AUTH_TOKEN'</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>A configuration that reads any other variable raises <code class="docutils literal notranslate"><span class="pre">EnvVarNotAllowedError</span></code>
+(from <code class="docutils literal notranslate"><span class="pre">juturna.components.exceptions</span></code>) when the pipeline is created, before
+anything is written to disk.</p>
+</section>
 </section>
 </section>
 
@@ -568,7 +590,10 @@ replace the item in the configuration with:</p>
 <li><a class="reference internal" href="#overriding-defaults">Overriding defaults</a></li>
 <li><a class="reference internal" href="#handling-boolean-variables">Handling boolean variables</a></li>
 <li><a class="reference internal" href="#available-configuration-variables">Available configuration variables</a></li>
-<li><a class="reference internal" href="#working-with-env-variables">Working with env variables</a></li>
+<li><a class="reference internal" href="#working-with-env-variables">Working with env variables</a><ul>
+<li><a class="reference internal" href="#limiting-the-variables-a-configuration-can-read">Limiting the variables a configuration can read</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
