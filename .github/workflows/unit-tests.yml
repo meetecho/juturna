@@ -26,7 +26,10 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Install
-        run: pip install -e ".[dev_full]"
+        run: pip install -e ".[full,dev_full]"
+
+      - name: Check that no test will skip for a missing extra
+        run: python -c "import fastapi, grpc, google.protobuf, httpx"
 
       - name: Run tests
         run: >
