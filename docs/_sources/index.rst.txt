@@ -1,15 +1,41 @@
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: Welcome
+   :caption: Tutorials
 
-   welcome/install
-   welcome/docker
+   tutorials/first_pipeline
 
 .. toctree::
    :maxdepth: 2
    :hidden:
-   :caption: Explain
+   :caption: How-to guides
+
+   how_to/index
+   how_to/install
+   how_to/create_nodes
+   how_to/create_pipelines
+   how_to/environment
+   how_to/serve_pipelines
+   how_to/remotise_node
+   how_to/observe
+   how_to/docker
+   how_to/migrate_from_2
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Reference
+
+   reference/configuration
+   reference/cli
+   reference/http_api
+   reference/constants
+   apis/explore
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Explanation
 
    explain/rationale
    explain/entities_overview
@@ -17,44 +43,6 @@
    explain/nodes
    explain/messages
    explain/remote
-
-.. toctree::
-    :maxdepth: 2
-    :hidden:
-    :caption: How To
-
-    how_to/why_how
-    how_to/create_nodes
-    how_to/create_pipelines
-    how_to/use_cli
-    how_to/environment
-    how_to/remotise_node
-    how_to/observe
-
-.. toctree::
-    :maxdepth: 2
-    :hidden:
-    :caption: Create
-
-    create/real_world
-    create/audio_transcription
-    create/video_yolo
-
-.. toctree::
-    :maxdepth: 2
-    :hidden:
-    :caption: Built-in nodes
-
-    built_in/overview.rst
-    built_in/builtin
-
-.. toctree::
-    :maxdepth: 2
-    :hidden:
-    :caption: References
-
-    apis/explore
-    apis/modules
 
 |version-badge|
 
@@ -91,38 +79,38 @@ execute and manipulate real-time pipelines in minutes!
 .. grid:: 2
 
     .. grid-item::
-        .. card:: ``jt/explain``
-            :link: rationale
+        .. card:: ``jt/tutorials``
+            :link: tutorial
             :link-type: ref
 
-            Unfold the basic concepts behind Juturna, including its core working
-            principles and internals.
+            New to Juturna? Build and run your first pipeline, one step at a
+            time.
 
     .. grid-item::
         .. card:: ``jt/how_to``
             :link: howto
             :link-type: ref
 
-            Deep dive into common tasks and usage scenarios you may face when
-            using Juturna.
+            Recipes for the tasks you will meet: writing nodes, running a
+            service, moving a node to another machine, upgrading from 2.x.
 
 .. grid:: 2
 
     .. grid-item::
-        .. card:: ``jt/build``
-            :link: realworld
-            :link-type: ref
-
-            Get your hands dirty with practical guides to see Juturna in action
-            on real-world problems!
-
-    .. grid-item::
-        .. card:: ``jt/apis``
+        .. card:: ``jt/reference``
             :link: reference
             :link-type: ref
 
-            Check out the code documentation and the Juturna Python APIs
-            reference, or explore the GitHub repository.
+            The facts: configuration file, CLI, HTTP API, constants and the
+            Python API.
+
+    .. grid-item::
+        .. card:: ``jt/explain``
+            :link: rationale
+            :link-type: ref
+
+            The ideas behind Juturna: pipelines, nodes, messages, and how
+            they work together.
 
 .. grid:: 1
 
@@ -135,6 +123,12 @@ execute and manipulate real-time pipelines in minutes!
 
                 Juturna is brewed with love by the awesome team of
                 `Meetecho <https://www.meetecho.com/en/>`_. Come and say hi!
+
+Nodes ready to use (audio and video sources, transcription, detection,
+notifiers) live in their own package,
+`juturna-nodes <https://github.com/meetecho/juturna_nodes>`_.
+
+Coming from Juturna 2.x? Start from the :ref:`migration guide <migrate_from_2>`.
 
 Take a look at the `GitHub project <https://github.com/meetecho/juturna>`_ if
 you want to explore the code.

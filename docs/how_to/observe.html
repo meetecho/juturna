@@ -3,12 +3,12 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Juturna in the real world" href="../create/real_world.html"><link rel="prev" title="Remotise a node" href="remotise_node.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Build a Docker image" href="docker.html"><link rel="prev" title="Run a node on another machine" href="remotise_node.html">
         <link rel="prefetch" href="../_static/img/logo_light_alt.svg" as="image">
         <link rel="prefetch" href="../_static/img/logo_dark_alt.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/logo_dark.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Observability in Juturna - Juturna</title>
+        <title>Observe a pipeline - Juturna</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=02ca0aaa" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-new-tab-link.css?v=d87cb1ac" />
@@ -200,89 +200,50 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p class="caption" role="heading"><span class="caption-text">Welcome</span></p>
+  <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../welcome/install.html">Install</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../welcome/docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/first_pipeline.html">Your first pipeline</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Explain</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../explain/rationale.html">Rationale</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explain/entities_overview.html">Entities overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explain/pipelines.html">Pipelines</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explain/nodes.html">Nodes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explain/messages.html">Messages and payloads</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explain/remote.html">Remote components</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">How To</span></p>
+<p class="caption" role="heading"><span class="caption-text">How-to guides</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="why_how.html">Why and how</a></li>
-<li class="toctree-l1"><a class="reference internal" href="create_nodes.html">Create custom nodes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="create_pipelines.html">Create pipelines</a></li>
-<li class="toctree-l1"><a class="reference internal" href="use_cli.html">Use Juturna CLI tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="environment.html">Constants and environment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="remotise_node.html">Remotise a node</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Observability in Juturna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">How-to guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="create_nodes.html">Write and package a node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="create_pipelines.html">Write, check and run a pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment.html">Use environment variables in a configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serve_pipelines.html">Run pipelines behind an HTTP service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="remotise_node.html">Run a node on another machine</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Observe a pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Build a Docker image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migrate_from_2.html">Upgrade from Juturna 2.x</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Create</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../create/real_world.html">Juturna in the real world</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../create/audio_transcription.html">Audio transcription with Whisper</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../create/video_yolo.html">Video annotation with YOLO</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Built-in nodes</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../built_in/overview.html">Zero-dependency collection</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../built_in/builtin.html">Built-in nodes</a><input aria-label="Toggle navigation of Built-in nodes" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.source.html">Source nodes</a><input aria-label="Toggle navigation of Source nodes" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_file.html"><code class="docutils literal notranslate"><span class="pre">AudioFile</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp.html"><code class="docutils literal notranslate"><span class="pre">AudioRTP</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">AudioRTPAv</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_http.html"><code class="docutils literal notranslate"><span class="pre">HttpJson</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_websocket.html"><code class="docutils literal notranslate"><span class="pre">JsonWebsocket</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_file.html"><code class="docutils literal notranslate"><span class="pre">VideoFile</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp.html"><code class="docutils literal notranslate"><span class="pre">VideoRTP</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">VideoRTPAv</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.proc.html">Proc nodes</a><input aria-label="Toggle navigation of Proc nodes" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.proc.warp.html"><code class="docutils literal notranslate"><span class="pre">Warp</span></code> (auto)</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.sink.html">Sink nodes</a><input aria-label="Toggle navigation of Sink nodes" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_http.html"><code class="docutils literal notranslate"><span class="pre">NotifierHTTP</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_udp.html"><code class="docutils literal notranslate"><span class="pre">NotifierUDP</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_websocket.html"><code class="docutils literal notranslate"><span class="pre">NotifierWebsocket</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.videostream_ffmpeg.html"><code class="docutils literal notranslate"><span class="pre">VideostreamFFMPEG</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">References</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../apis/explore.html">Explore the APIs</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input aria-label="Toggle navigation of juturna" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input aria-label="Toggle navigation of juturna package" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.components.html">juturna.components package</a><input aria-label="Toggle navigation of juturna.components package" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/configuration.html">Pipeline configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/cli.html">Command line tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/http_api.html">HTTP API of the pipeline service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/constants.html">Constants and environment variables</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/explore.html">Python API</a><input aria-label="Toggle navigation of Python API" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input aria-label="Toggle navigation of juturna package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.components.html">juturna.components package</a><input aria-label="Toggle navigation of juturna.components package" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.components.exceptions.html">juturna.components.exceptions package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.meta.html">juturna.meta package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.names.html">juturna.names package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.payloads.html">juturna.payloads package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.telemetry.html">juturna.telemetry package</a><input aria-label="Toggle navigation of juturna.telemetry package" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.telemetry.html">juturna.telemetry package</a><input aria-label="Toggle navigation of juturna.telemetry package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.telemetry.browser.html">juturna.telemetry.browser package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.telemetry.csv.html">juturna.telemetry.csv package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.telemetry.memory.html">juturna.telemetry.memory package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.transport.html">juturna.transport package</a><input aria-label="Toggle navigation of juturna.transport package" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.transport.html">juturna.transport package</a><input aria-label="Toggle navigation of juturna.transport package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.transport.browser.html">juturna.transport.browser package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.transport.threads.html">juturna.transport.threads package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.jt_utils.html">juturna.utils.jt_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
@@ -293,6 +254,15 @@
 </li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../explain/rationale.html">Rationale</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/entities_overview.html">Entities overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/pipelines.html">Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/nodes.html">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/messages.html">Messages and payloads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/remote.html">Remote components</a></li>
 </ul>
 
 </div>
@@ -331,8 +301,10 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="observability-in-juturna">
-<h1>Observability in Juturna<a class="headerlink" href="#observability-in-juturna" title="Link to this heading">¶</a></h1>
+          <section id="observe-a-pipeline">
+<h1>Observe a pipeline<a class="headerlink" href="#observe-a-pipeline" title="Link to this heading">¶</a></h1>
+<p>This guide shows how to see what a running pipeline is doing: its logs, the
+health of its nodes, telemetry records, and the files it writes.</p>
 <section id="logging">
 <h2>Logging<a class="headerlink" href="#logging" title="Link to this heading">¶</a></h2>
 <p>Nodes have a built-in logger that can be used straight out of the box. A node
@@ -352,13 +324,13 @@ juturna logger within a node, and it can be used anywhere in its class code:</p>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'awesome node created!'</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">BasePayload</span><span class="p">]):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">[</span><span class="n">BasePayload</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="c1"># run the node update logic</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">'node did something awesome!'</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Logging messages will carry useful pieces of informatio so that, once printed,
+<p>Logging messages will carry useful pieces of information so that, once printed,
 it will be easy to understand which entry is printed by which node. As an
 example, consider the script below, loading a pipe called <code class="docutils literal notranslate"><span class="pre">my_pipe</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
@@ -366,7 +338,7 @@ example, consider the script below, loading a pipe called <code class="docutils 
 <span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
 
 
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">jt_logger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 
 <span class="n">pipe</span> <span class="o">=</span> <span class="n">jt</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">Pipeline</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s1">'config.json'</span><span class="p">)</span>
 <span class="n">pipe</span><span class="o">.</span><span class="n">warmup</span><span class="p">()</span>
@@ -388,15 +360,15 @@ example, consider the script below, loading a pipe called <code class="docutils 
 </div>
 <p>Here we can see that each entry tells us the node that generated it, the pipe it
 belongs to, and lastly the logging message.</p>
-<p>Thanks to their hierarchical structure, loggers can be selectivel enabled or
-disable only through the names of their corresponding components. Looking again
+<p>Thanks to their hierarchical structure, loggers can be selectively enabled or
+disabled through the names of their corresponding components. Looking again
 at the pipe above, we can tell the loggers to raise the level to <code class="docutils literal notranslate"><span class="pre">ERROR</span></code> only
 for <code class="docutils literal notranslate"><span class="pre">node_1</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
 
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">jt_logger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 <span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">jt_logger</span><span class="p">(</span><span class="s1">'my_pipe.node_1'</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
 
 <span class="n">pipe</span> <span class="o">=</span> <span class="n">jt</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">Pipeline</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s1">'config.json'</span><span class="p">)</span>
@@ -425,7 +397,7 @@ for <code class="docutils literal notranslate"><span class="pre">node_1</span></
 <span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
 
 
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">jt_logger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 <span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">formatter</span><span class="p">(</span><span class="s1">'minimal'</span><span class="p">)</span>
 
 <span class="n">pipe</span> <span class="o">=</span> <span class="n">jt</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">Pipeline</span><span class="o">.</span><span class="n">from_json</span><span class="p">(</span><span class="s1">'config.json'</span><span class="p">)</span>
@@ -452,7 +424,6 @@ handler can be added, to store the logs into a file:</p>
 <span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
 
 
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="s1">'juturna.log'</span><span class="p">)</span>
 
 <span class="n">jt</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">add_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="n">formatter</span><span class="o">=</span><span class="s1">'development'</span><span class="p">)</span>
@@ -460,123 +431,85 @@ handler can be added, to store the logs into a file:</p>
 </div>
 </section>
 </section>
+<section id="health">
+<h2>Health<a class="headerlink" href="#health" title="Link to this heading">¶</a></h2>
+<p>Every node counts its failures. <code class="docutils literal notranslate"><span class="pre">pipeline.status</span></code> returns them, with the
+state of the pipeline and of each node:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pipe</span><span class="o">.</span><span class="n">status</span><span class="p">[</span><span class="s1">'nodes'</span><span class="p">][</span><span class="s1">'node_1'</span><span class="p">][</span><span class="s1">'health'</span><span class="p">]</span>
+<span class="go">{'update_failures': 1,</span>
+<span class="go"> 'worker_failures': 0,</span>
+<span class="go"> 'source_failures': 0,</span>
+<span class="go"> 'rejected_items': 0,</span>
+<span class="go"> 'last_failure_at': 1794437137.17,</span>
+<span class="go"> 'last_failure': 'ValueError: model not found',</span>
+<span class="go"> 'stuck_workers': []}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">update_failures</span></code> and <code class="docutils literal notranslate"><span class="pre">source_failures</span></code> count the exceptions raised by
+<code class="docutils literal notranslate"><span class="pre">update()</span></code> and by the source function. The node logs them and goes on.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rejected_items</span></code> counts the things that were not a <code class="docutils literal notranslate"><span class="pre">Message</span></code> and were
+refused.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">last_failure</span></code> is the most recent error; the traceback is in the log.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stuck_workers</span></code> lists the threads that did not exit when the node was
+killed.</p></li>
+</ul>
+<p>The pipeline service returns the same data from
+<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/pipelines/{id}/status</span></code>.</p>
+</section>
 <section id="telemetry">
 <h2>Telemetry<a class="headerlink" href="#telemetry" title="Link to this heading">¶</a></h2>
-<p>In juturna, it is possible to collect low-level data about basic events such as
-receptions and transmissions. Such data can be used to compute useful metrics
-about nodes latency, bandwidth and throughput.</p>
-<p>Telemetry can be activated on a pipeline level. To do so, add the <code class="docutils literal notranslate"><span class="pre">telemetry</span></code>
-entry in the pipe configuration file, pointing at the file where telemetry data
-will be stored.</p>
+<p>Telemetry records when each node receives and transmits a message. From the
+records you can work out latency and throughput of every node, and follow a
+message through the pipeline.</p>
+<p>Turn it on in the pipeline configuration, choosing where the records go:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1.0.2"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"plugins"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"./plugins"</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"3.0.0"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"pipeline"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"my_pipe"</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"123456"</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">"folder"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./run"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"telemetry"</span><span class="p">:</span><span class="w"> </span><span class="s2">"tele.csv"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"telemetry"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"csv"</span><span class="p">,</span><span class="w"> </span><span class="nt">"target"</span><span class="p">:</span><span class="w"> </span><span class="s2">"telemetry.csv"</span><span class="w"> </span><span class="p">},</span>
 <span class="w">    </span><span class="nt">"nodes"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
 <span class="w">    </span><span class="nt">"links"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>Once the pipe is started and running, the file <code class="docutils literal notranslate"><span class="pre">./run/my_pipe/tele.csv</span></code> will
-be incrementally filled with telemetry entries. Each node records a telemetry
-entry:</p>
-<ul class="simple">
-<li><p>every time it receives a message,</p></li>
-<li><p>every time it transmits a message.</p></li>
-</ul>
-<p>Each entry is formatted as follows:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>time, event, node, origin, msg_id, src_id, size
+<p>With the <code class="docutils literal notranslate"><span class="pre">csv</span></code> manager, the file <code class="docutils literal notranslate"><span class="pre">./run/telemetry.csv</span></code> fills up while the
+pipeline runs:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ts,evt,node,origin,msg_id,src_id,size,worker
+1794437137.17,rx,A,A,0,,5,main
+1794437137.17,tx,A,A,0,0,5,main
+1794437137.18,rx,B,A,0,0,5,main
+1794437138.18,tx,B,B,1,0,12,main
 </pre></div>
 </div>
-<p>Generally speaking then, a telemetry record is a collection of basic information
-related to a particular event.</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">time</span></code> is the timestamp at which the event was recorded (this is taken when
-the telemetry record is built within the node)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">event</span></code> is the event being metered (<code class="docutils literal notranslate"><span class="pre">rx</span></code> for a reception event, <code class="docutils literal notranslate"><span class="pre">tx</span></code> for
-a transmission event)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">node</span></code> is the name of the node recording the event</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">origin</span></code> is the name of the node that produced the message related to the
-recorded event (for a reception event, this is the node that generated the
-received message; for a transmission message, this will be the same as
-<code class="docutils literal notranslate"><span class="pre">node</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">msg_id</span></code> is the id of the message that triggered the event</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">src_id</span></code> is the id of the <strong>previous</strong> message that triggered the last
-recorded event</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">size</span></code> is the size in bytes of the message that triggered the event</p></li>
-</ul>
-<p>Imagine a pipeline with a source node A, a processing node B, and a sink node C.
-In its implementation, node A has a function that writes messages on its own
-internal queue, triggering the <code class="docutils literal notranslate"><span class="pre">update</span></code> function. When the first message is
-<em>received</em> by the node (so, generated and read by the worker thread), the first
-telemetry event will be recorder, and it will look something like this:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>t_0,rx,A,A,0,,s_0
-</pre></div>
-</div>
-<p>Here, node A both generated and received the message, so <code class="docutils literal notranslate"><span class="pre">node</span></code> and <code class="docutils literal notranslate"><span class="pre">origin</span></code>
-are the same. Also, being this the first message processed by the node, there is
-no id stored of previous events, so <code class="docutils literal notranslate"><span class="pre">src_id</span></code> is none.</p>
-<p>When this message is transmitted, another telemetry entry will be recorded:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>t_1,tx,A,A,0,0,s_0
-</pre></div>
-</div>
-<p>At this point, node B receives the message, and produces its own telemetry
-read:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>t_2,rx,B,A,0,,s_0
-</pre></div>
-</div>
-<p>This entry tells us that at time <code class="docutils literal notranslate"><span class="pre">t_2</span></code> node B received message with id 0
-generated by node A, and no previous message passed through it. B chruns the
-message content and sends a new message to C:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>t_3,tx,B,B,1,0,s_1
-</pre></div>
-</div>
+<p>Reading the four lines: source node <code class="docutils literal notranslate"><span class="pre">A</span></code> received its own message 0 and
+transmitted it; node <code class="docutils literal notranslate"><span class="pre">B</span></code> received it and, a second later, transmitted
+message 1, made while processing message 0 (<code class="docutils literal notranslate"><span class="pre">src_id</span></code>).</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">{&quot;name&quot;:</span> <span class="pre">&quot;memory&quot;}</span></code> to keep the records in memory instead, which is
+what the pipeline service needs to return them from
+<code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/pipelines/{id}/telemetry</span></code>.</p>
+<p>The managers, their options and the meaning of every field are in
+<a class="reference internal" href="../reference/configuration.html#reference-configuration"><span class="std std-ref">Pipeline configuration file</span></a>.</p>
 </section>
-<section id="interact-with-the-filesystem">
-<h2>Interact with the filesystem<a class="headerlink" href="#interact-with-the-filesystem" title="Link to this heading">¶</a></h2>
-<p>A pipeline can be configured with its own folder on the filesystem. Here,
-each node will be assigned a directory where it can store data, artifacts, or
-anything else the node developer might need to. The following pipe:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.1.0"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"plugins"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"./plugins"</span><span class="p">],</span>
-<span class="w">  </span><span class="nt">"pipeline"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quality"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"quality"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"folder"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./pipeline"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"nodes"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">    </span><span class="nt">"links"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
-<span class="p">}</span>
+<section id="files">
+<h2>Files<a class="headerlink" href="#files" title="Link to this heading">¶</a></h2>
+<p>Each node has a folder of its own inside the pipeline folder, named after the
+node. Its path is <code class="docutils literal notranslate"><span class="pre">self.pipe_path</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pipe_path</span><span class="p">,</span> <span class="s1">'notes.txt'</span><span class="p">),</span> <span class="s1">'a'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'saving another entry</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>will create the <code class="docutils literal notranslate"><span class="pre">./pipeline</span></code> folder, local to where the juturna process was
-launched, and as many subfolders are there are nodes in the pipe.</p>
-<p>The node class offers useful tools to access the filesystem. Assuming we want to
-save some text to file during an <code class="docutils literal notranslate"><span class="pre">update</span></code> call, we can simply do:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">):</span>
-    <span class="c1"># do update stuff</span>
-
-    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pipe_path</span><span class="p">,</span> <span class="s1">'file_dump.txt'</span><span class="p">),</span> <span class="s1">'a'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'saving another entry'</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>So, <code class="docutils literal notranslate"><span class="pre">self.pipe_path</span></code> points to the folder on the filesystem assigned to this
-node.</p>
-<p>Similarly, calling <code class="docutils literal notranslate"><span class="pre">dump_json(message,</span> <span class="pre">f_name)</span></code> will write a json version of a
-message in a node folder. This can be triggered at any time in the node
-execution, however, every transmitted message by the node can be automatically
-dumped to disk by adding the <code class="docutils literal notranslate"><span class="pre">&quot;auto_dump&quot;:</span> <span class="pre">true</span></code> flag in the node
-configuration.</p>
+<p><code class="docutils literal notranslate"><span class="pre">self.dump_json(message,</span> <span class="pre">'file_name.json')</span></code> writes a message there as JSON.
+To save every message a node transmits without touching its code, add
+<code class="docutils literal notranslate"><span class="pre">&quot;auto_dump&quot;:</span> <span class="pre">true</span></code> to the node in the pipeline configuration:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"node_name"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="nt">"&lt;NODE_TYPE&gt;"</span>
-<span class="w">  </span><span class="nt">"mark"</span><span class="p">:</span><span class="w"> </span><span class="nt">"&lt;NODE_MARK&gt;"</span>
-<span class="w">  </span><span class="nt">"auto_dump"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PassthroughIdentity"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"auto_dump"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="p">}</span>
 </pre></div>
@@ -589,12 +522,12 @@ configuration.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../create/real_world.html">
+          <a class="next-page" href="docker.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Juturna in the real world</div>
+                <div class="title">Build a Docker image</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -605,7 +538,7 @@ configuration.</p>
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Remotise a node</div>
+                <div class="title">Run a node on another machine</div>
                 
               </div>
             </a>
@@ -647,13 +580,14 @@ configuration.</p>
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Observability in Juturna</a><ul>
+<li><a class="reference internal" href="#">Observe a pipeline</a><ul>
 <li><a class="reference internal" href="#logging">Logging</a><ul>
 <li><a class="reference internal" href="#formatters-and-handlers">Formatters and handlers</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#health">Health</a></li>
 <li><a class="reference internal" href="#telemetry">Telemetry</a></li>
-<li><a class="reference internal" href="#interact-with-the-filesystem">Interact with the filesystem</a></li>
+<li><a class="reference internal" href="#files">Files</a></li>
 </ul>
 </li>
 </ul>
@@ -665,7 +599,7 @@ configuration.</p>
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=f0d2c090"></script>
+</div><script src="../_static/documentation_options.js?v=acc74ff5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>

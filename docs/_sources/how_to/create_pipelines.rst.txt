@@ -1,203 +1,138 @@
-Create pipelines
-================
+Write, check and run a pipeline
+===============================
 
-This documentation page will give you an overview of how to create a pipeline in
-juturna. As the focus here is the pipeline itself, we will not be using custom
-nodes but rather built-in and plugin nodes already available in the juturna
-repository.
+This guide shows how to put together a pipeline from nodes that are already
+installed, check its configuration, and run it from the command line or from
+your own code.
 
-Setup the environment
----------------------
+The example uses two nodes of the ``juturna-nodes`` package: ``JsonHTTP``,
+which receives JSON documents over HTTP, and ``PassthroughIdentity``, which
+forwards what it receives after a delay.
 
-As usual, we prepare the environment including juturna and all the required
-dependencies. This time we will pull the library straight from GitHub, so that
-we can also fetch the plugin nodes.
-
-.. code-block:: console
-
-    user:~/prj$ python3 -m venv .venv
-    user:~/prj$ source .venv/bin/activate
-    (.venv) user:~/prj$ git clone https://github.com/meetecho/juturna
-    (.venv) user:~/prj$ pip install "./juturna[pipebuilder]"
-    (.venv) user:~/prj$ cp -r ./juturna/plugins ./
-    (.venv) user:~/prj$ rm -rf juturna
-
-Note that we installed juturna including the ``pipebuilder`` group, which
-installs the dependencies for a CLI tool we can use to automatically build
-configuration files.
-
-Create the pipeline configuration file
---------------------------------------
-
-A pipeline configuration file is a simple json file that can be fed to juturna.
-This file can be created manually, or as we said we can use the CLI utility
-shipped with the library. We can just go ahead and launch it:
+Install the nodes
+-----------------
 
 .. code-block:: console
 
-    (.venv) user:~/prj$ python -m juturna create -p ./plugins/nodes
+    (.venv) $ pip install juturna-nodes
 
-The pipe builder looks like this:
+The README of
+`juturna-nodes <https://github.com/meetecho/juturna_nodes>`_ lists the
+available nodes and the optional groups some of them need. Every node comes
+with a ``config.toml`` file holding its arguments and their defaults.
 
-.. image:: ../_static/img/tutorial_create_new_pipe_1.png
-   :alt: pipe builder
-   :width: 70%
-   :align: center
+Write the configuration
+-----------------------
 
-The tool offers autocompletion, and automatically scans the built-in and plugin
-nodes so that their types are included as commands. Regular commands are
-prepended with a dot.
-
-To create a new node, press TAB to see all the available commands. When a node
-type is selected, add a ``/`` to see all available nodes of that type.
-
-.. image:: ../_static/img/tutorial_create_new_pipe_2.png
-   :alt: pipe builder
-   :width: 70%
-   :align: center
-
-Selecting a node will bring up the configuration prompt. Except for fields such
-as the node name, all other fields will be defaulted to the values in the node
-toml file.
-
-.. image:: ../_static/img/tutorial_create_new_pipe_3.png
-   :alt: pipe builder
-   :width: 70%
-   :align: center
-
-When we are done adding all the nodes, we can look at the full list using
-``.nodes``.
-
-.. image:: ../_static/img/tutorial_create_new_pipe_4.png
-   :alt: pipe builder
-   :width: 70%
-   :align: center
-
-Links can be added with the ``.link`` command. It will prompt the full list of
-nodes, autocompleting node names to include in source and destination of every
-new link. TAB autocompletion is also available for the node names.
-
-.. image:: ../_static/img/tutorial_create_new_pipe_5.png
-   :alt: pipe builder
-   :width: 70%
-   :align: center
-
-Once we are done, we can look at the full list of links with ``.links``.
-
-.. image:: ../_static/img/tutorial_create_new_pipe_6.png
-   :alt: pipe builder
-   :width: 70%
-   :align: center
-
-Lastly, the ``.save`` command will start the saving process, where we will be
-picking the pipe name, its id and running folder, and the name of the file we
-want to save its configuration to.
-
-.. image:: ../_static/img/tutorial_create_new_pipe_7.png
-   :alt: pipe builder
-   :width: 40%
-   :align: center
-
-In this example, we built a pipeline containing a audio RTP source node, a
-transcription node, and a HTTP transmitter that will send the results to a
-configured endpoint. The saved file (which we could have written manually) looks
-like this:
+Save this as ``echo.json``:
 
 .. code-block:: json
 
     {
-      "version": "0.1.0",
-      "plugins": ["./plugins"],
+      "version": "3.0.0",
       "pipeline": {
-        "name": "test_pipe",
-        "id": "12345",
-        "folder": "./pipelines",
+        "name": "http_echo",
+        "id": "http_echo_01",
+        "folder": "./run",
         "nodes": [
           {
-            "name": "trx",
-            "type": "proc",
-            "mark": "transcriber_whispy",
-            "configuration": {
-              "model_name": "tiny",
-              "only_local": true,
-              "language": "en",
-              "word_timestamps": true,
-              "without_timestamps": false,
-              "task": "transcribe",
-              "buffer_size": 5,
-              "device": "cuda"
-            }
+            "name": "receiver",
+            "type": "JsonHTTP",
+            "configuration": { "port": 8888 }
           },
           {
-            "name": "src",
-            "type": "source",
-            "mark": "audio_rtp",
-            "configuration": {
-              "rec_host": "127.0.0.1",
-              "rec_port": 8888,
-              "audio_rate": 16000,
-              "block_size": 5,
-              "channels": 2,
-              "process_log_level": "quiet",
-              "payload_type": 97,
-              "encoding_clock_chan": "opus/48000/2"
-            }
-          },
-          {
-            "name": "dst",
-            "type": "sink",
-            "mark": "notifier_http",
-            "configuration": {
-              "endpoint": "http://localhost:8080",
-              "timeout": 20,
-              "content_type": "application/json"
-            }
+            "name": "delay",
+            "type": "PassthroughIdentity",
+            "configuration": { "delay": 1 },
+            "auto_dump": true
           }
         ],
         "links": [
-          {
-            "from": "src",
-            "to": "trx"
-          },
-          {
-            "from": "trx",
-            "to": "dst"
-          }
+          { "from": "receiver", "to": "delay" }
         ]
       }
     }
 
-Installing extra dependencies
------------------------------
+What to know when writing one:
 
-In the pipeline we are building as example, there is only one plugin node. This
-node is likely to carry extra dependencies with it, so we need to installing
-them before launching the pipeline. In our case, we can see that the transcriber
-node requires ``ctranslate2`` and ``faster-whisper``, so we go ahead and
-install them.
+- ``type`` is the class name for the nodes of ``juturna-nodes``
+  (``JsonHTTP``), and the full path for the others
+  (``contrib.<package>.nodes.<Class>``);
+- ``configuration`` only needs the arguments you want to change;
+- ``folder`` is where the pipeline writes its files: a copy of the
+  configuration, and one folder per node;
+- ``auto_dump`` saves every message a node transmits as a JSON file in its
+  folder, handy to see what goes through.
 
-.. code-block:: console
+All the keys are described in :ref:`reference_configuration`.
 
-    (.venv) user:~/prj$ pip install faster-whisper ctranslate2
+If you prefer to be guided, ``python -m juturna create`` (``pipebuilder``
+group) starts an interactive builder: press TAB to pick among the installed
+nodes, then use ``.link`` to connect them and ``.save`` to write the file.
+``.help`` lists the other commands.
 
-Juturna also offers a way of collecting all the dependencies defined across
-plugin nodes. This can be done from the command line:
-
-.. code-block:: console
-
-  (.venv) user:~/prj$ python -m juturna require \
-                             -c test_pipe.json \
-                             -p ./plugins \
-                             -s ./requirements.txt
-  (.venv) user:~/prj$ pip install -r requirements.txt
-
-Launch the pipe
----------------
-
-At this point, we are ready to execute the pipeline!
+Check it
+--------
 
 .. code-block:: console
 
-    (.venv) user:~/prj$ python -m juturna launch -c test_pipe.json
+    (.venv) $ python -m juturna validate --config echo.json
 
-This will start the pipeline, and create the ``./pipelines`` folder for us.
+The command checks the structure of the file, that every node type is
+installed, that links join existing nodes, and that the graph has no cycles.
+It exits with status 1 when a check fails, so it fits in a CI job. Warnings
+tell about things that are legal but suspicious, such as a configuration key
+the node does not know.
+
+Run it from the command line
+----------------------------
+
+.. code-block:: console
+
+    (.venv) $ python -m juturna launch --config echo.json
+
+The pipeline warms up, then waits for you to press enter to start, and again
+to stop. With ``--auto`` it starts on its own and runs until every node has
+stopped, or for ``--timeout`` seconds.
+
+While it runs, send it something from another terminal:
+
+.. code-block:: console
+
+    $ curl -H 'Content-Type: application/json' \
+           -d '{"text": "hello"}' localhost:8888/juturna
+
+A second later the message is in ``./run/delay/``, as a JSON file.
+
+Run it from Python
+------------------
+
+A pipeline is a plain object, with one method for each step of its life:
+
+.. code-block:: python
+
+    import time
+
+    import juturna as jt
+
+
+    pipeline = jt.components.Pipeline.from_json('echo.json')
+
+    pipeline.warmup()
+    pipeline.start()
+
+    try:
+        time.sleep(60)
+    finally:
+        pipeline.stop()
+        pipeline.destroy()
+
+``Pipeline(config)`` takes the configuration as a dictionary instead of a
+file path.
+
+``stop()`` lets the nodes finish the messages they already received. When
+that could take too long, ``kill()`` drops them instead:
+:ref:`explain_pipelines` tells the two apart.
+
+A stopped pipeline cannot be started again: destroy it, and create a new
+one.

@@ -3,12 +3,12 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Observability in Juturna" href="observe.html"><link rel="prev" title="Constants and environment" href="environment.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Observe a pipeline" href="observe.html"><link rel="prev" title="Run pipelines behind an HTTP service" href="serve_pipelines.html">
         <link rel="prefetch" href="../_static/img/logo_light_alt.svg" as="image">
         <link rel="prefetch" href="../_static/img/logo_dark_alt.svg" as="image">
 
     <link rel="shortcut icon" href="../_static/logo_dark.svg"><!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>Remotise a node - Juturna</title>
+        <title>Run a node on another machine - Juturna</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=02ca0aaa" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-new-tab-link.css?v=d87cb1ac" />
@@ -200,89 +200,50 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <p class="caption" role="heading"><span class="caption-text">Welcome</span></p>
+  <p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../welcome/install.html">Install</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../welcome/docker.html">Docker</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/first_pipeline.html">Your first pipeline</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Explain</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../explain/rationale.html">Rationale</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explain/entities_overview.html">Entities overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explain/pipelines.html">Pipelines</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explain/nodes.html">Nodes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explain/messages.html">Messages and payloads</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../explain/remote.html">Remote components</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">How To</span></p>
+<p class="caption" role="heading"><span class="caption-text">How-to guides</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="why_how.html">Why and how</a></li>
-<li class="toctree-l1"><a class="reference internal" href="create_nodes.html">Create custom nodes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="create_pipelines.html">Create pipelines</a></li>
-<li class="toctree-l1"><a class="reference internal" href="use_cli.html">Use Juturna CLI tools</a></li>
-<li class="toctree-l1"><a class="reference internal" href="environment.html">Constants and environment</a></li>
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Remotise a node</a></li>
-<li class="toctree-l1"><a class="reference internal" href="observe.html">Observability in Juturna</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">How-to guides</a></li>
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="create_nodes.html">Write and package a node</a></li>
+<li class="toctree-l1"><a class="reference internal" href="create_pipelines.html">Write, check and run a pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment.html">Use environment variables in a configuration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="serve_pipelines.html">Run pipelines behind an HTTP service</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Run a node on another machine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="observe.html">Observe a pipeline</a></li>
+<li class="toctree-l1"><a class="reference internal" href="docker.html">Build a Docker image</a></li>
+<li class="toctree-l1"><a class="reference internal" href="migrate_from_2.html">Upgrade from Juturna 2.x</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Create</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../create/real_world.html">Juturna in the real world</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../create/audio_transcription.html">Audio transcription with Whisper</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../create/video_yolo.html">Video annotation with YOLO</a></li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">Built-in nodes</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../built_in/overview.html">Zero-dependency collection</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../built_in/builtin.html">Built-in nodes</a><input aria-label="Toggle navigation of Built-in nodes" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.source.html">Source nodes</a><input aria-label="Toggle navigation of Source nodes" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_file.html"><code class="docutils literal notranslate"><span class="pre">AudioFile</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp.html"><code class="docutils literal notranslate"><span class="pre">AudioRTP</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.audio_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">AudioRTPAv</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_http.html"><code class="docutils literal notranslate"><span class="pre">HttpJson</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.json_websocket.html"><code class="docutils literal notranslate"><span class="pre">JsonWebsocket</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_file.html"><code class="docutils literal notranslate"><span class="pre">VideoFile</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp.html"><code class="docutils literal notranslate"><span class="pre">VideoRTP</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.source.video_rtp_av.html"><code class="docutils literal notranslate"><span class="pre">VideoRTPAv</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.proc.html">Proc nodes</a><input aria-label="Toggle navigation of Proc nodes" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.proc.warp.html"><code class="docutils literal notranslate"><span class="pre">Warp</span></code> (auto)</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../built_in/builtin.sink.html">Sink nodes</a><input aria-label="Toggle navigation of Sink nodes" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_http.html"><code class="docutils literal notranslate"><span class="pre">NotifierHTTP</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_udp.html"><code class="docutils literal notranslate"><span class="pre">NotifierUDP</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.notifier_websocket.html"><code class="docutils literal notranslate"><span class="pre">NotifierWebsocket</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="../built_in/builtin.sink.videostream_ffmpeg.html"><code class="docutils literal notranslate"><span class="pre">VideostreamFFMPEG</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">References</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../apis/explore.html">Explore the APIs</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/modules.html">juturna</a><input aria-label="Toggle navigation of juturna" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input aria-label="Toggle navigation of juturna package" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.components.html">juturna.components package</a><input aria-label="Toggle navigation of juturna.components package" class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l1"><a class="reference internal" href="../reference/configuration.html">Pipeline configuration file</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/cli.html">Command line tools</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/http_api.html">HTTP API of the pipeline service</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/constants.html">Constants and environment variables</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../apis/explore.html">Python API</a><input aria-label="Toggle navigation of Python API" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../apis/juturna.html">juturna package</a><input aria-label="Toggle navigation of juturna package" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.components.html">juturna.components package</a><input aria-label="Toggle navigation of juturna.components package" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.components.exceptions.html">juturna.components.exceptions package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.meta.html">juturna.meta package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.names.html">juturna.names package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../apis/juturna.payloads.html">juturna.payloads package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.telemetry.html">juturna.telemetry package</a><input aria-label="Toggle navigation of juturna.telemetry package" class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.telemetry.html">juturna.telemetry package</a><input aria-label="Toggle navigation of juturna.telemetry package" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.telemetry.browser.html">juturna.telemetry.browser package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.telemetry.csv.html">juturna.telemetry.csv package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.telemetry.memory.html">juturna.telemetry.memory package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.transport.html">juturna.transport package</a><input aria-label="Toggle navigation of juturna.transport package" class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.transport.html">juturna.transport package</a><input aria-label="Toggle navigation of juturna.transport package" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.transport.browser.html">juturna.transport.browser package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.transport.threads.html">juturna.transport.threads package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../apis/juturna.utils.html">juturna.utils package</a><input aria-label="Toggle navigation of juturna.utils package" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.jt_utils.html">juturna.utils.jt_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.log_utils.html">juturna.utils.log_utils package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="../apis/juturna.utils.net_utils.html">juturna.utils.net_utils package</a></li>
@@ -293,6 +254,15 @@
 </li>
 </ul>
 </li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Explanation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../explain/rationale.html">Rationale</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/entities_overview.html">Entities overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/pipelines.html">Pipelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/nodes.html">Nodes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/messages.html">Messages and payloads</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../explain/remote.html">Remote components</a></li>
 </ul>
 
 </div>
@@ -331,141 +301,127 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="remotise-a-node">
-<h1>Remotise a node<a class="headerlink" href="#remotise-a-node" title="Link to this heading">¶</a></h1>
-<p>This guide demonstrates how to convert a local node into a remote node using the
-<code class="docutils literal notranslate"><span class="pre">Warp</span></code> node feature.</p>
-<section id="starting-point-local-pipeline">
-<h2>Starting point: local pipeline<a class="headerlink" href="#starting-point-local-pipeline" title="Link to this heading">¶</a></h2>
-<p>Consider a simple pipe with three nodes:</p>
-<ul class="simple">
-<li><p>a <code class="docutils literal notranslate"><span class="pre">data_streamer</span></code> source that generates data</p></li>
-<li><p>a <code class="docutils literal notranslate"><span class="pre">passthrough_identity</span></code> processing node that introduces a 2-second delay</p></li>
-<li><p>a <code class="docutils literal notranslate"><span class="pre">notifier_websocket</span></code> sink that sends results to a WebSocket endpoint</p></li>
-</ul>
-<p>This pipeline can be implemented through a simple local configuration file.</p>
+          <section id="run-a-node-on-another-machine">
+<h1>Run a node on another machine<a class="headerlink" href="#run-a-node-on-another-machine" title="Link to this heading">¶</a></h1>
+<p>A node that needs resources your machine does not have (a GPU, a large
+model) can run somewhere else and still be part of your pipeline. Juturna
+calls this <em>warping</em> the node. This guide moves one node of a pipeline to a
+remote service; <a class="reference internal" href="../explain/remote.html#explain-remote"><span class="std std-ref">Remote components</span></a> explains how it works.</p>
+<p>We start from a pipeline with three nodes:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0.1.0"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"plugins"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"./plugins"</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"3.0.0"</span><span class="p">,</span>
 <span class="w">  </span><span class="nt">"pipeline"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"test_mocked_pipeline"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1234567890"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"folder"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./pipe"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"my_pipeline"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"my_pipeline_01"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"folder"</span><span class="p">:</span><span class="w"> </span><span class="s2">"./run"</span><span class="p">,</span>
 <span class="w">    </span><span class="nt">"nodes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0_stream"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"source"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"mark"</span><span class="p">:</span><span class="w"> </span><span class="s2">"data_streamer"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"receiver"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"JsonHTTP"</span><span class="p">,</span>
 <span class="w">        </span><span class="nt">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1_pass"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"proc"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"mark"</span><span class="p">:</span><span class="w"> </span><span class="s2">"passthrough_identity"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">"delay"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
-<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delay"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PassthroughIdentity"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delay"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2_notifier"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sink"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"mark"</span><span class="p">:</span><span class="w"> </span><span class="s2">"notifier_websocket"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">          </span><span class="nt">"endpoint"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ws://127.0.0.1:8081"</span>
-<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"notifier"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"NotifierHTTP"</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"endpoint"</span><span class="p">:</span><span class="w"> </span><span class="s2">"http://127.0.0.1:8081"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">      </span><span class="p">}</span>
 <span class="w">    </span><span class="p">],</span>
 <span class="w">    </span><span class="nt">"links"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"0_stream"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1_pass"</span>
-<span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1_pass"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"2_notifier"</span>
-<span class="w">      </span><span class="p">}</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"receiver"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delay"</span><span class="w"> </span><span class="p">},</span>
+<span class="w">      </span><span class="p">{</span><span class="w"> </span><span class="nt">"from"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delay"</span><span class="p">,</span><span class="w"> </span><span class="nt">"to"</span><span class="p">:</span><span class="w"> </span><span class="s2">"notifier"</span><span class="w"> </span><span class="p">}</span>
 <span class="w">    </span><span class="p">]</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>In our scenario, we want to deploy the <code class="docutils literal notranslate"><span class="pre">passthrough_identity</span></code> node remotely.
-Of course, it doesn’t make much sense to remotise this specific node, however,
-the same concepts apply for nodes that might require resources not available
-locally (GPU-dependent nodes are a great example).</p>
-<p>Remotising a node is just as simple as specifying the connection coordinates in
-its configuration, and adding a flag. The node configuration object then
-becomes:</p>
-<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"1_pass"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"proc"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"mark"</span><span class="p">:</span><span class="w"> </span><span class="s2">"passthrough_identity"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"delay"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span>
-<span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">"warped"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"warp_configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"grpc_host"</span><span class="p">:</span><span class="w"> </span><span class="s2">"172.17.0.1"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"grpc_port"</span><span class="p">:</span><span class="w"> </span><span class="mi">45000</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"timeout"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>In the <code class="docutils literal notranslate"><span class="pre">warp_configuration</span></code> object, we added:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">grpc_host</span></code>, the ip address of the remote service where the concrete node is
-hosted</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">grpc_port</span></code>, the port number where the remote service is listening</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code>, how long is the warp node supposed to wait for an answer from the
-remote service</p></li>
-</ul>
-<p>A warped node needs its <code class="docutils literal notranslate"><span class="pre">warp_configuration</span></code> object: without it, the pipeline
-refuses to warm up. The local side also needs the <code class="docutils literal notranslate"><span class="pre">Warp</span></code> node, which is part
-of the <code class="docutils literal notranslate"><span class="pre">juturna-nodes</span></code> package and not of juturna itself:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"juturna-nodes[warp]"</span>
-</pre></div>
-</div>
-<p>The values of both configurations are never written to the logs, as they can
-hold secrets.</p>
-<p>Next to <code class="docutils literal notranslate"><span class="pre">warped</span></code>, the optional <code class="docutils literal notranslate"><span class="pre">sticky</span></code> flag tells where the node state
-lives. With <code class="docutils literal notranslate"><span class="pre">&quot;sticky&quot;:</span> <span class="pre">true</span></code>, the default, the warp node always reaches the
-same remote service, which keeps the state between requests. With
-<code class="docutils literal notranslate"><span class="pre">&quot;sticky&quot;:</span> <span class="pre">false</span></code>, the remote service keeps nothing: the state travels with
-every request and comes back with the response, so <code class="docutils literal notranslate"><span class="pre">grpc_host</span></code> can point to a
-load balancer in front of several replicas of the service. In that case the
-node state can only hold plain values, numpy arrays and messages, and a request
-whose state cannot travel fails. See <a class="reference internal" href="../explain/remote.html#explain-remote"><span class="std std-ref">Remote components</span></a> for the details.</p>
-</section>
+<p>We want <code class="docutils literal notranslate"><span class="pre">delay</span></code> to run on another machine. It makes little sense for this
+node, but the steps are the same for one that needs a GPU.</p>
 <section id="start-the-remote-service">
 <h2>Start the remote service<a class="headerlink" href="#start-the-remote-service" title="Link to this heading">¶</a></h2>
-<p>Once everything is in place on the local side, we need to start the remotisation
-service on the remote side, that is, launch juturna so that the node to make
-remote is instantiated and made available behind a service. To do so, we need to
-install juturna on the remote side making sure to:</p>
-<ul class="simple">
-<li><p>include the <code class="docutils literal notranslate"><span class="pre">warp</span></code> group in the installation</p></li>
-<li><p>have the remotised node available in the <code class="docutils literal notranslate"><span class="pre">./plugin</span></code> folder</p></li>
-</ul>
-<p>Assuming you already copied the plugins in the remote location, we can proceed:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>remote:~/prj$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"juturna[warp]"</span>
-remote:~/prj$<span class="w"> </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>remotize<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--node-name<span class="w"> </span><span class="s2">"1_pass"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--plugins-dir<span class="w"> </span><span class="s2">"./plugins"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--pipe-name<span class="w"> </span><span class="s2">"test_mocked_pipeline"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--node-mark<span class="w"> </span><span class="s2">"passthrough_identity"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--default-config<span class="w"> </span><span class="s1">'{"delay": 2}'</span><span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="se">\</span>
-<span class="w">    </span>--port<span class="w"> </span><span class="m">45000</span>
+<p>On the remote machine, install Juturna with the <code class="docutils literal notranslate"><span class="pre">warp</span></code> group, and the
+package that contains the node:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">remote $ pip install 'juturna[warp]' juturna-nodes</span>
+</pre></div>
+</div>
+<p>The remote node is configured once, when the service starts, from a JSON file
+with its arguments. Save this as <code class="docutils literal notranslate"><span class="pre">delay.json</span></code>:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span><span class="w"> </span><span class="nt">"delay"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Then start the service:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">remote $ python -m juturna remotize \</span>
+<span class="go">                --node-name delay \</span>
+<span class="go">                --node-type PassthroughIdentity \</span>
+<span class="go">                --default-config delay.json \</span>
+<span class="go">                --host 0.0.0.0 \</span>
+<span class="go">                --port 50051</span>
 </pre></div>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>The remote service has no authentication and no encryption, so it listens
 on <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code> unless told otherwise. <code class="docutils literal notranslate"><span class="pre">--host</span> <span class="pre">0.0.0.0</span></code> makes it
-reachable from other machines: use it on trusted networks only. See
-<a class="reference internal" href="../explain/remote.html#explain-remote"><span class="std std-ref">Remote components</span></a>.</p>
+reachable from other machines: use it <strong>on trusted networks only</strong>, or
+behind a tunnel or a proxy that authenticates and encrypts.</p>
 </div>
+</section>
+<section id="warp-the-node-in-the-pipeline">
+<h2>Warp the node in the pipeline<a class="headerlink" href="#warp-the-node-in-the-pipeline" title="Link to this heading">¶</a></h2>
+<p>On the local machine, the pipeline needs the <code class="docutils literal notranslate"><span class="pre">Warp</span></code> node, which comes with
+<code class="docutils literal notranslate"><span class="pre">juturna-nodes</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">local $ pip install 'juturna-nodes[warp]'</span>
+</pre></div>
+</div>
+<p>In the pipeline configuration, mark the node as warped and tell where the
+remote service is:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"delay"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"PassthroughIdentity"</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">"delay"</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">"warped"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">"warp_configuration"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">"grpc_host"</span><span class="p">:</span><span class="w"> </span><span class="s2">"192.168.1.20"</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"grpc_port"</span><span class="p">:</span><span class="w"> </span><span class="mi">50051</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">"timeout"</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">grpc_host</span></code> and <code class="docutils literal notranslate"><span class="pre">grpc_port</span></code> are the address of the remote service;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeout</span></code> is how many seconds the pipeline waits for each answer.</p></li>
+</ul>
+<p>The <code class="docutils literal notranslate"><span class="pre">configuration</span></code> of a warped node is not applied: the remote service
+uses its own, and logs a warning to say so.</p>
+<p>Launch the pipeline as usual. Messages for <code class="docutils literal notranslate"><span class="pre">delay</span></code> now go to the remote
+service, and its answers continue down the pipeline.</p>
+<p>Both sides must run matching versions of Juturna. When they do not, the first
+message fails with an error that says so.</p>
+</section>
+<section id="put-several-replicas-behind-a-load-balancer">
+<h2>Put several replicas behind a load balancer<a class="headerlink" href="#put-several-replicas-behind-a-load-balancer" title="Link to this heading">¶</a></h2>
+<p>By default a warped node is <strong>sticky</strong>: the remote service keeps the state of
+the node between messages, so the pipeline must always reach the same service.</p>
+<p>To spread the work over several replicas, add <code class="docutils literal notranslate"><span class="pre">&quot;sticky&quot;:</span> <span class="pre">false</span></code> next to
+<code class="docutils literal notranslate"><span class="pre">&quot;warped&quot;:</span> <span class="pre">true</span></code>, and point <code class="docutils literal notranslate"><span class="pre">grpc_host</span></code> to the load balancer. The state
+then travels with every request, so any replica can serve it. Keep the state
+small, and made of plain values, numpy arrays and messages.</p>
+</section>
+<section id="write-nodes-that-can-be-warped">
+<h2>Write nodes that can be warped<a class="headerlink" href="#write-nodes-that-can-be-warped" title="Link to this heading">¶</a></h2>
+<p>A node works remotely when it follows two rules:</p>
+<ul class="simple">
+<li><p>it transmits from <code class="docutils literal notranslate"><span class="pre">update()</span></code> only, and at most one message per call;</p></li>
+<li><p>what it puts in messages and in its state can travel: plain values, numpy
+arrays, messages. No open files, no models.</p></li>
+</ul>
+<p>Start the service with <code class="docutils literal notranslate"><span class="pre">--strict</span></code> while testing: instead of silently
+leaving out what cannot travel, it fails the request.</p>
 </section>
 </section>
 
@@ -479,18 +435,18 @@ reachable from other machines: use it on trusted networks only. See
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Observability in Juturna</div>
+                <div class="title">Observe a pipeline</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="environment.html">
+          <a class="prev-page" href="serve_pipelines.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Constants and environment</div>
+                <div class="title">Run pipelines behind an HTTP service</div>
                 
               </div>
             </a>
@@ -532,9 +488,11 @@ reachable from other machines: use it on trusted networks only. See
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Remotise a node</a><ul>
-<li><a class="reference internal" href="#starting-point-local-pipeline">Starting point: local pipeline</a></li>
+<li><a class="reference internal" href="#">Run a node on another machine</a><ul>
 <li><a class="reference internal" href="#start-the-remote-service">Start the remote service</a></li>
+<li><a class="reference internal" href="#warp-the-node-in-the-pipeline">Warp the node in the pipeline</a></li>
+<li><a class="reference internal" href="#put-several-replicas-behind-a-load-balancer">Put several replicas behind a load balancer</a></li>
+<li><a class="reference internal" href="#write-nodes-that-can-be-warped">Write nodes that can be warped</a></li>
 </ul>
 </li>
 </ul>
@@ -546,7 +504,7 @@ reachable from other machines: use it on trusted networks only. See
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=f0d2c090"></script>
+</div><script src="../_static/documentation_options.js?v=acc74ff5"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
