@@ -11,6 +11,7 @@ import juturna as jt
 pytest.importorskip('fastapi')
 
 from juturna.cli.commands._pipeline_manager import PipelineManager
+from juturna.cli.commands.exceptions import PipelineOperationException
 from juturna.cli.commands.models.api import PipelineConfig
 
 
@@ -97,10 +98,18 @@ def test_failed_deploy_leaves_nothing_behind(
 
     before = len(manager)
 
-    with pytest.raises(RuntimeError, match=f'{failing_step} failed'):
+    # reported to the client with the step and the reason
+    with pytest.raises(
+        PipelineOperationException,
+        match=f'{failing_step} failed on pipeline .*: '
+        f'RuntimeError: {failing_step} failed',
+    ) as failure:
         manager.deploy_pipeline(
             PipelineConfig(**_config(f'deploy_{failing_step}'))
         )
+
+    assert failure.value.operation == failing_step
+    assert isinstance(failure.value.__cause__, RuntimeError)
 
     assert len(manager) == before, 'The failed deploy is still registered'
     assert not list(pathlib.Path(test_pipeline_folder).glob('deploy_*')), (

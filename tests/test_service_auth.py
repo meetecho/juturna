@@ -48,7 +48,10 @@ def anonymous_client(service_app):
 def test_every_route_requires_the_token(service_app, anonymous_client):
     routes = _routes(service_app)
 
-    assert len(routes) == 10
+    assert len(routes) == 16
+
+    # the pages FastAPI adds are not API routes, and need the token as well
+    routes += [('GET', '/docs'), ('GET', '/redoc'), ('GET', '/openapi.json')]
 
     for method, path in routes:
         response = anonymous_client.request(method, path)

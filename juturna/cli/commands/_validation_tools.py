@@ -67,11 +67,11 @@ class ValidationPipe:
 
         return self
 
-    def run_checks(self, *args, **kwargs):
+    def run_checks(self, *args, quiet: bool = False, **kwargs):
         """
         Run the checks in order, passing them the same arguments. A check runs
         only if the checks it requires passed, so it can rely on what they
-        verified.
+        verified. Results are printed as they come, unless ``quiet`` is set.
         """
         passed = set()
 
@@ -80,6 +80,9 @@ class ValidationPipe:
 
             if runnable and check(*args, **kwargs):
                 passed.add(check.name)
+
+            if quiet:
+                continue
 
             print(_report_line(check))
 

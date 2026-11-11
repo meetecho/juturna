@@ -5,6 +5,8 @@ from logging import Logger
 from juturna.cli.commands.exceptions import (
     InvalidPipelineIdException,
     TelemetryNotEnabledException,
+    PipelineOperationException,
+    PipelineFileNotFoundException,
     EnvVarNotAllowedException,
     PipelineNotReadyError,
     PipelineNotRunningError,
@@ -105,6 +107,27 @@ def _env_var_not_allowed_handler(
     )
 
 
+def _pipeline_operation_handler(
+    request: Request, exception: PipelineOperationException
+) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={
+            'message': exception.message,
+            'operation': exception.operation,
+            'node': exception.node_name,
+        },
+    )
+
+
+def _pipeline_file_not_found_handler(
+    request: Request, exception: PipelineFileNotFoundException
+) -> JSONResponse:
+    _m = f'no file {exception.path} in pipeline {exception.pipeline_id}'
+
+    return JSONResponse(status_code=404, content={'message': _m})
+
+
 def _make_generic_exception_handler(logger: Logger):
     def _generic_exception_handler(
         request: Request, exception: Exception
@@ -131,6 +154,8 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
         - PipelineBusyError
         - TelemetryNotEnabledException
         - EnvVarNotAllowedException
+        - PipelineOperationException
+        - PipelineFileNotFoundException
 
     Args:
         app (FastAPI): Fastapi instance to apply handlers to
@@ -158,6 +183,12 @@ def register_pipeline_exception_handlers(app: FastAPI) -> None:
     )
     app.add_exception_handler(
         EnvVarNotAllowedException, _env_var_not_allowed_handler
+    )
+    app.add_exception_handler(
+        PipelineOperationException, _pipeline_operation_handler
+    )
+    app.add_exception_handler(
+        PipelineFileNotFoundException, _pipeline_file_not_found_handler
     )
 
 

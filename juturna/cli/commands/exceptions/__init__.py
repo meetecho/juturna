@@ -2,6 +2,8 @@
 from ._pipeline_exceptions import (
     InvalidPipelineIdException,
     TelemetryNotEnabledException,
+    PipelineOperationException,
+    PipelineFileNotFoundException,
     EnvVarNotAllowedException,
     PipelineStateError,
     PipelineNotReadyError,
@@ -20,6 +22,8 @@ from ._handlers_provider import (
 __all__ = [
     'InvalidPipelineIdException',
     'TelemetryNotEnabledException',
+    'PipelineOperationException',
+    'PipelineFileNotFoundException',
     'EnvVarNotAllowedException',
     'PipelineStateError',
     'PipelineNotReadyError',

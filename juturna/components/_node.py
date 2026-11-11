@@ -88,6 +88,7 @@ class Node[T_Input, T_Output]:
         self._worker_failures = 0
         self._rejected_items = 0
         self._last_failure_at = None
+        self._last_failure: str | None = None
         self._stuck_workers: list[str] = list()
         self._health_lock: jt.transport.Lock = self._transport.new_lock()
 
@@ -120,7 +121,9 @@ class Node[T_Input, T_Output]:
         """
         Counter of how many failues the node experienced across its threads.
         Values are split per-thread, so it will give the total for update,
-        worker and source (if present). ``rejected_items`` counts the items
+        worker and source (if present). ``last_failure`` is the error of the
+        most recent one (class and message, without the traceback, which is
+        in the log). ``rejected_items`` counts the items
         that were not a ``Message`` and were refused, wherever they came from
         (the source, ``put()`` or ``transmit()``).
         """
@@ -130,6 +133,7 @@ class Node[T_Input, T_Output]:
             'source_failures': self._source_failures,
             'rejected_items': self._rejected_items,
             'last_failure_at': self._last_failure_at,
+            'last_failure': self._last_failure,
             'stuck_workers': list(self._stuck_workers),
         }
 
@@ -624,10 +628,10 @@ class Node[T_Input, T_Output]:
 
             try:
                 message = self._source_f()
-            except Exception:
+            except Exception as error:
                 consecutive_failures += 1
                 self._source_failures += 1
-                self._last_failure_at = time.time()
+                self._note_failure(error)
                 self.logger.error(
                     f'unhandled exception in source function '
                     f'(failure {self._source_failures})',
@@ -680,6 +684,11 @@ class Node[T_Input, T_Output]:
             max(jt.meta.JUTURNA_SOURCE_MAX_BACKOFF, base),
         )
 
+    def _note_failure(self, error: Exception):
+        # kept short: health is read often, and the traceback is in the log
+        self._last_failure_at = time.time()
+        self._last_failure = f'{type(error).__name__}: {error}'[:500]
+
     def _reject(self, item: Any, origin: str):
         with self._health_lock:
             self._rejected_items += 1
@@ -702,9 +711,9 @@ class Node[T_Input, T_Output]:
 
         try:
             self._rec_telemetry(message, 'rx')
-        except Exception:
+        except Exception as error:
             self._worker_failures += 1
-            self._last_failure_at = time.time()
+            self._note_failure(error)
             self.logger.error(
                 f'unhandled exception in worker '
                 f'(failure {self._worker_failures}), '
@@ -728,7 +737,7 @@ class Node[T_Input, T_Output]:
         except Exception as e:
             error = e
             self._update_failures += 1
-            self._last_failure_at = time.time()
+            self._note_failure(e)
             self.logger.error(
                 f'unhandled exception in update() '
                 f'(failure {self._update_failures}), '

@@ -197,6 +197,8 @@ class Pipeline:
 
         return {
             'pipe_id': self.pipe_id,
+            'name': self.name,
+            'created_at': self.created_at,
             'folder': self.pipe_path,
             'self': self._status,
             'nodes': {
@@ -476,14 +478,23 @@ class Pipeline:
                     )
             except ModuleNotFoundError as exc:
                 if not warped:
+                    _blame(exc, node_name)
+
                     raise
 
                 # the Warp node and gRPC are not installed with juturna
-                raise ModuleNotFoundError(
-                    f'node {node_name} is warped, which needs {exc.name}: '
-                    'install "juturna-nodes[warp]"',
-                    name=exc.name,
+                raise _blame(
+                    ModuleNotFoundError(
+                        f'node {node_name} is warped, which needs '
+                        f'{exc.name}: install "juturna-nodes[warp]"',
+                        name=exc.name,
+                    ),
+                    node_name,
                 ) from exc
+            except Exception as exc:
+                _blame(exc, node_name)
+
+                raise
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)
             _node.pipe_path = node_folder
@@ -525,7 +536,12 @@ class Pipeline:
             )
 
         for node_name, node in self._nodes.items():
-            node.warmup()
+            try:
+                node.warmup()
+            except Exception as exc:
+                _blame(exc, node_name)
+
+                raise
 
             if self._telemetry:
                 node.link_telemetry(self._telemetry_manager)
@@ -679,7 +695,13 @@ class Pipeline:
                 # a node failing in start() may have spawned some of its
                 # workers already, so it is rolled back as well
                 self._started_nodes.append(node_name)
-                self._nodes[node_name].start()
+
+                try:
+                    self._nodes[node_name].start()
+                except Exception as exc:
+                    _blame(exc, node_name)
+
+                    raise
 
         self._logger.info('pipe started')
 
@@ -1011,6 +1033,23 @@ class Pipeline:
         self._nodes = None
 
         return errors
+
+
+def _blame[E: BaseException](error: E, node_name: str) -> E:
+    """
+    Record on an error the node that was being built, warmed up or started
+    when it was raised, as its ``node_name``. The error keeps its type, so
+    callers catch what they caught before, and can still tell which node
+    failed.
+    """
+    try:
+        if getattr(error, 'node_name', None) is None:
+            error.node_name = node_name
+    except AttributeError:
+        # an exception class with slots: the name is lost, not the error
+        pass
+
+    return error
 
 
 def check_links(pipe_name: str, nodes: list[dict], links: list[dict]):

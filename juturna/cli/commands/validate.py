@@ -44,18 +44,52 @@ def setup_parser(subparsers):  # noqa: D103
 
 
 def _execute(args) -> int:
-    validation_pipe = ValidationPipe()
+    validation_pipe = _validate({'path': pathlib.Path(args.config)})
 
-    # filled by the checks as they pass, so that each one can rely on what
-    # the previous ones verified
-    state: dict[str, typing.Any] = {'path': pathlib.Path(args.config)}
+    print('valid' if validation_pipe.ok else 'invalid')
+
+    if args.report:
+        with open(args.report, 'w') as f:
+            f.write(validation_pipe.to_json())
+
+    return 0 if validation_pipe.ok else 1
+
+
+def validate_configuration(data: typing.Any) -> ValidationPipe:
+    """
+    Run the checks of the ``validate`` command on a configuration that is
+    already in memory, without printing anything. Nothing is created: node
+    types are resolved, which imports their packages, but no node is built.
+
+    Parameters
+    ----------
+    data : Any
+        The configuration, as read from its JSON document.
+
+    Returns
+    -------
+    ValidationPipe
+        The checks with their results; ``to_dict()`` gives the report.
+
+    """
+    return _validate({'data': data}, quiet=True)
+
+
+def _validate(state: dict[str, typing.Any], quiet: bool = False):
+    """
+    Run the checks on ``state``, which holds either the ``path`` of the
+    configuration file or its content as ``data``. The checks fill it as
+    they pass, so that each one can rely on what the previous ones verified.
+    """
+    validation_pipe = ValidationPipe()
+    from_file = 'data' not in state
 
     checks = [
-        Check('JSON well formed', _check_json),
+        *([Check('JSON well formed', _check_json)] if from_file else []),
         Check(
             'Configuration structure',
             _check_config_structure,
-            requires=('JSON well formed',),
+            requires=('JSON well formed',) if from_file else (),
         ),
         Check(
             'Nodes well formed',
@@ -88,16 +122,10 @@ def _execute(args) -> int:
     for check in checks:
         validation_pipe.add_check(check)
 
-    validation_pipe.run_checks(state)
+    validation_pipe.run_checks(state, quiet=quiet)
     validation_pipe.dag = state.get('dag')
 
-    print('valid' if validation_pipe.ok else 'invalid')
-
-    if args.report:
-        with open(args.report, 'w') as f:
-            f.write(validation_pipe.to_json())
-
-    return 0 if validation_pipe.ok else 1
+    return validation_pipe
 
 
 def _check_json(state: dict) -> None:

@@ -1,3 +1,5 @@
+import collections
+import copy
 import uuid
 import gc
 import threading
@@ -13,10 +15,58 @@ from juturna.cli.commands.models.api import CreatedPipelineDto
 from juturna.cli.commands.exceptions import (
     InvalidPipelineIdException,
     TelemetryNotEnabledException,
+    PipelineOperationException,
+    PipelineFileNotFoundException,
+    PipelineStateError,
+    EnvVarNotAllowedException,
 )
 
 
 logger = logging.getLogger('jt.manager')
+
+# how many log records the service keeps for each pipeline
+LOG_BUFFER_SIZE = 1000
+
+
+class _LogBuffer(logging.Handler):
+    """
+    Keep the last records of a pipeline logger in memory, for the clients of
+    the service. The nodes log under the pipeline logger, so their records
+    are kept as well.
+    """
+
+    def __init__(self, size: int = LOG_BUFFER_SIZE):
+        super().__init__()
+
+        self._records = collections.deque(maxlen=size)
+        self._formatter = logging.Formatter()
+
+    def emit(self, record: logging.LogRecord):
+        try:
+            entry = {
+                'ts': record.created,
+                'level': record.levelname,
+                'logger': record.name,
+                'message': record.getMessage(),
+            }
+
+            if record.exc_info:
+                entry['exception'] = self._formatter.formatException(
+                    record.exc_info
+                )
+
+            # appending to a deque is atomic, no lock is needed
+            self._records.append(entry)
+        except Exception:
+            self.handleError(record)
+
+    def records(self, since: float | None = None) -> list[dict]:
+        records = list(self._records)
+
+        if since is None:
+            return records
+
+        return [r for r in records if r['ts'] > since]
 
 
 class PipelineManager:
@@ -26,11 +76,14 @@ class PipelineManager:
     _lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
+        # compared with None: the manager has a length, so an empty one is
+        # false, and would be replaced by a new instance
+        if cls._instance is None:
             with cls._lock:
-                if not cls._instance:
+                if cls._instance is None:
                     cls._instance = super().__new__(cls)
                     cls._instance._pipelines = dict()
+                    cls._instance._log_buffers = dict()
 
                     # the service calls the manager from its thread pool: the
                     # registry is only read and changed under this lock, and
@@ -85,8 +138,12 @@ class PipelineManager:
             allowed_env_vars=self._allowed_env_vars,
         )
 
+        log_buffer = _LogBuffer()
+        this_pipeline._logger.addHandler(log_buffer)
+
         with self._registry_lock:
             self._pipelines[this_pipeline.pipe_id] = this_pipeline
+            self._log_buffers[this_pipeline.pipe_id] = log_buffer
 
         return CreatedPipelineDto(
             pipeline_id=this_pipeline.pipe_id,
@@ -102,10 +159,32 @@ class PipelineManager:
                 raise InvalidPipelineIdException(pipeline_id) from None
 
     def warmup_pipeline(self, pipeline_id: str) -> None:
-        self._get(pipeline_id).warmup()
+        self._run(pipeline_id, 'warmup')
 
     def start_pipeline(self, pipeline_id: str) -> None:
-        self._get(pipeline_id).start()
+        self._run(pipeline_id, 'start')
+
+    def _run(self, pipeline_id: str, operation: str) -> None:
+        """
+        Warm up or start a pipeline. A call the pipeline status does not
+        allow, or a variable the service does not allow, keeps its own error
+        and answer. Anything else comes from the content of the pipeline (a
+        node type that is not installed, a node that cannot be built or
+        started): it is reported to the client with the node and the reason,
+        where it used to be an anonymous 500.
+        """
+        pipeline = self._get(pipeline_id)
+
+        try:
+            getattr(pipeline, operation)()
+        except (PipelineStateError, EnvVarNotAllowedException):
+            raise
+        except Exception as error:
+            logger.exception(f'{operation} of pipeline {pipeline_id} failed')
+
+            raise PipelineOperationException(
+                pipeline_id, operation, error
+            ) from error
 
     def deploy_pipeline(
         self, pipeline_config: PipelineConfig
@@ -130,6 +209,8 @@ class PipelineManager:
 
         if pipeline is None:
             return
+
+        self._drop_log_buffer(pipeline)
 
         try:
             pipeline.destroy()
@@ -159,15 +240,118 @@ class PipelineManager:
         with self._registry_lock:
             self._pipelines.pop(pipeline_id, None)
 
+        self._drop_log_buffer(pipeline)
+
         gc.collect()
+
+    def _drop_log_buffer(self, pipeline: Pipeline):
+        with self._registry_lock:
+            log_buffer = self._log_buffers.pop(pipeline.pipe_id, None)
+
+        if log_buffer is not None:
+            pipeline._logger.removeHandler(log_buffer)
 
     def pipeline_status(self, pipeline_id: str):
         pipeline = self._get(pipeline_id)
 
-        logger.info(f'requested status for pipeline {pipeline_id}')
-        logger.info(pipeline.status)
+        # clients poll the status: not worth a line at INFO each time
+        logger.debug(f'requested status for pipeline {pipeline_id}')
 
         return pipeline.status
+
+    def pipeline_config(self, pipeline_id: str) -> dict:
+        """
+        The configuration the pipeline was created with, id and folder
+        included.
+        """
+        return copy.deepcopy(self._get(pipeline_id)._raw_config)
+
+    def pipeline_logs(
+        self, pipeline_id: str, since: float | None = None
+    ) -> list[dict]:
+        """
+        The last records of the pipeline logger and of its nodes, oldest
+        first: those after ``since`` (a unix time), or all the ones kept.
+        Only the records that pass the level of the loggers are there.
+        Pipelines with the same name share a logger, so each one also gets
+        the records of the others.
+        """
+        self._get(pipeline_id)
+
+        with self._registry_lock:
+            log_buffer = self._log_buffers.get(pipeline_id)
+
+        return list() if log_buffer is None else log_buffer.records(since)
+
+    def pipeline_files(self, pipeline_id: str) -> list[dict]:
+        """
+        The files in the pipeline folder, by path. A link that leads out of
+        the folder is not listed.
+        """
+        root = self._folder(pipeline_id)
+        files = list()
+
+        if root is None:
+            return files
+
+        for path in sorted(root.rglob('*')):
+            try:
+                if not path.is_file() or not self._inside(path, root):
+                    continue
+
+                stat = path.stat()
+            except OSError:
+                # removed meanwhile, or not readable
+                continue
+
+            files.append(
+                {
+                    'path': path.relative_to(root).as_posix(),
+                    'size': stat.st_size,
+                    'modified': stat.st_mtime,
+                }
+            )
+
+        return files
+
+    def pipeline_file(self, pipeline_id: str, file_path: str) -> pathlib.Path:
+        """
+        The location of a file of the pipeline folder, given its path in the
+        folder. A path that is absolute, goes through ``..`` or follows a
+        link out of the folder is answered like a file that does not exist.
+        """
+        root = self._folder(pipeline_id)
+        missing = PipelineFileNotFoundException(pipeline_id, file_path)
+        relative = pathlib.PurePosixPath(file_path)
+
+        if (
+            root is None
+            or not file_path
+            or '\\' in file_path
+            or relative.is_absolute()
+            or '..' in relative.parts
+        ):
+            raise missing
+
+        path = root.joinpath(*relative.parts)
+
+        try:
+            if not path.is_file() or not self._inside(path, root):
+                raise missing
+        except OSError:
+            raise missing from None
+
+        return path.resolve()
+
+    def _folder(self, pipeline_id: str) -> pathlib.Path | None:
+        folder = pathlib.Path(self._get(pipeline_id).pipe_path)
+
+        # created by warmup: a new pipeline has no files yet
+        return folder.resolve() if folder.is_dir() else None
+
+    @staticmethod
+    def _inside(path: pathlib.Path, root: pathlib.Path) -> bool:
+        return path.resolve().is_relative_to(root)
 
     def pipeline_telemetry(self, pipeline_id: str):
         pipeline = self._get(pipeline_id)
@@ -200,6 +384,8 @@ class PipelineManager:
             self._pipelines.clear()
 
         for pipeline_id, pipeline in pipelines.items():
+            self._drop_log_buffer(pipeline)
+
             try:
                 if pipeline.status['self'] == PipelineStatus.RUNNING:
                     pipeline.kill()
