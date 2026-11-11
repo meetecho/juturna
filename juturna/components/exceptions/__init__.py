@@ -7,6 +7,7 @@ from juturna.components.exceptions._pipeline_exceptions import (
     PipelineStoppedError,
     PipelineDestroyedError,
     PipelineBusyError,
+    EnvVarNotAllowedError,
 )
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     'PipelineStoppedError',
     'PipelineDestroyedError',
     'PipelineBusyError',
+    'EnvVarNotAllowedError',
 ]

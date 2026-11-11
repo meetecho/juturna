@@ -95,6 +95,17 @@ In the ``warp_configuration`` object, we added:
 - ``timeout``, how long is the warp node supposed to wait for an answer from the
   remote service
 
+A warped node needs its ``warp_configuration`` object: without it, the pipeline
+refuses to warm up. The local side also needs the ``Warp`` node, which is part
+of the ``juturna-nodes`` package and not of juturna itself:
+
+.. code-block:: bash
+
+    pip install "juturna-nodes[warp]"
+
+The values of both configurations are never written to the logs, as they can
+hold secrets.
+
 Next to ``warped``, the optional ``sticky`` flag tells where the node state
 lives. With ``"sticky": true``, the default, the warp node always reaches the
 same remote service, which keeps the state between requests. With

@@ -23,6 +23,8 @@ from juturna.components.exceptions import PipelineAlreadyRunningError
 from juturna.components.exceptions import PipelineStoppedError
 from juturna.components.exceptions import PipelineDestroyedError
 from juturna.components.exceptions import PipelineBusyError
+from juturna.components.exceptions import EnvVarNotAllowedError
+from juturna.meta import JUTURNA_ENV_VAR_PREFIX
 
 from juturna.telemetry import TelemetryContext
 from juturna.telemetry import TelemetryManager
@@ -85,7 +87,12 @@ class Pipeline:
     destination nodes.
     """
 
-    def __init__(self, config: dict, worker: str = DEFAULT_WORKER):
+    def __init__(
+        self,
+        config: dict,
+        worker: str = DEFAULT_WORKER,
+        allowed_env_vars: typing.Iterable[str] | None = None,
+    ):
         """
         Parameters
         ----------
@@ -98,10 +105,22 @@ class Pipeline:
             worker named by its optional ``worker`` key (``main`` when
             missing); the nodes of other workers are not built here, and the
             links towards them go through the transport, see `warmup`.
+        allowed_env_vars : Iterable[str] | None
+            The environment variables the node configurations can read with
+            the ``$JT_ENV_`` prefix. Any variable can be read when this is
+            ``None`` (default). Pass the list when the configuration comes
+            from someone who must not read the environment of this process:
+            a configuration reading any other variable is refused with
+            `EnvVarNotAllowedError`.
 
         """
         self._worker = worker
+        self._allowed_env_vars = (
+            None if allowed_env_vars is None else frozenset(allowed_env_vars)
+        )
         self._raw_config = copy.deepcopy(config)
+        self._check_env_vars()
+
         self._name = self._raw_config['pipeline']['name']
         self._pipe_id = self._raw_config['pipeline']['id']
         self._pipe_path = self._raw_config['pipeline']['folder']
@@ -329,6 +348,47 @@ class Pipeline:
         else:
             self._end_transition(PipelineStatus.READY)
 
+    def _check_warped_nodes(self):
+        for node in self._raw_config['pipeline']['nodes']:
+            if not node.get('warped', False):
+                continue
+
+            if not isinstance(node.get('warp_configuration'), dict):
+                raise ValueError(
+                    f'node {node["name"]} is warped: it needs a '
+                    'warp_configuration object, the configuration of its '
+                    'Warp node'
+                )
+
+    def _check_env_vars(self):
+        # refused before anything is written or built. A warped node is
+        # built from its warp_configuration, so both are read. The builder
+        # checks again each value it resolves
+        if self._allowed_env_vars is None:
+            return
+
+        for node in self._raw_config['pipeline'].get('nodes') or list():
+            if not isinstance(node, dict):
+                continue
+
+            for key in ('configuration', 'warp_configuration'):
+                configuration = node.get(key)
+
+                if not isinstance(configuration, dict):
+                    continue
+
+                for value in configuration.values():
+                    if not (
+                        isinstance(value, str)
+                        and value.startswith(JUTURNA_ENV_VAR_PREFIX)
+                    ):
+                        continue
+
+                    var_name = value[len(JUTURNA_ENV_VAR_PREFIX) :]
+
+                    if var_name not in self._allowed_env_vars:
+                        raise EnvVarNotAllowedError(var_name, node.get('name'))
+
     def _warmup(self):
         # these names become paths under the pipeline folder: a name like
         # "../x" or "/x" would write outside of it
@@ -346,6 +406,7 @@ class Pipeline:
 
             names.add(node['name'])
 
+        self._check_warped_nodes()
         self._check_links()
 
         # built (it opens nothing) before anything is written, so that a
@@ -379,15 +440,18 @@ class Pipeline:
             node_folder = pathlib.Path(self.pipe_path, node_name)
             node_folder.mkdir(exist_ok=True)
 
-            if node.get('warped', False):
-                warped_node_cfg = node['configuration']
+            warped = node.get('warped', False)
+
+            if warped:
+                # the configurations are never logged: they can hold secrets
                 node['type'] = 'Warp'
-                node['configuration'] = node['warp_configuration']
-                node['configuration']['remote_config'] = warped_node_cfg
-                node['configuration']['sticky'] = node.get('sticky', True)
+                node['configuration'] = {
+                    **node['warp_configuration'],
+                    'remote_config': node.get('configuration') or dict(),
+                    'sticky': node.get('sticky', True),
+                }
 
                 self._logger.info(f'{node_name} warped')
-                self._logger.info(node)
 
             # a node nothing of another worker writes to keeps its queue local
             written_from_afar = any(
@@ -395,12 +459,24 @@ class Pipeline:
                 for link in links
             )
 
-            with self._transport.node_scope(written_from_afar):
-                _node: Node = _builder._get_node(
-                    node,
-                    pipe_name=self.name,
-                    transport=self._transport,
-                )
+            try:
+                with self._transport.node_scope(written_from_afar):
+                    _node: Node = _builder._get_node(
+                        node,
+                        pipe_name=self.name,
+                        transport=self._transport,
+                        allowed_env_vars=self._allowed_env_vars,
+                    )
+            except ModuleNotFoundError as exc:
+                if not warped:
+                    raise
+
+                # the Warp node and gRPC are not installed with juturna
+                raise ModuleNotFoundError(
+                    f'node {node_name} is warped, which needs {exc.name}: '
+                    'install "juturna-nodes[warp]"',
+                    name=exc.name,
+                ) from exc
 
             _node.pipe_id = copy.deepcopy(self._pipe_id)
             _node.pipe_path = node_folder

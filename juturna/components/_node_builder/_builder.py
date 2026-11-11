@@ -18,6 +18,7 @@ def _get_node(
     node: dict,
     pipe_name: str,
     transport: TransportBackend | None = None,
+    allowed_env_vars: frozenset[str] | None = None,
 ):
     node_full_path = node['type']
     node_configuration = node['configuration']
@@ -41,7 +42,9 @@ def _get_node(
 
     operational_config.update(
         {
-            key: _resolve_env_var(key, value, node['name'], default_args)
+            key: _resolve_env_var(
+                key, value, node['name'], default_args, allowed_env_vars
+            )
             for key, value in items_to_process
         }
     )
@@ -73,7 +76,18 @@ def _resolve_node(node_full_path: str) -> str:
 
     node_path = '.'.join(p for p in (prefix, node_path) if p)
 
-    node_module = importlib.import_module(node_path)
+    try:
+        node_module = importlib.import_module(node_path)
+    except ModuleNotFoundError as exc:
+        if exc.name != _JT_BUILTIN_PREFIX:
+            raise
+
+        raise ModuleNotFoundError(
+            f'node type {node_full_path} comes with the juturna-nodes '
+            'package, which is not installed',
+            name=exc.name,
+        ) from exc
+
     node_class = getattr(node_module, node_name)
     config_file_path = (
         importlib.resources.files(node_class.__module__) / 'config.toml'

@@ -16,6 +16,7 @@ from juturna.components.exceptions import (
     PipelineStoppedError,
     PipelineDestroyedError,
     PipelineBusyError,
+    EnvVarNotAllowedError,
 )
 
 
@@ -39,27 +40,15 @@ class TelemetryNotEnabledException(BasePipelineException):
     pass
 
 
-class EnvVarNotAllowedException(Exception):
-    def __init__(self, var_name: str, node_name: str):
-        """
-        Raise when a pipeline configuration references an environment
-        variable the service does not allow
-
-        Args:
-            var_name (str): name of the environment variable
-            node_name (str): node whose configuration references it
-
-        """
-        super().__init__(var_name, node_name)
-
-        self.var_name = var_name
-        self.node_name = node_name
+# raised by the pipeline as well when a node is built: one name, one handler
+EnvVarNotAllowedException = EnvVarNotAllowedError
 
 
 __all__ = [
     'BasePipelineException',
     'InvalidPipelineIdException',
     'TelemetryNotEnabledException',
+    'EnvVarNotAllowedException',
     'PipelineStateError',
     'PipelineNotReadyError',
     'PipelineNotRunningError',

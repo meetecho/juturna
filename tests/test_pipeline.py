@@ -1,6 +1,7 @@
 import pathlib
 import shutil
 import json
+import logging
 import threading
 
 import pytest
@@ -491,6 +492,111 @@ def test_failed_warmup_leaves_the_warped_node_config_unchanged(test_config):
         pipeline.warmup()
 
     assert pipeline._raw_config == config
+
+
+@pytest.mark.parametrize(
+    'node_keys',
+    [{}, {'warp_configuration': None}, {'warp_configuration': 'localhost'}],
+    ids=['missing', 'null', 'not_an_object'],
+)
+def test_warped_node_needs_a_warp_configuration(test_config, node_keys):
+    name = 'warped_without_configuration'
+    config = _sequencer_crasher_config(name, test_config['test_pipeline_folder'])
+    config['pipeline']['nodes'][1].update({'warped': True, **node_keys})
+    pipeline = jt.components.Pipeline(config)
+
+    with pytest.raises(ValueError, match='sink_1 is warped.*warp_configuration'):
+        pipeline.warmup()
+
+    assert not pathlib.Path(test_config['test_pipeline_folder'], name).exists()
+
+
+def test_warped_node_without_the_nodes_package_names_what_to_install(
+    test_config, monkeypatch
+):
+    config = _sequencer_crasher_config(
+        'warped_without_package', test_config['test_pipeline_folder']
+    )
+    config['pipeline']['nodes'][1].update(
+        {'warped': True, 'warp_configuration': {}}
+    )
+    builder = jt.components._node_builder._builder
+
+    # the nodes package may be installed where the tests run
+    monkeypatch.setattr(builder, '_JT_BUILTIN_PREFIX', 'jt_package_not_there')
+    pipeline = jt.components.Pipeline(config)
+
+    with pytest.raises(ModuleNotFoundError) as error:
+        pipeline.warmup()
+
+    assert 'sink_1 is warped' in str(error.value)
+    assert 'juturna-nodes[warp]' in str(error.value)
+
+
+def test_node_type_of_the_nodes_package_names_the_package(monkeypatch):
+    builder = jt.components._node_builder._builder
+
+    monkeypatch.setattr(builder, '_JT_BUILTIN_PREFIX', 'jt_package_not_there')
+
+    with pytest.raises(ModuleNotFoundError, match='juturna-nodes') as error:
+        builder._resolve_node('Warp')
+
+    assert 'Warp' in str(error.value)
+
+    # a node of an installed package that fails on its own import is not
+    # blamed on the nodes package
+    with pytest.raises(ModuleNotFoundError) as error:
+        builder._resolve_node('contrib.jt_test.no_such_module.Node')
+
+    assert 'juturna-nodes' not in str(error.value)
+
+
+def test_warped_node_configurations_are_not_logged(test_config, monkeypatch):
+    config = _sequencer_crasher_config(
+        'warped_not_logged', test_config['test_pipeline_folder']
+    )
+    config['pipeline']['nodes'][1].update(
+        {
+            'warped': True,
+            'configuration': {'api_key': 'remote-secret'},
+            'warp_configuration': {'token': 'warp-secret'},
+        }
+    )
+    builder = jt.components._node_builder._builder
+    original = builder._get_node
+    built = dict()
+
+    def get_node(node, **kwargs):
+        if node['name'] != 'sink_1':
+            return original(node, **kwargs)
+
+        built.update(node['configuration'])
+
+        raise RuntimeError('stop after the warp configuration')
+
+    monkeypatch.setattr(builder, '_get_node', get_node)
+    pipeline = jt.components.Pipeline(config)
+    records = list()
+    handler = logging.Handler()
+    handler.emit = lambda record: records.append(record.getMessage())
+    level = pipeline._logger.level
+    pipeline._logger.addHandler(handler)
+    pipeline._logger.setLevel(logging.INFO)
+
+    try:
+        with pytest.raises(RuntimeError):
+            pipeline.warmup()
+    finally:
+        pipeline._logger.removeHandler(handler)
+        pipeline._logger.setLevel(level)
+
+    assert built == {
+        'token': 'warp-secret',
+        'remote_config': {'api_key': 'remote-secret'},
+        'sticky': True,
+    }
+    assert any('sink_1 warped' in record for record in records)
+    assert not any('secret' in record for record in records)
 
 
 @pytest.mark.parametrize(

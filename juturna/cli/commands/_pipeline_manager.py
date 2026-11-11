@@ -7,14 +7,12 @@ import pathlib
 
 from juturna.components import Pipeline
 from juturna.names import PipelineStatus
-from juturna.meta import JUTURNA_ENV_VAR_PREFIX
 from juturna.utils import jt_utils
 from juturna.cli.commands.models.api import PipelineConfig
 from juturna.cli.commands.models.api import CreatedPipelineDto
 from juturna.cli.commands.exceptions import (
     InvalidPipelineIdException,
     TelemetryNotEnabledException,
-    EnvVarNotAllowedException,
 )
 
 
@@ -62,31 +60,11 @@ class PipelineManager:
     def base_folder(self) -> str:
         return self.__class__._base_folder
 
-    def _check_env_vars(self, pipeline: dict):
-        # configurations come from service clients: they may only resolve the
-        # environment variables the operator allowed, or they could route any
-        # service secret into a node that sends it out
-        for node in pipeline.get('nodes') or list():
-            configuration = node.get('configuration') or dict()
-
-            for value in configuration.values():
-                if not (
-                    isinstance(value, str)
-                    and value.startswith(JUTURNA_ENV_VAR_PREFIX)
-                ):
-                    continue
-
-                var_name = value[len(JUTURNA_ENV_VAR_PREFIX) :]
-
-                if var_name not in self._allowed_env_vars:
-                    raise EnvVarNotAllowedException(var_name, node.get('name'))
-
     def create_pipeline(
         self, pipeline_config: PipelineConfig
     ) -> CreatedPipelineDto:
         # the name becomes the pipeline folder under the base folder
         jt_utils.check_name(pipeline_config.pipeline.get('name'), 'pipeline')
-        self._check_env_vars(pipeline_config.pipeline)
 
         pipeline_id = str(uuid.uuid4())
 
@@ -98,7 +76,14 @@ class PipelineManager:
             )
         )
 
-        this_pipeline = Pipeline(pipeline_config.model_dump())
+        # configurations come from service clients: they may only resolve the
+        # environment variables the operator allowed, or they could route any
+        # service secret into a node that sends it out. The pipeline refuses
+        # the others here, and again when it builds its nodes
+        this_pipeline = Pipeline(
+            pipeline_config.model_dump(),
+            allowed_env_vars=self._allowed_env_vars,
+        )
 
         with self._registry_lock:
             self._pipelines[this_pipeline.pipe_id] = this_pipeline

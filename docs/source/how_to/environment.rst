@@ -150,3 +150,32 @@ replace the item in the configuration with:
 
 In short: environment variables used in configuration should be prefixed with
 ``$JT_ENV``.
+
+Limiting the variables a configuration can read
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A pipeline you build yourself, or launch with ``juturna launch``, can read any
+variable of the environment. This is not what you want when the configuration
+comes from somebody else, who could point a node at any secret of your process.
+
+The pipeline service (``juturna serve``) reads no variable by default: a
+configuration that references one is refused with ``403``. Name the variables
+its clients can use with ``--allow-env``, once per variable:
+
+.. code-block:: bash
+
+    python -m juturna serve -f ./pipelines --allow-env AUTH_TOKEN --allow-env MODEL_DIR
+
+The list covers both the ``configuration`` and the ``warp_configuration`` of a
+node.
+
+The same list is available when you build pipelines in your own code from
+configurations you do not control:
+
+.. code-block:: python
+
+    pipeline = jt.components.Pipeline(config, allowed_env_vars=['AUTH_TOKEN'])
+
+A configuration that reads any other variable raises ``EnvVarNotAllowedError``
+(from ``juturna.components.exceptions``) when the pipeline is created, before
+anything is written to disk.
