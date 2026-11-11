@@ -12,7 +12,7 @@ from juturna.components import Message, Node
 class SlowNode(Node):
     """Nodo che simula un carico di lavoro per testare il draining."""
     def update(self, message):
-        # Simula un'elaborazione che richiede tempo per testare il join()
+        # mimic computation that requires some time to test join()
         time.sleep(0.05)
 
 test_pipeline_folder = './tests/running_pipelines'
@@ -46,8 +46,8 @@ SERVICE_TOKEN = 'test-service-token'
 
 @pytest.fixture
 def service_app():
-    # the service needs the httpwrapper extra, which CI does not install, and
-    # the starlette test client needs httpx2 (or httpx)
+    # the service needs the httpwrapper extra and the starlette test client
+    # needs httpx2 (or httpx)
     pytest.importorskip('fastapi')
 
     if not any(importlib.util.find_spec(m) for m in ('httpx2', 'httpx')):

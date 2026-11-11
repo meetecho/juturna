@@ -67,7 +67,8 @@ lint = [
 ]
 test = [
     "pytest==9.1.1",
-    "pytest-cov"
+    "pytest-cov",
+    "httpx"
 ]
 full = [
     "juturna[httpwrapper,pipebuilder,warp]"
