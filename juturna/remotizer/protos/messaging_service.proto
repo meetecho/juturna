@@ -5,6 +5,10 @@ package juturna.proto.messaging;
 import "payloads.proto";
 
 service MessagingService {
-  // Send a message and get acknowledgment
+  // Send a message to the remote node and get its output and its state
   rpc SendAndReceive(juturna.proto.payloads.ProtoEnvelope) returns (juturna.proto.payloads.ProtoEnvelope);
+
+  // Tell the service that a session is over, so that it drops the state it
+  // keeps for it. The envelope carries no message
+  rpc EndSession(juturna.proto.payloads.ProtoEnvelope) returns (juturna.proto.payloads.ProtoEnvelope);
 }

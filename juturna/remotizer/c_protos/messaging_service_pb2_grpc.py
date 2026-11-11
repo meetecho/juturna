@@ -23,19 +23,28 @@ class MessagingServiceStub(object):
             channel: A grpc.Channel.
         """
         self.SendAndReceive = channel.unary_unary('/juturna.proto.messaging.MessagingService/SendAndReceive', request_serializer=payloads__pb2.ProtoEnvelope.SerializeToString, response_deserializer=payloads__pb2.ProtoEnvelope.FromString, _registered_method=True)
+        self.EndSession = channel.unary_unary('/juturna.proto.messaging.MessagingService/EndSession', request_serializer=payloads__pb2.ProtoEnvelope.SerializeToString, response_deserializer=payloads__pb2.ProtoEnvelope.FromString, _registered_method=True)
 
 class MessagingServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
     def SendAndReceive(self, request, context):
-        """Send a message and get acknowledgment
+        """Send a message to the remote node and get its output and its state
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def EndSession(self, request, context):
+        """Tell the service that a session is over, so that it drops the state it
+        keeps for it. The envelope carries no message
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 def add_MessagingServiceServicer_to_server(servicer, server):
-    rpc_method_handlers = {'SendAndReceive': grpc.unary_unary_rpc_method_handler(servicer.SendAndReceive, request_deserializer=payloads__pb2.ProtoEnvelope.FromString, response_serializer=payloads__pb2.ProtoEnvelope.SerializeToString)}
+    rpc_method_handlers = {'SendAndReceive': grpc.unary_unary_rpc_method_handler(servicer.SendAndReceive, request_deserializer=payloads__pb2.ProtoEnvelope.FromString, response_serializer=payloads__pb2.ProtoEnvelope.SerializeToString), 'EndSession': grpc.unary_unary_rpc_method_handler(servicer.EndSession, request_deserializer=payloads__pb2.ProtoEnvelope.FromString, response_serializer=payloads__pb2.ProtoEnvelope.SerializeToString)}
     generic_handler = grpc.method_handlers_generic_handler('juturna.proto.messaging.MessagingService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
     server.add_registered_method_handlers('juturna.proto.messaging.MessagingService', rpc_method_handlers)
@@ -46,3 +55,7 @@ class MessagingService(object):
     @staticmethod
     def SendAndReceive(request, target, options=(), channel_credentials=None, call_credentials=None, insecure=False, compression=None, wait_for_ready=None, timeout=None, metadata=None):
         return grpc.experimental.unary_unary(request, target, '/juturna.proto.messaging.MessagingService/SendAndReceive', payloads__pb2.ProtoEnvelope.SerializeToString, payloads__pb2.ProtoEnvelope.FromString, options, channel_credentials, insecure, call_credentials, compression, wait_for_ready, timeout, metadata, _registered_method=True)
+
+    @staticmethod
+    def EndSession(request, target, options=(), channel_credentials=None, call_credentials=None, insecure=False, compression=None, wait_for_ready=None, timeout=None, metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/juturna.proto.messaging.MessagingService/EndSession', payloads__pb2.ProtoEnvelope.SerializeToString, payloads__pb2.ProtoEnvelope.FromString, options, channel_credentials, insecure, call_credentials, compression, wait_for_ready, timeout, metadata, _registered_method=True)

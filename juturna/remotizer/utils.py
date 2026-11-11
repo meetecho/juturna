@@ -10,6 +10,7 @@ This module provides helper functions to:
 These utilities are essential for the serialization layer of the Remotizer.
 """
 
+import math
 import numpy as np
 import uuid
 import time
@@ -40,6 +41,11 @@ from juturna.remotizer.c_protos.payloads_pb2 import (
 )
 from google.protobuf.json_format import MessageToDict
 
+
+# version of the wire protocol: what the envelope holds, and how the service
+# and its clients use it. Both sides refuse another version. It changes with
+# every change an older peer would not understand
+PROTOCOL_VERSION = 1
 
 _INT64_MIN = -(2**63)
 _INT64_MAX = 2**63 - 1
@@ -264,6 +270,11 @@ def deserialize_message(message: ProtoMessage) -> Message:
     Message
         Python Message object with appropriate payload type
 
+    Raises
+    ------
+    ValueError
+        If the payload is of a type this version does not know.
+
     """
     message_obj = Message(
         creator=message.creator,
@@ -306,6 +317,12 @@ def deserialize_message(message: ProtoMessage) -> Message:
         batch = BatchProto()
         message.payload.Unpack(batch)
         message_obj.payload = _deserialize_batch_payload(batch)
+
+    elif message.payload.type_url:
+        # never taken for a message without payload
+        raise ValueError(
+            f'unknown payload type {message.payload.type_url.split("/")[-1]}'
+        )
 
     return message_obj
 
@@ -531,9 +548,6 @@ def from_typed_value(proto: TypedValue) -> Any:
             return getattr(proto, kind)
 
 
-# ! FIXME: probably we should change the request_type and response_type
-# ! signature: they are meaningful only in the context of requests,
-# ! for responses they should be empty, or with a different naming
 def create_envelope(
     message: ProtoMessage | None,
     configuration: dict[str, Any],
@@ -542,33 +556,35 @@ def create_envelope(
     pipe_id: str,
     state: dict[str, Any] | None,
     id: str = '',
-    priority: int = 1,
-    timeout: int = 30,
+    timeout: float = 30,
     response_to: str = None,
-    response_type: str = '',
-    request_type: str = '',
     stateless: bool = False,
     dropped: list[str] | None = None,
+    session: str = '',
 ) -> ProtoEnvelope:
     """
     Create envelope around message.
 
     message is None for a response without output, and state is None when no
-    state is sent. dropped works as in to_typed_value, for the state.
+    state is sent. dropped works as in to_typed_value, for the state. session
+    is the identifier the client made for itself, see the remote service.
+
+    The envelope carries the protocol version of this module, and its ttl is
+    timeout rounded up to whole seconds, so that a timeout below one second
+    is not read as no timeout at all.
     """
     envelope = ProtoEnvelope()
+    envelope.protocol_version = PROTOCOL_VERSION
     envelope.id = id or str(uuid.uuid4())
     envelope.sender = creator
     envelope.pipe_id = pipe_id
+    envelope.session = session
 
     if state is not None:
         envelope.state.CopyFrom(to_typed_value(dict(state), dropped, 'state'))
 
     envelope.created_at = time.time()
-    envelope.ttl = int(timeout)
-    envelope.request_type = request_type
-    envelope.response_type = response_type
-    envelope.priority = priority
+    envelope.ttl = math.ceil(timeout)
     envelope.response_to = response_to if response_to is not None else ''
     envelope.configuration.update(configuration)
     envelope.metadata.update(metadata)
@@ -588,9 +604,11 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
         else None
     )
     envelope_dict = {
+        'protocol_version': envelope.protocol_version,
         'id': envelope.id,
         'sender': envelope.sender,
         'pipe_id': envelope.pipe_id,
+        'session': envelope.session,
         'state': (
             from_typed_value(envelope.state)
             if envelope.HasField('state')
@@ -599,8 +617,6 @@ def deserialize_envelope(envelope: ProtoEnvelope) -> dict[str, Any]:
         'configuration': MessageToDict(envelope.configuration),
         'response_to': envelope.response_to,
         'ttl': envelope.ttl,
-        'request_type': envelope.request_type,
-        'response_type': envelope.response_type,
         'stateless': envelope.stateless,
         'message': message,
     }

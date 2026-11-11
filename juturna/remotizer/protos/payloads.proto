@@ -110,7 +110,7 @@ message ProtoMessage {
   string creator = 2;
 
   // ProtoMessage version (indicates version of the data contained)
-  int32 version = 3;
+  int64 version = 3;
 
   // ProtoPayload can be any of the payload types (AudioProtoPayload, ImageProtoPayload, etc.)
   google.protobuf.Any payload = 4;
@@ -123,7 +123,7 @@ message ProtoMessage {
   map<string, double> timers = 6;
 
   // ProtoMessage id (indicates the id of the data contained)
-  int32 id = 10;
+  int64 id = 10;
 
 }
 
@@ -176,16 +176,16 @@ message ProtoEnvelope {
   // The actual message being transported
   ProtoMessage message = 2;
 
-  // Sender identifier
+  // Sender identifier: the name of the warp node in a request, the name of
+  // the remote node in a response
   string sender = 3;
-
-  // Intended receiver identifier
-  string receiver = 4;
 
   // Original pipe id
   string pipe_id = 5;
 
-  reserved 6;
+  // Fields of earlier drafts of the protocol, never used
+  reserved 4, 6, 12, 13, 14;
+  reserved "receiver", "priority", "request_type", "response_type";
 
   // Response-to field: ID of the envelope this is responding to
   // Enables explicit request/response tracking
@@ -198,25 +198,13 @@ message ProtoEnvelope {
   // Envelope creation timestamp (Unix epoch in seconds)
   double created_at = 9;
 
-  // Configuration parameters as key-value pairs
-  // these message are used to the set_on_config call
+  // Configuration of the remote node in the pipeline. The service does not
+  // apply it: the remote node is configured once, when the service starts
   google.protobuf.Struct configuration = 10;
 
   // Envelope metadata as key-value pairs
   // Different from message.meta - this is envelope-level metadata
   google.protobuf.Struct metadata = 11;
-
-  // message priority (0 = lowest, higher = more urgent)
-  // for future use
-  int32 priority = 12;
-
-  // request payload (not proto) type hint for faster routing/dispatching
-  // e.g., "AudioPayload"
-  string request_type = 13;
-
-  // response payload (not proto) type hint for faster serialization
-  // e.g., "ImagePayload"
-  string response_type = 14;
 
   // The remote service keeps no state for this client: the state travels with
   // every request and response (sticky false in the pipeline configuration)
@@ -227,22 +215,14 @@ message ProtoEnvelope {
   // response carries it, except a sticky one whose state cannot be sent
   TypedValue state = 16;
 
-}
+  // Version of this protocol spoken by the sender. A service answers
+  // UNIMPLEMENTED to a version it does not speak, and a client refuses the
+  // response of a service that speaks another one
+  uint32 protocol_version = 17;
 
-// Optional: Compressed payload wrapper for large data
-message CompressedProtoPayload {
-  // Compression algorithm used (e.g., "gzip", "zstd", "lz4")
-  string compression = 1;
+  // Random identifier a warp node creates when it warms up, and sends with
+  // every request. With pipe_id and sender it identifies the client: whoever
+  // does not know it cannot reach the state the service keeps for the client
+  string session = 18;
 
-  // Compressed data
-  bytes compressed_data = 2;
-
-  // Original uncompressed size in bytes
-  int64 original_size = 3;
-
-  // Compressed size in bytes (can be computed from compressed_data.length)
-  int64 compressed_size = 4;
-
-  // Original payload type before compression
-  string original_type = 5;
 }

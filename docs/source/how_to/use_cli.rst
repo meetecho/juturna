@@ -211,27 +211,29 @@ Launch the remote service to expose a node for delocalised pipelines to use.
 .. code-block:: console
 
     (.venv) user:~/$ python -m juturna remotize --help
-    usage: juturna remotize [-h] --node-name NODE_NAME --node-type NODE_TYPE [--pipe-name PIPE_NAME] [--port PORT] [--default-config FILE]
-                            [--max-workers MAX_WORKERS] [--max-requests MAX_REQUESTS] [--max-clients MAX_CLIENTS] [--strict]
-                            [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}]
+    usage: juturna remotize [-h] --node-name NODE_NAME --node-type NODE_TYPE [--pipe-name PIPE_NAME] [--host HOST] [--port PORT]
+                            [--default-config FILE] [--max-workers MAX_WORKERS] [--max-requests MAX_REQUESTS] [--max-clients MAX_CLIENTS]
+                            [--strict] [--log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}]
 
     options:
       -h, --help            show this help message and exit
-      --node-name NODE_NAME, -n NODE_NAME
+      --node-name, -n NODE_NAME
                             name of the node to run
-      --node-type NODE_TYPE, -t NODE_TYPE
+      --node-type, -t NODE_TYPE
                             type of the node to run
-      --pipe-name PIPE_NAME, -N PIPE_NAME
+      --pipe-name, -N PIPE_NAME
                             pipeline name context
-      --port PORT, -p PORT  port to listen on
-      --default-config FILE, -c FILE
+      --host, -H HOST       address to listen on (default: 127.0.0.1, this machine only). The service has no authentication and no encryption:
+                            listen on another address, such as 0.0.0.0 for all of them, on trusted networks only
+      --port, -p PORT       port to listen on (default: 50051)
+      --default-config, -c FILE
                             default configuration as JSON string
-      --max-workers MAX_WORKERS, -w MAX_WORKERS
+      --max-workers, -w MAX_WORKERS
                             maximum number of worker threads
       --max-requests MAX_REQUESTS
                             requests accepted at once, in progress or waiting for a worker; more are refused (default: 10 for each worker)
       --max-clients MAX_CLIENTS
                             sticky clients the service keeps a state for; new ones are refused beyond that (default: 1024)
       --strict              fail requests with DATA_LOSS instead of leaving out, with a warning, what cannot be sent to the client
-      --log-level {NOTSET,DEBUG,INFO,WARNING,ERROR}, -l {NOTSET,DEBUG,INFO,WARNING,ERROR}
+      --log-level, -l {NOTSET,DEBUG,INFO,WARNING,ERROR}
                             log level of the service and the node (default: INFO)

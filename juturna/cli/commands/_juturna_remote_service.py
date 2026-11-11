@@ -1,4 +1,5 @@
 import functools
+import ipaddress
 import json
 import signal
 import threading
@@ -16,6 +17,7 @@ from juturna.remotizer._remote_context import RequestContext
 from juturna.remotizer._remote_builder import _standalone_builder
 
 from juturna.remotizer.utils import (
+    PROTOCOL_VERSION,
     deserialize_envelope,
     create_envelope,
     message_to_proto,
@@ -45,6 +47,10 @@ class InvalidRequestError(ValueError):
     """The request cannot be read, or lacks what the service needs"""
 
 
+class UnsupportedProtocolError(RuntimeError):
+    """The request speaks a version of the protocol the service does not"""
+
+
 class TooManyClientsError(RuntimeError):
     """The service already keeps as many client states as it is allowed to"""
 
@@ -54,7 +60,11 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
     Implementation of the gRPC Messaging Service (Async/Concurrent)
 
     One node can serve several client pipelines at once. Each client warp node
-    is identified by ``(pipe_id, sender)``, and is served in one of two ways:
+    is identified by ``(pipe_id, sender, session)``: the session is a random
+    identifier the warp node makes when it warms up, so that nobody who only
+    knows the names of a pipeline and of its node can reach the state kept for
+    it, and so that a pipeline started again does not continue from the state
+    of its previous run. A client is served in one of two ways:
 
     - sticky (the default): the client always reaches this service, which
       keeps its state and returns a copy of it with every response. The
@@ -82,6 +92,11 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
     client is the one of the last message processed only while the node is
     idle; when another message is being processed, the client cannot be
     told, and the loss is logged as an error.
+
+    Requests of another version of the protocol are refused with
+    UNIMPLEMENTED. The service has no authentication and no encryption: the
+    session keeps well-behaved clients apart, it is not a credential against
+    who can read the traffic. It is meant for trusted networks only.
     """
 
     DEFAULT_TIMEOUT = 30.0
@@ -114,16 +129,16 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         # it: only that thread can transmit the output of that request
         self._current: tuple[int, int] | None = None
 
-        self._state_store: dict[tuple[str, str], State] = {}
-        self._state_last_used: dict[tuple[str, str], float] = {}
+        self._state_store: dict[tuple[str, str, str], State] = {}
+        self._state_last_used: dict[tuple[str, str, str], float] = {}
         self._state_lock = threading.Lock()
-        self._ignored_configuration: set[tuple[str, str]] = set()
+        self._ignored_configuration: set[tuple[str, str, str]] = set()
         self._warned: set[tuple] = set()
 
         # tracking id -> client of the requests already answered, to tell a
         # client about a message transmitted after its update returned
-        self._answered: OrderedDict[int, tuple[str, str]] = OrderedDict()
-        self._late_outputs: dict[tuple[str, str], str] = {}
+        self._answered: OrderedDict[int, tuple[str, str, str]] = OrderedDict()
+        self._late_outputs: dict[tuple[str, str, str], str] = {}
 
         self._stop_event = threading.Event()
 
@@ -151,6 +166,11 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         self._cleanup_thread.start()
 
         logger.info(f'Service initialized for node {node.name}')
+
+    @staticmethod
+    def _client_name(client: tuple[str, str, str]) -> str:
+        # the session is what keeps clients apart: it is never logged
+        return f'{client[1]!r} of pipeline {client[0]!r}'
 
     def _increment_stat(self, stat_name: str):
         """Thread-safe statistics increment"""
@@ -266,7 +286,7 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
 
     def _lose(
         self,
-        client: tuple[str, str] | None,
+        client: tuple[str, str, str] | None,
         kind: str,
         what: str,
         request: RequestContext | None = None,
@@ -292,14 +312,16 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         else:
             logger.error(f'{what} is lost, and its client is unknown')
 
-    def _mark_answered(self, tracking_id: int, client: tuple[str, str]):
+    def _mark_answered(self, tracking_id: int, client: tuple[str, str, str]):
         # called with requests_lock held
         self._answered[tracking_id] = client
 
         if len(self._answered) > self.MAX_WARNED_CLIENTS:
             self._answered.popitem(last=False)
 
-    def _warn_once(self, client: tuple[str, str] | None, kind: str, text: str):
+    def _warn_once(
+        self, client: tuple[str, str, str] | None, kind: str, text: str
+    ):
         with self.requests_lock:
             if (client, kind) in self._warned:
                 return
@@ -343,7 +365,7 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             logger.debug(f'request {message.id} already settled')
 
     def _seed_state(
-        self, state_key: tuple[str, str], client_state: dict | None
+        self, state_key: tuple[str, str, str], client_state: dict | None
     ):
         """
         Create the state of a client from its copy, if it is not known yet.
@@ -379,18 +401,20 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
 
                 self._state_store[state_key] = State(client_state)
 
-                logger.info(f'created state for {state_key}')
+                logger.info(f'created state for {self._client_name(state_key)}')
 
             self._state_last_used[state_key] = time.time()
 
-    def _state_snapshot(self, state_key: tuple[str, str]) -> dict:
+    def _state_snapshot(self, state_key: tuple[str, str, str]) -> dict:
         with self._state_lock:
             state = self._state_store.get(state_key)
 
         # a plain dict copy, safe against the update thread writing to it
         return dict(state.data) if state is not None else dict()
 
-    def _check_configuration(self, state_key: tuple[str, str], config: dict):
+    def _check_configuration(
+        self, state_key: tuple[str, str, str], config: dict
+    ):
         # the node serves every client, so it is only configured at startup
         if not config:
             return
@@ -429,7 +453,7 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 del self._state_last_used[key]
                 self._ignored_configuration.discard(key)
 
-                logger.info(f'dropped idle state for {key}')
+                logger.info(f'dropped idle state for {self._client_name(key)}')
 
     def _cleanup_loop(self):
         """Background loop that periodically cleans up expired requests"""
@@ -465,6 +489,77 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         if request is not None:
             request.cancel(reason)
 
+    @staticmethod
+    def _check_protocol(request: ProtoEnvelope):
+        # before anything else is read: the rest may mean something else
+        if request.protocol_version != PROTOCOL_VERSION:
+            raise UnsupportedProtocolError(
+                f'the request speaks version {request.protocol_version} of '
+                f'the remote protocol, this service version {PROTOCOL_VERSION}'
+                ': install matching versions of juturna on both sides'
+            )
+
+    @staticmethod
+    def _check_client(envelope_dict: dict):
+        for field in ('sender', 'pipe_id', 'session'):
+            if not envelope_dict.get(field):
+                raise InvalidRequestError(f'Missing {field} in envelope')
+
+    def _end_session(self, client: tuple[str, str, str]) -> bool:
+        """Drop what is kept for a client; True if it had a state"""
+        with self._state_lock:
+            known = self._state_store.pop(client, None) is not None
+
+            self._state_last_used.pop(client, None)
+            self._ignored_configuration.discard(client)
+
+        with self.requests_lock:
+            self._late_outputs.pop(client, None)
+            self._warned = {w for w in self._warned if w[0] != client}
+
+        return known
+
+    def EndSession(self, request: ProtoEnvelope, context):
+        """
+        Drop the state kept for a client that is going away.
+
+        Ending a session the service does not know is not an error: its
+        state may be gone already, or never have been kept.
+        """
+        try:
+            self._check_protocol(request)
+
+            client = (request.pipe_id, request.sender, request.session)
+
+            self._check_client(
+                dict(zip(('pipe_id', 'sender', 'session'), client, strict=True))
+            )
+
+            if self._end_session(client):
+                logger.info(
+                    f'session of {self._client_name(client)} ended, '
+                    'state dropped'
+                )
+
+            return create_envelope(
+                message=None,
+                creator=self.remote_name,
+                pipe_id=request.pipe_id,
+                state=None,
+                configuration={},
+                metadata={},
+                response_to=request.id,
+                session=request.session,
+            )
+        except UnsupportedProtocolError as e:
+            self._increment_stat('invalid_requests')
+            context.abort(grpc.StatusCode.UNIMPLEMENTED, str(e))
+            return ProtoEnvelope()
+        except InvalidRequestError as e:
+            self._increment_stat('invalid_requests')
+            context.abort(grpc.StatusCode.INVALID_ARGUMENT, str(e))
+            return ProtoEnvelope()
+
     def _read_request(self, request: ProtoEnvelope) -> dict:
         """
         Read the envelope of a request.
@@ -473,15 +568,18 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
         ------
         InvalidRequestError
             If the envelope cannot be read, or lacks what the service needs.
+        UnsupportedProtocolError
+            If the envelope is of another version of the protocol.
 
         """
+        self._check_protocol(request)
+
         try:
             envelope_dict = deserialize_envelope(request)
         except (TypeError, ValueError) as e:
             raise InvalidRequestError(f'Malformed envelope: {e}') from e
 
-        if not envelope_dict.get('sender') or not envelope_dict.get('pipe_id'):
-            raise InvalidRequestError('Missing sender or pipe_id in envelope')
+        self._check_client(envelope_dict)
 
         if envelope_dict['message'] is None:
             raise InvalidRequestError('Missing message in envelope')
@@ -509,7 +607,9 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             envelope_id = envelope_dict.get('id')
             pipe_id = envelope_dict['pipe_id']
 
-            state_key = (pipe_id, sender)
+            session = envelope_dict['session']
+
+            state_key = (pipe_id, sender, session)
             stateless = envelope_dict['stateless']
             client_state = envelope_dict['state']
 
@@ -538,7 +638,6 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                 timeout=timeout,
                 sender=sender,
                 envelope_id=envelope_id,
-                response_type=envelope_dict.get('response_type', None),
                 state_key=state_key,
                 state=State(client_state) if stateless else None,
                 message=request_message,
@@ -603,16 +702,11 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
                         'processing_time': time.time()
                         - request_context.created_at
                     },
-                    request_type=(
-                        ''
-                        if response_message is None
-                        else type(response_message.payload).__name__
-                    ),
-                    priority=0,
                     response_to=envelope_id,
                     timeout=timeout,
                     stateless=stateless,
                     dropped=dropped,
+                    session=session,
                 )
             except (TypeError, ValueError) as e:
                 if self.strict:
@@ -653,6 +747,11 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             logger.warning(f'Request refused: {e}')
             context.abort(grpc.StatusCode.RESOURCE_EXHAUSTED, str(e))
             return ProtoEnvelope()
+        except UnsupportedProtocolError as e:
+            self._increment_stat('invalid_requests')
+            logger.error(f'Request refused: {e}')
+            context.abort(grpc.StatusCode.UNIMPLEMENTED, str(e))
+            return ProtoEnvelope()
         except InvalidRequestError as ve:
             self._increment_stat('invalid_requests')
             logger.error(f'Invalid request: {ve}')
@@ -691,6 +790,24 @@ class MessagingServiceImpl(messaging_service_pb2_grpc.MessagingServiceServicer):
             return self.stats.copy()
 
 
+def _is_loopback(host: str) -> bool:
+    if host == 'localhost':
+        return True
+
+    try:
+        return ipaddress.ip_address(host.strip('[]')).is_loopback
+    except ValueError:
+        return False
+
+
+def _listen_address(host: str, port: int) -> str:
+    # an IPv6 address is written between brackets in front of a port
+    if ':' in host and not host.startswith('['):
+        host = f'[{host}]'
+
+    return f'{host}:{port}'
+
+
 def serve(args) -> int:
     """
     Build the node and serve it until SIGINT or SIGTERM.
@@ -699,7 +816,7 @@ def serve(args) -> int:
     -------
     int
         The exit code of the command: 0 after a clean stop, 1 when the node
-        cannot be built or the port cannot be used.
+        cannot be built or the address cannot be used.
 
     """
     jt_logger().setLevel(args.log_level)
@@ -756,10 +873,12 @@ def serve(args) -> int:
         server,
     )
 
+    address = _listen_address(args.host, args.port)
+
     try:
-        bound_port = server.add_insecure_port(f'[::]:{args.port}')
+        bound_port = server.add_insecure_port(address)
     except RuntimeError as e:
-        logger.error(f'Cannot listen on port {args.port}: {e}')
+        logger.error(f'Cannot listen on {address}: {e}')
         bound_port = 0
 
     if not bound_port:
@@ -778,7 +897,14 @@ def serve(args) -> int:
     for signum in (signal.SIGINT, signal.SIGTERM):
         signal.signal(signum, _request_stop)
 
-    logger.info(f'Starting gRPC server on port {args.port}')
+    if not _is_loopback(args.host):
+        logger.warning(
+            f'listening on {address} without authentication or encryption: '
+            'whoever reaches this address can use the node and read what it '
+            'is sent. Use it on trusted networks only'
+        )
+
+    logger.info(f'Starting gRPC server on {address}')
     server.start()
 
     while not stop_requested.wait(1.0):

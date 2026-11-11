@@ -1,8 +1,11 @@
 import logging
+import signal
 import subprocess
 import sys
 import threading
 import time
+
+from concurrent import futures
 
 import numpy as np
 import pytest
@@ -10,10 +13,11 @@ import pytest
 from juturna.components import Message, Node, State
 from juturna.payloads import AudioPayload, ObjectPayload
 
-pytest.importorskip('grpc')
+grpc = pytest.importorskip('grpc')
 
 from juturna.cli.commands import _juturna_remote_service as remote  # noqa: E402
 from juturna.remotizer.utils import (  # noqa: E402
+    PROTOCOL_VERSION,
     create_envelope,
     deserialize_envelope,
     message_to_proto,
@@ -111,8 +115,18 @@ def service():
     node.kill()
 
 
+SESSION = 'session-of-the-tests'
+
+
 def _envelope(
-    pipe_id, sender, state, timeout=30, configuration=None, n=1, stateless=False
+    pipe_id,
+    sender,
+    state,
+    timeout=30,
+    configuration=None,
+    n=1,
+    stateless=False,
+    session=SESSION,
 ):
     return create_envelope(
         message=message_to_proto(
@@ -125,6 +139,7 @@ def _envelope(
         state=state,
         timeout=timeout,
         stateless=stateless,
+        session=session,
     )
 
 
@@ -328,7 +343,7 @@ def test_sticky_state_stays_on_the_replica(replicas):
     response = _call(replicas[1], 'p', 'w', {'pending': [1]}, n=2)
 
     assert response['state'] == {'pending': [1, 2]}
-    assert replicas[0]._state_store[('p', 'w')] == {'pending': [1]}
+    assert replicas[0]._state_store[('p', 'w', SESSION)] == {'pending': [1]}
 
 
 def test_unknown_sticky_client_without_state_is_asked_for_it(replicas):
@@ -543,19 +558,19 @@ def test_envelope_without_message_is_invalid(service):
 
 
 def test_idle_states_are_evicted_unless_in_use(service):
-    service._seed_state(('p', 'idle'), {'count': 1})
-    service._seed_state(('p', 'busy'), {'count': 1})
+    service._seed_state(('p', 'idle', SESSION), {'count': 1})
+    service._seed_state(('p', 'busy', SESSION), {'count': 1})
 
     with service.requests_lock:
         service.pending_requests[1] = remote.RequestContext(
-            'busy', 'e', 1, 30, state_key=('p', 'busy')
+            'busy', 'e', 1, 30, state_key=('p', 'busy', SESSION)
         )
 
     service.STATE_IDLE_TIMEOUT = 0
     time.sleep(0.01)
     service._evict_idle_states()
 
-    assert set(service._state_store) == {('p', 'busy')}
+    assert set(service._state_store) == {('p', 'busy', SESSION)}
 
 
 def test_shutdown_stops_the_server_first_then_kills_and_destroys_the_node():
@@ -861,12 +876,8 @@ def test_serve_fails_when_the_node_cannot_be_built(tmp_path, monkeypatch):
 def test_serve_fails_when_the_port_is_taken(tmp_path, monkeypatch):
     import socket
 
-    try:
-        taken = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-        taken.bind(('::', 0))
-    except OSError:
-        pytest.skip('no IPv6 socket available')
-
+    taken = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    taken.bind(('127.0.0.1', 0))
     taken.listen()
     destroyed = list()
 
@@ -907,3 +918,260 @@ def test_remotize_command_exits_with_the_code_of_the_service(tmp_path):
     )
 
     assert out.returncode == 1, out.stderr
+
+
+def test_response_carries_the_protocol_version_and_the_session(service):
+    response = _call(service, 'pipe', 'warp', {})
+
+    assert response['protocol_version'] == PROTOCOL_VERSION
+    assert response['session'] == SESSION
+
+
+@pytest.mark.parametrize('version', [0, PROTOCOL_VERSION + 1])
+@pytest.mark.parametrize('method', ['SendAndReceive', 'EndSession'])
+def test_another_protocol_version_is_refused(service, method, version):
+    envelope = _envelope('pipe', 'warp', {})
+    envelope.protocol_version = version
+    context = _Context()
+
+    getattr(service, method)(envelope, context)
+
+    code, details = context.aborted
+
+    assert code.name == 'UNIMPLEMENTED'
+    assert f'version {version} ' in details
+    assert service.node.calls == 0
+    assert service._state_store == {}
+
+
+@pytest.mark.parametrize('method', ['SendAndReceive', 'EndSession'])
+def test_request_without_a_session_is_invalid(service, method):
+    context = _Context()
+
+    getattr(service, method)(
+        _envelope('pipe', 'warp', {}, session=''), context
+    )
+
+    code, details = context.aborted
+
+    assert code.name == 'INVALID_ARGUMENT'
+    assert 'session' in details
+    assert service.node.calls == 0
+
+
+def test_another_session_cannot_reach_the_state_of_a_client(service):
+    assert _call(service, 'pipe', 'warp', {'count': 5})['state'] == {'count': 6}
+
+    # the same names, without the session of the client: no state to read
+    code, _ = _call(service, 'pipe', 'warp', None, session='guess')
+
+    assert code.name == 'FAILED_PRECONDITION'
+
+    # nor to change: it gets a state of its own
+    other = _call(service, 'pipe', 'warp', {'count': 100}, session='guess')
+
+    assert other['state'] == {'count': 101}
+    assert _call(service, 'pipe', 'warp', None)['state'] == {'count': 7}
+
+
+def test_pipeline_started_again_does_not_continue_from_the_old_state(service):
+    _call(service, 'pipe', 'warp', {'count': 5}, session='first run')
+
+    # the new run sends its own state when asked, as any unknown client
+    code, _ = _call(service, 'pipe', 'warp', None, session='second run')
+
+    assert code.name == 'FAILED_PRECONDITION'
+    assert _call(service, 'pipe', 'warp', {}, session='second run')[
+        'state'
+    ] == {'count': 1}
+
+
+def test_ending_a_session_drops_its_state_only(service):
+    _call(service, 'pipe', 'warp', {'count': 5})
+    _call(service, 'pipe', 'warp', {'count': 50}, session='other')
+
+    for session in ('guess', SESSION, SESSION):
+        context = _Context()
+        ended = service.EndSession(
+            _envelope('pipe', 'warp', None, session=session), context
+        )
+
+        assert context.aborted is None
+        assert ended.protocol_version == PROTOCOL_VERSION
+
+    assert set(service._state_store) == {('pipe', 'warp', 'other')}
+    assert set(service._state_last_used) == {('pipe', 'warp', 'other')}
+
+    code, _ = _call(service, 'pipe', 'warp', None)
+
+    assert code.name == 'FAILED_PRECONDITION'
+
+
+def test_sessions_are_not_logged(service):
+    records = list()
+    handler = logging.Handler()
+    handler.emit = lambda record: records.append(record.getMessage())
+    level = remote.logger.level
+    remote.logger.addHandler(handler)
+    remote.logger.setLevel(logging.DEBUG)
+    service.STATE_IDLE_TIMEOUT = 0
+
+    try:
+        _call(service, 'pipe', 'warp', {}, configuration={'k': 1})
+        _call(service, 'pipe', 'gone', {})
+        _call(service, 'pipe', 'warp', None, session='unknown session')
+        time.sleep(0.01)
+        service._evict_idle_states()
+        service.EndSession(_envelope('pipe', 'warp', None), _Context())
+    finally:
+        remote.logger.removeHandler(handler)
+        remote.logger.setLevel(level)
+
+    assert any('created state' in record for record in records)
+    assert any('dropped idle state' in record for record in records)
+    assert not any('session' in record.replace('session of', '') for record in records)
+    assert not any(SESSION in record for record in records)
+
+
+def test_message_of_an_unknown_payload_type_is_an_invalid_request(service):
+    envelope = _envelope('pipe', 'warp', {})
+    envelope.message.payload.Pack(to_typed_value({'a': 1}))
+    context = _Context()
+
+    service.SendAndReceive(envelope, context)
+
+    code, details = context.aborted
+
+    assert code.name == 'INVALID_ARGUMENT'
+    assert 'unknown payload type' in details
+    assert service.node.calls == 0
+
+
+@pytest.mark.parametrize(
+    'host, address, loopback',
+    [
+        ('127.0.0.1', '127.0.0.1:7', True),
+        ('localhost', 'localhost:7', True),
+        ('::1', '[::1]:7', True),
+        ('[::1]', '[::1]:7', True),
+        ('0.0.0.0', '0.0.0.0:7', False),
+        ('::', '[::]:7', False),
+        ('192.0.2.1', '192.0.2.1:7', False),
+        ('node.example', 'node.example:7', False),
+    ],
+)
+def test_listen_address_and_loopback(host, address, loopback):
+    assert remote._listen_address(host, 7) == address
+    assert remote._is_loopback(host) is loopback
+
+
+@pytest.mark.parametrize(
+    'arguments, address, warned',
+    [
+        ((), '127.0.0.1:50051', False),
+        (('--host', '0.0.0.0', '-p', '7'), '0.0.0.0:7', True),
+        (('-H', '::1', '-p', '7'), '[::1]:7', False),
+    ],
+    ids=['default', 'all_addresses', 'ipv6_loopback'],
+)
+def test_serve_listens_on_loopback_unless_told_otherwise(
+    tmp_path, monkeypatch, arguments, address, warned
+):
+    listened = list()
+    warnings = list()
+
+    class Server:
+        def add_insecure_port(self, target):
+            listened.append(target)
+
+            return 1
+
+        def start(self):
+            # stop right after the start, as a signal would
+            signal.raise_signal(signal.SIGTERM)
+
+        def stop(self, grace):
+            stopped = threading.Event()
+            stopped.set()
+
+            return stopped
+
+    monkeypatch.setattr(remote.grpc, 'server', lambda *a, **k: Server())
+    monkeypatch.setattr(
+        remote.messaging_service_pb2_grpc,
+        'add_MessagingServiceServicer_to_server',
+        lambda *a: None,
+    )
+    monkeypatch.setattr(
+        remote.logger, 'warning', lambda text: warnings.append(text)
+    )
+    previous = {
+        signum: signal.getsignal(signum)
+        for signum in (signal.SIGINT, signal.SIGTERM)
+    }
+
+    try:
+        args = _remotize_args(
+            tmp_path,
+            monkeypatch,
+            '-t',
+            'contrib.jt_test.nodes.PassthroughIdentity',
+            *arguments,
+        )
+
+        assert remote.serve(args) == 0
+    finally:
+        for signum, handler in previous.items():
+            signal.signal(signum, handler)
+
+    assert listened == [address]
+    assert any('trusted networks only' in w for w in warnings) is warned
+
+
+@pytest.fixture
+def channel(service):
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=4))
+    remote.messaging_service_pb2_grpc.add_MessagingServiceServicer_to_server(
+        service, server
+    )
+    port = server.add_insecure_port('127.0.0.1:0')
+    server.start()
+
+    with grpc.insecure_channel(f'127.0.0.1:{port}') as open_channel:
+        yield remote.messaging_service_pb2_grpc.MessagingServiceStub(
+            open_channel
+        )
+
+    server.stop(None).wait(5)
+
+
+def test_session_lifecycle_through_a_real_channel(channel):
+    first = deserialize_envelope(
+        channel.SendAndReceive(_envelope('pipe', 'warp', {'count': 5}))
+    )
+
+    assert first['state'] == {'count': 6}
+    assert first['message'].payload['count'] == 6
+
+    with pytest.raises(grpc.RpcError) as error:
+        channel.SendAndReceive(_envelope('pipe', 'warp', None, session='guess'))
+
+    assert error.value.code() == grpc.StatusCode.FAILED_PRECONDITION
+
+    channel.EndSession(_envelope('pipe', 'warp', None))
+
+    with pytest.raises(grpc.RpcError) as error:
+        channel.SendAndReceive(_envelope('pipe', 'warp', None))
+
+    assert error.value.code() == grpc.StatusCode.FAILED_PRECONDITION
+
+
+def test_protocol_mismatch_through_a_real_channel(channel):
+    envelope = _envelope('pipe', 'warp', {})
+    envelope.protocol_version = 0
+
+    with pytest.raises(grpc.RpcError) as error:
+        channel.SendAndReceive(envelope)
+
+    assert error.value.code() == grpc.StatusCode.UNIMPLEMENTED
+    assert 'version 0' in error.value.details()

@@ -14,6 +14,9 @@ from juturna.payloads import (
 pytest.importorskip('google.protobuf')
 
 from juturna.remotizer.utils import (  # noqa: E402
+    PROTOCOL_VERSION,
+    create_envelope,
+    deserialize_envelope,
     deserialize_message,
     from_typed_value,
     message_to_proto,
@@ -262,3 +265,61 @@ def test_message_without_creator_is_refused_with_a_clear_error():
 def test_payload_of_an_unknown_type_is_refused_with_a_clear_error():
     with pytest.raises(TypeError, match='a dict payload cannot be sent'):
         message_to_proto(Message(creator='src', payload={'a': 1}))
+
+
+def test_payload_type_this_version_does_not_know_is_refused():
+    proto = message_to_proto(Message(creator='n', payload=BytesPayload(cnt=b'x')))
+    proto.payload.Pack(to_typed_value({'a': 1}))
+
+    with pytest.raises(ValueError, match='unknown payload type .*TypedValue'):
+        deserialize_message(proto)
+
+
+def test_message_without_payload_comes_back_without_payload():
+    proto = message_to_proto(Message(creator='n'))
+
+    assert deserialize_message(proto).payload is None
+
+
+def test_ids_and_versions_beyond_32_bits_are_sent():
+    message = Message(creator='n', version=1_762_000_000_000)
+    message.id = 2**40
+
+    restored = deserialize_message(message_to_proto(message))
+
+    assert restored.version == 1_762_000_000_000
+    assert restored.id == 2**40
+
+
+@pytest.mark.parametrize(
+    'timeout, ttl', [(0.2, 1), (1, 1), (1.5, 2), (30, 30), (0, 0)]
+)
+def test_ttl_is_the_timeout_rounded_up(timeout, ttl):
+    envelope = create_envelope(
+        message=None,
+        configuration={},
+        metadata={},
+        creator='n',
+        pipe_id='p',
+        state=None,
+        timeout=timeout,
+    )
+
+    assert envelope.ttl == ttl
+
+
+def test_envelope_carries_the_protocol_version_and_the_session():
+    envelope = create_envelope(
+        message=None,
+        configuration={},
+        metadata={},
+        creator='n',
+        pipe_id='p',
+        state=None,
+        session='s',
+    )
+    restored = deserialize_envelope(envelope)
+
+    assert PROTOCOL_VERSION == 1
+    assert restored['protocol_version'] == PROTOCOL_VERSION
+    assert restored['session'] == 's'
