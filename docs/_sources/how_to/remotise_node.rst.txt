@@ -137,4 +137,12 @@ Assuming you already copied the plugins in the remote location, we can proceed:
         --pipe-name "test_mocked_pipeline" \
         --node-mark "passthrough_identity" \
         --default-config '{"delay": 2}' \
+        --host 0.0.0.0 \
         --port 45000
+
+.. warning::
+
+    The remote service has no authentication and no encryption, so it listens
+    on ``127.0.0.1`` unless told otherwise. ``--host 0.0.0.0`` makes it
+    reachable from other machines: use it on trusted networks only. See
+    :ref:`explain_remote`.

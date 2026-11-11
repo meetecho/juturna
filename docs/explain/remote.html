@@ -395,6 +395,14 @@ it back. Any replica behind a load balancer can serve any request, and a
 replica going down loses no state. The state travels on every request, so
 keep it small.</p></li>
 </ul>
+<p>A warp node makes a random <strong>session</strong> identifier every time it warms up, and
+sends it with every request. The service keeps a sticky state under the
+pipeline id, the name of the warp node and that session. So another client
+that only knows the pipeline id and the node name gets a state of its own,
+and a pipeline that is started again does not continue from the state of its
+previous run: it is asked for its copy, like any client the service does not
+know. When a sticky warp node is destroyed it tells the service, which drops
+its state at once.</p>
 <p>In both cases the remote service answers when <code class="docutils literal notranslate"><span class="pre">update()</span></code> returns. A message
 that the node keeps in its state without transmitting anything gets an empty
 response at once, and the warp node transmits nothing downstream.</p>
@@ -431,6 +439,33 @@ while the node is idle. A message transmitted by another thread while the node
 processes a message is logged as an error instead, in both modes, and fails no
 request. A node meant to run remotely transmits from <code class="docutils literal notranslate"><span class="pre">update()</span></code> only.</p>
 </section>
+<section id="who-can-reach-the-service">
+<h2>Who can reach the service<a class="headerlink" href="#who-can-reach-the-service" title="Link to this heading">¶</a></h2>
+<p>The remote service has <strong>no authentication and no encryption</strong>. Whoever can
+connect to it can send messages to the node and read what comes back, and
+whoever can read the traffic sees everything, sessions included. The session
+keeps well-behaved clients apart; it is not a password.</p>
+<p>For this reason <code class="docutils literal notranslate"><span class="pre">juturna</span> <span class="pre">remotize</span></code> listens on <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code> by default,
+reachable from the same machine only. To serve pipelines on other machines,
+pass the address to listen on with <code class="docutils literal notranslate"><span class="pre">--host</span></code> (<code class="docutils literal notranslate"><span class="pre">0.0.0.0</span></code> for every
+interface), and do it <strong>on trusted networks only</strong>: a private network between
+your own machines, or behind a proxy or a tunnel that authenticates and
+encrypts. The service logs a warning when it listens on anything but the
+loopback address.</p>
+</section>
+<section id="protocol-version">
+<h2>Protocol version<a class="headerlink" href="#protocol-version" title="Link to this heading">¶</a></h2>
+<p>The warp node and the remote service must speak the same version of the remote
+protocol, which is version 1 in juturna 3.0. Every request and response carries
+it. The service refuses a request of another version with the
+<code class="docutils literal notranslate"><span class="pre">UNIMPLEMENTED</span></code> status, and the warp node refuses a response of another
+version, so two sides that do not match fail on the first message with an
+error that says so. A message whose payload is of a type the receiver does not
+know is refused too, on both sides.</p>
+<p>The version changes whenever an older peer would not understand the new one.
+Install matching versions of juturna on both sides: on the local side that is
+the version <code class="docutils literal notranslate"><span class="pre">juturna-nodes</span></code> was installed with.</p>
+</section>
 <section id="limits">
 <h2>Limits<a class="headerlink" href="#limits" title="Link to this heading">¶</a></h2>
 <p>The remote service keeps the state of at most <code class="docutils literal notranslate"><span class="pre">--max-clients</span></code> sticky warp
@@ -441,7 +476,7 @@ progress or waiting for a worker, and refuses the others with the same
 status. A request whose warp node cancels it or disconnects is not processed
 if it is still waiting.</p>
 <p><code class="docutils literal notranslate"><span class="pre">juturna</span> <span class="pre">remotize</span></code> exits with status 1 when the node cannot be built or the
-port is already in use: two services never share a port.</p>
+address is already in use: two services never share a port.</p>
 </section>
 <section id="developer-notes">
 <h2>Developer notes<a class="headerlink" href="#developer-notes" title="Link to this heading">¶</a></h2>
@@ -527,6 +562,8 @@ contributing to the Warp node implementation.</p>
 <li><a class="reference internal" href="#warping-fundamentals">Warping fundamentals</a></li>
 <li><a class="reference internal" href="#state-and-replicas">State and replicas</a></li>
 <li><a class="reference internal" href="#what-cannot-reach-the-client">What cannot reach the client</a></li>
+<li><a class="reference internal" href="#who-can-reach-the-service">Who can reach the service</a></li>
+<li><a class="reference internal" href="#protocol-version">Protocol version</a></li>
 <li><a class="reference internal" href="#limits">Limits</a></li>
 <li><a class="reference internal" href="#developer-notes">Developer notes</a></li>
 </ul>

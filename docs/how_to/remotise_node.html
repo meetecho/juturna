@@ -455,8 +455,16 @@ remote:~/prj$<span class="w"> </span>python<span class="w"> </span>-m<span class
 <span class="w">    </span>--pipe-name<span class="w"> </span><span class="s2">"test_mocked_pipeline"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--node-mark<span class="w"> </span><span class="s2">"passthrough_identity"</span><span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--default-config<span class="w"> </span><span class="s1">'{"delay": 2}'</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--host<span class="w"> </span><span class="m">0</span>.0.0.0<span class="w"> </span><span class="se">\</span>
 <span class="w">    </span>--port<span class="w"> </span><span class="m">45000</span>
 </pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The remote service has no authentication and no encryption, so it listens
+on <code class="docutils literal notranslate"><span class="pre">127.0.0.1</span></code> unless told otherwise. <code class="docutils literal notranslate"><span class="pre">--host</span> <span class="pre">0.0.0.0</span></code> makes it
+reachable from other machines: use it on trusted networks only. See
+<a class="reference internal" href="../explain/remote.html#explain-remote"><span class="std std-ref">Remote components</span></a>.</p>
 </div>
 </section>
 </section>
