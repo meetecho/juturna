@@ -352,23 +352,76 @@ will run.</p>
 variable of the environment. This is not what you want when the configuration
 comes from somebody else, who could point a node at any secret of your
 process.</p>
-<p>The pipeline service (<code class="docutils literal notranslate"><span class="pre">juturna</span> <span class="pre">serve</span></code>) reads no variable by default: a
-configuration that references one is refused with <code class="docutils literal notranslate"><span class="pre">403</span></code>. Name the variables
-its clients can use with <code class="docutils literal notranslate"><span class="pre">--allow-env</span></code>, once per variable:</p>
+<p>For this reason the pipeline service (<code class="docutils literal notranslate"><span class="pre">juturna</span> <span class="pre">serve</span></code>) reads no variable by
+default: a configuration that references one is refused with <code class="docutils literal notranslate"><span class="pre">403</span></code>. There
+are two ways to give its clients the variables they need.</p>
+<section id="give-the-service-an-environment-file">
+<h3>Give the service an environment file<a class="headerlink" href="#give-the-service-an-environment-file" title="Link to this heading">¶</a></h3>
+<p>Put the variables for the pipelines in a file, one <code class="docutils literal notranslate"><span class="pre">NAME=value</span></code> per line:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># pipelines.env</span>
+<span class="nv">AUTH_TOKEN</span><span class="o">=</span>s3cr3t
+<span class="nv">MODEL_DIR</span><span class="o">=</span>/srv/models
+<span class="nv">GREETING</span><span class="o">=</span><span class="s2">"hello world"</span><span class="w">   </span><span class="c1"># quotes keep spaces and the # sign</span>
+</pre></div>
+</div>
+<p>and point the service to it:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>chmod<span class="w"> </span><span class="m">600</span><span class="w"> </span>pipelines.env
+<span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>serve<span class="w"> </span>-p<span class="w"> </span><span class="m">8000</span><span class="w"> </span>-f<span class="w"> </span>./pipelines<span class="w"> </span>--env-file<span class="w"> </span>pipelines.env
+</pre></div>
+</div>
+<p>Configurations can now read <code class="docutils literal notranslate"><span class="pre">$JT_ENV_AUTH_TOKEN</span></code> and the other variables of
+the file, and nothing else. Two things make the file the better choice:</p>
+<ul class="simple">
+<li><p>it is read again every time a pipeline is created, so you can <strong>add or
+change a variable without restarting the service</strong>. Pipelines that already
+exist keep the values they were created with;</p></li>
+<li><p>its variables are handed to the pipelines only. They never enter the
+environment of the service, and the variables of the service stay out of
+reach.</p></li>
+</ul>
+<p>The file holds secrets: the service warns at startup when other users can
+read it, and stops if it cannot parse it. Values are taken as written:
+<code class="docutils literal notranslate"><span class="pre">$OTHER</span></code> is not expanded, and a value cannot span several lines.</p>
+</section>
+<section id="allow-variables-of-the-service-environment">
+<h3>Allow variables of the service environment<a class="headerlink" href="#allow-variables-of-the-service-environment" title="Link to this heading">¶</a></h3>
+<p>When the variables are already in the environment of the service (set by a
+container, for example), allow them with <code class="docutils literal notranslate"><span class="pre">--allow-env</span></code>. It takes a name or
+a pattern, and can be repeated:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>juturna<span class="w"> </span>serve<span class="w"> </span>-p<span class="w"> </span><span class="m">8000</span><span class="w"> </span>-f<span class="w"> </span>./pipelines<span class="w"> </span><span class="se">\</span>
-<span class="w">         </span>--allow-env<span class="w"> </span>AUTH_TOKEN<span class="w"> </span>--allow-env<span class="w"> </span>MODEL_DIR
+<span class="w">         </span>--allow-env<span class="w"> </span>AUTH_TOKEN<span class="w"> </span>--allow-env<span class="w"> </span><span class="s1">'MODEL_*'</span>
 </pre></div>
 </div>
-<p>The list covers both the <code class="docutils literal notranslate"><span class="pre">configuration</span></code> and the <code class="docutils literal notranslate"><span class="pre">warp_configuration</span></code> of a
-node.</p>
-<p>The same list is available when you build pipelines in your own code from
-configurations you do not control:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pipeline</span> <span class="o">=</span> <span class="n">jt</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">allowed_env_vars</span><span class="o">=</span><span class="p">[</span><span class="s1">'AUTH_TOKEN'</span><span class="p">])</span>
+<p><code class="docutils literal notranslate"><span class="pre">--allow-env</span> <span class="pre">'*'</span></code> allows every variable. It is meant for a service whose
+only client is you: any client can then read any secret of the service
+process, its token included.</p>
+<p>With both options, a variable is looked up in the file first, then in the
+environment if <code class="docutils literal notranslate"><span class="pre">--allow-env</span></code> lets it. Both cover the <code class="docutils literal notranslate"><span class="pre">configuration</span></code> and
+the <code class="docutils literal notranslate"><span class="pre">warp_configuration</span></code> of a node.</p>
+</section>
+<section id="in-your-own-code">
+<h3>In your own code<a class="headerlink" href="#in-your-own-code" title="Link to this heading">¶</a></h3>
+<p>The same controls are available when you build pipelines from configurations
+you do not control:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">juturna</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jt</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">juturna.utils.jt_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_env_file</span>
+
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">jt</span><span class="o">.</span><span class="n">components</span><span class="o">.</span><span class="n">Pipeline</span><span class="p">(</span>
+    <span class="n">config</span><span class="p">,</span>
+    <span class="n">allowed_env_vars</span><span class="o">=</span><span class="p">[],</span>
+    <span class="n">env_vars</span><span class="o">=</span><span class="n">read_env_file</span><span class="p">(</span><span class="s1">'pipelines.env'</span><span class="p">),</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>A configuration that reads any other variable raises <code class="docutils literal notranslate"><span class="pre">EnvVarNotAllowedError</span></code>
-(from <code class="docutils literal notranslate"><span class="pre">juturna.components.exceptions</span></code>) when the pipeline is created, before
+<p><code class="docutils literal notranslate"><span class="pre">env_vars</span></code> gives the pipeline its own variables, and <code class="docutils literal notranslate"><span class="pre">allowed_env_vars</span></code>
+lists the names or patterns it can read from the process environment (none
+here; any, when the argument is left out). A configuration that reads any
+other variable raises <code class="docutils literal notranslate"><span class="pre">EnvVarNotAllowedError</span></code> (from
+<code class="docutils literal notranslate"><span class="pre">juturna.components.exceptions</span></code>) when the pipeline is created, before
 anything is written to disk.</p>
+</section>
 </section>
 </section>
 
@@ -437,7 +490,12 @@ anything is written to disk.</p>
             <ul>
 <li><a class="reference internal" href="#">Use environment variables in a configuration</a><ul>
 <li><a class="reference internal" href="#read-a-variable">Read a variable</a></li>
-<li><a class="reference internal" href="#limit-what-a-configuration-can-read">Limit what a configuration can read</a></li>
+<li><a class="reference internal" href="#limit-what-a-configuration-can-read">Limit what a configuration can read</a><ul>
+<li><a class="reference internal" href="#give-the-service-an-environment-file">Give the service an environment file</a></li>
+<li><a class="reference internal" href="#allow-variables-of-the-service-environment">Allow variables of the service environment</a></li>
+<li><a class="reference internal" href="#in-your-own-code">In your own code</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

@@ -305,6 +305,13 @@
 <h1>juturna.utils.jt_utils package<a class="headerlink" href="#juturna-utils-jt-utils-package" title="Link to this heading">¶</a></h1>
 <section id="module-juturna.utils.jt_utils">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-juturna.utils.jt_utils" title="Link to this heading">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="juturna.utils.jt_utils.EnvFileError">
+<em class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">juturna.utils.jt_utils.</span></span><span class="sig-name descname"><span class="pre">EnvFileError</span></span><a class="headerlink" href="#juturna.utils.jt_utils.EnvFileError" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></p>
+<p>Raised when an environment file cannot be parsed.</p>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="juturna.utils.jt_utils.check_name">
 <span class="sig-prename descclassname"><span class="pre">juturna.utils.jt_utils.</span></span><span class="sig-name descname"><span class="pre">check_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kind</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#juturna.utils.jt_utils.check_name" title="Link to this definition">¶</a></dt>
@@ -335,6 +342,43 @@ error message.</p></li>
 <dt class="sig sig-object py" id="juturna.utils.jt_utils.get_env_var">
 <span class="sig-prename descclassname"><span class="pre">juturna.utils.jt_utils.</span></span><span class="sig-name descname"><span class="pre">get_env_var</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">T</span></span></span><a class="headerlink" href="#juturna.utils.jt_utils.get_env_var" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="juturna.utils.jt_utils.read_env_file">
+<span class="sig-prename descclassname"><span class="pre">juturna.utils.jt_utils.</span></span><span class="sig-name descname"><span class="pre">read_env_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#juturna.utils.jt_utils.read_env_file" title="Link to this definition">¶</a></dt>
+<dd><p>Read variables from an environment file, without touching the
+environment of the process.</p>
+<p>The file has one <code class="docutils literal notranslate"><span class="pre">NAME=value</span></code> per line. Empty lines and lines starting
+with <code class="docutils literal notranslate"><span class="pre">#</span></code> are skipped, and a leading <code class="docutils literal notranslate"><span class="pre">export</span></code> is accepted. A value can
+be:</p>
+<ul class="simple">
+<li><p>bare: it ends at the end of the line, or at a <code class="docutils literal notranslate"><span class="pre">#</span></code> that follows a
+space, and the spaces around it are dropped;</p></li>
+<li><p>in single quotes: taken as it is;</p></li>
+<li><p>in double quotes: a backslash followed by <code class="docutils literal notranslate"><span class="pre">n</span></code>, <code class="docutils literal notranslate"><span class="pre">t</span></code>, <code class="docutils literal notranslate"><span class="pre">r</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;</span></code>
+or another backslash is an escape.</p></li>
+</ul>
+<p>Values are not expanded (<code class="docutils literal notranslate"><span class="pre">$OTHER</span></code> stays as written) and cannot span
+lines. When a name is repeated, the last value wins.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em><em> | </em><em>pathlib.Path</em>) – The file to read.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The variables of the file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict[str, str]</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>OSError</strong> – If the file cannot be read.</p></li>
+<li><p><a class="reference internal" href="#juturna.utils.jt_utils.EnvFileError" title="juturna.utils.jt_utils.EnvFileError"><strong>EnvFileError</strong></a> – If a line cannot be parsed. The message has the line number, never
+    its content, which may be a secret.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 </section>
@@ -404,8 +448,10 @@ error message.</p></li>
             <ul>
 <li><a class="reference internal" href="#">juturna.utils.jt_utils package</a><ul>
 <li><a class="reference internal" href="#module-juturna.utils.jt_utils">Module contents</a><ul>
+<li><a class="reference internal" href="#juturna.utils.jt_utils.EnvFileError"><code class="docutils literal notranslate"><span class="pre">EnvFileError</span></code></a></li>
 <li><a class="reference internal" href="#juturna.utils.jt_utils.check_name"><code class="docutils literal notranslate"><span class="pre">check_name()</span></code></a></li>
 <li><a class="reference internal" href="#juturna.utils.jt_utils.get_env_var"><code class="docutils literal notranslate"><span class="pre">get_env_var()</span></code></a></li>
+<li><a class="reference internal" href="#juturna.utils.jt_utils.read_env_file"><code class="docutils literal notranslate"><span class="pre">read_env_file()</span></code></a></li>
 </ul>
 </li>
 </ul>

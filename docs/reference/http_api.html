@@ -405,8 +405,8 @@ carry a <code class="docutils literal notranslate"><span class="pre">detail</spa
 <li><p><code class="docutils literal notranslate"><span class="pre">404</span></code>: no pipeline with that id, or no such file in its folder;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">409</span></code>: the call is not allowed in the current status of the pipeline, or
 another lifecycle call is in progress;</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">403</span></code>: the configuration reads an environment variable the service does
-not allow;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">403</span></code>: the configuration reads an environment variable that is neither
+in the environment file of the service nor allowed by it;</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">422</span></code>: the configuration is refused (the body says which part), or a
 warmup or start failed because of a node. In the second case the body also
 has <code class="docutils literal notranslate"><span class="pre">operation</span></code> and <code class="docutils literal notranslate"><span class="pre">node</span></code>, and the message says what the node raised,

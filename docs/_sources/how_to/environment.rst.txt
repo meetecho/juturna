@@ -62,25 +62,85 @@ variable of the environment. This is not what you want when the configuration
 comes from somebody else, who could point a node at any secret of your
 process.
 
-The pipeline service (``juturna serve``) reads no variable by default: a
-configuration that references one is refused with ``403``. Name the variables
-its clients can use with ``--allow-env``, once per variable:
+For this reason the pipeline service (``juturna serve``) reads no variable by
+default: a configuration that references one is refused with ``403``. There
+are two ways to give its clients the variables they need.
+
+Give the service an environment file
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Put the variables for the pipelines in a file, one ``NAME=value`` per line:
+
+.. code-block:: bash
+
+    # pipelines.env
+    AUTH_TOKEN=s3cr3t
+    MODEL_DIR=/srv/models
+    GREETING="hello world"   # quotes keep spaces and the # sign
+
+and point the service to it:
+
+.. code-block:: console
+
+    $ chmod 600 pipelines.env
+    $ python -m juturna serve -p 8000 -f ./pipelines --env-file pipelines.env
+
+Configurations can now read ``$JT_ENV_AUTH_TOKEN`` and the other variables of
+the file, and nothing else. Two things make the file the better choice:
+
+- it is read again every time a pipeline is created, so you can **add or
+  change a variable without restarting the service**. Pipelines that already
+  exist keep the values they were created with;
+- its variables are handed to the pipelines only. They never enter the
+  environment of the service, and the variables of the service stay out of
+  reach.
+
+The file holds secrets: the service warns at startup when other users can
+read it, and stops if it cannot parse it. Values are taken as written:
+``$OTHER`` is not expanded, and a value cannot span several lines.
+
+Allow variables of the service environment
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When the variables are already in the environment of the service (set by a
+container, for example), allow them with ``--allow-env``. It takes a name or
+a pattern, and can be repeated:
 
 .. code-block:: console
 
     $ python -m juturna serve -p 8000 -f ./pipelines \
-             --allow-env AUTH_TOKEN --allow-env MODEL_DIR
+             --allow-env AUTH_TOKEN --allow-env 'MODEL_*'
 
-The list covers both the ``configuration`` and the ``warp_configuration`` of a
-node.
+``--allow-env '*'`` allows every variable. It is meant for a service whose
+only client is you: any client can then read any secret of the service
+process, its token included.
 
-The same list is available when you build pipelines in your own code from
-configurations you do not control:
+With both options, a variable is looked up in the file first, then in the
+environment if ``--allow-env`` lets it. Both cover the ``configuration`` and
+the ``warp_configuration`` of a node.
+
+In your own code
+^^^^^^^^^^^^^^^^
+
+The same controls are available when you build pipelines from configurations
+you do not control:
 
 .. code-block:: python
 
-    pipeline = jt.components.Pipeline(config, allowed_env_vars=['AUTH_TOKEN'])
+    import juturna as jt
 
-A configuration that reads any other variable raises ``EnvVarNotAllowedError``
-(from ``juturna.components.exceptions``) when the pipeline is created, before
+    from juturna.utils.jt_utils import read_env_file
+
+
+    pipeline = jt.components.Pipeline(
+        config,
+        allowed_env_vars=[],
+        env_vars=read_env_file('pipelines.env'),
+    )
+
+``env_vars`` gives the pipeline its own variables, and ``allowed_env_vars``
+lists the names or patterns it can read from the process environment (none
+here; any, when the argument is left out). A configuration that reads any
+other variable raises ``EnvVarNotAllowedError`` (from
+``juturna.components.exceptions``) when the pipeline is created, before
 anything is written to disk.

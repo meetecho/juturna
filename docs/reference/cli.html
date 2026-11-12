@@ -491,14 +491,20 @@ commands.</p>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--log-config</span></code>, <code class="docutils literal notranslate"><span class="pre">-l</span></code> <code class="docutils literal notranslate"><span class="pre">FILE</span></code></p></td>
 <td><p>Logging configuration, a JSON file for <code class="docutils literal notranslate"><span class="pre">logging.config.dictConfig</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--allow-env</span></code>, <code class="docutils literal notranslate"><span class="pre">-e</span></code> <code class="docutils literal notranslate"><span class="pre">NAME</span></code></p></td>
-<td><p>An environment variable that configurations can read with
-<code class="docutils literal notranslate"><span class="pre">$JT_ENV_</span></code>. Repeat it for each variable; none by default.</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--env-file</span></code>, <code class="docutils literal notranslate"><span class="pre">-E</span></code> <code class="docutils literal notranslate"><span class="pre">FILE</span></code></p></td>
+<td><p>File of <code class="docutils literal notranslate"><span class="pre">NAME=value</span></code> lines with the variables configurations can
+read with <code class="docutils literal notranslate"><span class="pre">$JT_ENV_</span></code>. It is read again for every new pipeline, and
+its variables are not added to the environment of the service.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--dev</span></code>, <code class="docutils literal notranslate"><span class="pre">-d</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--allow-env</span></code>, <code class="docutils literal notranslate"><span class="pre">-e</span></code> <code class="docutils literal notranslate"><span class="pre">NAME</span></code></p></td>
+<td><p>A variable of the service environment that configurations can read
+with <code class="docutils literal notranslate"><span class="pre">$JT_ENV_</span></code>: a name, or a pattern such as <code class="docutils literal notranslate"><span class="pre">MODEL_*</span></code> (<code class="docutils literal notranslate"><span class="pre">*</span></code>
+allows all of them). Repeatable; none by default.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--dev</span></code>, <code class="docutils literal notranslate"><span class="pre">-d</span></code></p></td>
 <td><p>Development mode: allow cross-origin requests.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--no-auth</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--no-auth</span></code></p></td>
 <td><p>Do not require the service token.</p></td>
 </tr>
 </tbody>

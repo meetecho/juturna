@@ -533,8 +533,8 @@ The service listens on <code class="docutils literal notranslate"><span class="p
 the <code class="docutils literal notranslate"><span class="pre">JUTURNA_SERVICE_TOKEN</span></code> variable of the service
 (see <a class="reference internal" href="serve_pipelines.html"><span class="doc">Run pipelines behind an HTTP service</span></a>);</p></li>
 <li><p>a configuration that reads environment variables with <code class="docutils literal notranslate"><span class="pre">$JT_ENV_</span></code> is
-refused, unless the service was started with <code class="docutils literal notranslate"><span class="pre">--allow-env</span></code> for each of
-them;</p></li>
+refused, unless the variable is in the file given to the service with
+<code class="docutils literal notranslate"><span class="pre">--env-file</span></code> or allowed with <code class="docutils literal notranslate"><span class="pre">--allow-env</span></code> (see <a class="reference internal" href="environment.html"><span class="doc">Use environment variables in a configuration</span></a>);</p></li>
 <li><p>a mistake in a request (a broken configuration, a node type that is not
 installed) is answered with a <code class="docutils literal notranslate"><span class="pre">4xx</span></code> status and a message, where it often
 was a <code class="docutils literal notranslate"><span class="pre">500</span></code>.</p></li>
