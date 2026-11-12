@@ -78,8 +78,21 @@ def setup_parser(subparsers):  # noqa: D103
         action='append',
         default=list(),
         metavar='NAME',
-        help='environment variable that pipeline configurations sent to the '
-        'service can reference with $JT_ENV_ (repeatable, none by default)',
+        help='variable of the service environment that pipeline '
+        'configurations sent to the service can reference with $JT_ENV_. A '
+        'name, or a pattern such as "MODEL_*"; "*" allows every variable '
+        '(repeatable, none by default)',
+    )
+
+    parser.add_argument(
+        '--env-file',
+        '-E',
+        metavar='FILE',
+        type=_cli_utils._is_file_ok,
+        help='file with the variables (NAME=value lines) that pipeline '
+        'configurations can reference with $JT_ENV_. It is read again for '
+        'every new pipeline, and its variables are not added to the '
+        'environment of the service',
     )
 
 
@@ -92,4 +105,5 @@ def _execute(args):
         args.dev,
         args.allow_env,
         args.auth,
+        args.env_file,
     )

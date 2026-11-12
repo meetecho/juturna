@@ -234,3 +234,105 @@ def test_warp_configuration_cannot_read_an_env_var_out_of_the_list(
     assert built == ['secret']
 
     pipeline.destroy()
+
+
+_DELAY = {'configuration': {'delay': '$JT_ENV_TEST_DELAY'}}
+
+
+@pytest.mark.parametrize(
+    'allowed', [['TEST_*'], ['OTHER', '*_DELAY'], ['*'], ['TEST_DELA?']]
+)
+def test_env_var_matching_a_pattern_is_read(test_config, allowed):
+    pipeline = jt.components.Pipeline(
+        _env_config('env_pattern', _DELAY), allowed_env_vars=allowed
+    )
+
+    pipeline.warmup()
+
+    assert pipeline._nodes['test_node']._delay == 2
+
+    pipeline.destroy()
+
+
+@pytest.mark.parametrize('allowed', [['test_*'], ['DELAY'], ['TEST'], []])
+def test_env_var_matching_no_pattern_is_refused(test_config, allowed):
+    from juturna.components.exceptions import EnvVarNotAllowedError
+
+    with pytest.raises(EnvVarNotAllowedError):
+        jt.components.Pipeline(
+            _env_config('env_no_pattern', _DELAY), allowed_env_vars=allowed
+        )
+
+
+def test_given_env_vars_are_read_before_the_environment(test_config):
+    # TEST_DELAY is 2 in the environment
+    pipeline = jt.components.Pipeline(
+        _env_config('env_given', _DELAY), env_vars={'TEST_DELAY': '7'}
+    )
+
+    pipeline.warmup()
+
+    assert pipeline._nodes['test_node']._delay == 7
+    assert os.environ['TEST_DELAY'] == '2'
+
+    pipeline.destroy()
+
+
+def test_given_env_vars_need_no_permission_and_are_the_only_ones(
+    test_config, monkeypatch
+):
+    from juturna.components.exceptions import EnvVarNotAllowedError
+
+    monkeypatch.delenv('ONLY_GIVEN', raising=False)
+
+    config = _env_config(
+        'env_only_given', {'configuration': {'delay': '$JT_ENV_ONLY_GIVEN'}}
+    )
+    pipeline = jt.components.Pipeline(
+        config, allowed_env_vars=[], env_vars={'ONLY_GIVEN': '4'}
+    )
+
+    pipeline.warmup()
+
+    assert pipeline._nodes['test_node']._delay == 4
+    assert 'ONLY_GIVEN' not in os.environ
+
+    pipeline.destroy()
+
+    # the environment stays out of reach
+    with pytest.raises(EnvVarNotAllowedError):
+        jt.components.Pipeline(
+            _env_config('env_only_given_2', _DELAY),
+            allowed_env_vars=[],
+            env_vars={'ONLY_GIVEN': '4'},
+        )
+
+
+def test_given_env_vars_are_copied_when_the_pipeline_is_created(test_config):
+    given = {'TEST_DELAY': '7'}
+    pipeline = jt.components.Pipeline(
+        _env_config('env_copied', _DELAY), env_vars=given
+    )
+
+    given['TEST_DELAY'] = '9'
+    pipeline.warmup()
+
+    assert pipeline._nodes['test_node']._delay == 7
+
+    pipeline.destroy()
+
+
+def test_a_value_of_the_wrong_type_is_not_quoted_in_the_error(
+    test_config, caplog
+):
+    pipeline = jt.components.Pipeline(
+        _env_config('env_bad_type', _DELAY), env_vars={'TEST_DELAY': 's3cret'}
+    )
+
+    with caplog.at_level('DEBUG'), pytest.raises(RuntimeError) as error:
+        pipeline.warmup()
+
+    assert error.value.__cause__ is None
+    assert error.value.__suppress_context__
+    assert 's3cret' not in caplog.text
+    assert 'TEST_DELAY' in caplog.text

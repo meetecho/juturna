@@ -65,6 +65,7 @@ def service_app():
     app.state.token = None
     app.state.auth = True
     PipelineManager.set_allowed_env_vars(list())
+    PipelineManager.set_env_file(None)
 
 
 @pytest.fixture

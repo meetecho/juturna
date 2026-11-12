@@ -2,6 +2,8 @@ import tomllib
 import importlib
 import importlib.resources
 
+from collections.abc import Mapping
+
 from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
 
 from juturna.components._node_builder._utils import _resolve_env_var
@@ -19,6 +21,7 @@ def _get_node(
     pipe_name: str,
     transport: TransportBackend | None = None,
     allowed_env_vars: frozenset[str] | None = None,
+    env_vars: Mapping[str, str] | None = None,
 ):
     node_full_path = node['type']
     node_configuration = node['configuration']
@@ -43,7 +46,12 @@ def _get_node(
     operational_config.update(
         {
             key: _resolve_env_var(
-                key, value, node['name'], default_args, allowed_env_vars
+                key,
+                value,
+                node['name'],
+                default_args,
+                allowed_env_vars,
+                env_vars,
             )
             for key, value in items_to_process
         }

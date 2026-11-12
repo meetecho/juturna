@@ -268,6 +268,184 @@ def test_is_loopback(host, loopback):
     assert _is_loopback(host) is loopback
 
 
+def _env_file(tmp_path, content: str):
+    path = tmp_path / 'pipelines.env'
+    path.write_text(content)
+    path.chmod(0o600)
+
+    return path
+
+
+def test_service_reads_the_env_file_for_every_new_pipeline(
+    service_client, tmp_path, monkeypatch
+):
+    import os
+
+    from juturna.cli.commands._pipeline_manager import PipelineManager
+
+    monkeypatch.delenv('FILE_DELAY', raising=False)
+
+    path = _env_file(tmp_path, 'FILE_DELAY=3\n')
+    PipelineManager.set_env_file(str(path))
+
+    def deploy(name: str) -> tuple[str, int]:
+        response = service_client.post(
+            '/pipelines/new',
+            json=_config(name, {'delay': '$JT_ENV_FILE_DELAY'}),
+        )
+
+        assert response.status_code == 200, response.text
+
+        pipe_id = response.json()['data']['pipeline_id']
+
+        assert (
+            service_client.post(f'/pipelines/{pipe_id}/warmup').status_code
+            == 200
+        )
+
+        return pipe_id, PipelineManager()._pipelines[pipe_id]._nodes[
+            'node'
+        ]._delay
+
+    first, delay = deploy('env_file_pipe')
+
+    assert delay == 3
+
+    # the file changes while the service runs: no restart
+    path.write_text('FILE_DELAY=5\n')
+    second, delay = deploy('env_file_pipe_2')
+
+    assert delay == 5
+    assert 'FILE_DELAY' not in os.environ
+
+    for pipe_id in (first, second):
+        service_client.post(f'/pipelines/{pipe_id}/delete?wipe=true')
+
+
+def test_service_with_an_env_file_still_refuses_the_environment(
+    service_client, tmp_path, monkeypatch
+):
+    from juturna.cli.commands._pipeline_manager import PipelineManager
+
+    monkeypatch.setenv('SERVICE_SECRET', 'secret')
+    PipelineManager.set_env_file(str(_env_file(tmp_path, 'FILE_DELAY=3\n')))
+
+    response = service_client.post(
+        '/pipelines/new',
+        json=_config('env_file_refused', {'delay': '$JT_ENV_SERVICE_SECRET'}),
+    )
+
+    assert response.status_code == 403
+    assert 'SERVICE_SECRET' in response.json()['message']
+
+
+def test_service_allows_env_vars_by_pattern(service_client, monkeypatch):
+    from juturna.cli.commands._pipeline_manager import PipelineManager
+
+    monkeypatch.setenv('PIPE_DELAY', '3')
+    monkeypatch.setenv('SERVICE_SECRET', 'secret')
+    PipelineManager.set_allowed_env_vars(['PIPE_*'])
+
+    response = service_client.post(
+        '/pipelines/new',
+        json=_config('env_pattern_pipe', {'delay': '$JT_ENV_PIPE_DELAY'}),
+    )
+
+    assert response.status_code == 200
+
+    pipe_id = response.json()['data']['pipeline_id']
+    service_client.post(f'/pipelines/{pipe_id}/delete?wipe=true')
+
+    response = service_client.post(
+        '/pipelines/new',
+        json=_config('env_pattern_out', {'delay': '$JT_ENV_SERVICE_SECRET'}),
+    )
+
+    assert response.status_code == 403
+
+
+def test_service_validation_knows_the_env_file(
+    service_client, tmp_path, monkeypatch
+):
+    from juturna.cli.commands._pipeline_manager import PipelineManager
+
+    monkeypatch.delenv('FILE_DELAY', raising=False)
+
+    config = _config('env_file_validate', {'delay': '$JT_ENV_FILE_DELAY'})
+
+    def warnings() -> list[str]:
+        report = service_client.post('/pipelines/validate', json=config).json()
+
+        return [w for check in report['checks'] for w in check['warnings']]
+
+    assert any('FILE_DELAY' in w for w in warnings())
+
+    PipelineManager.set_env_file(str(_env_file(tmp_path, 'FILE_DELAY=3\n')))
+
+    assert warnings() == []
+
+
+def test_serve_env_file_must_exist(tmp_path):
+    pytest.importorskip('fastapi')
+
+    path = _env_file(tmp_path, 'A=1\n')
+    args = _serve_args('-p', '1', '-f', 'f', '--env-file', str(path))
+
+    assert args.env_file == str(path)
+    assert _serve_args('-p', '1', '-f', 'f').env_file is None
+
+    with pytest.raises(SystemExit):
+        _serve_args('-p', '1', '-f', 'f', '-E', str(tmp_path / 'missing'))
+
+
+def test_run_sets_the_env_file_and_logs_no_value(
+    service_app, monkeypatch, tmp_path, caplog, capsys
+):
+    from juturna.cli.commands._pipeline_manager import PipelineManager
+
+    path = _env_file(tmp_path, 'FILE_TOKEN=s3cret\n')
+
+    with caplog.at_level('DEBUG'):
+        _run(monkeypatch, tmp_path, env_file=str(path))
+
+    assert PipelineManager._env_file == str(path)
+    assert 's3cret' not in caplog.text + capsys.readouterr().err
+    assert 'can be read by other users' not in caplog.text
+
+
+def test_run_warns_when_others_can_read_the_env_file(
+    service_app, monkeypatch, tmp_path, caplog
+):
+    path = _env_file(tmp_path, 'FILE_TOKEN=s3cret\n')
+    path.chmod(0o644)
+
+    with caplog.at_level('WARNING'):
+        _run(monkeypatch, tmp_path, env_file=str(path))
+
+    assert 'can be read by other users' in caplog.text
+
+
+def test_run_stops_on_an_env_file_it_cannot_parse(
+    service_app, monkeypatch, tmp_path
+):
+    path = _env_file(tmp_path, 'GOOD=1\nbroken s3cret line\n')
+
+    with pytest.raises(SystemExit) as error:
+        _run(monkeypatch, tmp_path, env_file=str(path))
+
+    assert 'line 2' in str(error.value)
+    assert 's3cret' not in str(error.value)
+
+
+def test_run_warns_when_every_env_var_is_allowed(
+    service_app, monkeypatch, tmp_path, caplog
+):
+    with caplog.at_level('WARNING'):
+        _run(monkeypatch, tmp_path, allow_env=['*'])
+
+    assert 'every variable of the service environment' in caplog.text
+
+
 def _serve_args(*argv) -> argparse.Namespace:
     from juturna.cli.commands import serve
 
