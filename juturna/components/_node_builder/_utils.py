@@ -1,9 +1,13 @@
+import fnmatch
 import importlib
 import os
 
+from collections.abc import Iterable
+from collections.abc import Mapping
+
 from juturna.utils.log_utils import jt_logger
 from juturna.meta._constants import JUTURNA_ENV_VAR_PREFIX
-from juturna.utils.jt_utils._get_env_var import get_env_var
+from juturna.utils.jt_utils._get_env_var import cast_env_value
 from juturna.components.exceptions import EnvVarNotAllowedError
 
 
@@ -16,13 +20,20 @@ def _resolve_env_var(
     node_name: str,
     local_arguments: dict,
     allowed_env_vars: frozenset[str] | None = None,
+    env_vars: Mapping[str, str] | None = None,
 ) -> str:
     env_var_name = value[len(JUTURNA_ENV_VAR_PREFIX) :]
     default_value = local_arguments[key]
 
+    # the variables given to the pipeline come first, and need no permission
+    if env_vars is not None and env_var_name in env_vars:
+        return cast_env_value(
+            env_var_name, env_vars[env_var_name], default_value
+        )
+
     # checked here, where every value is resolved, so that no configuration
     # (of a node, or of the warp in front of it) can get around the list
-    if allowed_env_vars is not None and env_var_name not in allowed_env_vars:
+    if not _env_var_allowed(env_var_name, allowed_env_vars):
         raise EnvVarNotAllowedError(env_var_name, node_name)
 
     if env_var_name not in os.environ:
@@ -34,7 +45,20 @@ def _resolve_env_var(
 
         raise ValueError(error_msg)
 
-    return get_env_var(env_var_name, default_value)
+    return cast_env_value(env_var_name, os.environ[env_var_name], default_value)
+
+
+def _env_var_allowed(name: str, allowed: Iterable[str] | None) -> bool:
+    """
+    Tell whether a variable of the process environment can be read: always
+    when there is no list, otherwise when its name matches an entry of the
+    list. An entry is a name, or a shell-style pattern (``MODEL_*``, ``*``),
+    and letter case counts.
+    """
+    if allowed is None:
+        return True
+
+    return any(fnmatch.fnmatchcase(name, pattern) for pattern in allowed)
 
 
 def _update_local_with_remote(local: dict, remote: dict) -> dict:

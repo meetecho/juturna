@@ -55,7 +55,9 @@ def _execute(args) -> int:
     return 0 if validation_pipe.ok else 1
 
 
-def validate_configuration(data: typing.Any) -> ValidationPipe:
+def validate_configuration(
+    data: typing.Any, env_var_names: typing.Iterable[str] = ()
+) -> ValidationPipe:
     """
     Run the checks of the ``validate`` command on a configuration that is
     already in memory, without printing anything. Nothing is created: node
@@ -65,6 +67,9 @@ def validate_configuration(data: typing.Any) -> ValidationPipe:
     ----------
     data : Any
         The configuration, as read from its JSON document.
+    env_var_names : Iterable[str]
+        Variables the pipeline will be given besides the ones of the
+        environment: reading them gives no warning.
 
     Returns
     -------
@@ -72,7 +77,9 @@ def validate_configuration(data: typing.Any) -> ValidationPipe:
         The checks with their results; ``to_dict()`` gives the report.
 
     """
-    return _validate({'data': data}, quiet=True)
+    return _validate(
+        {'data': data, 'env_var_names': frozenset(env_var_names)}, quiet=True
+    )
 
 
 def _validate(state: dict[str, typing.Any], quiet: bool = False):
@@ -113,7 +120,9 @@ def _validate(state: dict[str, typing.Any], quiet: bool = False):
         ),
         Check(
             'Node types and arguments',
-            lambda s: _check_node_types(s['pipeline']['nodes']),
+            lambda s: _check_node_types(
+                s['pipeline']['nodes'], s.get('env_var_names', frozenset())
+            ),
             requires=('Nodes well formed',),
         ),
         Check('DAG properties', _check_dag, requires=('Links well formed',)),
@@ -245,7 +254,9 @@ def _check_links_well_formed(pipeline: dict) -> None:
         raise ValidationError(str(exc)) from None
 
 
-def _check_node_types(nodes: list[dict]) -> None:
+def _check_node_types(
+    nodes: list[dict], env_var_names: typing.Collection[str] = frozenset()
+) -> None:
     """
     Resolve every node type as the builder does, without building the node,
     and compare the configuration with the arguments the node accepts.
@@ -286,7 +297,7 @@ def _check_node_types(nodes: list[dict]) -> None:
             var_name = value[len(JUTURNA_ENV_VAR_PREFIX) :]
 
             # only known when the pipeline is launched, maybe elsewhere
-            if var_name not in os.environ:
+            if var_name not in os.environ and var_name not in env_var_names:
                 warn(
                     f'node {name}: {key} reads {var_name}, which is not set '
                     'here'

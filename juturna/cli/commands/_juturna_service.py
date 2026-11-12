@@ -287,7 +287,9 @@ def validate_pipeline(configuration: Annotated[Any, Body()]):
     anything. The answer is always the report, valid or not: any JSON
     document is accepted, so that the report can say what is wrong with it.
     """
-    return validate_configuration(configuration).to_dict()
+    return validate_configuration(
+        configuration, env_var_names=PipelineManager().env_var_names()
+    ).to_dict()
 
 
 @app.post('/pipelines/new', response_model=SuccessfulResponse)
@@ -380,6 +382,30 @@ def pipeline_telemetry(pipeline_id: str):
     return {'pipeline': pipeline_id, 'telemetry': telemetry_data}
 
 
+def _check_env_file(env_file: str):
+    """
+    Read the environment file once, so that a file that cannot be parsed
+    stops the service at startup, and warn when other users can read it.
+    """
+    try:
+        names = jt.utils.jt_utils.read_env_file(env_file)
+    except (OSError, ValueError) as error:
+        # the message has the line number, never the content of the line
+        sys.exit(f'cannot use the environment file: {error}')
+
+    # names only: the values are secrets
+    logger.info(
+        f'environment file {env_file}: {len(names)} variables available to '
+        'pipeline configurations'
+    )
+
+    if os.name == 'posix' and os.stat(env_file).st_mode & 0o077:
+        logger.warning(
+            f'environment file {env_file} can be read by other users: '
+            'restrict it with chmod 600'
+        )
+
+
 def run(
     host: str,
     port: int,
@@ -388,6 +414,7 @@ def run(
     dev: bool,
     allow_env: list[str] | None = None,
     auth: bool = True,
+    env_file: str | None = None,
 ):
     if log_config:
         with open(log_config) as f:
@@ -440,6 +467,16 @@ def run(
 
     PipelineManager().set_base_folder(folder)
     PipelineManager().set_allowed_env_vars(allow_env or list())
+    PipelineManager().set_env_file(env_file)
+
+    if env_file:
+        _check_env_file(env_file)
+
+    if '*' in (allow_env or list()):
+        logger.warning(
+            'every variable of the service environment can be read by '
+            'pipeline configurations (--allow-env "*")'
+        )
 
     logger.info(f'service address: {host}:{port}')
 

@@ -88,8 +88,8 @@ carry a ``detail`` instead):
 - ``404``: no pipeline with that id, or no such file in its folder;
 - ``409``: the call is not allowed in the current status of the pipeline, or
   another lifecycle call is in progress;
-- ``403``: the configuration reads an environment variable the service does
-  not allow;
+- ``403``: the configuration reads an environment variable that is neither
+  in the environment file of the service nor allowed by it;
 - ``422``: the configuration is refused (the body says which part), or a
   warmup or start failed because of a node. In the second case the body also
   has ``operation`` and ``node``, and the message says what the node raised,

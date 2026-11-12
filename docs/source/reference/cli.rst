@@ -135,9 +135,14 @@ Start the pipeline service. See :doc:`../how_to/serve_pipelines` and
      - Address to listen on. Default: ``127.0.0.1``.
    * - ``--log-config``, ``-l`` ``FILE``
      - Logging configuration, a JSON file for ``logging.config.dictConfig``.
+   * - ``--env-file``, ``-E`` ``FILE``
+     - File of ``NAME=value`` lines with the variables configurations can
+       read with ``$JT_ENV_``. It is read again for every new pipeline, and
+       its variables are not added to the environment of the service.
    * - ``--allow-env``, ``-e`` ``NAME``
-     - An environment variable that configurations can read with
-       ``$JT_ENV_``. Repeat it for each variable; none by default.
+     - A variable of the service environment that configurations can read
+       with ``$JT_ENV_``: a name, or a pattern such as ``MODEL_*`` (``*``
+       allows all of them). Repeatable; none by default.
    * - ``--dev``, ``-d``
      - Development mode: allow cross-origin requests.
    * - ``--no-auth``

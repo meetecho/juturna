@@ -212,8 +212,8 @@ If you have clients of ``juturna serve``:
   the ``JUTURNA_SERVICE_TOKEN`` variable of the service
   (see :doc:`serve_pipelines`);
 - a configuration that reads environment variables with ``$JT_ENV_`` is
-  refused, unless the service was started with ``--allow-env`` for each of
-  them;
+  refused, unless the variable is in the file given to the service with
+  ``--env-file`` or allowed with ``--allow-env`` (see :doc:`environment`);
 - a mistake in a request (a broken configuration, a node type that is not
   installed) is answered with a ``4xx`` status and a message, where it often
   was a ``500``.

@@ -73,6 +73,7 @@ class PipelineManager:
     _instance = None
     _base_folder = None
     _allowed_env_vars = frozenset()
+    _env_file = None
     _lock = threading.Lock()
 
     def __new__(cls, *args, **kwargs):
@@ -109,9 +110,30 @@ class PipelineManager:
 
         return cls()
 
+    @classmethod
+    def set_env_file(cls, env_file: str | None):
+        """
+        Set the file the variables of the pipelines are read from. It is
+        read again for every new pipeline, so that it can change while the
+        service runs.
+        """
+        cls._env_file = env_file
+
+        return cls()
+
     @property
     def base_folder(self) -> str:
         return self.__class__._base_folder
+
+    def _read_env_file(self) -> dict[str, str] | None:
+        if self._env_file is None:
+            return None
+
+        return jt_utils.read_env_file(self._env_file)
+
+    def env_var_names(self) -> set[str]:
+        """Names of the variables of the environment file, if there is one"""
+        return set(self._read_env_file() or dict())
 
     def create_pipeline(
         self, pipeline_config: PipelineConfig
@@ -132,10 +154,13 @@ class PipelineManager:
         # configurations come from service clients: they may only resolve the
         # environment variables the operator allowed, or they could route any
         # service secret into a node that sends it out. The pipeline refuses
-        # the others here, and again when it builds its nodes
+        # the others here, and again when it builds its nodes. The variables
+        # of the environment file are handed to the pipeline, and never
+        # enter the environment of the service
         this_pipeline = Pipeline(
             pipeline_config.model_dump(),
             allowed_env_vars=self._allowed_env_vars,
+            env_vars=self._read_env_file(),
         )
 
         log_buffer = _LogBuffer()

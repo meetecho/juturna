@@ -17,6 +17,7 @@ from juturna.names import PipelineStatus
 from juturna.components._dag import DAG
 from juturna.components._state import State
 from juturna.components._node_builder import _builder
+from juturna.components._node_builder._utils import _env_var_allowed
 from juturna.components.exceptions import PipelineNotReadyError
 from juturna.components.exceptions import PipelineNotRunningError
 from juturna.components.exceptions import PipelineAlreadyRunningError
@@ -92,6 +93,7 @@ class Pipeline:
         config: dict,
         worker: str = DEFAULT_WORKER,
         allowed_env_vars: typing.Iterable[str] | None = None,
+        env_vars: typing.Mapping[str, str] | None = None,
     ):
         """
         Parameters
@@ -106,18 +108,27 @@ class Pipeline:
             missing); the nodes of other workers are not built here, and the
             links towards them go through the transport, see `warmup`.
         allowed_env_vars : Iterable[str] | None
-            The environment variables the node configurations can read with
-            the ``$JT_ENV_`` prefix. Any variable can be read when this is
-            ``None`` (default). Pass the list when the configuration comes
-            from someone who must not read the environment of this process:
-            a configuration reading any other variable is refused with
-            `EnvVarNotAllowedError`.
+            The variables of the process environment the node configurations
+            can read with the ``$JT_ENV_`` prefix. Any variable can be read
+            when this is ``None`` (default). Pass the list when the
+            configuration comes from someone who must not read the
+            environment of this process: a configuration reading any other
+            variable is refused with `EnvVarNotAllowedError`. An entry is a
+            name, or a shell-style pattern such as ``MODEL_*``.
+        env_vars : Mapping[str, str] | None
+            Variables given to this pipeline only, by name. A ``$JT_ENV_``
+            value is looked up here first, then in the process environment
+            if ``allowed_env_vars`` lets it. They are copied, never added to
+            the process environment, and always readable: pass them with
+            ``allowed_env_vars=[]`` to make them the only ones
+            (``jt_utils.read_env_file`` reads them from a file).
 
         """
         self._worker = worker
         self._allowed_env_vars = (
             None if allowed_env_vars is None else frozenset(allowed_env_vars)
         )
+        self._env_vars = dict(env_vars or dict())
         self._raw_config = copy.deepcopy(config)
         self._check_env_vars()
 
@@ -395,7 +406,10 @@ class Pipeline:
 
                     var_name = value[len(JUTURNA_ENV_VAR_PREFIX) :]
 
-                    if var_name not in self._allowed_env_vars:
+                    if var_name in self._env_vars:
+                        continue
+
+                    if not _env_var_allowed(var_name, self._allowed_env_vars):
                         raise EnvVarNotAllowedError(var_name, node.get('name'))
 
     def _warmup(self):
@@ -475,6 +489,7 @@ class Pipeline:
                         pipe_name=self.name,
                         transport=self._transport,
                         allowed_env_vars=self._allowed_env_vars,
+                        env_vars=self._env_vars,
                     )
             except ModuleNotFoundError as exc:
                 if not warped:
