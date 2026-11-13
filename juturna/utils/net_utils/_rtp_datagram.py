@@ -46,21 +46,31 @@ class RTPDatagram:
         self.marker = (m_pt & 0b10000000) >> 7
         self.payload_type = m_pt & 0b01111111
 
-        i = 0
+        self.csrs = []
+        self.extension_header = b''
+        self.extension_header_id = 0
+        self.extension_header_len = 0
 
-        for i in range(0, self.csrc_count, 4):
-            self.csrs.append(unpack('!I', data[12 + i : 16 + i]))
+        i = self.csrc_count * 4
+        for offset in range(0, i, 4):
+            self.csrs.append(unpack('!I', data[12 + offset : 16 + offset]))
 
         if self.extension:
-            i = self.csrc_count * 4
             (self.extension_header_id, self.extension_header_len) = unpack(
                 '!HH', data[12 + i : 16 + i]
             )
-            self.extension_header = data[
-                16 + i : 16 + i + self.extension_header_len
-            ]
+            # RFC 3550 counts the extension length in 32-bit words.
+            extension_bytes = self.extension_header_len * 4
+            self.extension_header = data[16 + i : 16 + i + extension_bytes]
 
-            i += 4 + self.extension_header_len
+            i += 4 + extension_bytes
 
-        self.payload = data[12 + i :]
+        end = len(data)
+        if self.padding:
+            padding_bytes = data[-1]
+            if not 0 < padding_bytes <= end - (12 + i):
+                raise ValueError('Invalid RTP padding length')
+            end -= padding_bytes
+
+        self.payload = data[12 + i : end]
         self.__datagram = data
