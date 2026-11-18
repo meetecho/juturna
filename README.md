@@ -1,5 +1,5 @@
 # Juturna – Real-time AI Pipeline Framework
-<p align="center"><img src="https://raw.githubusercontent.com/meetecho/juturna/main/docs/source/_static/img/logo_dark_alt.svg" width="30%">
+<p align="center"><img src="https://raw.githubusercontent.com/meetecho/juturna/main/docs/source/_static/img/juturna_logo.png" width="30%">
 <br>
 <img src="https://img.shields.io/github/license/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/stars/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/forks/meetecho/juturna?style=for-the-badge"> <img src="https://img.shields.io/github/issues/meetecho/juturna?style=for-the-badge">
 </p>
