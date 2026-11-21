@@ -32,6 +32,9 @@ Repository = "https://github.com/meetecho/juturna"
 Issues = "https://github.com/meetecho/juturna/issues"
 Changelog = "https://github.com/meetecho/juturna/blob/main/CHANGELOG.md"
 
+[project.scripts]
+juturna = "juturna.__main__:main"
+
 [project.optional-dependencies]
 httpwrapper = [
     "fastapi>=0.127.1",
